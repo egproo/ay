@@ -1,0 +1,414 @@
+{{ header }}{{ column_left }}
+{#
+/**
+ * AYM ERP System: Cash Flow Report Form View
+ *
+ * نموذج إعداد تقرير التدفقات النقدية - مطور بجودة عالمية
+ *
+ * الميزات المتقدمة:
+ * - نموذج إعداد تقرير شامل
+ * - خيارات متقدمة للتخصيص
+ * - واجهة مستخدم بديهية
+ * - تحقق من صحة البيانات
+ * - تكامل مع Bootstrap 3.3
+ *
+ * @package    AYM ERP
+ * @author     AYM Development Team
+ * @copyright  2024 AYM ERP Systems
+ * @license    Commercial License
+ * @version    1.0.0
+ * @since      2024-01-15
+ */
+#}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-cash-flow" data-toggle="tooltip" title="{{ button_generate }}" class="btn btn-primary">
+          <i class="fa fa-line-chart"></i> {{ button_generate }}
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default">
+          <i class="fa fa-reply"></i> {{ button_back }}
+        </a>
+      </div>
+      <h1>{{ heading_title_form }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {# رسائل التنبيه #}
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-cog"></i> {{ tab_parameters }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-cash-flow" class="form-horizontal">
+          
+          {# الفترة الزمنية #}
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+              <div class="input-group date">
+                <input type="text" name="date_start" value="{{ date_start }}" placeholder="{{ entry_date_start }}" 
+                       id="input-date-start" class="form-control" data-date-format="YYYY-MM-DD" required />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default">
+                    <i class="fa fa-calendar"></i>
+                  </button>
+                </span>
+              </div>
+              {% if error_date_start %}
+              <div class="text-danger">{{ error_date_start }}</div>
+              {% endif %}
+            </div>
+            
+            <label class="col-sm-2 control-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+              <div class="input-group date">
+                <input type="text" name="date_end" value="{{ date_end }}" placeholder="{{ entry_date_end }}" 
+                       id="input-date-end" class="form-control" data-date-format="YYYY-MM-DD" required />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default">
+                    <i class="fa fa-calendar"></i>
+                  </button>
+                </span>
+              </div>
+              {% if error_date_end %}
+              <div class="text-danger">{{ error_date_end }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# فترات سريعة #}
+          <div class="form-group">
+            <label class="col-sm-2 control-label">فترات سريعة</label>
+            <div class="col-sm-10">
+              <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-default btn-sm">
+                  <input type="radio" name="quick_period" value="current_month"> {{ text_current_month }}
+                </label>
+                <label class="btn btn-default btn-sm">
+                  <input type="radio" name="quick_period" value="current_quarter"> {{ text_current_quarter }}
+                </label>
+                <label class="btn btn-default btn-sm">
+                  <input type="radio" name="quick_period" value="current_year"> {{ text_current_year }}
+                </label>
+                <label class="btn btn-default btn-sm">
+                  <input type="radio" name="quick_period" value="last_month"> {{ text_last_month }}
+                </label>
+                <label class="btn btn-default btn-sm">
+                  <input type="radio" name="quick_period" value="last_quarter"> {{ text_last_quarter }}
+                </label>
+                <label class="btn btn-default btn-sm">
+                  <input type="radio" name="quick_period" value="last_year"> {{ text_last_year }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {# طريقة الإعداد #}
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-method">{{ entry_method }}</label>
+            <div class="col-sm-4">
+              <select name="method" id="input-method" class="form-control">
+                <option value="direct" {% if method == 'direct' %}selected{% endif %}>{{ text_method_direct }}</option>
+                <option value="indirect" {% if method == 'indirect' %}selected{% endif %}>{{ text_method_indirect }}</option>
+              </select>
+              <span class="help-block">{{ help_method }}</span>
+            </div>
+          </div>
+
+          {# خيارات متقدمة #}
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" href="#advanced-options">
+                  <i class="fa fa-cogs"></i> خيارات متقدمة
+                </a>
+              </h4>
+            </div>
+            <div id="advanced-options" class="panel-collapse collapse">
+              <div class="panel-body">
+                
+                {# العملة #}
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-currency">{{ entry_currency }}</label>
+                  <div class="col-sm-4">
+                    <select name="currency" id="input-currency" class="form-control">
+                      <option value="EGP" selected>جنيه مصري (EGP)</option>
+                      <option value="USD">دولار أمريكي (USD)</option>
+                      <option value="EUR">يورو (EUR)</option>
+                      <option value="SAR">ريال سعودي (SAR)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {# الفرع #}
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-branch">{{ entry_branch }}</label>
+                  <div class="col-sm-4">
+                    <select name="branch_id" id="input-branch" class="form-control">
+                      <option value="">{{ text_all }}</option>
+                      <option value="1">الفرع الرئيسي</option>
+                      <option value="2">فرع القاهرة</option>
+                      <option value="3">فرع الإسكندرية</option>
+                    </select>
+                  </div>
+                </div>
+
+                {# تضمين الموازنة #}
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_include_budget }}</label>
+                  <div class="col-sm-10">
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" name="include_budget" value="1" />
+                        تضمين بيانات الموازنة للمقارنة
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {# فترة المقارنة #}
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_comparison_period }}</label>
+                  <div class="col-sm-10">
+                    <div class="checkbox">
+                      <label>
+                        <input type="checkbox" name="include_comparison" value="1" />
+                        تضمين مقارنة مع الفترة السابقة
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    {# معاينة سريعة #}
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-eye"></i> معاينة سريعة</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="info-box bg-aqua">
+              <span class="info-box-icon"><i class="fa fa-calendar"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">الفترة المحددة</span>
+                <span class="info-box-number" id="preview-period">اختر التواريخ</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="info-box bg-green">
+              <span class="info-box-icon"><i class="fa fa-cogs"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">طريقة الإعداد</span>
+                <span class="info-box-number" id="preview-method">الطريقة المباشرة</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="info-box bg-yellow">
+              <span class="info-box-icon"><i class="fa fa-clock-o"></i></span>
+              <div class="info-box-content">
+                <span class="info-box-text">وقت الإنشاء المتوقع</span>
+                <span class="info-box-number" id="preview-time">~ 30 ثانية</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# نصائح ومساعدة #}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-lightbulb-o"></i> نصائح ومساعدة</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-4">
+            <h5><i class="fa fa-info-circle text-info"></i> الأنشطة التشغيلية</h5>
+            <p class="text-muted">{{ help_operating_activities }}</p>
+          </div>
+          <div class="col-md-4">
+            <h5><i class="fa fa-building text-warning"></i> الأنشطة الاستثمارية</h5>
+            <p class="text-muted">{{ help_investing_activities }}</p>
+          </div>
+          <div class="col-md-4">
+            <h5><i class="fa fa-bank text-success"></i> الأنشطة التمويلية</h5>
+            <p class="text-muted">{{ help_financing_activities }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// تهيئة منتقي التاريخ
+$('.input-group.date').datetimepicker({
+    language: 'ar',
+    pickTime: false,
+    format: 'YYYY-MM-DD'
+});
+
+// الفترات السريعة
+$('input[name="quick_period"]').on('change', function() {
+    var period = $(this).val();
+    var startDate, endDate;
+    var today = moment();
+    
+    switch(period) {
+        case 'current_month':
+            startDate = today.clone().startOf('month');
+            endDate = today.clone().endOf('month');
+            break;
+        case 'current_quarter':
+            startDate = today.clone().startOf('quarter');
+            endDate = today.clone().endOf('quarter');
+            break;
+        case 'current_year':
+            startDate = today.clone().startOf('year');
+            endDate = today.clone().endOf('year');
+            break;
+        case 'last_month':
+            startDate = today.clone().subtract(1, 'month').startOf('month');
+            endDate = today.clone().subtract(1, 'month').endOf('month');
+            break;
+        case 'last_quarter':
+            startDate = today.clone().subtract(1, 'quarter').startOf('quarter');
+            endDate = today.clone().subtract(1, 'quarter').endOf('quarter');
+            break;
+        case 'last_year':
+            startDate = today.clone().subtract(1, 'year').startOf('year');
+            endDate = today.clone().subtract(1, 'year').endOf('year');
+            break;
+    }
+    
+    if (startDate && endDate) {
+        $('#input-date-start').val(startDate.format('YYYY-MM-DD'));
+        $('#input-date-end').val(endDate.format('YYYY-MM-DD'));
+        updatePreview();
+    }
+});
+
+// تحديث المعاينة
+function updatePreview() {
+    var startDate = $('#input-date-start').val();
+    var endDate = $('#input-date-end').val();
+    var method = $('#input-method').val();
+    
+    if (startDate && endDate) {
+        var start = moment(startDate);
+        var end = moment(endDate);
+        var days = end.diff(start, 'days') + 1;
+        
+        $('#preview-period').text(days + ' يوم');
+        $('#preview-time').text('~ ' + Math.max(30, days * 2) + ' ثانية');
+    }
+    
+    $('#preview-method').text(method === 'direct' ? 'الطريقة المباشرة' : 'الطريقة غير المباشرة');
+}
+
+// تحديث المعاينة عند تغيير التواريخ
+$('#input-date-start, #input-date-end, #input-method').on('change', updatePreview);
+
+// التحقق من صحة النموذج
+$('#form-cash-flow').on('submit', function(e) {
+    var startDate = $('#input-date-start').val();
+    var endDate = $('#input-date-end').val();
+    
+    if (!startDate || !endDate) {
+        e.preventDefault();
+        alert('يرجى تحديد تاريخ البداية والنهاية');
+        return false;
+    }
+    
+    if (moment(startDate).isAfter(moment(endDate))) {
+        e.preventDefault();
+        alert('تاريخ البداية يجب أن يكون قبل تاريخ النهاية');
+        return false;
+    }
+    
+    // إظهار مؤشر التحميل
+    var $button = $('button[type="submit"]');
+    $button.button('loading');
+});
+
+// تهيئة المعاينة
+$(document).ready(function() {
+    updatePreview();
+});
+</script>
+
+<style>
+.info-box {
+  display: block;
+  min-height: 90px;
+  background: #fff;
+  width: 100%;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  border-radius: 2px;
+  margin-bottom: 15px;
+}
+
+.info-box-icon {
+  border-top-left-radius: 2px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 2px;
+  display: block;
+  float: left;
+  height: 90px;
+  width: 90px;
+  text-align: center;
+  font-size: 45px;
+  line-height: 90px;
+  background: rgba(0,0,0,0.2);
+}
+
+.info-box-content {
+  padding: 5px 10px;
+  margin-left: 90px;
+}
+
+.info-box-text {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.info-box-number {
+  display: block;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.bg-aqua { background-color: #00c0ef !important; }
+.bg-green { background-color: #00a65a !important; }
+.bg-yellow { background-color: #f39c12 !important; }
+</style>
+
+{{ footer }}

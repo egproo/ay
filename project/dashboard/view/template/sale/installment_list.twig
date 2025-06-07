@@ -1,0 +1,58 @@
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+            <div class="pull-right">
+                <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add_plan }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+                <button type="submit" form="form-installment" formaction="{{ delete }}" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
+            </div>
+        </div>
+    </div>
+    {% if success %}
+    <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>
+    {% endif %}
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+    <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-installment">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <td class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                        <td class="text-left">{{ column_name }}</td>
+                        <td class="text-right">{{ column_total_amount }}</td>
+                        <td class="text-right">{{ column_number_of_installments }}</td>
+                        <td class="text-right">{{ column_interest_rate }}</td>
+                        <td class="text-left">{{ column_status }}</td>
+                        <td class="text-right">{{ column_action }}</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for plan in plans %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" name="selected[]" value="{{ plan.plan_id }}" />
+                        </td>
+                        <td class="text-left">{{ plan.name }}</td>
+                        <td class="text-right">{{ plan.total_amount }}</td>
+                        <td class="text-right">{{ plan.number_of_installments }}</td>
+                        <td class="text-right">{{ plan.interest_rate }}</td>
+                        <td class="text-left">{{ plan.status }}</td>
+                        <td class="text-right">
+                            <a href="{{ plan.edit }}" data-toggle="tooltip" title="Edit" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if plans is empty %}
+                    <tr>
+                        <td class="text-center" colspan="7">No installment plans found!</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+{{ footer }}

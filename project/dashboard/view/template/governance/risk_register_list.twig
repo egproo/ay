@@ -1,0 +1,439 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible">
+        <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible">
+        <i class="fa fa-check-circle"></i> {{ success }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-exclamation-triangle"></i> {{ text_list }}
+        </h3>
+      </div>
+
+      <div class="panel-body">
+        <!-- ===== FILTER FORM ===== -->
+        <form id="form-filter" class="form-inline" style="margin-bottom:15px;">
+          <!-- التصنيف -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="risk_category" style="margin-right:5px;">{{ entry_category }}</label>
+            <select id="risk_category" name="risk_category" class="form-control">
+              <option value="">{{ text_all_categories }}</option>
+              <option value="financial">Financial</option>
+              <option value="operational">Operational</option>
+              <option value="legal">Legal</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <!-- الحالة -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="status" style="margin-right:5px;">{{ entry_status }}</label>
+            <select id="status" name="status" class="form-control">
+              <option value="">{{ text_all_statuses }}</option>
+              <option value="open">{{ text_open }}</option>
+              <option value="mitigated">Mitigated</option>
+              <option value="closed">{{ text_closed }}</option>
+            </select>
+          </div>
+
+          <!-- طبيعة الخطر -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="nature_of_risk" style="margin-right:5px;">{{ entry_nature_of_risk }}</label>
+            <select id="nature_of_risk" name="nature_of_risk" class="form-control">
+              <option value="">{{ text_all_natures }}</option>
+              <option value="ongoing">{{ text_ongoing }}</option>
+              <option value="one_time">{{ text_one_time }}</option>
+            </select>
+          </div>
+
+          <!-- المجموعة -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="owner_group_id" style="margin-right:5px;">{{ entry_owner_group }}</label>
+            <select id="owner_group_id" name="owner_group_id" class="form-control">
+              <option value="">{{ text_all_owners }}</option>
+              {% if user_groups %}
+                {% for grp in user_groups %}
+                  <option value="{{ grp.user_group_id }}">{{ grp.name }}</option>
+                {% endfor %}
+              {% endif %}
+            </select>
+          </div>
+
+          <!-- تاريخ البداية والنهاية -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="date_start" style="margin-right:5px;">{{ entry_risk_start_date }}</label>
+            <input type="date" id="date_start" name="date_start" class="form-control" />
+          </div>
+          <div class="form-group" style="margin-right:10px;">
+            <label for="date_end" style="margin-right:5px;">{{ entry_risk_end_date }}</label>
+            <input type="date" id="date_end" name="date_end" class="form-control" />
+          </div>
+
+          <!-- زر التصفية -->
+          <button type="button" id="btn-filter" class="btn btn-primary" style="margin-left:10px;">
+            <i class="fa fa-filter"></i> {{ button_filter }}
+          </button>
+
+          <!-- زر إضافة خطر جديد -->
+          {% if can_add %}
+            <button type="button" id="btn-add" class="btn btn-success" style="margin-left:20px;">
+              <i class="fa fa-plus"></i> {{ button_add }}
+            </button>
+          {% endif %}
+        </form>
+        <!-- ===== /FILTER FORM ===== -->
+
+        <!-- ===== TABLE ===== -->
+        <table id="table-risk" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_risk_id }}</th>
+              <th>{{ column_title }}</th>
+              <th>{{ column_category }}</th>
+              <th>{{ column_likelihood }}</th>
+              <th>{{ column_impact }}</th>
+              <th>{{ column_score }}</th>
+              <th>{{ column_owner }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_date_added }}</th>
+              <th>{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody><!-- DataTables will fill this --></tbody>
+        </table>
+        <!-- ===== /TABLE ===== -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal fade" id="modalRisk" tabindex="-1" role="dialog" aria-labelledby="modalRiskLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="formRisk">
+        <div class="modal-header">
+          <h4 class="modal-title" id="modalRiskLabel">{{ text_modal_add }}</h4>
+          <button type="button" class="close" data-dismiss="modal">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="risk_id" name="risk_id" />
+
+          <!-- عنوان الخطر -->
+          <div class="form-group">
+            <label for="title">{{ entry_title }} <span style="color:red;">*</span></label>
+            <input type="text" class="form-control" id="title" name="title" required />
+          </div>
+
+          <!-- الوصف -->
+          <div class="form-group">
+            <label for="description">{{ entry_description }}</label>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+          </div>
+
+          <!-- التصنيف + الطبيعة -->
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="risk_category_form">{{ entry_category }}</label>
+              <select class="form-control" id="risk_category_form" name="risk_category">
+                <option value="financial">Financial</option>
+                <option value="operational">Operational</option>
+                <option value="legal">Legal</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="col-md-6 form-group">
+              <label for="nature_of_risk_form">{{ entry_nature_of_risk }}</label>
+              <select class="form-control" id="nature_of_risk_form" name="nature_of_risk">
+                <option value="ongoing">{{ text_ongoing }}</option>
+                <option value="one_time">{{ text_one_time }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- الاحتمالية + التأثير -->
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="likelihood">{{ entry_likelihood }}</label>
+              <select class="form-control" id="likelihood" name="likelihood">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="col-md-6 form-group">
+              <label for="impact">{{ entry_impact }}</label>
+              <select class="form-control" id="impact" name="impact">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- مجموعة المسؤول + الحالة -->
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="owner_group_id_form">{{ entry_owner_group }}</label>
+              <select class="form-control" id="owner_group_id_form" name="owner_group_id">
+                <option value="0">-- لا يوجد --</option>
+                {% if user_groups %}
+                  {% for grp in user_groups %}
+                    <option value="{{ grp.user_group_id }}">{{ grp.name }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+            </div>
+            <div class="col-md-6 form-group">
+              <label for="status_form">{{ entry_status }}</label>
+              <select class="form-control" id="status_form" name="status">
+                <option value="open">{{ text_open }}</option>
+                <option value="mitigated">Mitigated</option>
+                <option value="closed">{{ text_closed }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- تاريخ البداية + النهاية -->
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="risk_start_date">{{ entry_risk_start_date }}</label>
+              <input type="date" class="form-control" id="risk_start_date" name="risk_start_date" />
+            </div>
+            <div class="col-md-6 form-group">
+              <label for="risk_end_date">{{ entry_risk_end_date }}</label>
+              <input type="date" class="form-control" id="risk_end_date" name="risk_end_date" />
+            </div>
+          </div>
+
+          <!-- خطة التخفيف -->
+          <div class="form-group">
+            <label for="mitigation_plan">{{ entry_mitigation_plan }}</label>
+            <textarea class="form-control" id="mitigation_plan" name="mitigation_plan" rows="2"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> {{ button_save }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+(function($){
+  'use strict';
+  let tableRisk;
+
+  $(document).ready(function(){
+    // تهيئة DataTable
+    tableRisk = $('#table-risk').DataTable({
+      processing: true,
+      serverSide: false,
+      ajax: {
+        url: 'index.php?route=governance/risk_register/ajaxList&user_token={{ user_token }}',
+        type: 'POST',
+        data: function(d){
+          d.risk_category  = $('#risk_category').val();
+          d.status         = $('#status').val();
+          d.nature_of_risk = $('#nature_of_risk').val();
+          d.owner_group_id = $('#owner_group_id').val();
+          d.date_start     = $('#date_start').val();
+          d.date_end       = $('#date_end').val();
+        },
+        dataSrc: function(json){
+          if(json.error){
+            toastr.error(json.error);
+            return [];
+          }
+          return json.data;
+        }
+      },
+      columns: [
+        { data: 'risk_id' },
+        { data: 'title' },
+        { data: 'risk_category' },
+        { data: 'likelihood' },
+        { data: 'impact' },
+        { data: 'risk_score' },
+        { data: 'owner' },
+        { data: 'status' },
+        { data: 'date_added' },
+        {
+          data: null,
+          orderable: false,
+          render: function(data, type, row){
+            let btns = '';
+            {% if can_edit %}
+            btns += `<button class="btn btn-sm btn-info btn-edit" data-id="${row.risk_id}" style="margin-right:5px;">
+                       <i class="fa fa-pencil"></i> {{ button_edit }}
+                     </button>`;
+            {% endif %}
+            {% if can_delete %}
+            btns += `<button class="btn btn-sm btn-danger btn-delete" data-id="${row.risk_id}">
+                       <i class="fa fa-trash"></i> {{ button_delete }}
+                     </button>`;
+            {% endif %}
+            return btns;
+          }
+        }
+      ]
+    });
+
+    // زر تصفية
+    $('#btn-filter').on('click', function(){
+      tableRisk.ajax.reload();
+    });
+
+    // زر إضافة
+    $('#btn-add').on('click', function(){
+      clearForm();
+      $('#risk_id').val('');
+      $('#modalRiskLabel').text('{{ text_modal_add }}');
+      $('#modalRisk').modal('show');
+    });
+
+    // زر تعديل
+    $('#table-risk').on('click', '.btn-edit', function(){
+      let risk_id = $(this).data('id');
+      editRisk(risk_id);
+    });
+
+    // زر حذف
+    $('#table-risk').on('click', '.btn-delete', function(){
+      let risk_id = $(this).data('id');
+      if(confirm('{{ text_confirm_delete }}')){
+        deleteRisk(risk_id);
+      }
+    });
+
+    // حفظ (Add/Edit)
+    $('#formRisk').on('submit', function(e){
+      e.preventDefault();
+      saveRisk();
+    });
+  });
+
+  function editRisk(risk_id){
+    $.ajax({
+      url: 'index.php?route=governance/risk_register/getOne&user_token={{ user_token }}',
+      type: 'POST',
+      data: { risk_id },
+      dataType: 'json',
+      success: function(json){
+        if(json.error){
+          toastr.error(json.error);
+        } else if(json.success){
+          let r = json.risk;
+          clearForm();
+          $('#risk_id').val(r.risk_id);
+          $('#title').val(r.title);
+          $('#description').val(r.description);
+          $('#risk_category_form').val(r.risk_category);
+          $('#nature_of_risk_form').val(r.nature_of_risk);
+          $('#likelihood').val(r.likelihood);
+          $('#impact').val(r.impact);
+          $('#owner_group_id_form').val(r.owner_group_id);
+          $('#status_form').val(r.status);
+          $('#risk_start_date').val(r.risk_start_date||'');
+          $('#risk_end_date').val(r.risk_end_date||'');
+          $('#mitigation_plan').val(r.mitigation_plan);
+
+          $('#modalRiskLabel').text('{{ text_modal_edit }} (ID: '+r.risk_id+')');
+          $('#modalRisk').modal('show');
+        }
+      },
+      error: function(xhr, status, err){
+        toastr.error('{{ error_request_failed }}'+ err);
+      }
+    });
+  }
+
+  function saveRisk(){
+    let formData = $('#formRisk').serializeArray();
+    let rid = $('#risk_id').val() || '';
+
+    let urlPost = (rid === '')
+      ? 'index.php?route=governance/risk_register/ajaxAdd&user_token={{ user_token }}'
+      : 'index.php?route=governance/risk_register/ajaxEdit&user_token={{ user_token }}';
+
+    $.ajax({
+      url: urlPost,
+      type: 'POST',
+      data: formData,
+      dataType: 'json',
+      success: function(json){
+        if(json.error){
+          toastr.error(json.error);
+        } else if(json.success){
+          toastr.success(json.success);
+          $('#modalRisk').modal('hide');
+          tableRisk.ajax.reload(null, false);
+        }
+      },
+      error: function(xhr, status, err){
+        toastr.error('{{ error_request_failed }}'+ err);
+      }
+    });
+  }
+
+  function deleteRisk(risk_id){
+    $.ajax({
+      url: 'index.php?route=governance/risk_register/ajaxDelete&user_token={{ user_token }}',
+      type: 'POST',
+      data: { risk_id },
+      dataType: 'json',
+      success: function(json){
+        if(json.error){
+          toastr.error(json.error);
+        } else if(json.success){
+          toastr.success(json.success);
+          tableRisk.ajax.reload(null, false);
+        }
+      },
+      error: function(xhr, status, err){
+        toastr.error('{{ error_request_failed }}'+ err);
+      }
+    });
+  }
+
+  function clearForm(){
+    $('#formRisk')[0].reset();
+    $('#risk_id').val('');
+  }
+
+})(jQuery);
+</script>
+
+{{ footer }}

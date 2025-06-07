@@ -1,0 +1,130 @@
+<?php
+// Heading
+$_['heading_title']                = 'Abandoned Carts';
+
+// Text
+$_['text_success']                 = 'Success: You have modified abandoned carts!';
+$_['text_list']                    = 'Abandoned Cart List';
+$_['text_all_statuses']            = 'All Statuses';
+$_['text_status_active']           = 'Active';
+$_['text_status_recovered']        = 'Recovered';
+$_['text_status_expired']          = 'Expired';
+$_['text_all']                     = 'All';
+$_['text_yes']                     = 'Yes';
+$_['text_no']                      = 'No';
+$_['text_guest']                   = 'Guest';
+$_['text_total_abandoned_carts']   = 'Total Abandoned Carts';
+$_['text_potential_revenue']       = 'Potential Revenue';
+$_['text_recovery_rate']           = 'Recovery Rate';
+$_['text_average_cart_value']      = 'Average Cart Value';
+$_['text_abandoned_carts_over_time'] = 'Abandoned Carts Over Time';
+$_['text_filter']                  = 'Filter';
+$_['text_actions']                 = 'Actions';
+$_['text_no_results']              = 'No abandoned carts found';
+$_['text_confirm_delete']          = 'Are you sure you want to delete the selected abandoned cart(s)?';
+$_['text_cart_deleted']            = 'Success: Abandoned cart has been deleted!';
+$_['text_carts_deleted']           = 'Success: Selected abandoned carts have been deleted!';
+$_['text_bulk_email']              = 'Send Bulk Emails';
+$_['text_bulk_email_info']         = 'This will send recovery emails to all selected abandoned carts that have customer emails.';
+$_['text_confirm_bulk_email']      = 'Are you sure you want to send emails to all selected customers?';
+$_['text_bulk_coupon']             = 'Create Bulk Coupons';
+$_['text_bulk_coupon_info']        = 'This will create recovery coupons for all selected abandoned carts.';
+$_['text_confirm_bulk_coupon']     = 'Are you sure you want to create coupons for all selected customers?';
+$_['text_email_sent']              = 'Success: Email has been sent!';
+$_['text_default_template']        = 'Default Template';
+$_['text_custom_message']          = 'Custom Message';
+$_['text_cart_count']              = 'Cart Count';
+$_['text_cart_value']              = 'Cart Value';
+$_['text_send_email']              = 'Send Recovery Email';
+$_['text_send_sms']                = 'Send Recovery SMS';
+$_['text_coupon_created']          = 'Success: Coupon %s has been created!';
+$_['text_sms_sent']                = 'Success: SMS has been sent!';
+$_['text_send_whatsapp']           = 'Send WhatsApp Message';
+$_['text_whatsapp_sent']           = 'Success: WhatsApp message has been sent!';
+$_['text_send_telegram']           = 'Send Telegram Message';
+$_['text_telegram_sent']           = 'Success: Telegram message has been sent!';
+$_['text_pagination']              = 'Showing %d to %d of %d (%d Pages)';
+$_['text_cart_details']            = 'Abandoned Cart Details';
+$_['text_customer_details']        = 'Customer Details';
+$_['text_cart_info']               = 'Cart Information';
+$_['text_cart_items']              = 'Cart Items';
+$_['text_timeline']                = 'Recovery Timeline';
+$_['text_customer_name']           = 'Customer Name';
+$_['text_customer_email']          = 'Email';
+$_['text_customer_telephone']      = 'Telephone';
+$_['text_customer_group']          = 'Customer Group';
+$_['text_view_customer']           = 'View Customer';
+$_['text_guest_customer']          = 'This cart was created by a guest customer.';
+$_['text_cart_id']                 = 'Cart ID';
+$_['text_date_created']            = 'Date Created';
+$_['text_last_activity']           = 'Last Activity';
+$_['text_items_count']             = 'Items Count';
+$_['text_total_value']             = 'Total Value';
+$_['text_status']                  = 'Status';
+$_['text_email_sent']              = 'Email Sent';
+$_['text_recovery_date']           = 'Recovery Date';
+$_['text_order_id']                = 'Order ID';
+$_['text_no_items']                = 'No items in this cart';
+$_['text_total']                   = 'Total';
+$_['text_email']                   = 'Email';
+$_['text_telephone']               = 'Telephone';
+$_['text_help_placeholders']       = 'You can use the following placeholders: {customer_name}, {store_name}, {recovery_url}, {coupon_code}, {cart_total}, {items_count}';
+$_['text_all_items_matched']       = 'All items have been marked as matched.';
+
+// Column
+$_['column_customer']              = 'Customer';
+$_['column_contact']               = 'Contact Information';
+$_['column_date_created']          = 'Date Created';
+$_['column_last_activity']         = 'Last Activity';
+$_['column_items']                 = 'Items';
+$_['column_total']                 = 'Total';
+$_['column_email_sent']            = 'Email Sent';
+$_['column_status']                = 'Status';
+$_['column_action']                = 'Action';
+$_['column_product']               = 'Product';
+$_['column_model']                 = 'Model';
+$_['column_options']               = 'Options';
+$_['column_quantity']              = 'Quantity';
+$_['column_price']                 = 'Price';
+
+// Entry
+$_['entry_customer']               = 'Customer';
+$_['entry_date_start']             = 'Date Start';
+$_['entry_date_end']               = 'Date End';
+$_['entry_status']                 = 'Status';
+$_['entry_total_min']              = 'Min Total';
+$_['entry_total_max']              = 'Max Total';
+$_['entry_email_sent']             = 'Email Sent';
+$_['entry_template']               = 'Template';
+$_['entry_custom_message']         = 'Custom Message';
+$_['entry_include_coupon']         = 'Include recovery coupon';
+
+// Button
+$_['button_refresh']               = 'Refresh';
+$_['button_create_coupons']        = 'Create Coupons';
+$_['button_send_emails']           = 'Send Emails';
+$_['button_delete']                = 'Delete';
+$_['button_filter']                = 'Filter';
+$_['button_clear']                 = 'Clear';
+$_['button_view']                  = 'View';
+$_['button_send_email']            = 'Send Email';
+$_['button_send_sms']              = 'Send SMS';
+$_['button_create_coupon']         = 'Create Coupon';
+$_['button_send_whatsapp']         = 'Send WhatsApp';
+$_['button_send_telegram']         = 'Send Telegram';
+$_['button_cancel']                = 'Cancel';
+$_['button_send']                  = 'Send';
+$_['button_close']                 = 'Close';
+$_['button_generate']              = 'Generate Coupons';
+
+// Error
+$_['error_permission']             = 'Warning: You do not have permission to modify abandoned carts!';
+$_['error_cart_not_found']         = 'Error: Abandoned cart not found!';
+$_['error_no_email']               = 'Error: Customer has no email address!';
+$_['error_no_telephone']           = 'Error: Customer has no telephone number!';
+$_['error_email_not_sent']         = 'Error: Could not send email!';
+$_['error_sms_not_sent']           = 'Error: Could not send SMS!';
+$_['error_whatsapp_not_sent']      = 'Error: Could not send WhatsApp message!';
+$_['error_telegram_not_sent']      = 'Error: Could not send Telegram message!';
+$_['error_coupon_not_created']     = 'Error: Could not create coupon!';
+$_['error_no_selection']           = 'Warning: No carts selected!';

@@ -1,0 +1,387 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-stock-adjustment" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i>
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-stock-adjustment" class="form-horizontal">
+          
+          <!-- معلومات أساسية -->
+          <fieldset>
+            <legend>المعلومات الأساسية</legend>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-adjustment-number">{{ entry_adjustment_number }}</label>
+              <div class="col-sm-10">
+                <input type="text" name="adjustment_number" value="{{ adjustment_number }}" placeholder="{{ entry_adjustment_number }}" id="input-adjustment-number" class="form-control" readonly />
+                {% if error_adjustment_number %}
+                <div class="text-danger">{{ error_adjustment_number }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-adjustment-name">{{ entry_adjustment_name }}</label>
+              <div class="col-sm-10">
+                <input type="text" name="adjustment_name" value="{{ adjustment_name }}" placeholder="{{ entry_adjustment_name }}" id="input-adjustment-name" class="form-control" />
+                {% if error_adjustment_name %}
+                <div class="text-danger">{{ error_adjustment_name }}</div>
+                {% endif %}
+                <div class="help-block">{{ help_adjustment_name }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-adjustment-type">{{ entry_adjustment_type }}</label>
+              <div class="col-sm-10">
+                <select name="adjustment_type" id="input-adjustment-type" class="form-control">
+                  {% for type in adjustment_types %}
+                  <option value="{{ type.value }}"{% if type.value == adjustment_type %} selected="selected"{% endif %}>{{ type.text }}</option>
+                  {% endfor %}
+                </select>
+                {% if error_adjustment_type %}
+                <div class="text-danger">{{ error_adjustment_type }}</div>
+                {% endif %}
+                <div class="help-block">{{ help_adjustment_type }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-branch">{{ entry_branch }}</label>
+              <div class="col-sm-10">
+                <select name="branch_id" id="input-branch" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}"{% if branch.branch_id == branch_id %} selected="selected"{% endif %}>{{ branch.name }}</option>
+                  {% endfor %}
+                </select>
+                {% if error_branch_id %}
+                <div class="text-danger">{{ error_branch_id }}</div>
+                {% endif %}
+                <div class="help-block">{{ help_branch }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-reason">{{ entry_reason }}</label>
+              <div class="col-sm-10">
+                <select name="reason_id" id="input-reason" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  {% for reason in adjustment_reasons %}
+                  <option value="{{ reason.reason_id }}"{% if reason.reason_id == reason_id %} selected="selected"{% endif %}>{{ reason.name }}</option>
+                  {% endfor %}
+                </select>
+                <div class="help-block">{{ help_reason }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-reference-type">{{ entry_reference_type }}</label>
+              <div class="col-sm-4">
+                <input type="text" name="reference_type" value="{{ reference_type }}" placeholder="{{ entry_reference_type }}" id="input-reference-type" class="form-control" />
+                <div class="help-block">{{ help_reference_type }}</div>
+              </div>
+              <label class="col-sm-2 control-label" for="input-reference-number">{{ entry_reference_number }}</label>
+              <div class="col-sm-4">
+                <input type="text" name="reference_number" value="{{ reference_number }}" placeholder="{{ entry_reference_number }}" id="input-reference-number" class="form-control" />
+                <div class="help-block">{{ help_reference_number }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-adjustment-date">{{ entry_adjustment_date }}</label>
+              <div class="col-sm-10">
+                <input type="date" name="adjustment_date" value="{{ adjustment_date }}" id="input-adjustment-date" class="form-control" />
+                {% if error_adjustment_date %}
+                <div class="text-danger">{{ error_adjustment_date }}</div>
+                {% endif %}
+                <div class="help-block">{{ help_adjustment_date }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+              <div class="col-sm-10">
+                <textarea name="notes" rows="3" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+              </div>
+            </div>
+          </fieldset>
+          
+          <!-- عناصر التسوية -->
+          <fieldset>
+            <legend>
+              عناصر التسوية
+              <button type="button" class="btn btn-success btn-sm pull-right" id="add-item">
+                <i class="fa fa-plus"></i> {{ button_add_item }}
+              </button>
+            </legend>
+            
+            {% if error_adjustment_items %}
+            <div class="alert alert-danger">
+              <i class="fa fa-exclamation-circle"></i> {{ error_adjustment_items }}
+            </div>
+            {% endif %}
+            
+            <div class="table-responsive">
+              <table class="table table-striped table-bordered" id="adjustment-items-table">
+                <thead>
+                  <tr>
+                    <th style="width: 25%;">{{ entry_product }}</th>
+                    <th style="width: 10%;">{{ entry_quantity }}</th>
+                    <th style="width: 12%;">{{ entry_unit_cost }}</th>
+                    <th style="width: 12%;">{{ entry_total_cost }}</th>
+                    <th style="width: 10%;">{{ entry_lot_number }}</th>
+                    <th style="width: 10%;">{{ entry_expiry_date }}</th>
+                    <th style="width: 15%;">{{ entry_item_reason }}</th>
+                    <th style="width: 3%;">{{ button_remove_item }}</th>
+                  </tr>
+                </thead>
+                <tbody id="adjustment-items">
+                  {% set item_row = 0 %}
+                  {% if adjustment_items %}
+                  {% for item in adjustment_items %}
+                  <tr id="item-row-{{ item_row }}">
+                    <td>
+                      <input type="text" name="adjustment_items[{{ item_row }}][product_name]" value="{{ item.product_name }}" placeholder="{{ entry_product }}" class="form-control product-autocomplete" data-row="{{ item_row }}" />
+                      <input type="hidden" name="adjustment_items[{{ item_row }}][product_id]" value="{{ item.product_id }}" />
+                      {% if error_adjustment_items[item_row]['product_id'] %}
+                      <div class="text-danger">{{ error_adjustment_items[item_row]['product_id'] }}</div>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <input type="number" name="adjustment_items[{{ item_row }}][quantity]" value="{{ item.quantity }}" placeholder="{{ entry_quantity }}" class="form-control quantity-input" data-row="{{ item_row }}" step="0.01" />
+                      {% if error_adjustment_items[item_row]['quantity'] %}
+                      <div class="text-danger">{{ error_adjustment_items[item_row]['quantity'] }}</div>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <input type="number" name="adjustment_items[{{ item_row }}][unit_cost]" value="{{ item.unit_cost }}" placeholder="{{ entry_unit_cost }}" class="form-control unit-cost-input" data-row="{{ item_row }}" step="0.01" />
+                      {% if error_adjustment_items[item_row]['unit_cost'] %}
+                      <div class="text-danger">{{ error_adjustment_items[item_row]['unit_cost'] }}</div>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <input type="text" name="adjustment_items[{{ item_row }}][total_cost]" value="{{ item.total_cost }}" class="form-control total-cost-display" data-row="{{ item_row }}" readonly />
+                    </td>
+                    <td>
+                      <input type="text" name="adjustment_items[{{ item_row }}][lot_number]" value="{{ item.lot_number }}" placeholder="{{ entry_lot_number }}" class="form-control" />
+                    </td>
+                    <td>
+                      <input type="date" name="adjustment_items[{{ item_row }}][expiry_date]" value="{{ item.expiry_date }}" class="form-control" />
+                    </td>
+                    <td>
+                      <input type="text" name="adjustment_items[{{ item_row }}][reason]" value="{{ item.reason }}" placeholder="{{ entry_item_reason }}" class="form-control" />
+                    </td>
+                    <td class="text-center">
+                      <button type="button" class="btn btn-danger btn-sm remove-item" data-row="{{ item_row }}">
+                        <i class="fa fa-minus"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  {% set item_row = item_row + 1 %}
+                  {% endfor %}
+                  {% endif %}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="3" class="text-right"><strong>الإجمالي:</strong></td>
+                    <td><strong id="grand-total">0.00</strong></td>
+                    <td colspan="4"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </fieldset>
+          
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- قالب صف العنصر -->
+<script type="text/template" id="item-row-template">
+<tr id="item-row-{row}">
+  <td>
+    <input type="text" name="adjustment_items[{row}][product_name]" value="" placeholder="{{ entry_product }}" class="form-control product-autocomplete" data-row="{row}" />
+    <input type="hidden" name="adjustment_items[{row}][product_id]" value="" />
+  </td>
+  <td>
+    <input type="number" name="adjustment_items[{row}][quantity]" value="" placeholder="{{ entry_quantity }}" class="form-control quantity-input" data-row="{row}" step="0.01" />
+  </td>
+  <td>
+    <input type="number" name="adjustment_items[{row}][unit_cost]" value="" placeholder="{{ entry_unit_cost }}" class="form-control unit-cost-input" data-row="{row}" step="0.01" />
+  </td>
+  <td>
+    <input type="text" name="adjustment_items[{row}][total_cost]" value="0.00" class="form-control total-cost-display" data-row="{row}" readonly />
+  </td>
+  <td>
+    <input type="text" name="adjustment_items[{row}][lot_number]" value="" placeholder="{{ entry_lot_number }}" class="form-control" />
+  </td>
+  <td>
+    <input type="date" name="adjustment_items[{row}][expiry_date]" value="" class="form-control" />
+  </td>
+  <td>
+    <input type="text" name="adjustment_items[{row}][reason]" value="" placeholder="{{ entry_item_reason }}" class="form-control" />
+  </td>
+  <td class="text-center">
+    <button type="button" class="btn btn-danger btn-sm remove-item" data-row="{row}">
+      <i class="fa fa-minus"></i>
+    </button>
+  </td>
+</tr>
+</script>
+
+<script type="text/javascript">
+var item_row = {{ adjustment_items|length > 0 ? adjustment_items|length : 0 }};
+
+$(document).ready(function() {
+    // إضافة عنصر جديد
+    $('#add-item').on('click', function() {
+        var html = $('#item-row-template').html();
+        html = html.replace(/{row}/g, item_row);
+        
+        $('#adjustment-items').append(html);
+        
+        // تهيئة autocomplete للمنتج الجديد
+        initProductAutocomplete(item_row);
+        
+        item_row++;
+        
+        // إضافة عنصر واحد على الأقل إذا كانت القائمة فارغة
+        if ($('#adjustment-items tr').length === 1) {
+            calculateGrandTotal();
+        }
+    });
+    
+    // حذف عنصر
+    $(document).on('click', '.remove-item', function() {
+        var row = $(this).data('row');
+        $('#item-row-' + row).remove();
+        calculateGrandTotal();
+    });
+    
+    // حساب إجمالي التكلفة لكل عنصر
+    $(document).on('input', '.quantity-input, .unit-cost-input', function() {
+        var row = $(this).data('row');
+        calculateItemTotal(row);
+        calculateGrandTotal();
+    });
+    
+    // تهيئة autocomplete للمنتجات الموجودة
+    $('.product-autocomplete').each(function() {
+        var row = $(this).data('row');
+        initProductAutocomplete(row);
+    });
+    
+    // حساب الإجمالي الأولي
+    calculateGrandTotal();
+    
+    // إضافة عنصر واحد إذا لم توجد عناصر
+    if ($('#adjustment-items tr').length === 0) {
+        $('#add-item').click();
+    }
+});
+
+function initProductAutocomplete(row) {
+    $('input[name="adjustment_items[' + row + '][product_name]"]').autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: '{{ product_autocomplete }}',
+                dataType: 'json',
+                data: {
+                    filter_name: request.term,
+                    user_token: '{{ user_token }}'
+                },
+                success: function(json) {
+                    response($.map(json, function(item) {
+                        return {
+                            label: item.name + ' (' + item.model + ')',
+                            value: item.name,
+                            product_id: item.product_id,
+                            unit_cost: item.cost || 0
+                        };
+                    }));
+                }
+            });
+        },
+        select: function(event, ui) {
+            $('input[name="adjustment_items[' + row + '][product_id]"]').val(ui.item.product_id);
+            $('input[name="adjustment_items[' + row + '][unit_cost]"]').val(ui.item.unit_cost);
+            calculateItemTotal(row);
+            calculateGrandTotal();
+            return false;
+        }
+    });
+}
+
+function calculateItemTotal(row) {
+    var quantity = parseFloat($('input[name="adjustment_items[' + row + '][quantity]"]').val()) || 0;
+    var unitCost = parseFloat($('input[name="adjustment_items[' + row + '][unit_cost]"]').val()) || 0;
+    var total = quantity * unitCost;
+    
+    $('input[name="adjustment_items[' + row + '][total_cost]"]').val(total.toFixed(2));
+}
+
+function calculateGrandTotal() {
+    var grandTotal = 0;
+    
+    $('.total-cost-display').each(function() {
+        var value = parseFloat($(this).val()) || 0;
+        grandTotal += Math.abs(value); // استخدام القيمة المطلقة
+    });
+    
+    $('#grand-total').text(grandTotal.toFixed(2));
+}
+
+// التحقق من النموذج قبل الإرسال
+$('#form-stock-adjustment').on('submit', function(e) {
+    var hasItems = $('#adjustment-items tr').length > 0;
+    var hasValidItems = false;
+    
+    $('#adjustment-items tr').each(function() {
+        var productId = $(this).find('input[name*="[product_id]"]').val();
+        var quantity = $(this).find('input[name*="[quantity]"]').val();
+        
+        if (productId && quantity && quantity != 0) {
+            hasValidItems = true;
+        }
+    });
+    
+    if (!hasItems || !hasValidItems) {
+        alert('يجب إضافة عنصر واحد على الأقل مع منتج وكمية صحيحة!');
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
+
+{{ footer }}

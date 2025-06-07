@@ -1,0 +1,1304 @@
+{% if categories %}
+<div class="neo-mobile-menu-container">
+  <!-- زر فتح القائمة مع تأثير النبض -->
+  <button id="neo-menu-toggle" class="neo-menu-toggle" aria-label="فتح القائمة">
+    <span class="neo-menu-icon">
+      <span class="neo-menu-line"></span>
+      <span class="neo-menu-line"></span>
+      <span class="neo-menu-line"></span>
+    </span>
+  </button>
+  
+  <!-- خلفية متلاشية عند فتح القائمة -->
+  <div class="neo-menu-overlay"></div>
+  
+  <!-- حاوية القائمة الرئيسية -->
+  <div class="neo-menu">
+    <div class="neo-menu-header">
+      <h2 class="neo-menu-title">{{ text_category }}</h2>
+      <button class="neo-menu-close" aria-label="إغلاق القائمة">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- شريط البحث المدمج في القائمة -->
+    <div class="neo-menu-search">
+      <div class="neo-search-container">
+        <svg class="neo-search-icon" viewBox="0 0 24 24" width="20" height="20">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+        </svg>
+        <input type="text" class="neo-search-input" placeholder="ابحث في الأقسام..." aria-label="البحث">
+      </div>
+    </div>
+    
+    <!-- قائمة الفئات -->
+    <div class="neo-categories">
+      <!-- قائمة للعروض الخاصة -->
+      <div class="neo-category-item featured">
+        <a href="{{ specials }}" class="neo-category-link" title="{{ text_specials }}">
+          <div class="neo-category-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"></path>
+            </svg>
+          </div>
+          <div class="neo-category-text">
+            <span class="neo-category-name">{{ text_specials }}</span>
+            <span class="neo-category-desc">تصفح أحدث العروض والتخفيضات</span>
+          </div>
+          <div class="neo-category-indicator">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path>
+            </svg>
+          </div>
+        </a>
+      </div>
+      
+      <!-- قائمة الفئات الديناميكية -->
+      {% for category in categories %}
+        <div class="neo-category-item {% if category.children %}has-children{% endif %}">
+          <div class="neo-category-header" data-category-id="{{ category.id }}">
+            <div class="neo-category-icon">
+              {% if category.image %}
+                <img src="{{ category.image }}" alt="{{ category.name }}" width="24" height="24" class="neo-category-img">
+              {% else %}
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                  <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path>
+                </svg>
+              {% endif %}
+            </div>
+            <div class="neo-category-text">
+              <span class="neo-category-name">{{ category.name }}</span>
+            </div>
+            {% if category.children %}
+              <div class="neo-category-toggle">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"></path>
+                </svg>
+              </div>
+            {% else %}
+              <a href="{{ category.href }}" class="neo-category-link-icon" title="{{ category.name }}">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+          
+          {% if category.children %}
+            <div class="neo-subcategories" id="subcategory-{{ category.id }}">
+              <div class="neo-subcategories-grid">
+                {% for children in category.children|batch(2) %}
+                  {% for child in children %}
+                    <div class="neo-subcategory-item">
+                      <a href="{{ child.href }}" class="neo-subcategory-link" title="{{ child.name }}" childid="{{ child.childid }}" catid="{{ child.catid }}">
+                        <div class="neo-subcategory-media">
+                          {% if child.image %}
+                            <img src="{{ child.image }}" alt="{{ child.name }}" class="neo-subcategory-img">
+                          {% endif %}
+                        </div>
+                        <div class="neo-subcategory-name">{{ child.name }}</div>
+                      </a>
+                    </div>
+                  {% endfor %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- شريط تنقل سريع -->
+    <div class="neo-quick-access">
+      <a href="{{ home }}" class="neo-quick-item" title="الرئيسية">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+        </svg>
+        <span>الرئيسية</span>
+      </a>
+      <a href="{{ wishlist }}" class="neo-quick-item" title="المفضلة">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"></path>
+        </svg>
+        <span>المفضلة</span>
+      </a>
+      <a href="{{ account }}" class="neo-quick-item" title="حسابي">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+        </svg>
+        <span>حسابي</span>
+      </a>
+      <a href="{{ cart }}" class="neo-quick-item" title="السلة">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path>
+        </svg>
+        <span>السلة</span>
+        <span class="neo-badge">{{ cart_count }}</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ميزة إضافية: شريط إشعارات -->
+<div class="neo-notification-bar">
+  <div class="neo-notification-content">
+    <div class="neo-notification-slider">
+      <div class="neo-notification-slide">توصيل مجاني للطلبات أكثر من 500 جنيه</div>
+      <div class="neo-notification-slide">خصم 15% على الطلبات الجديدة، استخدم كود: NEW15</div>
+      <div class="neo-notification-slide">تابعنا على وسائل التواصل الاجتماعي للحصول على آخر العروض</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<style>
+/* ===== تنسيقات قائمة الموبايل العصرية ===== */
+:root {
+  --primary-color: #3a86ff;
+  --secondary-color: #ff006e;
+  --accent-color: #fb5607;
+  --text-color: #333333;
+  --light-text: #767676;
+  --background-color: #ffffff;
+  --dark-background: #f8f9fa;
+  --border-radius: 12px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+}
+
+/* تنسيقات أساسية */
+.neo-mobile-menu-container {
+  position: relative;
+  font-family: 'Cairo', 'Tajawal', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.neo-mobile-menu-container * {
+  box-sizing: border-box;
+}
+
+/* زر القائمة المبتكر */
+.neo-menu-toggle {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--background-color);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.neo-menu-toggle:active {
+  transform: scale(0.95);
+}
+
+.neo-menu-icon {
+  width: 22px;
+  height: 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.neo-menu-line {
+  width: 100%;
+  height: 2px;
+  background-color: var(--text-color);
+  border-radius: 5px;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+/* التخلية عندما تكون القائمة مفتوحة */
+.neo-menu-toggle.active .neo-menu-line:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.neo-menu-toggle.active .neo-menu-line:nth-child(2) {
+  opacity: 0;
+}
+
+.neo-menu-toggle.active .neo-menu-line:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* تأثير النبض على زر القائمة */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(58, 134, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(58, 134, 255, 0);
+  }
+}
+
+.neo-menu-toggle:not(.active) {
+  animation: pulse 2s infinite;
+}
+
+/* خلفية متلاشية */
+.neo-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.neo-menu-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* حاوية القائمة الرئيسية */
+.neo-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 85%;
+  max-width: 360px;
+  height: 100%;
+  background-color: var(--background-color);
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  transform: translateX(105%);
+  transition: transform var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-top-left-radius: 24px;
+  border-bottom-left-radius: 24px;
+}
+
+.neo-menu.active {
+  transform: translateX(0);
+}
+
+/* رأس القائمة */
+.neo-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.neo-menu-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: var(--font-semibold);
+  color: var(--text-color);
+}
+
+.neo-menu-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #f2f2f2;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.neo-menu-close:hover {
+  background-color: #e5e5e5;
+}
+
+.neo-menu-close svg {
+  fill: var(--text-color);
+}
+
+/* البحث المدمج */
+.neo-menu-search {
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.neo-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 25px;
+  padding: 8px 15px;
+  transition: box-shadow var(--transition-fast);
+}
+
+.neo-search-container:focus-within {
+  box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.neo-search-icon {
+  fill: var(--light-text);
+  margin-right: 10px;
+}
+
+.neo-search-input {
+  flex: 1;
+  border: none;
+  background-color: transparent;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  outline: none;
+  padding: 8px 0;
+}
+
+.neo-search-input::placeholder {
+  color: var(--light-text);
+}
+
+/* قائمة الفئات */
+.neo-categories {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+  /* تنعيم التمرير */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* تخصيص شريط التمرير */
+.neo-categories::-webkit-scrollbar {
+  width: 5px;
+}
+
+.neo-categories::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.neo-categories::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 10px;
+}
+
+.neo-categories::-webkit-scrollbar-thumb:hover {
+  background: #b1b1b1;
+}
+
+/* تنسيق الفئات */
+.neo-category-item {
+  margin: 5px 15px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.neo-category-item:hover, .neo-category-item:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.neo-category-item.featured {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+}
+
+.neo-category-header, .neo-category-link {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  text-decoration: none;
+  color: var(--text-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.neo-category-item.featured .neo-category-link {
+  color: white;
+}
+
+.neo-category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.neo-category-item.featured .neo-category-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.neo-category-icon svg {
+  fill: var(--primary-color);
+}
+
+.neo-category-item.featured .neo-category-icon svg {
+  fill: white;
+}
+
+.neo-category-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.neo-category-text {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.neo-category-name {
+  display: block;
+  font-size: 1rem;
+  font-weight: var(--font-medium);
+  margin-bottom: 2px;
+}
+
+.neo-category-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--light-text);
+}
+
+.neo-category-item.featured .neo-category-desc {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.neo-category-toggle, .neo-category-link-icon, .neo-category-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.neo-category-item.featured .neo-category-indicator {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.neo-category-toggle svg, .neo-category-link-icon svg, .neo-category-indicator svg {
+  fill: var(--text-color);
+  transition: transform var(--transition-normal);
+}
+
+.neo-category-item.featured .neo-category-indicator svg {
+  fill: white;
+}
+
+.neo-category-header[aria-expanded="true"] .neo-category-toggle {
+  background-color: rgba(58, 134, 255, 0.1);
+}
+
+.neo-category-header[aria-expanded="true"] .neo-category-toggle svg {
+  transform: rotate(180deg);
+  fill: var(--primary-color);
+}
+
+/* الفئات الفرعية */
+.neo-subcategories {
+  height: 0;
+  overflow: hidden;
+  transition: height var(--transition-normal);
+  background-color: #f9f9f9;
+}
+
+.neo-subcategories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 15px;
+}
+
+.neo-subcategory-item {
+  background-color: #ffffff;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.neo-subcategory-item:hover, .neo-subcategory-item:active {
+  transform: scale(1.02);
+}
+
+.neo-subcategory-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text-color);
+  height: 100%;
+}
+
+.neo-subcategory-media {
+  position: relative;
+  padding-top: 75%; /* نسبة العرض إلى الارتفاع 4:3 */
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.neo-subcategory-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-normal);
+}
+
+.neo-subcategory-link:hover .neo-subcategory-img {
+  transform: scale(1.05);
+}
+
+.neo-subcategory-name {
+  padding: 12px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: var(--font-medium);
+}
+
+/* شريط التنقل السريع */
+.neo-quick-access {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px 10px;
+  background-color: #f9f9f9;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.neo-quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--light-text);
+  font-size: 0.8rem;
+  position: relative;
+  transition: color var(--transition-fast);
+}
+
+.neo-quick-item svg {
+  fill: var(--light-text);
+  transition: fill var(--transition-fast), transform var(--transition-fast);
+  margin-bottom: 5px;
+}
+
+.neo-quick-item:hover, .neo-quick-item.active {
+  color: var(--primary-color);
+}
+
+.neo-quick-item:hover svg, .neo-quick-item.active svg {
+  fill: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.neo-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--secondary-color);
+  color: white;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+/* شريط الإشعارات */
+.neo-notification-bar {
+  position: relative;
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 10px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.neo-notification-content {
+  width: 100%;
+  overflow: hidden;
+}
+
+.neo-notification-slider {
+  display: flex;
+  transition: transform var(--transition-slow);
+}
+
+.neo-notification-slide {
+  flex: 0 0 100%;
+  text-align: center;
+  padding: 0 20px;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: var(--font-medium);
+}
+
+/* تأثيرات الحركة المبتكرة */
+@keyframes floatAnimation {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.neo-category-icon {
+  animation: floatAnimation 3s ease-in-out infinite;
+}
+
+/* تأثير موجة خطية متحركة */
+.neo-category-item.featured::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: waveAnimation 2s infinite;
+}
+
+@keyframes waveAnimation {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* تكيف مع الشاشات المختلفة */
+@media (max-width: 360px) {
+  .neo-subcategories-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* دعم الوضع المظلم (يمكن تفعيله متى ما تريد) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #f1f1f1;
+    --light-text: #a0a0a0;
+    --background-color: #121212;
+    --dark-background: #1e1e1e;
+  }
+  
+  .neo-menu-line {
+    background-color: var(--text-color);
+  }
+  
+  .neo-category-item, .neo-subcategory-item {
+    background-color: #1e1e1e;
+  }
+  
+  .neo-category-icon, .neo-search-container, .neo-subcategory-media {
+    background-color: #2c2c2c;
+  }
+  
+  .neo-menu-close {
+    background-color: #2c2c2c;
+  }
+  
+  .neo-quick-access {
+    background-color: #1a1a1a;
+  }
+  
+  .neo-subcategories {
+    background-color: #181818;
+  }
+}
+
+/* تدعم الواجهات التي تعتمد RTL */
+.neo-mobile-menu-container[dir="rtl"] .neo-menu-toggle {
+  right: auto;
+  left: 15px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-menu {
+  right: auto;
+  left: 0;
+  transform: translateX(-105%);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-menu.active {
+  transform: translateX(0);
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-search-icon {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-category-icon {
+  margin-right: 0;
+  margin-left: 15px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-category-text {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-badge {
+  right: auto;
+  left: -5px;
+}    
+</style>
+
+<script>
+/**
+ * قائمة الموبايل المبتكرة - 2025
+ * نظام القوائم المتطور مع تأثيرات وتفاعلات حديثة
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  // العناصر الرئيسية
+  const menuToggle = document.getElementById('neo-menu-toggle');
+  const menu = document.querySelector('.neo-menu');
+  const menuOverlay = document.querySelector('.neo-menu-overlay');
+  const menuClose = document.querySelector('.neo-menu-close');
+  const categoryHeaders = document.querySelectorAll('.neo-category-header');
+  const searchInput = document.querySelector('.neo-search-input');
+  const notificationSlider = document.querySelector('.neo-notification-slider');
+  const notificationSlides = document.querySelectorAll('.neo-notification-slide');
+  
+  // متغيرات التتبع
+  let currentSlide = 0;
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let lastFocusedElement = null;
+  let subcategoryHeights = {};
+  
+  // تهيئة القائمة
+  initMenu();
+  
+  /**
+   * تهيئة القائمة وإضافة مستمعي الأحداث
+   */
+  function initMenu() {
+    // حفظ ارتفاعات الفئات الفرعية
+    document.querySelectorAll('.neo-subcategories').forEach(subcategory => {
+      const id = subcategory.id;
+      const content = subcategory.querySelector('.neo-subcategories-grid');
+      subcategoryHeights[id] = content.offsetHeight;
+      subcategory.style.height = '0px';
+    });
+    
+    // إضافة مستمعي الأحداث
+    menuToggle.addEventListener('click', toggleMenu);
+    menuClose.addEventListener('click', closeMenu);
+    menuOverlay.addEventListener('click', closeMenu);
+    
+    // مستمعو أحداث للفئات
+    categoryHeaders.forEach(header => {
+      header.addEventListener('click', toggleSubcategory);
+      
+      // إضافة خصائص aria للوصول
+      header.setAttribute('aria-expanded', 'false');
+      const categoryId = header.getAttribute('data-category-id');
+      if (categoryId) {
+        const subcategoryId = `subcategory-${categoryId}`;
+        header.setAttribute('aria-controls', subcategoryId);
+      }
+    });
+    
+    // مستمع البحث
+    if (searchInput) {
+      searchInput.addEventListener('input', handleSearch);
+    }
+    
+    // بدء تشغيل مؤقت شريط الإشعارات
+    startNotificationSlider();
+    
+    // إضافة دعم الإيماءات
+    setupTouchEvents();
+    
+    // إضافة التكيف مع وضع RTL
+    setupRTLSupport();
+    
+    // إضافة مستمع لوضع الشاشة الكاملة
+    setupFullscreenSupport();
+  }
+  
+  /**
+   * فتح/إغلاق القائمة الرئيسية
+   */
+  function toggleMenu() {
+    const isOpen = menu.classList.contains('active');
+    
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  }
+  
+  /**
+   * فتح القائمة مع تأثيرات
+   */
+  function openMenu() {
+    // حفظ العنصر الذي كان مركزًا
+    lastFocusedElement = document.activeElement;
+    
+    // تفعيل القائمة
+    menuToggle.classList.add('active');
+    menu.classList.add('active');
+    menuOverlay.classList.add('active');
+    
+    // منع التمرير في الخلفية
+    document.body.style.overflow = 'hidden';
+    
+    // تأثير ظهور تدريجي للعناصر
+    animateMenuItems();
+    
+    // تركيز البحث بعد فترة قصيرة
+    setTimeout(() => {
+      if (searchInput) searchInput.focus();
+    }, 400);
+    
+    // إعلان للمستخدمين الذين يستخدمون قارئ الشاشة
+    announceToScreenReader('تم فتح القائمة');
+  }
+  
+  /**
+   * إغلاق القائمة مع تأثيرات
+   */
+  function closeMenu() {
+    menuToggle.classList.remove('active');
+    menu.classList.remove('active');
+    menuOverlay.classList.remove('active');
+    
+    // إعادة التمرير
+    document.body.style.overflow = '';
+    
+    // إعادة التركيز إلى العنصر السابق
+    if (lastFocusedElement) {
+      setTimeout(() => {
+        lastFocusedElement.focus();
+      }, 300);
+    }
+    
+    // إعلان للمستخدمين الذين يستخدمون قارئ الشاشة
+    announceToScreenReader('تم إغلاق القائمة');
+  }
+  
+  /**
+   * التبديل بين عرض وإخفاء الفئات الفرعية
+   * @param {Event} event حدث النقر
+   */
+  function toggleSubcategory(event) {
+    // تجاهل النقرات على الروابط
+    if (event.target.classList.contains('neo-category-link-icon') || 
+        event.target.closest('.neo-category-link-icon')) {
+      return;
+    }
+    
+    const header = this;
+    const categoryId = header.getAttribute('data-category-id');
+    
+    if (!categoryId) return;
+    
+    const subcategoryId = `subcategory-${categoryId}`;
+    const subcategory = document.getElementById(subcategoryId);
+    
+    if (!subcategory) return;
+    
+    const isExpanded = header.getAttribute('aria-expanded') === 'true';
+    
+    // تحديث حالة aria
+    header.setAttribute('aria-expanded', !isExpanded);
+    
+    // تطبيق التأثير
+    if (isExpanded) {
+      // إغلاق الفئة الفرعية
+      anime({
+        targets: subcategory,
+        height: 0,
+        duration: 300,
+        easing: 'easeOutCubic',
+        complete: function() {
+          subcategory.style.visibility = 'hidden';
+        }
+      });
+    } else {
+      // فتح الفئة الفرعية
+      subcategory.style.visibility = 'visible';
+      anime({
+        targets: subcategory,
+        height: subcategoryHeights[subcategoryId],
+        duration: 400,
+        easing: 'easeOutCubic'
+      });
+      
+      // إغلاق الفئات الفرعية الأخرى المفتوحة
+      document.querySelectorAll('.neo-category-header[aria-expanded="true"]').forEach(openHeader => {
+        if (openHeader !== header) {
+          const openCategoryId = openHeader.getAttribute('data-category-id');
+          const openSubcategoryId = `subcategory-${openCategoryId}`;
+          const openSubcategory = document.getElementById(openSubcategoryId);
+          
+          if (openSubcategory) {
+            openHeader.setAttribute('aria-expanded', 'false');
+            anime({
+              targets: openSubcategory,
+              height: 0,
+              duration: 300,
+              easing: 'easeOutCubic',
+              complete: function() {
+                openSubcategory.style.visibility = 'hidden';
+              }
+            });
+          }
+        }
+      });
+    }
+    
+    // تأثير نبض رائع على أيقونة الفئة
+    anime({
+      targets: header.querySelector('.neo-category-icon'),
+      scale: [1, 1.2, 1],
+      duration: 400,
+      easing: 'easeInOutBack'
+    });
+  }
+  
+  /**
+   * معالجة البحث في الفئات
+   */
+  function handleSearch() {
+    const searchQuery = searchInput.value.toLowerCase().trim();
+    const categoryItems = document.querySelectorAll('.neo-category-item');
+    
+    if (searchQuery === '') {
+      // إعادة عرض كل الفئات
+      categoryItems.forEach(item => {
+        item.style.display = '';
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
+      });
+      return;
+    }
+    
+    // تأثير لطيف أثناء البحث
+    anime({
+      targets: '.neo-category-item',
+      opacity: 0.5,
+      translateY: 10,
+      duration: 200,
+      easing: 'easeOutQuad',
+      complete: function() {
+        // فلترة العناصر
+        categoryItems.forEach(item => {
+          const categoryName = item.querySelector('.neo-category-name').textContent.toLowerCase();
+          const subcategoryNames = Array.from(item.querySelectorAll('.neo-subcategory-name'))
+            .map(name => name.textContent.toLowerCase());
+          
+          const matchesCategory = categoryName.includes(searchQuery);
+          const matchesSubcategory = subcategoryNames.some(name => name.includes(searchQuery));
+          
+          if (matchesCategory || matchesSubcategory) {
+            item.style.display = '';
+            
+            // تمييز النص المطابق
+            if (matchesCategory) {
+              highlightText(item.querySelector('.neo-category-name'), searchQuery);
+            }
+            
+            // إظهار الفئات الفرعية إذا كانت تحتوي على نتائج
+            if (matchesSubcategory && !matchesCategory) {
+              const header = item.querySelector('.neo-category-header');
+              if (header && header.getAttribute('aria-expanded') === 'false') {
+                header.click();
+              }
+              
+              // تمييز النص المطابق في الفئات الفرعية
+              item.querySelectorAll('.neo-subcategory-name').forEach(subname => {
+                if (subname.textContent.toLowerCase().includes(searchQuery)) {
+                  highlightText(subname, searchQuery);
+                }
+              });
+            }
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        // إظهار النتائج بتأثير جميل
+        anime({
+          targets: '.neo-category-item[style=""]',
+          opacity: 1,
+          translateY: 0,
+          delay: anime.stagger(50),
+          duration: 300,
+          easing: 'easeOutQuad'
+        });
+      }
+    });
+  }
+  
+  /**
+   * تمييز النص المطابق في نتائج البحث
+   * @param {Element} element العنصر الذي يحتوي على النص
+   * @param {string} query نص البحث
+   */
+  function highlightText(element, query) {
+    const originalText = element.textContent;
+    const lowerText = originalText.toLowerCase();
+    const index = lowerText.indexOf(query);
+    
+    if (index >= 0) {
+      const before = originalText.substring(0, index);
+      const match = originalText.substring(index, index + query.length);
+      const after = originalText.substring(index + query.length);
+      
+      element.innerHTML = `${before}<span class="highlight" style="background-color: rgba(255, 214, 0, 0.3); font-weight: bold;">${match}</span>${after}`;
+    }
+  }
+  
+  /**
+   * تشغيل شريط الإشعارات وتمرير الإشعارات تلقائيًا
+   */
+  function startNotificationSlider() {
+    if (!notificationSlider || notificationSlides.length <= 1) return;
+    
+    setInterval(() => {
+      currentSlide = (currentSlide + 1) % notificationSlides.length;
+      updateNotificationSlider();
+    }, 5000);
+  }
+  
+  /**
+   * تحديث موضع شريط الإشعارات
+   */
+  function updateNotificationSlider() {
+    anime({
+      targets: notificationSlider,
+      translateX: `-${currentSlide * 100}%`,
+      duration: 800,
+      easing: 'easeInOutQuad'
+    });
+  }
+  
+  /**
+   * تأثير حركي لعناصر القائمة عند فتحها
+   */
+  function animateMenuItems() {
+    // تأثير ظهور تدريجي مع تأخير تدريجي
+    anime({
+      targets: '.neo-categories .neo-category-item',
+      translateY: [20, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(50),
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
+    
+    // تأثير نبضي لأيقونات التنقل السريع
+    anime({
+      targets: '.neo-quick-item',
+      scale: [0.8, 1],
+      opacity: [0, 1],
+      delay: anime.stagger(100, {start: 300}),
+      duration: 600,
+      easing: 'spring(1, 80, 10, 0)'
+    });
+  }
+  
+  /**
+   * إعداد دعم الإيماءات اللمسية
+   */
+  function setupTouchEvents() {
+    // سحب القائمة لإغلاقها
+    menu.addEventListener('touchstart', function(e) {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    menu.addEventListener('touchmove', function(e) {
+      if (!menu.classList.contains('active')) return;
+      
+      const currentX = e.touches[0].clientX;
+      const diff = touchStartX - currentX;
+      
+      // تحريك القائمة مع إصبع المستخدم (للأجهزة RTL وLTR)
+      const isRTL = document.dir === 'rtl' || document.querySelector('.neo-mobile-menu-container[dir="rtl"]');
+      
+      if ((isRTL && diff < 0) || (!isRTL && diff > 0)) {
+        const translateValue = isRTL ? -diff : diff;
+        menu.style.transform = `translateX(${translateValue}px)`;
+        e.preventDefault();
+      }
+    });
+    
+    menu.addEventListener('touchend', function(e) {
+      touchEndX = e.changedTouches[0].clientX;
+      const diff = touchStartX - touchEndX;
+      
+      // إعادة القائمة لموضعها الأصلي
+      menu.style.transform = '';
+      
+      const isRTL = document.dir === 'rtl' || document.querySelector('.neo-mobile-menu-container[dir="rtl"]');
+      
+      // إغلاق القائمة إذا كان السحب كافيًا
+      if ((isRTL && diff < -70) || (!isRTL && diff > 70)) {
+        closeMenu();
+      }
+    });
+    
+    // التمرير السريع بين الفئات
+    const categories = document.querySelector('.neo-categories');
+    if (categories) {
+      let startY, startTime;
+      
+      categories.addEventListener('touchstart', function(e) {
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+      }, { passive: true });
+      
+      categories.addEventListener('touchend', function(e) {
+        const endY = e.changedTouches[0].clientY;
+        const endTime = Date.now();
+        const diffY = startY - endY;
+        const diffTime = endTime - startTime;
+        
+        // تفعيل التمرير السريع إذا كانت الحركة سريعة بما يكفي
+        if (Math.abs(diffY) > 50 && diffTime < 300) {
+          const speed = Math.abs(diffY) / diffTime;
+          const distance = speed * 500; // معامل السرعة
+          
+          anime({
+            targets: categories,
+            scrollTop: categories.scrollTop + (diffY > 0 ? distance : -distance),
+            duration: 800,
+            easing: 'easeOutQuint'
+          });
+        }
+      }, { passive: true });
+    }
+  }
+  
+  /**
+   * إعداد دعم RTL
+   */
+  function setupRTLSupport() {
+    const htmlDir = document.documentElement.dir;
+    const menuContainer = document.querySelector('.neo-mobile-menu-container');
+    
+    if (htmlDir === 'rtl' && menuContainer) {
+      menuContainer.setAttribute('dir', 'rtl');
+    }
+  }
+  
+  /**
+   * إعداد دعم وضع الشاشة الكاملة
+   */
+  function setupFullscreenSupport() {
+    document.addEventListener('fullscreenchange', updateMenuPosition);
+    document.addEventListener('webkitfullscreenchange', updateMenuPosition);
+    document.addEventListener('mozfullscreenchange', updateMenuPosition);
+    document.addEventListener('MSFullscreenChange', updateMenuPosition);
+    
+    window.addEventListener('resize', function() {
+      // إعادة حساب ارتفاعات الفئات الفرعية
+      document.querySelectorAll('.neo-subcategories').forEach(subcategory => {
+        const id = subcategory.id;
+        const expanded = subcategory.closest('.neo-category-item').querySelector('.neo-category-header').getAttribute('aria-expanded') === 'true';
+        
+        if (!expanded) {
+          const content = subcategory.querySelector('.neo-subcategories-grid');
+          subcategory.style.height = 'auto';
+          subcategoryHeights[id] = content.offsetHeight;
+          subcategory.style.height = '0px';
+        }
+      });
+    });
+  }
+  
+  /**
+   * تحديث موضع القائمة عند تغير وضع الشاشة
+   */
+  function updateMenuPosition() {
+    if (menu.classList.contains('active')) {
+      menu.style.transition = 'none';
+      menu.style.transform = '';
+      setTimeout(() => {
+        menu.style.transition = '';
+      }, 100);
+    }
+  }
+  
+  /**
+   * إعلان للمستخدمين الذين يستخدمون قارئ الشاشة
+   * @param {string} message الرسالة المراد إعلانها
+   */
+  function announceToScreenReader(message) {
+    let announcer = document.getElementById('sr-announcer');
+    
+    if (!announcer) {
+      announcer = document.createElement('div');
+      announcer.id = 'sr-announcer';
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.className = 'sr-only';
+      announcer.style.position = 'absolute';
+      announcer.style.width = '1px';
+      announcer.style.height = '1px';
+      announcer.style.padding = '0';
+      announcer.style.margin = '-1px';
+      announcer.style.overflow = 'hidden';
+      announcer.style.clip = 'rect(0, 0, 0, 0)';
+      announcer.style.whiteSpace = 'nowrap';
+      announcer.style.border = '0';
+      document.body.appendChild(announcer);
+    }
+    
+    announcer.textContent = message;
+  }
+  
+  // مكتبة anime.js مضمنة إذا لم تكن موجودة
+  if (typeof anime === 'undefined') {
+    /* anime.js v3.2.1 */
+    !function(n,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):n.anime=e()}(this,function(){"use strict";var n={update:null,begin:null,loopBegin:null,changeBegin:null,change:null,changeComplete:null,loopComplete:null,complete:null,loop:1,direction:"normal",autoplay:!0,timelineOffset:0},e={duration:1e3,delay:0,endDelay:0,easing:"easeOutElastic(1, .5)",round:0},t=["translateX","translateY","translateZ","rotate","rotateX","rotateY","rotateZ","scale","scaleX","scaleY","scaleZ","skew","skewX","skewY","perspective","matrix","matrix3d"],r={CSS:{},springs:{}};function a(n,e,t){return Math.min(Math.max(n,e),t)}function o(n,e){return n.indexOf(e)>-1}function u(n,e){return n.apply(null,e)}var i={arr:function(n){return Array.isArray(n)},obj:function(n){return o(Object.prototype.toString.call(n),"Object")},pth:function(n){return i.obj(n)&&n.hasOwnProperty("totalLength")},svg:function(n){return n instanceof SVGElement},inp:function(n){return n instanceof HTMLInputElement},dom:function(n){return n.nodeType||i.svg(n)},str:function(n){return"string"==typeof n},fnc:function(n){return"function"==typeof n},und:function(n){return void 0===n},nil:function(n){return i.und(n)||null===n},hex:function(n){return/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(n)},rgb:function(n){return/^rgb/.test(n)},hsl:function(n){return/^hsl/.test(n)},col:function(n){return i.hex(n)||i.rgb(n)||i.hsl(n)},key:function(t){return!n.hasOwnProperty(t)&&!e.hasOwnProperty(t)&&"targets"!==t&&"keyframes"!==t}};function c(n){var e=/\(([^)]+)\)/.exec(n);return e?e[1].split(",").map(function(n){return parseFloat(n)}):[]}function s(n,e){var t=c(n),o=a(i.und(t[0])?1:t[0],.1,100),u=a(i.und(t[1])?100:t[1],.1,100),s=a(i.und(t[2])?10:t[2],.1,100),f=a(i.und(t[3])?0:t[3],.1,100),l=Math.sqrt(u/o),d=s/(2*Math.sqrt(u*o)),p=d<1?l*Math.sqrt(1-d*d):0,v=1,h=d<1?(d*l-f)/p:-f+l;function g(n){var t=e?e*n/1e3:n;return t=d<1?Math.exp(-t*d*l)*(v*Math.cos(p*t)+h*Math.sin(p*t)):(v+h*t)*Math.exp(-t*l),0===n||1===n?n:1-t}return e?g:function(){var e=r.springs[n];if(e)return e;for(var t=0,a=0;;)if(1===g(t+=1/6)){if(++a>=16)break}else a=0;var o=t*(1/6)*1e3;return r.springs[n]=o,o}}function f(n){return void 0===n&&(n=10),function(e){return Math.ceil(a(e,1e-6,1)*n)*(1/n)}}var l,d,p=function(){var n=11,e=1/(n-1);function t(n,e){return 1-3*e+3*n}function r(n,e){return 3*e-6*n}function a(n){return 3*n}function o(n,e,o){return((t(e,o)*n+r(e,o))*n+a(e))*n}function u(n,e,o){return 3*t(e,o)*n*n+2*r(e,o)*n+a(e)}return function(t,r,a,i){if(0<=t&&t<=1&&0<=a&&a<=1){var c=new Float32Array(n);if(t!==r||a!==i)for(var s=0;s<n;++s)c[s]=o(s*e,t,a);return function(n){return t===r&&a===i?n:0===n||1===n?n:o(f(n),r,i)}}function f(r){for(var i=0,s=1,f=n-1;s!==f&&c[s]<=r;++s)i+=e;var l=i+(r-c[--s])/(c[s+1]-c[s])*e,d=u(l,t,a);return d>=.001?function(n,e,t,r){for(var a=0;a<4;++a){var i=u(e,t,r);if(0===i)return e;e-=(o(e,t,r)-n)/i}return e}(r,l,t,a):0===d?l:function(n,e,t,r,a){for(var u,i,c=0;(u=o(i=e+(t-e)/2,r,a)-n)>0?t=i:e=i,Math.abs(u)>1e-7&&++c<10;);return i}(r,i,i+e,t,a)}}}(),v=(l={linear:function(){return function(n){return n}}},d={Sine:function(){return function(n){return 1-Math.cos(n*Math.PI/2)}},Circ:function(){return function(n){return 1-Math.sqrt(1-n*n)}},Back:function(){return function(n){return n*n*(3*n-2)}},Bounce:function(){return function(n){for(var e,t=4;n<((e=Math.pow(2,--t))-1)/11;);return 1/Math.pow(4,3-t)-7.5625*Math.pow((3*e-2)/22-n,2)}},Elastic:function(n,e){void 0===n&&(n=1),void 0===e&&(e=.5);var t=a(n,1,10),r=a(e,.1,2);return function(n){return 0===n||1===n?n:-t*Math.pow(2,10*(n-1))*Math.sin((n-1-r/(2*Math.PI)*Math.asin(1/t))*(2*Math.PI)/r)}}},["Quad","Cubic","Quart","Quint","Expo"].forEach(function(n,e){d[n]=function(){return function(n){return Math.pow(n,e+2)}}}),Object.keys(d).forEach(function(n){var e=d[n];l["easeIn"+n]=e,l["easeOut"+n]=function(n,t){return function(r){return 1-e(n,t)(1-r)}},l["easeInOut"+n]=function(n,t){return function(r){return r<.5?e(n,t)(2*r)/2:1-e(n,t)(-2*r+2)/2}},l["easeOutIn"+n]=function(n,t){return function(r){return r<.5?(1-e(n,t)(1-2*r))/2:(e(n,t)(2*r-1)+1)/2}}}),l);function h(n,e){if(i.fnc(n))return n;var t=n.split("(")[0],r=v[t],a=c(n);switch(t){case"spring":return s(n,e);case"cubicBezier":return u(p,a);case"steps":return u(f,a);default:return u(r,a)}}function g(n){try{return document.querySelectorAll(n)}catch(n){return}}function m(n,e){for(var t=n.length,r=arguments.length>=2?arguments[1]:void 0,a=[],o=0;o<t;o++)if(o in n){var u=n[o];e.call(r,u,o,n)&&a.push(u)}return a}function y(n){return n.reduce(function(n,e){return n.concat(i.arr(e)?y(e):e)},[])}function b(n){return i.arr(n)?n:(i.str(n)&&(n=g(n)||n),n instanceof NodeList||n instanceof HTMLCollection?[].slice.call(n):[n])}function M(n,e){return n.some(function(n){return n===e})}function x(n){var e={};for(var t in n)e[t]=n[t];return e}function w(n,e){var t=x(n);for(var r in n)t[r]=e.hasOwnProperty(r)?e[r]:n[r];return t}function k(n,e){var t=x(n);for(var r in e)t[r]=i.und(n[r])?e[r]:n[r];return t}function O(n){return i.rgb(n)?(t=/rgb\((\d+,\s*[\d]+,\s*[\d]+)\)/g.exec(e=n))?"rgba("+t[1]+",1)":e:i.hex(n)?(r=n.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,function(n,e,t,r){return e+e+t+t+r+r}),a=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(r),"rgba("+parseInt(a[1],16)+","+parseInt(a[2],16)+","+parseInt(a[3],16)+",1)"):i.hsl(n)?function(n){var e,t,r,a=/hsl\((\d+),\s*([\d.]+)%,\s*([\d.]+)%\)/g.exec(n)||/hsla\((\d+),\s*([\d.]+)%,\s*([\d.]+)%,\s*([\d.]+)\)/g.exec(n),o=parseInt(a[1],10)/360,u=parseInt(a[2],10)/100,i=parseInt(a[3],10)/100,c=a[4]||1;function s(n,e,t){return t<0&&(t+=1),t>1&&(t-=1),t<1/6?n+6*(e-n)*t:t<.5?e:t<2/3?n+(e-n)*(2/3-t)*6:n}if(0==u)e=t=r=i;else{var f=i<.5?i*(1+u):i+u-i*u,l=2*i-f;e=s(l,f,o+1/3),t=s(l,f,o),r=s(l,f,o-1/3)}return"rgba("+255*e+","+255*t+","+255*r+","+c+")"}(n):void 0;var e,t,r,a}function C(n){var e=/[+-]?\d*\.?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?(%|px|pt|em|rem|in|cm|mm|ex|ch|pc|vw|vh|vmin|vmax|deg|rad|turn)?$/.exec(n);if(e)return e[1]}function P(n,e){return i.fnc(n)?n(e.target,e.id,e.total):n}function I(n,e){return n.getAttribute(e)}function D(n,e,t){if(M([t,"deg","rad","turn"],C(e)))return e;var a=r.CSS[e+t];if(!i.und(a))return a;var o=document.createElement(n.tagName),u=n.parentNode&&n.parentNode!==document?n.parentNode:document.body;u.appendChild(o),o.style.position="absolute",o.style.width=100+t;var c=100/o.offsetWidth;u.removeChild(o);var s=c*parseFloat(e);return r.CSS[e+t]=s,s}function B(n,e,t){if(e in n.style){var r=e.replace(/([a-z])([A-Z])/g,"$1-$2").toLowerCase(),a=n.style[e]||getComputedStyle(n).getPropertyValue(r)||"0";return t?D(n,a,t):a}}function T(n,e){return i.dom(n)&&!i.inp(n)&&(!i.nil(I(n,e))||i.svg(n)&&n[e])?"attribute":i.dom(n)&&M(t,e)?"transform":i.dom(n)&&"transform"!==e&&B(n,e)?"css":null!=n[e]?"object":void 0}function E(n){if(i.dom(n)){for(var e,t=n.style.transform||"",r=/(\w+)\(([^)]*)\)/g,a=new Map;e=r.exec(t);)a.set(e[1],e[2]);return a}}function F(n,e,t,r){var a,u=o(e,"scale")?1:0+(o(a=e,"translate")||"perspective"===a?"px":o(a,"rotate")||o(a,"skew")?"deg":void 0),i=E(n).get(e)||u;return t&&(t.transforms.list.set(e,i),t.transforms.last=e),r?D(n,i,r):i}function A(n,e,t,r){switch(T(n,e)){case"transform":return F(n,e,r,t);case"css":return B(n,e,t);case"attribute":return I(n,e);default:return n[e]||0}}function N(n,e){var t=/^(\*=|\+=|-=)/.exec(n);if(!t)return n;var r=C(n)||0,a=parseFloat(e),o=parseFloat(n.replace(t[0],""));switch(t[0][0]){case"+":return a+o+r;case"-":return a-o+r;case"*":return a*o+r}}function S(n,e){if(i.col(n))return O(n);if(/\s/g.test(n))return n;var t=C(n),r=t?n.substr(0,n.length-t.length):n;return e?r+e:r}function L(n,e){return Math.sqrt(Math.pow(e.x-n.x,2)+Math.pow(e.y-n.y,2))}function j(n){for(var e,t=n.points,r=0,a=0;a<t.numberOfItems;a++){var o=t.getItem(a);a>0&&(r+=L(e,o)),e=o}return r}function q(n){if(n.getTotalLength)return n.getTotalLength();switch(n.tagName.toLowerCase()){case"circle":return o=n,2*Math.PI*I(o,"r");case"rect":return 2*I(a=n,"width")+2*I(a,"height");case"line":return L({x:I(r=n,"x1"),y:I(r,"y1")},{x:I(r,"x2"),y:I(r,"y2")});case"polyline":return j(n);case"polygon":return t=(e=n).points,j(e)+L(t.getItem(t.numberOfItems-1),t.getItem(0))}var e,t,r,a,o}function H(n,e){var t=e||{},r=t.el||function(n){for(var e=n.parentNode;i.svg(e)&&i.svg(e.parentNode);)e=e.parentNode;return e}(n),a=r.getBoundingClientRect(),o=I(r,"viewBox"),u=a.width,c=a.height,s=t.viewBox||(o?o.split(" "):[0,0,u,c]);return{el:r,viewBox:s,x:s[0]/1,y:s[1]/1,w:u,h:c,vW:s[2],vH:s[3]}}function V(n,e,t){function r(t){void 0===t&&(t=0);var r=e+t>=1?e+t:0;return n.el.getPointAtLength(r)}var a=H(n.el,n.svg),o=r(),u=r(-1),i=r(1),c=t?1:a.w/a.vW,s=t?1:a.h/a.vH;switch(n.property){case"x":return(o.x-a.x)*c;case"y":return(o.y-a.y)*s;case"angle":return 180*Math.atan2(i.y-u.y,i.x-u.x)/Math.PI}}function $(n,e){var t=/[+-]?\d*\.?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g,r=S(i.pth(n)?n.totalLength:n,e)+"";return{original:r,numbers:r.match(t)?r.match(t).map(Number):[0],strings:i.str(n)||e?r.split(t):[]}}function W(n){return m(y(n?b(i.arr(n)?n.map(b):b(n)):[]),function(n,e,t){return t.indexOf(n)===e})}function X(n){var e=W(n);return e.map(function(n,t){return{target:n,id:t,total:e.length,transforms:{list:E(n)}}})}function Y(n,e){var t=x(e);if(/^spring/.test(t.easing)&&(t.duration=s(t.easing)),i.arr(n)){var r=n.length;2===r&&!i.obj(n[0])?n={value:n}:i.fnc(e.duration)||(t.duration=e.duration/r)}var a=i.arr(n)?n:[n];return a.map(function(n,t){var r=i.obj(n)&&!i.pth(n)?n:{value:n};return i.und(r.delay)&&(r.delay=t?0:e.delay),i.und(r.endDelay)&&(r.endDelay=t===a.length-1?e.endDelay:0),r}).map(function(n){return k(n,t)})}function Z(n,e){var t=[],r=e.keyframes;for(var a in r&&(e=k(function(n){for(var e=m(y(n.map(function(n){return Object.keys(n)})),function(n){return i.key(n)}).reduce(function(n,e){return n.indexOf(e)<0&&n.push(e),n},[]),t={},r=function(r){var a=e[r];t[a]=n.map(function(n){var e={};for(var t in n)i.key(t)?t==a&&(e.value=n[t]):e[t]=n[t];return e})},a=0;a<e.length;a++)r(a);return t}(r),e)),e)i.key(a)&&t.push({name:a,tweens:Y(e[a],n)});return t}function G(n,e){var t;return n.tweens.map(function(r){var a=function(n,e){var t={};for(var r in n){var a=P(n[r],e);i.arr(a)&&1===(a=a.map(function(n){return P(n,e)})).length&&(a=a[0]),t[r]=a}return t.duration=parseFloat(t.duration),t.delay=parseFloat(t.delay),t}(r,e),o=a.value,u=i.arr(o)?o[1]:o,c=C(u),s=A(e.target,n.name,c,e),f=t?t.to.original:s,l=$(u,f),d=i.arr(o)?o[0]:f,p=C(d)||C(s),v=c||p;return i.und(u)&&(u=f),a.from=$(d,v),a.to=$(N(u,d),v),a.start=t?t.end:0,a.end=a.start+a.delay+a.duration+a.endDelay,a.easing=h(a.easing,a.duration),a.isPath=i.pth(o),a.isPathTargetInsideSVG=a.isPath&&i.svg(e.target),a.isColor=i.col(a.from.original),a.isColor&&(a.round=1),t=a,a})}var Q={css:function(n,e,t){return n.style[e]=t},attribute:function(n,e,t){return n.setAttribute(e,t)},object:function(n,e,t){return n[e]=t},transform:function(n,e,t,r,a){if(r.list.set(e,t),e===r.last||a){var o="";r.list.forEach(function(n,e){o+=e+"("+n+") "}),n.style.transform=o}}};function z(n,e){X(n).forEach(function(n){for(var t in e){var r=P(e[t],n),a=n.target,o=C(r),u=A(a,t,o,n),i=N(S(r,o||C(u)),u),c=T(a,t);Q[c](a,t,i,n.transforms,!0)}})}function _(n,e){return m(y(n.map(function(n){return e.map(function(e){return function(n,e){var t=T(n.target,e.name);if(t){var r=G(e,n),a=r[r.length-1];return{type:t,property:e.name,animatable:n,tweens:r,duration:a.end,delay:r[0].delay,endDelay:a.endDelay}}}(n,e)})})),function(n){return!i.und(n)})}function R(n,e){var t=n.length,r=function(n){return n.timelineOffset?n.timelineOffset:0},a={};return a.duration=t?Math.max.apply(Math,n.map(function(n){return r(n)+n.duration})):e.duration,a.delay=t?Math.min.apply(Math,n.map(function(n){return r(n)+n.delay})):e.delay,a.endDelay=t?a.duration-Math.max.apply(Math,n.map(function(n){return r(n)+n.duration-n.endDelay})):e.endDelay,a}var J=0;var K=[],U=function(){var n;function e(t){for(var r=K.length,a=0;a<r;){var o=K[a];o.paused?(K.splice(a,1),r--):(o.tick(t),a++)}n=a>0?requestAnimationFrame(e):void 0}return"undefined"!=typeof document&&document.addEventListener("visibilitychange",function(){en.suspendWhenDocumentHidden&&(nn()?n=cancelAnimationFrame(n):(K.forEach(function(n){return n._onDocumentVisibility()}),U()))}),function(){n||nn()&&en.suspendWhenDocumentHidden||!(K.length>0)||(n=requestAnimationFrame(e))}}();function nn(){return!!document&&document.hidden}function en(r){void 0===r&&(r={});var a,o=0,u=0,i=0,c=0,s=null;function f(n){var e=window.Promise&&new Promise(function(n){return s=n});return n.finished=e,e}var l,d,p,v,h,g,y,b,M=(d=w(n,l=r),p=w(e,l),v=Z(p,l),h=X(l.targets),g=_(h,v),y=R(g,p),b=J,J++,k(d,{id:b,children:[],animatables:h,animations:g,duration:y.duration,delay:y.delay,endDelay:y.endDelay}));f(M);function x(){var n=M.direction;"alternate"!==n&&(M.direction="normal"!==n?"normal":"reverse"),M.reversed=!M.reversed,a.forEach(function(n){return n.reversed=M.reversed})}function O(n){return M.reversed?M.duration-n:n}function C(){o=0,u=O(M.currentTime)*(1/en.speed)}function P(n,e){e&&e.seek(n-e.timelineOffset)}function I(n){for(var e=0,t=M.animations,r=t.length;e<r;){var a=t[e],o=a.animatable,u=a.tweens,i=u.length-1,c=u[i];i&&(c=m(u,function(e){return n<e.end})[0]||c);for(var s=a(Math.min(Math.max(n-c.start-c.delay,0),c.duration)/c.duration,c.easing,c.easing,c.easing),f=isNaN(s)?1:s,l=c.to.strings,d=c.round,p=[],v=c.to.numbers.length,h=void 0,g=0;g<v;g++){var y=void 0,b=c.to.numbers[g],x=c.from.numbers[g]||0;y=c.isPath?V(c.value,f*b,c.isPathTargetInsideSVG):x+f*(b-x),d&&(c.isColor&&g>2||(y=Math.round(y*d)/d)),p.push(y)}var w=l.length;if(w){h=l[0];for(var k=0;k<w;k++){l[k];var O=l[k+1],C=p[k];isNaN(C)||(h+=O?C+O:C+" ")}}else h=p[0];Q[a.type](o.target,a.property,h,o.transforms),a.currentValue=h,e++}}function D(n){M[n]&&!M.passThrough&&M[n](M)}function B(n){var e=M.duration,t=M.delay,r=e-M.endDelay,l=O(n);M.progress=a(l/e*100,0,100),M.reversePlayback=l<M.currentTime,a&&!M.reversePlayback&&!M.completed&&(M.completed=!0,D("complete"),D("completed")),l<=t&&0!==M.currentTime&&I(0),(l>=r&&M.currentTime!==e||!e)&&I(e),l>t&&l<r?(M.changeBegan||(M.changeBegan=!0,M.changeCompleted=!1,D("changeBegin"),D("changeCompleted")),D("change"),I(l)):M.changeBegan&&(M.changeCompleted=!0,M.changeBegan=!1,D("changeComplete"),D("changeBegin")),M.currentTime=a(l,0,e),M.began||(M.began=!0,D("begin"),D("loopBegin")),l>=e?(u=0,M.remaining&&!0!==M.remaining&&M.remaining--,M.remaining?(o=i,D("loopComplete"),D("loopCompleted"),"alternate"===M.direction&&x()):(M.paused=!0,M.completed||(M.completed=!0,D("loopComplete"),D("loopCompleted"),D("complete"),D("completed"),!M.passThrough&&"Promise"in window&&(s(),f(M))))):C(),D("tick")}return M.reset=function(){var n=M.direction;M.passThrough=!1,M.currentTime=0,M.progress=0,M.paused=!0,M.began=!1,M.changeBegan=!1,M.completed=!1,M.changeCompleted=!1,M.reversePlayback=!1,M.reversed="reverse"===n,M.remaining=M.loop,a=M.children;for(var e=c=a.length;e--;)M.children[e].reset();(M.reversed&&!0!==M.loop||"alternate"===n&&1===M.loop)&&M.remaining++,I(0)},M.set=function(n,e){return z(n,e),M},M.tick=function(n){i=n,o||(o=i),B((i+(u-o))*en.speed)},M.seek=function(n){B(O(n))},M.pause=function(){M.paused=!0,C()},M.play=function(){M.paused&&(M.completed&&M.reset(),M.paused=!1,K.push(M),C(),U())},M.reverse=function(){x(),M.completed=!M.reversed,C()},M.restart=function(){M.reset(),M.play()},M.remove=function(n){rn(W(n),M)},M.reset(),M.autoplay&&M.play(),M}function tn(n,e){for(var t=e.length;t--;)M(n,e[t].animatable.target)&&e.splice(t,1)}function rn(n,e){var t=e.animations,r=e.children;tn(n,t);for(var a=r.length;a--;){var o=r[a],u=o.animations;tn(n,u),u.length||o.children.length||r.splice(a,1)}t.length||r.length||e.pause()}return en.version="3.2.1",en.speed=1,en.suspendWhenDocumentHidden=!0,en.running=K,en.remove=function(n){for(var e=W(n),t=K.length;t--;)rn(e,K[t])},en.get=A,en.set=z,en.convertPx=D,en.path=function(n,e){var t=i.str(n)?g(n)[0]:n,r=e||100;return function(n){return{property:n,el:t,svg:H(t),totalLength:q(t)*(r/100)}}},en.setDashoffset=function(n){var e=q(n);return n.setAttribute("stroke-dasharray",e),e},en.stagger=function(n,e){void 0===e&&(e={});var t=e.direction||"normal",r=e.easing?h(e.easing):null,a=e.grid,o=e.axis,u=e.from||0,c="first"===u,s="center"===u,f="last"===u,l=i.arr(n),d=l?parseFloat(n[0]):parseFloat(n),p=l?parseFloat(n[1]):0,v=C(l?n[1]:n)||0,g=e.start||0+(l?d:0),m=[],y=0;return function(n,e,i){if(c&&(u=0),s&&(u=(i-1)/2),f&&(u=i-1),!m.length){for(var h=0;h<i;h++){if(a){var b=s?(a[0]-1)/2:u%a[0],M=s?(a[1]-1)/2:Math.floor(u/a[0]),x=b-h%a[0],w=M-Math.floor(h/a[0]),k=Math.sqrt(x*x+w*w);"x"===o&&(k=-x),"y"===o&&(k=-w),m.push(k)}else m.push(Math.abs(u-h));y=Math.max.apply(Math,m)}r&&(m=m.map(function(n){return r(n/y)*y})),"reverse"===t&&(m=m.map(function(n){return o?n<0?-1*n:-n:Math.abs(y-n)}))}return g+(l?(p-d)/y:d)*(Math.round(100*m[e])/100)+v}},en.timeline=function(n){void 0===n&&(n={});var t=en(n);return t.duration=0,t.add=function(r,a){var o=K.indexOf(t),u=t.children;function c(n){n.passThrough=!0}o>-1&&K.splice(o,1);for(var s=0;s<u.length;s++)c(u[s]);var f=k(r,w(e,n));f.targets=f.targets||n.targets;var l=t.duration;f.autoplay=!1,f.direction=t.direction,f.timelineOffset=i.und(a)?l:N(a,l),c(t),t.seek(f.timelineOffset);var d=en(f);c(d),u.push(d);var p=R(u,n);return t.delay=p.delay,t.endDelay=p.endDelay,t.duration=p.duration,t.seek(0),t.reset(),t.autoplay&&t.play(),t},t},en.easing=h,en.penner=v,en.random=function(n,e){return Math.floor(Math.random()*(e-n+1))+n},en});
+  }
+});
+</script>

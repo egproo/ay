@@ -1,0 +1,114 @@
+<div class="tab-pane" id="tab-barcode">
+  <div class="alert alert-info">
+    <i class="fa fa-info-circle"></i> {{ text_barcode_info }}
+  </div>
+  
+  <div class="table-responsive">
+    <table id="product-barcodes" class="table table-striped table-bordered table-hover">
+      <thead>
+        <tr>
+          <th class="text-center">{{ entry_barcode }}</th>
+          <th class="text-center">{{ entry_barcode_type }}</th>
+          <th class="text-center">{{ entry_unit }}</th>
+          <th class="text-center">{{ entry_option }}</th>
+          <th class="text-center">{{ entry_option_value }}</th>
+          <th class="text-center" width="90">{{ entry_action }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set barcode_row = 0 %}
+        {% for product_barcode in product_barcodes %}
+        <tr id="barcode-row{{ barcode_row }}" class="barcode-row">
+          <td class="text-center">
+            <input type="text" name="product_barcode[{{ barcode_row }}][barcode]" value="{{ product_barcode.barcode }}" placeholder="{{ entry_barcode }}" class="form-control barcode-value" />
+          </td>
+          <td class="text-center">
+            <select name="product_barcode[{{ barcode_row }}][type]" class="form-control barcode-type">
+              <option value="EAN" {% if product_barcode.type == 'EAN' %}selected="selected"{% endif %}>EAN</option>
+              <option value="UPC" {% if product_barcode.type == 'UPC' %}selected="selected"{% endif %}>UPC</option>
+              <option value="ISBN" {% if product_barcode.type == 'ISBN' %}selected="selected"{% endif %}>ISBN</option>
+              <option value="CODE128" {% if product_barcode.type == 'CODE128' %}selected="selected"{% endif %}>CODE128</option>
+            </select>
+          </td>
+          <td class="text-center">
+            <select name="product_barcode[{{ barcode_row }}][unit_id]" class="form-control barcode-unit">
+              <option value="">{{ text_select }}</option>
+              {% for unit in product_units %}
+              <option value="{{ unit.unit_id }}" {% if product_barcode.unit_id == unit.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="text-center">
+            <select name="product_barcode[{{ barcode_row }}][option_id]" class="form-control barcode-option" onchange="BarcodeManager.updateOptionValues(this, {{ barcode_row }})">
+              <option value="">{{ text_no_option }}</option>
+              {% for option in product_options %}
+              <option value="{{ option.product_option_id }}" {% if product_barcode.option_id == option.product_option_id %}selected="selected"{% endif %}>{{ option.name }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td class="text-center">
+            <select name="product_barcode[{{ barcode_row }}][option_value_id]" class="form-control barcode-option-value" {% if not product_barcode.option_id %}disabled{% endif %}>
+              <option value="">{{ text_select }}</option>
+              {% if product_barcode.option_id %}
+                {% for option_value in option_values[product_barcode.option_id] %}
+                <option value="{{ option_value.option_value_id }}" {% if product_barcode.option_value_id == option_value.option_value_id %}selected="selected"{% endif %}>{{ option_value.name }}</option>
+                {% endfor %}
+              {% endif %}
+            </select>
+          </td>
+          <td class="text-center">
+            <button type="button" onclick="BarcodeManager.removeBarcode({{ barcode_row }});" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger">
+              <i class="fa fa-minus-circle"></i>
+            </button>
+          </td>
+        </tr>
+        {% set barcode_row = barcode_row + 1 %}
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5"></td>
+          <td class="text-center">
+            <button type="button" onclick="BarcodeManager.addBarcode();" data-toggle="tooltip" title="{{ button_barcode_add }}" class="btn btn-primary">
+              <i class="fa fa-plus-circle"></i>
+            </button>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  
+  <div class="panel panel-info" style="margin-top: 20px;">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-qrcode"></i> {{ text_barcode_preview }}</h3>
+    </div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="barcode-container text-center">
+            <h4>{{ text_generated_barcode }}</h4>
+            <div id="barcode-preview"></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ text_barcode_help }}</h3>
+            </div>
+            <div class="panel-body">
+              <p>{{ text_barcode_help_intro }}</p>
+              <ul>
+                <li><strong>{{ text_barcode_types }}:</strong> {{ text_barcode_types_help }}</li>
+                <li><strong>{{ text_barcode_unit }}:</strong> {{ text_barcode_unit_help }}</li>
+                <li><strong>{{ text_barcode_option }}:</strong> {{ text_barcode_option_help }}</li>
+              </ul>
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_barcode_help_tip }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

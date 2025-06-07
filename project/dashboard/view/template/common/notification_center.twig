@@ -1,0 +1,658 @@
+<div id="notification-center" class="notification-center">
+  <div class="notification-header">
+    <h3><i class="fa fa-bell"></i> {{ text_notifications }}</h3>
+    <div class="notification-actions">
+      <button type="button" class="btn btn-link" id="mark-all-read"><i class="fa fa-check-circle"></i> {{ text_mark_all_read }}</button>
+      <button type="button" class="btn btn-link" id="notification-settings"><i class="fa fa-cog"></i></button>
+    </div>
+  </div>
+  
+  <div class="notification-tabs">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#all-notifications" data-toggle="tab">{{ text_all }}</a></li>
+      <li><a href="#unread-notifications" data-toggle="tab">{{ text_unread }} <span class="badge unread-count">0</span></a></li>
+      <li><a href="#important-notifications" data-toggle="tab">{{ text_important }}</a></li>
+    </ul>
+  </div>
+  
+  <div class="tab-content">
+    <div class="tab-pane active" id="all-notifications">
+      <div class="notification-list" id="all-notifications-list">
+        <!-- سيتم تحميل الإشعارات هنا عبر AJAX -->
+      </div>
+      <div class="notification-empty text-center" style="display: none;">
+        <i class="fa fa-bell-o fa-4x text-muted"></i>
+        <p>{{ text_no_notifications }}</p>
+      </div>
+    </div>
+    
+    <div class="tab-pane" id="unread-notifications">
+      <div class="notification-list" id="unread-notifications-list">
+        <!-- سيتم تحميل الإشعارات غير المقروءة هنا -->
+      </div>
+      <div class="notification-empty text-center" style="display: none;">
+        <i class="fa fa-check-circle fa-4x text-muted"></i>
+        <p>{{ text_no_unread_notifications }}</p>
+      </div>
+    </div>
+    
+    <div class="tab-pane" id="important-notifications">
+      <div class="notification-list" id="important-notifications-list">
+        <!-- سيتم تحميل الإشعارات المهمة هنا -->
+      </div>
+      <div class="notification-empty text-center" style="display: none;">
+        <i class="fa fa-star-o fa-4x text-muted"></i>
+        <p>{{ text_no_important_notifications }}</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="notification-footer">
+    <a href="{{ notification_history }}" class="btn btn-link btn-block">{{ text_view_all_notifications }}</a>
+  </div>
+</div>
+
+<!-- قالب لعنصر الإشعار (سيتم استخدامه مع JS) -->
+<script id="notification-template" type="text/template">
+  <div class="notification-item {notification_class}" data-notification-id="{notification_id}">
+    <div class="notification-icon">
+      <i class="fa {notification_icon}"></i>
+    </div>
+    <div class="notification-content">
+      <div class="notification-title">{notification_title}</div>
+      <div class="notification-message">{notification_message}</div>
+      <div class="notification-time">{notification_time}</div>
+    </div>
+    <div class="notification-actions">
+      <button type="button" class="btn btn-link btn-sm mark-read" title="{{ text_mark_read }}">
+        <i class="fa fa-check"></i>
+      </button>
+      <button type="button" class="btn btn-link btn-sm toggle-important" title="{{ text_toggle_important }}">
+        <i class="fa fa-star{important_class}"></i>
+      </button>
+      <button type="button" class="btn btn-link btn-sm delete-notification" title="{{ text_delete }}">
+        <i class="fa fa-trash"></i>
+      </button>
+    </div>
+  </div>
+</script>
+
+<!-- Modal لإعدادات الإشعارات -->
+<div class="modal fade" id="modal-notification-settings" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_notification_settings }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-notification-settings">
+          <div class="form-group">
+            <label class="control-label">{{ text_notification_preferences }}</label>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="notification_sales" value="1" checked> {{ text_sales_notifications }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="notification_inventory" value="1" checked> {{ text_inventory_notifications }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="notification_purchase" value="1" checked> {{ text_purchase_notifications }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="notification_system" value="1" checked> {{ text_system_notifications }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="notification_workflow" value="1" checked> {{ text_workflow_notifications }}
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_notification_delivery }}</label>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="notification_browser" value="1" checked> {{ text_browser_notifications }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="notification_email" value="1"> {{ text_email_notifications }}
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="save-notification-settings">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style type="text/css">
+.notification-center {
+  width: 350px;
+  max-height: 500px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-header {
+  padding: 15px;
+  background: #2c3e50;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.notification-actions .btn-link {
+  color: #fff;
+  padding: 0 5px;
+}
+
+.notification-tabs .nav-tabs {
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.notification-tabs .nav-tabs > li > a {
+  margin-right: 0;
+  border-radius: 0;
+  padding: 10px 15px;
+  color: #555;
+}
+
+.notification-tabs .nav-tabs > li.active > a {
+  background-color: #fff;
+  border-bottom-color: transparent;
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 350px;
+}
+
+.notification-list {
+  padding: 0;
+}
+
+.notification-item {
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: flex-start;
+  transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+  background-color: #f9f9f9;
+}
+
+.notification-item.unread {
+  background-color: #f0f7fd;
+}
+
+.notification-icon {
+  margin-right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-icon i {
+  font-size: 18px;
+  color: #555;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.notification-message {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.notification-time {
+  color: #999;
+  font-size: 12px;
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+}
+
+.notification-actions .btn-link {
+  color: #999;
+  padding: 0 5px;
+}
+
+.notification-actions .btn-link:hover {
+  color: #333;
+}
+
+.notification-empty {
+  padding: 30px 15px;
+  color: #999;
+}
+
+.notification-empty i {
+  margin-bottom: 10px;
+}
+
+.notification-footer {
+  padding: 10px 15px;
+  background: #f5f5f5;
+  border-top: 1px solid #ddd;
+}
+
+.notification-footer .btn-block {
+  text-align: center;
+  color: #555;
+}
+
+/* Notification types */
+.notification-item.notification-info .notification-icon {
+  background-color: #d9edf7;
+}
+
+.notification-item.notification-info .notification-icon i {
+  color: #31708f;
+}
+
+.notification-item.notification-success .notification-icon {
+  background-color: #dff0d8;
+}
+
+.notification-item.notification-success .notification-icon i {
+  color: #3c763d;
+}
+
+.notification-item.notification-warning .notification-icon {
+  background-color: #fcf8e3;
+}
+
+.notification-item.notification-warning .notification-icon i {
+  color: #8a6d3b;
+}
+
+.notification-item.notification-danger .notification-icon {
+  background-color: #f2dede;
+}
+
+.notification-item.notification-danger .notification-icon i {
+  color: #a94442;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  // تهيئة مركز الإشعارات
+  initNotificationCenter();
+  
+  // تحميل الإشعارات عند بدء التشغيل
+  loadNotifications();
+  
+  // تحديث عدد الإشعارات غير المقروءة
+  updateUnreadCount();
+  
+  // معالجة النقر على زر تحديد الكل كمقروء
+  $('#mark-all-read').on('click', function() {
+    markAllAsRead();
+  });
+  
+  // معالجة النقر على زر الإعدادات
+  $('#notification-settings').on('click', function() {
+    $('#modal-notification-settings').modal('show');
+  });
+  
+  // معالجة حفظ إعدادات الإشعارات
+  $('#save-notification-settings').on('click', function() {
+    saveNotificationSettings();
+  });
+  
+  // تحديث الإشعارات كل دقيقة
+  setInterval(function() {
+    loadNotifications();
+  }, 60000); // 60 ثانية
+});
+
+// تهيئة مركز الإشعارات
+function initNotificationCenter() {
+  // إضافة معالجات الأحداث للإشعارات الديناميكية
+  $(document).on('click', '.mark-read', function() {
+    var notificationId = $(this).closest('.notification-item').data('notification-id');
+    markAsRead(notificationId);
+  });
+  
+  $(document).on('click', '.toggle-important', function() {
+    var notificationId = $(this).closest('.notification-item').data('notification-id');
+    toggleImportant(notificationId);
+  });
+  
+  $(document).on('click', '.delete-notification', function() {
+    var notificationId = $(this).closest('.notification-item').data('notification-id');
+    deleteNotification(notificationId);
+  });
+  
+  // معالجة النقر على الإشعار نفسه
+  $(document).on('click', '.notification-content', function() {
+    var notificationId = $(this).closest('.notification-item').data('notification-id');
+    var notificationUrl = $(this).closest('.notification-item').data('notification-url');
+    
+    // تحديد الإشعار كمقروء
+    markAsRead(notificationId);
+    
+    // الانتقال إلى الرابط إذا كان موجودًا
+    if (notificationUrl) {
+      window.location.href = notificationUrl;
+    }
+  });
+}
+
+// تحميل الإشعارات من الخادم
+function loadNotifications() {
+  $.ajax({
+    url: 'index.php?route=common/notification/getNotifications&user_token=' + getURLVar('user_token'),
+    type: 'GET',
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        renderNotifications(json.notifications);
+        updateUnreadCount(json.unread_count);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      console.error('Error loading notifications:', thrownError);
+    }
+  });
+}
+
+// عرض الإشعارات في القائمة
+function renderNotifications(notifications) {
+  // تفريغ قوائم الإشعارات
+  $('#all-notifications-list').empty();
+  $('#unread-notifications-list').empty();
+  $('#important-notifications-list').empty();
+  
+  if (notifications.length > 0) {
+    // إخفاء رسائل "لا توجد إشعارات"
+    $('.notification-empty').hide();
+    
+    // إضافة الإشعارات إلى القوائم المناسبة
+    $.each(notifications, function(index, notification) {
+      var notificationHtml = createNotificationHtml(notification);
+      
+      // إضافة إلى قائمة كل الإشعارات
+      $('#all-notifications-list').append(notificationHtml);
+      
+      // إضافة إلى قائمة الإشعارات غير المقروءة إذا كانت غير مقروءة
+      if (notification.is_read == '0') {
+        $('#unread-notifications-list').append(notificationHtml);
+      }
+      
+      // إضافة إلى قائمة الإشعارات المهمة إذا كانت مهمة
+      if (notification.is_important == '1') {
+        $('#important-notifications-list').append(notificationHtml);
+      }
+    });
+  } else {
+    // إظهار رسائل "لا توجد إشعارات"
+    $('.notification-empty').show();
+  }
+  
+  // التحقق من وجود إشعارات غير مقروءة
+  if ($('#unread-notifications-list').children().length == 0) {
+    $('#unread-notifications .notification-empty').show();
+  }
+  
+  // التحقق من وجود إشعارات مهمة
+  if ($('#important-notifications-list').children().length == 0) {
+    $('#important-notifications .notification-empty').show();
+  }
+}
+
+// إنشاء HTML لإشعار واحد
+function createNotificationHtml(notification) {
+  var template = $('#notification-template').html();
+  
+  // تحديد فئة الإشعار (مقروء/غير مقروء)
+  var notificationClass = notification.is_read == '0' ? 'unread' : '';
+  
+  // إضافة فئة نوع الإشعار
+  notificationClass += ' notification-' + notification.type;
+  
+  // تحديد أيقونة الإشعار بناءً على النوع
+  var notificationIcon = 'fa-bell';
+  switch(notification.type) {
+    case 'info':
+      notificationIcon = 'fa-info-circle';
+      break;
+    case 'success':
+      notificationIcon = 'fa-check-circle';
+      break;
+    case 'warning':
+      notificationIcon = 'fa-exclamation-triangle';
+      break;
+    case 'danger':
+      notificationIcon = 'fa-exclamation-circle';
+      break;
+  }
+  
+  // تحديد فئة النجمة (مهم/غير مهم)
+  var importantClass = notification.is_important == '1' ? '' : '-o';
+  
+  // استبدال المتغيرات في القالب
+  var html = template
+    .replace('{notification_id}', notification.notification_id)
+    .replace('{notification_class}', notificationClass)
+    .replace('{notification_icon}', notificationIcon)
+    .replace('{notification_title}', notification.title)
+    .replace('{notification_message}', notification.message)
+    .replace('{notification_time}', notification.date_added)
+    .replace('{important_class}', importantClass);
+  
+  return html;
+}
+
+// تحديث عدد الإشعارات غير المقروءة
+function updateUnreadCount(count) {
+  if (count === undefined) {
+    // إذا لم يتم تمرير العدد، احسبه من القائمة
+    count = $('#unread-notifications-list').children().length;
+  }
+  
+  // تحديث العداد في علامة التبويب
+  $('.unread-count').text(count);
+  
+  // تحديث العداد في أيقونة الإشعارات في الشريط العلوي
+  $('#notification-total').text(count);
+  
+  // إخفاء العداد إذا كان صفرًا
+  if (count == 0) {
+    $('#notification-total').hide();
+  } else {
+    $('#notification-total').show();
+  }
+}
+
+// تحديد إشعار كمقروء
+function markAsRead(notificationId) {
+  $.ajax({
+    url: 'index.php?route=common/notification/markAsRead&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    data: { notification_id: notificationId },
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        // تحديث واجهة المستخدم
+        var $notification = $('.notification-item[data-notification-id="' + notificationId + '"]');
+        $notification.removeClass('unread');
+        
+        // إزالة من قائمة غير المقروءة
+        $('#unread-notifications-list .notification-item[data-notification-id="' + notificationId + '"]').remove();
+        
+        // التحقق من وجود إشعارات غير مقروءة
+        if ($('#unread-notifications-list').children().length == 0) {
+          $('#unread-notifications .notification-empty').show();
+        }
+        
+        // تحديث العداد
+        updateUnreadCount();
+      }
+    }
+  });
+}
+
+// تحديد جميع الإشعارات كمقروءة
+function markAllAsRead() {
+  $.ajax({
+    url: 'index.php?route=common/notification/markAllAsRead&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        // تحديث واجهة المستخدم
+        $('.notification-item').removeClass('unread');
+        
+        // تفريغ قائمة غير المقروءة
+        $('#unread-notifications-list').empty();
+        $('#unread-notifications .notification-empty').show();
+        
+        // تحديث العداد
+        updateUnreadCount(0);
+      }
+    }
+  });
+}
+
+// تبديل حالة الإشعار (مهم/غير مهم)
+function toggleImportant(notificationId) {
+  $.ajax({
+    url: 'index.php?route=common/notification/toggleImportant&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    data: { notification_id: notificationId },
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        // تحديث واجهة المستخدم
+        var $notification = $('.notification-item[data-notification-id="' + notificationId + '"]');
+        var $starIcon = $notification.find('.toggle-important i');
+        
+        if (json.is_important == '1') {
+          // تحديث أيقونة النجمة
+          $starIcon.removeClass('fa-star-o').addClass('fa-star');
+          
+          // إضافة إلى قائمة المهمة
+          if ($('#important-notifications-list .notification-item[data-notification-id="' + notificationId + '"]').length == 0) {
+            $('#important-notifications-list').append($notification.clone());
+            $('#important-notifications .notification-empty').hide();
+          }
+        } else {
+          // تحديث أيقونة النجمة
+          $starIcon.removeClass('fa-star').addClass('fa-star-o');
+          
+          // إزالة من قائمة المهمة
+          $('#important-notifications-list .notification-item[data-notification-id="' + notificationId + '"]').remove();
+          
+          // التحقق من وجود إشعارات مهمة
+          if ($('#important-notifications-list').children().length == 0) {
+            $('#important-notifications .notification-empty').show();
+          }
+        }
+      }
+    }
+  });
+}
+
+// حذف إشعار
+function deleteNotification(notificationId) {
+  $.ajax({
+    url: 'index.php?route=common/notification/delete&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    data: { notification_id: notificationId },
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        // إزالة الإشعار من جميع القوائم
+        $('.notification-item[data-notification-id="' + notificationId + '"]').remove();
+        
+        // التحقق من وجود إشعارات في كل قائمة
+        if ($('#all-notifications-list').children().length == 0) {
+          $('#all-notifications .notification-empty').show();
+        }
+        
+        if ($('#unread-notifications-list').children().length == 0) {
+          $('#unread-notifications .notification-empty').show();
+        }
+        
+        if ($('#important-notifications-list').children().length == 0) {
+          $('#important-notifications .notification-empty').show();
+        }
+        
+        // تحديث العداد
+        updateUnreadCount();
+      }
+    }
+  });
+}
+
+// حفظ إعدادات الإشعارات
+function saveNotificationSettings() {
+  $.ajax({
+    url: 'index.php?route=common/notification/saveSettings&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    data: $('#form-notification-settings').serialize(),
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        $('#modal-notification-settings').modal('hide');
+        
+        // إظهار رسالة نجاح
+        toastr.success(json.success);
+      }
+    }
+  });
+}
+</script>

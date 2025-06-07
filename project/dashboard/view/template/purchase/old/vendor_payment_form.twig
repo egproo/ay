@@ -1,0 +1,34 @@
+{% extends "common/column_left.twig" %}
+{% block content %}
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>{{ heading_title }} - {{ text_form }}</h1>
+    <ul class="breadcrumb">
+      <li><a href="{{ home }}">{{ text_home }}</a></li>
+      <li><a href="{{ cancel }}">{{ heading_title }}</a></li>
+    </ul>
+  </div>
+</div>
+<div class="container-fluid">
+  <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment" class="form-horizontal">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="input-payment-number">{{ entry_payment_number }}</label>
+          <div class="col-sm-10">
+            <input type="text" name="payment_number" value="{{ payment_number }}" id="input-payment-number" class="form-control" />
+          </div>
+        </div>
+        <!-- Add rest of fields similarly -->
+      </div>
+      <div class="panel-footer">
+        <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        <a href="{{ cancel }}" class="btn btn-default">{{ button_cancel }}</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

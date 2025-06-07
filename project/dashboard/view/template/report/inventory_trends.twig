@@ -1,0 +1,107 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card mb-3">
+      <div class="card-header">
+        <i class="fas fa-info-circle"></i> {{ text_trend_analysis }}
+      </div>
+      <div class="card-body">
+        <p>{{ text_trend_analysis_desc }}</p>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-primary"><i class="fas fa-arrow-up"></i> {{ text_trend_up }}</h5>
+                <p class="card-text">
+                  زيادة مستمرة في المخزون أو المبيعات على مدار الفترة المحددة.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-danger"><i class="fas fa-arrow-down"></i> {{ text_trend_down }}</h5>
+                <p class="card-text">
+                  انخفاض مستمر في المخزون أو المبيعات على مدار الفترة المحددة.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-success"><i class="fas fa-minus"></i> {{ text_trend_stable }}</h5>
+                <p class="card-text">
+                  استقرار في مستويات المخزون أو المبيعات على مدار الفترة المحددة.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-warning"><i class="fas fa-wave-square"></i> {{ text_trend_seasonal }}</h5>
+                <p class="card-text">
+                  تغيرات دورية في المخزون أو المبيعات مرتبطة بمواسم محددة.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-info"><i class="fas fa-random"></i> {{ text_trend_irregular }}</h5>
+                <p class="card-text">
+                  تغيرات غير منتظمة في المخزون أو المبيعات لا يمكن التنبؤ بها.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-secondary"><i class="fas fa-sync-alt"></i> {{ text_trend_cyclical }}</h5>
+                <p class="card-text">
+                  تغيرات دورية في المخزون أو المبيعات غير مرتبطة بمواسم محددة.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      {% for analysis in analyses %}
+        <div class="col-lg-6 col-md-6 mb-3">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5 class="mb-0">{{ analysis.name }}</h5>
+            </div>
+            <div class="card-body">
+              <p>{{ analysis.description }}</p>
+            </div>
+            <div class="card-footer text-end">
+              <a href="{{ analysis.href }}" class="btn btn-primary">{{ button_filter }}</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{{ footer }}

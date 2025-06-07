@@ -1,0 +1,686 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+          <i class="fa fa-plus"></i>
+        </a>
+        <div class="btn-group">
+          <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-download"></i> {{ button_export_excel }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="{{ export_excel }}"><i class="fa fa-file-excel-o"></i> {{ button_export_excel }}</a></li>
+            <li><a href="{{ export_pdf }}"><i class="fa fa-file-pdf-o"></i> {{ button_export_pdf }}</a></li>
+            <li class="divider"></li>
+            <li><a href="{{ print }}" target="_blank"><i class="fa fa-print"></i> {{ button_print }}</a></li>
+          </ul>
+        </div>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-stock-adjustment').submit() : false;">
+          <i class="fa fa-trash-o"></i>
+        </button>
+        <a href="{{ refresh }}" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-default">
+          <i class="fa fa-refresh"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- ملخص التسويات -->
+    <div class="row">
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-adjust fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.total_adjustments }}</div>
+                <div>{{ text_total_adjustments }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-file-o fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.draft_count }}</div>
+                <div>{{ text_draft_count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-clock-o fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.pending_approval_count }}</div>
+                <div>{{ text_pending_approval_count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.approved_count }}</div>
+                <div>{{ text_approved_count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.posted_count }}</div>
+                <div>{{ text_posted_count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-danger">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-times fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.rejected_count }}</div>
+                <div>{{ text_rejected_count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- قيم التسويات -->
+    <div class="row">
+      <div class="col-md-4">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-arrow-up fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge-value">{{ summary.total_increase_value }}</div>
+                <div>{{ text_total_increase_value }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="panel panel-red">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-arrow-down fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge-value">{{ summary.total_decrease_value }}</div>
+                <div>{{ text_total_decrease_value }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="panel panel-purple">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-calculator fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.avg_items_per_adjustment }}</div>
+                <div>{{ text_avg_items_per_adjustment }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- التحليلات -->
+    <div class="row">
+      <!-- التسويات حسب السبب -->
+      {% if adjustments_by_reason %}
+      <div class="col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_adjustments_by_reason }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>{{ column_reason }}</th>
+                    <th class="text-center">{{ text_adjustment_count }}</th>
+                    <th class="text-right">{{ column_total_value }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for reason in adjustments_by_reason %}
+                  <tr>
+                    <td>
+                      <strong>{{ reason.reason_name }}</strong>
+                      <br><small class="text-muted">{{ reason.reason_category }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-info">{{ reason.adjustment_count }}</span>
+                    </td>
+                    <td class="text-right">{{ reason.total_value }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- التسويات حسب الفرع -->
+      {% if adjustments_by_branch %}
+      <div class="col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-building"></i> {{ text_adjustments_by_branch }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>{{ column_branch }}</th>
+                    <th class="text-center">{{ text_adjustment_count }}</th>
+                    <th class="text-right">{{ column_total_value }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for branch in adjustments_by_branch %}
+                  <tr>
+                    <td>
+                      <strong>{{ branch.branch_name }}</strong>
+                      <br><small class="text-muted">{{ branch.branch_type }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-success">{{ branch.adjustment_count }}</span>
+                    </td>
+                    <td class="text-right">{{ branch.total_value }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- أكبر التسويات قيمة -->
+    {% if top_value_adjustments %}
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-star"></i> {{ text_top_value_adjustments }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>{{ column_adjustment_number }}</th>
+                    <th>{{ column_adjustment_name }}</th>
+                    <th>{{ column_branch }}</th>
+                    <th>{{ column_reason }}</th>
+                    <th class="text-center">{{ column_total_items }}</th>
+                    <th class="text-right">{{ column_total_value }}</th>
+                    <th>{{ column_adjustment_date }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for adjustment in top_value_adjustments %}
+                  <tr>
+                    <td><strong>{{ adjustment.adjustment_number }}</strong></td>
+                    <td>{{ adjustment.adjustment_name }}</td>
+                    <td>{{ adjustment.branch_name }}</td>
+                    <td>{{ adjustment.reason_name }}</td>
+                    <td class="text-center">{{ adjustment.total_items }}</td>
+                    <td class="text-right"><strong>{{ adjustment.total_value }}</strong></td>
+                    <td>{{ adjustment.adjustment_date }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- الفلاتر المتقدمة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-filter"></i> {{ text_advanced_filters }}
+          <button type="button" class="btn btn-xs btn-default pull-right" data-toggle="collapse" data-target="#filter-panel">
+            <i class="fa fa-chevron-down"></i>
+          </button>
+        </h3>
+      </div>
+      <div id="filter-panel" class="panel-collapse collapse">
+        <div class="panel-body">
+          <form method="get" id="filter-form">
+            <input type="hidden" name="route" value="inventory/stock_adjustment" />
+            <input type="hidden" name="user_token" value="{{ user_token }}" />
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_adjustment_number">{{ entry_filter_adjustment_number }}</label>
+                  <input type="text" name="filter_adjustment_number" value="{{ filter_adjustment_number }}" placeholder="{{ entry_filter_adjustment_number }}" id="filter_adjustment_number" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_adjustment_name">{{ entry_filter_adjustment_name }}</label>
+                  <input type="text" name="filter_adjustment_name" value="{{ filter_adjustment_name }}" placeholder="{{ entry_filter_adjustment_name }}" id="filter_adjustment_name" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_status">{{ entry_filter_status }}</label>
+                  <select name="filter_status" id="filter_status" class="form-control">
+                    {% for option in status_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_status %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_adjustment_type">{{ entry_filter_adjustment_type }}</label>
+                  <select name="filter_adjustment_type" id="filter_adjustment_type" class="form-control">
+                    {% for option in adjustment_type_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_adjustment_type %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_branch_id">{{ entry_filter_branch }}</label>
+                  <select name="filter_branch_id" id="filter_branch_id" class="form-control">
+                    <option value="">{{ text_all }}</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.branch_id }}"{% if branch.branch_id == filter_branch_id %} selected="selected"{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_reason_category">{{ entry_filter_reason_category }}</label>
+                  <select name="filter_reason_category" id="filter_reason_category" class="form-control">
+                    {% for option in reason_category_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_reason_category %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_date_from">{{ entry_filter_date_from }}</label>
+                  <input type="date" name="filter_date_from" value="{{ filter_date_from }}" id="filter_date_from" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_date_to">{{ entry_filter_date_to }}</label>
+                  <input type="date" name="filter_date_to" value="{{ filter_date_to }}" id="filter_date_to" class="form-control" />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_min_value">{{ entry_filter_min_value }}</label>
+                  <input type="number" name="filter_min_value" value="{{ filter_min_value }}" placeholder="{{ entry_filter_min_value }}" id="filter_min_value" class="form-control" step="0.01" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_max_value">{{ entry_filter_max_value }}</label>
+                  <input type="number" name="filter_max_value" value="{{ filter_max_value }}" placeholder="{{ entry_filter_max_value }}" id="filter_max_value" class="form-control" step="0.01" />
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <div>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                    <a href="{{ refresh }}" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_clear }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول التسويات المخزنية -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-stock-adjustment">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center">
+                    <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                  </td>
+                  <td>{{ column_adjustment_number }}</td>
+                  <td>{{ column_adjustment_name }}</td>
+                  <td>{{ column_adjustment_type }}</td>
+                  <td class="text-center">{{ column_status }}</td>
+                  <td>{{ column_branch }}</td>
+                  <td>{{ column_reason }}</td>
+                  <td class="text-center">{{ column_total_items }}</td>
+                  <td class="text-right">{{ column_total_value }}</td>
+                  <td>{{ column_adjustment_date }}</td>
+                  <td class="text-center">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if stock_adjustments %}
+                {% for adjustment in stock_adjustments %}
+                <tr class="adjustment-{{ adjustment.status }}">
+                  <td class="text-center">
+                    {% if adjustment.can_edit %}
+                    <input type="checkbox" name="selected[]" value="{{ adjustment.adjustment_id }}" />
+                    {% endif %}
+                  </td>
+                  <td>
+                    <strong>{{ adjustment.adjustment_number }}</strong>
+                  </td>
+                  <td>
+                    {{ adjustment.adjustment_name }}
+                    {% if adjustment.notes %}
+                    <br><small class="text-muted">{{ adjustment.notes }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="label label-info">{{ adjustment.adjustment_type_text }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="label label-{{ adjustment.status_class }}">{{ adjustment.status_text }}</span>
+                  </td>
+                  <td>
+                    {{ adjustment.branch_name }}
+                    <br><small class="text-muted">{{ adjustment.branch_type }}</small>
+                  </td>
+                  <td>
+                    {% if adjustment.reason_name %}
+                    {{ adjustment.reason_name }}
+                    <br><small class="text-muted">{{ adjustment.reason_category_text }}</small>
+                    {% else %}
+                    <span class="text-muted">{{ text_no_reason }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <strong>{{ adjustment.total_items }}</strong>
+                  </td>
+                  <td class="text-right">
+                    <span class="text-{{ adjustment.value_class }}">
+                      <strong>{{ adjustment.total_value }}</strong>
+                    </span>
+                    {% if adjustment.total_increase_value != '0.00' or adjustment.total_decrease_value != '0.00' %}
+                    <br>
+                    {% if adjustment.total_increase_value != '0.00' %}
+                    <small class="text-success">+{{ adjustment.total_increase_value }}</small>
+                    {% endif %}
+                    {% if adjustment.total_decrease_value != '0.00' %}
+                    <small class="text-danger">-{{ adjustment.total_decrease_value }}</small>
+                    {% endif %}
+                    {% endif %}
+                  </td>
+                  <td>
+                    {{ adjustment.adjustment_date }}
+                    <br><small class="text-muted">{{ adjustment.user_name }}</small>
+                    {% if adjustment.approved_by_name %}
+                    <br><small class="text-success">{{ adjustment.approved_by_name }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <div class="btn-group">
+                      <a href="{{ adjustment.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info btn-xs">
+                        <i class="fa fa-eye"></i>
+                      </a>
+                      {% if adjustment.can_edit %}
+                      <a href="{{ adjustment.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-xs">
+                        <i class="fa fa-pencil"></i>
+                      </a>
+                      {% endif %}
+                      {% if adjustment.can_approve %}
+                      <a href="{{ adjustment.approve }}" data-toggle="tooltip" title="{{ button_approve }}" class="btn btn-success btn-xs" onclick="return confirm('{{ text_confirm }}')">
+                        <i class="fa fa-check"></i>
+                      </a>
+                      <a href="{{ adjustment.reject }}" data-toggle="tooltip" title="{{ button_reject }}" class="btn btn-warning btn-xs" onclick="return confirm('{{ text_confirm }}')">
+                        <i class="fa fa-times"></i>
+                      </a>
+                      {% endif %}
+                      {% if adjustment.can_post %}
+                      <a href="{{ adjustment.post }}" data-toggle="tooltip" title="{{ button_post }}" class="btn btn-success btn-xs" onclick="return confirm('{{ text_confirm }}')">
+                        <i class="fa fa-share"></i>
+                      </a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="11">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.huge {
+    font-size: 28px;
+}
+
+.huge-value {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.panel-green {
+    border-color: #5cb85c;
+}
+
+.panel-green > .panel-heading {
+    border-color: #5cb85c;
+    color: white;
+    background-color: #5cb85c;
+}
+
+.panel-red {
+    border-color: #d9534f;
+}
+
+.panel-red > .panel-heading {
+    border-color: #d9534f;
+    color: white;
+    background-color: #d9534f;
+}
+
+.panel-purple {
+    border-color: #9b59b6;
+}
+
+.panel-purple > .panel-heading {
+    border-color: #9b59b6;
+    color: white;
+    background-color: #9b59b6;
+}
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.adjustment-draft {
+    background-color: #f9f9f9;
+}
+
+.adjustment-pending_approval {
+    background-color: #fff3cd;
+}
+
+.adjustment-approved {
+    background-color: #d1ecf1;
+}
+
+.adjustment-posted {
+    background-color: #d4edda;
+}
+
+.adjustment-rejected {
+    background-color: #f8d7da;
+}
+
+.adjustment-cancelled {
+    background-color: #e2e3e5;
+}
+
+.badge-info {
+    background-color: #5bc0de;
+}
+
+.badge-success {
+    background-color: #5cb85c;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // فلترة سريعة
+    $('#filter_adjustment_name').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('table tbody tr').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    // تحديث تلقائي للتسويات المعلقة
+    setInterval(function() {
+        if ($('.adjustment-pending_approval').length > 0) {
+            location.reload();
+        }
+    }, 300000); // كل 5 دقائق
+
+    // تأكيد الإجراءات الحساسة
+    $('.btn-success, .btn-warning').on('click', function(e) {
+        if (!confirm('{{ text_confirm }}')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+
+{{ footer }}

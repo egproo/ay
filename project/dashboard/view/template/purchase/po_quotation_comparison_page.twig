@@ -1,0 +1,654 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <button type="button" id="export-csv" class="btn btn-light" title="{{ text_export_csv }}">
+                    <i class="fas fa-file-csv"></i> {{ text_export_csv }}
+                </button>
+                <a href="{{ link_export_excel }}" class="btn btn-light" title="{{ text_export_excel }}" target="_blank">
+                    <i class="fas fa-file-excel"></i> {{ text_export_excel }}
+                </a>
+                <a href="{{ link_export_pdf }}" class="btn btn-light" title="{{ text_export_pdf }}" target="_blank">
+                    <i class="fas fa-file-pdf"></i> {{ text_export_pdf }}
+                </a>
+                <button type="button" id="toggle-details" class="btn btn-info" title="{{ text_toggle_details }}">
+                    <i class="fas fa-expand-alt"></i> {{ text_show_details }}
+                </button>
+                <a href="{{ cancel }}" class="btn btn-secondary"><i class="fas fa-reply"></i> {{ button_back }}</a>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-header"><i class="fas fa-balance-scale"></i> {{ text_quotation_comparison }}</div>
+            <div class="card-body">
+                {% if quotations %}
+                    <!-- معلومات طلب الشراء والملخص -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ text_purchase_order_info }}</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>{{ text_po_number }}:</th>
+                                            <td>{{ purchase_order.po_number }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>{{ text_date_required }}:</th>
+                                            <td>{{ purchase_order.expected_delivery_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>{{ text_branch }}:</th>
+                                            <td>{{ purchase_order.branch_name }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ text_comparison_summary }}</h5>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>{{ text_total_quotations }}:</th>
+                                            <td>{{ quotations|length }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>{{ text_best_price_supplier }}:</th>
+                                            <td>{{ best_price_quotation.supplier_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>{{ text_price_difference }}:</th>
+                                            <td>{{ price_difference_percentage }}%</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- أزرار الموافقة على العرض الأفضل -->
+                    {% if best_price_quotation and best_value_quotation %}
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">{{ text_analysis_recommendations }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {% if best_price_quotation.quotation_id == best_value_quotation.quotation_id %}
+                                                <div class="alert alert-success">
+                                                    <strong>{{ text_best_value_recommendation }}:</strong> 
+                                                    {{ best_price_quotation.supplier_name }} {{ text_best_overall_value_explanation }}
+                                                </div>
+                                                <div class="d-grid gap-2">
+                                                    <button type="button" class="btn btn-success approve-quotation" data-quotation-id="{{ best_price_quotation.quotation_id }}" data-approval-type="best_value" data-supplier-name="{{ best_price_quotation.supplier_name }}">
+                                                        <i class="fas fa-check-circle"></i> {{ text_approve_best_value }}
+                                                    </button>
+                                                </div>
+                                            {% else %}
+                                                <div class="alert alert-info">
+                                                    <strong>{{ text_best_price_recommendation }}:</strong> 
+                                                    {{ best_price_quotation.supplier_name }} ({{ best_price_quotation.total_amount }} {{ best_price_quotation.currency_code }})
+                                                </div>
+                                                <div class="d-grid gap-2">
+                                                    <button type="button" class="btn btn-primary approve-quotation" data-quotation-id="{{ best_price_quotation.quotation_id }}" data-approval-type="best_price" data-supplier-name="{{ best_price_quotation.supplier_name }}">
+                                                        <i class="fas fa-check-circle"></i> {{ text_approve_best_price }}
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {% if best_price_quotation.quotation_id != best_value_quotation.quotation_id %}
+                                                <div class="alert alert-info">
+                                                    <strong>{{ text_best_value_recommendation }}:</strong> 
+                                                    {{ best_value_quotation.supplier_name }} {{ text_best_value_explanation }}
+                                                </div>
+                                                <div class="d-grid gap-2">
+                                                    <button type="button" class="btn btn-success approve-quotation" data-quotation-id="{{ best_value_quotation.quotation_id }}" data-approval-type="best_value" data-supplier-name="{{ best_value_quotation.supplier_name }}">
+                                                        <i class="fas fa-check-circle"></i> {{ text_approve_best_value }}
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered comparison-table" id="quotationComparisonTable">
+                            <thead>
+                                <tr>
+                                    <th>{{ column_attribute }}</th>
+                                    {% for quotation in quotations %}
+                                        <th id="quotation-{{ quotation.quotation_id }}">{{ quotation.quotation_number }}<br>
+                                            <small>{{ quotation.supplier_name }}</small>
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- General Information -->
+                                <tr class="table-info">
+                                    <td colspan="{{ quotations|length + 1 }}">
+                                        <strong>{{ text_general_info }}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ text_supplier }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.supplier_name }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_date }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.created_at }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_validity }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>
+                                            {{ quotation.validity_date }}
+                                            {% if quotation.is_expired %}
+                                                <span class="badge bg-danger">{{ text_expired }}</span>
+                                            {% else %}
+                                                <span class="badge bg-success">{{ text_valid }}</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_currency }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.currency_code }} ({{ quotation.exchange_rate }})</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_payment_terms }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.payment_terms }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_delivery_terms }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.delivery_terms }}</td>
+                                    {% endfor %}
+                                </tr>
+
+                                <!-- Items Comparison -->
+                                <tr class="table-info">
+                                    <td colspan="{{ quotations|length + 1 }}">
+                                        <strong>{{ text_items_comparison }}</strong>
+                                    </td>
+                                </tr>
+                                {% for item in items %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ item.product_name }}</strong><br>
+                                            <small>{{ item.product_code }}</small>
+                                        </td>
+                                        {% for quotation in quotations %}
+                                            {% set quote_item = quotation.items[item.product_id] %}
+                                            <td {% if quote_item and quote_item.is_best_price %}class="table-success"{% endif %}>
+                                                {% if quote_item %}
+                                                    {{ quote_item.quantity }} {{ quote_item.unit_name }}<br>
+                                                    {{ quote_item.unit_price|number_format(4) }} / {{ quote_item.unit_name }}<br>
+                                                    {% if quote_item.discount_amount > 0 %}
+                                                        {{ text_discount }}: {{ quote_item.discount_amount|number_format(4) }}<br>
+                                                    {% endif %}
+                                                    <strong>{{ text_total }}: {{ quote_item.line_total|number_format(4) }}</strong>
+                                                {% else %}
+                                                    <span class="text-muted">{{ text_not_quoted }}</span>
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+
+                                <!-- Totals -->
+                                <tr class="table-info">
+                                    <td colspan="{{ quotations|length + 1 }}">
+                                        <strong>{{ text_totals }}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ text_subtotal }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.subtotal|number_format(4) }} {{ quotation.currency_code }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_discount }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.discount_amount|number_format(4) }} {{ quotation.currency_code }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_tax }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.tax_amount|number_format(4) }} {{ quotation.currency_code }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr class="table-primary">
+                                    <td><strong>{{ text_total }}</strong></td>
+                                    {% for quotation in quotations %}
+                                        <td class="{% if quotation.is_best_price %}table-success{% endif %} {% if quotation.is_best_value %}border-info{% endif %}">
+                                            <strong>{{ quotation.total_amount|number_format(4) }} {{ quotation.currency_code }}</strong>
+                                            <div class="mt-1">
+                                                {% if quotation.is_best_price %}
+                                                    <span class="badge bg-success" title="{{ text_best_price }}"><i class="fas fa-tags"></i> {{ text_best_price }}</span>
+                                                {% endif %}
+                                                {% if quotation.is_best_value %}
+                                                    <span class="badge bg-info" title="{{ text_best_value }}"><i class="fas fa-award"></i> {{ text_best_value }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+
+                                <!-- Additional Criteria -->
+                                <tr class="table-info">
+                                    <td colspan="{{ quotations|length + 1 }}">
+                                        <strong>{{ text_additional_criteria }}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ text_quality_rating }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>
+                                            <div class="rating">
+                                                {% for i in 1..5 %}
+                                                    <i class="fas fa-star {% if i <= quotation.quality_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_delivery_rating }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>
+                                            <div class="rating">
+                                                {% for i in 1..5 %}
+                                                    <i class="fas fa-star {% if i <= quotation.delivery_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr>
+                                    <td>{{ text_warranty }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.warranty|default(text_not_specified) }}</td>
+                                    {% endfor %}
+                                </tr>
+                                
+                                <!-- Detailed Comparison (Hidden by Default) -->
+                                <tr class="table-info comparison-details d-none">
+                                    <td colspan="{{ quotations|length + 1 }}">
+                                        <strong>{{ text_detailed_comparison }}</strong>
+                                    </td>
+                                </tr>
+                                <tr class="comparison-details d-none">
+                                    <td>{{ text_supplier_history }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>
+                                            {% if quotation.previous_orders_count is defined %}
+                                                <span class="badge bg-info">{{ text_previous_orders }}: {{ quotation.previous_orders_count }}</span><br>
+                                                <small>{{ text_last_order }}: {{ quotation.last_order_date|default(text_none) }}</small>
+                                            {% else %}
+                                                <span class="text-muted">{{ text_no_history }}</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr class="comparison-details d-none">
+                                    <td>{{ text_delivery_time }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>
+                                            {% if quotation.delivery_time %}
+                                                {{ quotation.delivery_time }} {{ text_days }}
+                                                {% if quotation.delivery_time <= 7 %}
+                                                    <span class="badge bg-success">{{ text_fast }}</span>
+                                                {% elseif quotation.delivery_time <= 14 %}
+                                                    <span class="badge bg-info">{{ text_normal }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">{{ text_slow }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-muted">{{ text_not_specified }}</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                <tr class="comparison-details d-none">
+                                    <td>{{ text_payment_method }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>{{ quotation.payment_method|default(text_not_specified) }}</td>
+                                    {% endfor %}
+                                </tr>
+                                <tr class="comparison-details d-none">
+                                    <td>{{ text_notes }}</td>
+                                    {% for quotation in quotations %}
+                                        <td>
+                                            {% if quotation.notes %}
+                                                <small>{{ quotation.notes }}</small>
+                                            {% else %}
+                                                <span class="text-muted">{{ text_no_notes }}</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Notes Section -->
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h5 class="card-title mb-0">{{ text_notes }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle"></i> {{ text_comparison_title }}
+                                                <ul class="mt-2 mb-0">
+                                                    <li>{{ text_comparison_help_1 }}</li>
+                                                    <li>{{ text_comparison_help_2 }}</li>
+                                                    <li>{{ text_comparison_help_3 }}</li>
+                                                </ul>
+                                            </div>
+                                            <div class="alert alert-light border">
+                                                <strong>{{ text_legend }}:</strong>
+                                                <div class="d-flex flex-wrap mt-2">
+                                                    <div class="me-3 mb-2">
+                                                        <span class="badge bg-success">{{ text_best_price }}</span> - {{ text_legend_best_price }}
+                                                    </div>
+                                                    <div class="me-3 mb-2">
+                                                        <span class="badge bg-info">{{ text_best_value }}</span> - {{ text_legend_best_value }}
+                                                    </div>
+                                                    <div class="me-3 mb-2">
+                                                        <i class="fas fa-star text-warning"></i> - {{ text_legend_rating }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-outline-primary print-comparison">
+                                                    <i class="fas fa-print"></i> {{ text_print_comparison }}
+                                                </button>
+                                                <button type="button" id="export-csv" class="btn btn-outline-success">
+                                                    <i class="fas fa-file-csv"></i> {{ text_export_csv }}
+                                                </button>
+                                                <a href="{{ link_export_excel }}" class="btn btn-outline-info" target="_blank">
+                                                    <i class="fas fa-file-excel"></i> {{ text_export_excel }}
+                                                </a>
+                                                <a href="{{ link_export_pdf }}" class="btn btn-outline-danger" target="_blank">
+                                                    <i class="fas fa-file-pdf"></i> {{ text_export_pdf }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> {{ text_no_quotations }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Print comparison
+    $('.print-comparison').on('click', function() {
+        var printContents = document.getElementById('quotationComparisonTable').outerHTML;
+        var headerContent = '<div class="print-header"><h1>{{ text_quotation_comparison }}</h1>' +
+                          '<div class="po-info"><strong>{{ text_po_number }}:</strong> {{ purchase_order.po_number }} | ' +
+                          '<strong>{{ text_date_required }}:</strong> {{ purchase_order.expected_delivery_date }}</div></div>';
+        var originalContents = document.body.innerHTML;
+        
+        var printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>{{ text_quotation_comparison }}</title>');
+        printWindow.document.write('<link rel="stylesheet" href="view/stylesheet/bootstrap.css" type="text/css" media="all">');
+        printWindow.document.write('<style type="text/css">.print-header{text-align:center;margin-bottom:20px;}.po-info{font-size:14px;margin-top:10px;}.comparison-table{width:100%;border-collapse:collapse;font-size:12px;}.comparison-table th,.comparison-table td{border:1px solid #ddd;padding:8px;}.table-info td{background-color:#e2f0fb;}.table-success{background-color:#d4edda;}.table-primary{background-color:#cfe2ff;}.text-warning{color:#ffc107;}.text-muted{color:#6c757d;}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(headerContent + printContents);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+        
+        // Print after resources are loaded
+        setTimeout(function() {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
+    });
+    
+    // Export to CSV
+    $('#export-csv').on('click', function() {
+        // Convert table to CSV
+        var csv = [];
+        var rows = document.querySelectorAll('#quotationComparisonTable tr');
+        
+        for (var i = 0; i < rows.length; i++) {
+            var row = [], cols = rows[i].querySelectorAll('td, th');
+            
+            for (var j = 0; j < cols.length; j++) {
+                // Clean the text content (remove extra spaces, newlines, etc)
+                var data = cols[j].textContent.replace(/\s+/g, ' ').trim();
+                // Escape double quotes
+                data = data.replace(/"/g, '""');
+                // Add quotes around the data
+                row.push('"' + data + '"');
+            }
+            csv.push(row.join(','));
+        }
+        
+        // Download CSV file
+        var csvContent = csv.join('\n');
+        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        var url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'quotation_comparison_{{ purchase_order.po_number }}.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+    
+    // Highlight comparison rows on hover
+    $('.comparison-table tbody tr').hover(
+        function() {
+            $(this).addClass('table-hover');
+        },
+        function() {
+            $(this).removeClass('table-hover');
+        }
+    );
+    
+    // Approve quotation with confirmation
+    $('.approve-quotation').on('click', function() {
+        var quotationId = $(this).data('quotation-id');
+        var approvalType = $(this).data('approval-type');
+        var supplierName = $(this).data('supplier-name');
+        var confirmMessage = '';
+        
+        if (approvalType === 'best_price') {
+            confirmMessage = '{{ text_confirm_approve_best_price }}'.replace('{supplier}', supplierName);
+        } else {
+            confirmMessage = '{{ text_confirm_approve_best_value }}'.replace('{supplier}', supplierName);
+        }
+        
+        if (confirm(confirmMessage)) {
+            // Show loading spinner
+            $(this).html('<i class="fas fa-spinner fa-spin"></i> {{ text_processing }}');
+            
+            $.ajax({
+                url: 'index.php?route=purchase/quotation/approve&user_token={{ user_token }}',
+                type: 'POST',
+                data: {
+                    quotation_id: quotationId,
+                    approval_type: approvalType,
+                    po_id: '{{ purchase_order.po_id }}'
+                },
+                dataType: 'json',
+                beforeSend: function() {
+                    $('.approve-quotation').prop('disabled', true);
+                },
+                complete: function() {
+                    $('.approve-quotation').prop('disabled', false);
+                },
+                success: function(json) {
+                    if (json.success) {
+                        // Show success message
+                        toastr.success(json.success);
+                        
+                        // Add success alert at the top of the page
+                        $('.card-body').prepend('<div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle"></i> ' + json.success + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                        
+                        // If there's a purchase order URL, add a button to go to it
+                        if (json.purchase_order_url) {
+                            $('.card-body').prepend('<div class="alert alert-success alert-dismissible fade show"><i class="fas fa-file-invoice"></i> {{ text_po_created }} <a href="' + json.purchase_order_url + '" class="btn btn-primary ms-3"><i class="fas fa-eye"></i> {{ text_view_purchase_order }}</a><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                        }
+                        
+                        // Disable all approval buttons
+                        $('.approve-quotation').prop('disabled', true).removeClass('btn-primary btn-success').addClass('btn-secondary');
+                        
+                        // Add approved badge to the selected quotation
+                        $('#quotation-' + quotationId).addClass('border-success').append('<div class="mt-2 text-center"><span class="badge bg-success"><i class="fas fa-check-circle"></i> {{ text_approved }}</span></div>');
+                    }
+                    
+                    if (json.error) {
+                        toastr.error(json.error);
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    toastr.error(thrownError + "\r\n" + xhr.statusText);
+                }
+            });
+        }
+    });
+    
+    // Toggle detailed comparison view
+    $('#toggle-details').on('click', function() {
+        $('.comparison-details').toggleClass('d-none');
+        var isVisible = !$('.comparison-details').hasClass('d-none');
+        $(this).html(isVisible ? 
+            '<i class="fas fa-compress-alt"></i> {{ text_hide_details }}' : 
+            '<i class="fas fa-expand-alt"></i> {{ text_show_details }}');
+    });
+});
+</script>
+
+<style type="text/css">
+.comparison-table {
+    font-size: 0.9rem;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-table th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+}
+
+.comparison-table th:first-child,
+.comparison-table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #f8f9fa;
+    z-index: 5;
+}
+
+.comparison-table th:first-child {
+    z-index: 15;
+}
+
+.comparison-table .table-hover {
+    background-color: #f5f5f5;
+}
+
+.rating {
+    display: inline-block;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.border-success {
+    border: 2px solid #28a745 !important;
+}
+
+.border-info {
+    border: 2px solid #17a2b8 !important;
+}
+
+/* Highlight best values */
+.table-success {
+    background-color: rgba(40, 167, 69, 0.15);
+}
+
+/* Improved badges */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.25em 0.5em;
+}
+
+/* Highlight on hover */
+.comparison-table tr:hover td {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Improved print styles */
+@media print {
+    .comparison-table {
+        font-size: 10px;
+    }
+    .print-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .po-info {
+        font-size: 12px;
+    }
+}
+</style>
+{{ footer }}

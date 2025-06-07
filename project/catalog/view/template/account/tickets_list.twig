@@ -1,0 +1,16 @@
+                {%  if tickets %}
+                {% for ticket in tickets %}
+                <tr>
+                    <td  class="text-center">{{ ticket.ticket_id }}</td>
+                    <td  class="text-center">{{ ticket.date_added }}</td>
+                    <td  class="text-center">{{ ticket.subject }}</td>
+                    <td  class="text-center">
+                    {% if ticket.status == '1' %}{{text_open}}{% endif %}
+                    {% if ticket.status == '2' %}{{text_close}}{% endif %}
+                    </td>
+                    <td  class="text-center"><a href="{{ ticket.href }}" class="btn btn-info">{{ button_view }}</a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="5" class="text-center">{{textx_no_results}}</td></tr>
+                {% endif %}

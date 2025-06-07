@@ -1,0 +1,189 @@
+<div class="container-fluid">
+    {% if quotations %}
+        {# معلومات طلب الشراء #}
+        <div class="well">
+            <div class="row">
+                <div class="col-sm-4">
+                    <strong>{{ text_requisition_number }}:</strong> {{ requisition_info.req_number }}
+                </div>
+                <div class="col-sm-4">
+                    <strong>{{ text_branch }}:</strong> {{ requisition_info.branch_name }}
+                </div>
+                <div class="col-sm-4">
+                    <strong>{{ text_total_quotations }}:</strong> {{ quotations|length }}
+                </div>
+            </div>
+        </div>
+
+        {# المقارنة العامة #}
+        <h4><i class="fa fa-line-chart"></i> {{ text_general_comparison }}</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>{{ column_supplier }}</th>
+                        <th>{{ column_quotation_number }}</th>
+                        <th>{{ column_date_added }}</th>
+                        <th>{{ column_payment_terms }}</th>
+                        <th>{{ column_delivery_terms }}</th>
+                        <th>{{ column_currency }}</th>
+                        <th>{{ column_subtotal }}</th>
+                        <th>{{ column_tax }}</th>
+                        <th>{{ column_total }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quotation in quotations %}
+                    <tr {% if quotation.is_lowest_price %}class="success"{% endif %}>
+                        <td>{{ quotation.supplier_name }}</td>
+                        <td>{{ quotation.quotation_number }}</td>
+                        <td>{{ quotation.created_at|date('Y-m-d') }}</td>
+                        <td>{{ quotation.payment_terms }}</td>
+                        <td>{{ quotation.delivery_terms }}</td>
+                        <td>{{ quotation.currency_code }}</td>
+                        <td class="text-right">{{ formatCurrency(quotation.subtotal, quotation.currency_code) }}</td>
+                        <td class="text-right">{{ formatCurrency(quotation.tax_amount, quotation.currency_code) }}</td>
+                        <td class="text-right">
+                            <strong>{{ formatCurrency(quotation.total_amount, quotation.currency_code) }}</strong>
+                            {% if quotation.is_lowest_price %}
+                            <i class="fa fa-star text-warning" title="{{ text_lowest_price }}"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# مقارنة المنتجات #}
+        <h4><i class="fa fa-cubes"></i> {{ text_products_comparison }}</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>{{ column_product }}</th>
+                        <th>{{ column_quantity }}</th>
+                        <th>{{ column_unit }}</th>
+                        {% for quotation in quotations %}
+                        <th>
+                            {{ quotation.supplier_name }}
+                            <br><small>({{ quotation.currency_code }})</small>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <strong>{{ product.product_name }}</strong><br>
+                            <small>{{ text_required_quantity }}: {{ product.requisition_quantity }}</small>
+                        </td>
+                        <td class="text-center">{{ product.quantity }}</td>
+                        <td>{{ product.unit_name }}</td>
+                        {% for quotation in quotations %}
+                            <td class="text-right">
+                                {% if getQuotationItem(quotation, product.product_id) %}
+                                    {% set item = getQuotationItem(quotation, product.product_id) %}
+                                    <div {% if item.is_lowest_price %}class="text-success"{% endif %}>
+                                        {{ formatCurrency(item.unit_price, quotation.currency_code) }} / {{ item.unit_name }}
+                                        <br>
+                                        {% if item.discount_rate > 0 %}
+                                        <small class="text-danger">-{{ item.discount_rate }}%</small>
+                                        {% endif %}
+                                        {% if item.is_lowest_price %}
+                                        <br><i class="fa fa-check text-success" title="{{ text_best_price }}"></i>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# تحليل المقارنة #}
+        <div class="well">
+            <h4><i class="fa fa-bar-chart"></i> {{ text_analysis }}</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>{{ text_pricing_analysis }}</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>{{ text_best_overall_price }}:</strong> 
+                            {{ best_price_quotation.supplier_name }} 
+                            ({{ formatCurrency(best_price_quotation.total_amount, best_price_quotation.currency_code) }})
+                        </li>
+                        <li><strong>{{ text_price_difference }}:</strong>
+                            {{ price_difference_percentage }}% {{ text_between_highest_lowest }}
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>{{ text_terms_analysis }}</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>{{ text_payment_terms }}:</strong>
+                            <ul>
+                            {% for quotation in quotations %}
+                                <li>{{ quotation.supplier_name }}: {{ quotation.payment_terms }}</li>
+                            {% endfor %}
+                            </ul>
+                        </li>
+                        <li><strong>{{ text_delivery_terms }}:</strong>
+                            <ul>
+                            {% for quotation in quotations %}
+                                <li>{{ quotation.supplier_name }}: {{ quotation.delivery_terms }}</li>
+                            {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {# أزرار الإجراءات #}
+        {% if can_approve %}
+        <div class="text-right">
+            <a href="{{ export_url }}" class="btn btn-success" target="_blank">
+                <i class="fa fa-file-excel-o"></i> {{ button_export_comparison }}
+            </a>
+            <button type="button" class="btn btn-primary" onclick="approveQuotation({{ best_price_quotation.quotation_id }})">
+                <i class="fa fa-check"></i> {{ button_approve_best }}
+            </button>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fa fa-info-circle"></i> {{ text_no_quotations }}
+        </div>
+    {% endif %}
+</div>
+
+<script type="text/javascript">
+function approveQuotation(quotation_id) {
+    if (confirm('{{ text_confirm_approve_quotation }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/ajaxApproveQuotation&user_token={{ user_token }}',
+            type: 'post',
+            data: { quotation_id: quotation_id },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    alert(json.success);
+                    $('#modal-quotations').modal('hide');
+                    loadRequisitions();
+                } else if (json.error) {
+                    alert(json.error);
+                }
+            },
+            error: function() {
+                alert('{{ text_error_system }}');
+            }
+        });
+    }
+}
+</script>

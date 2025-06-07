@@ -1,0 +1,30 @@
+{{ header }}
+<div id="account-order" class="container">
+  <ul class="breadcrumb">
+    {% for breadcrumb in breadcrumbs %}
+    <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+    {% endfor %}
+  </ul>
+  </div>
+  
+<div class="history-tl-container">
+<h2>{{ text_track_status }}</h2>
+ {{no_info}}
+  <ul class="tl">
+  
+    {% for activity in activities %}
+    <li class="tl-item" ng-repeat="item in retailer_history">
+      <div class="" id="align-dat">
+      
+        {{ activity.Date}} <br>  {{ activity.Time|date('H:i:s') }}
+      </div>
+      <div class="item-title">{{ activity.ServiceEvent.Description }}</div>
+      <div class="item-detail">{{ activity.ServiceArea.Description }}</div>
+    </li>
+     {% endfor %}
+  </ul>
+  
+
+</div>
+
+{{ footer }}

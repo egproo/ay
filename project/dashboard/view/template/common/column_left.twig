@@ -1,0 +1,68 @@
+<nav id="column-left">
+
+  <ul id="menu">
+    {% set i = 0 %}
+    {% for menu in menus %}
+    <li id="{{ menu.id }}">
+        {% if menu.href %}<a href="{{ menu.href }}">
+            
+            {% if menu.id == 'menu-pos'%}
+
+<svg  style="margin-inline-end: 10px;" fill="#b3cbdd" xmlns="http://www.w3.org/2000/svg" width="20px" viewBox="0 0 512 512"><path d="M64 0C46.3 0 32 14.3 32 32V96c0 17.7 14.3 32 32 32h80v32H87c-31.6 0-58.5 23.1-63.3 54.4L1.1 364.1C.4 368.8 0 373.6 0 378.4V448c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V378.4c0-4.8-.4-9.6-1.1-14.4L488.2 214.4C483.5 183.1 456.6 160 425 160H208V128h80c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H64zM96 48H256c8.8 0 16 7.2 16 16s-7.2 16-16 16H96c-8.8 0-16-7.2-16-16s7.2-16 16-16zM64 432c0-8.8 7.2-16 16-16H432c8.8 0 16 7.2 16 16s-7.2 16-16 16H80c-8.8 0-16-7.2-16-16zm48-168a24 24 0 1 1 0-48 24 24 0 1 1 0 48zm120-24a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM160 344a24 24 0 1 1 0-48 24 24 0 1 1 0 48zM328 240a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM256 344a24 24 0 1 1 0-48 24 24 0 1 1 0 48zM424 240a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM352 344a24 24 0 1 1 0-48 24 24 0 1 1 0 48z"/></svg> 
+
+
+            {% elseif menu.id == 'menu-eta' %}
+
+
+<svg style="margin-inline-end: 10px;" fill="#b3cbdd" xmlns="http://www.w3.org/2000/svg" width="20px" viewBox="0 0 384 512"><path d="M288 256H96v64h192v-64zm89-151L279.1 7c-4.5-4.5-10.6-7-17-7H256v128h128v-6.1c0-6.3-2.5-12.4-7-16.9zm-153 31V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zM64 72c0-4.4 3.6-8 8-8h80c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8H72c-4.4 0-8-3.6-8-8V72zm0 64c0-4.4 3.6-8 8-8h80c4.4 0 8 3.6 8 8v16c0 4.4-3.6 8-8 8H72c-4.4 0-8-3.6-8-8v-16zm256 304c0 4.4-3.6 8-8 8h-80c-4.4 0-8-3.6-8-8v-16c0-4.4 3.6-8 8-8h80c4.4 0 8 3.6 8 8v16zm0-200v96c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16v-96c0-8.8 7.2-16 16-16h224c8.8 0 16 7.2 16 16z"/></svg>
+ 
+ 
+             {% elseif menu.id == 'menu-accounts' %}
+
+ 
+ <svg style="margin-inline-end: 10px;" fill="#b3cbdd"  xmlns="http://www.w3.org/2000/svg" width="20px" viewBox="0 0 384 512"><path d="M14 2.2C22.5-1.7 32.5-.3 39.6 5.8L80 40.4 120.4 5.8c9-7.7 22.3-7.7 31.2 0L192 40.4 232.4 5.8c9-7.7 22.3-7.7 31.2 0L304 40.4 344.4 5.8c7.1-6.1 17.1-7.5 25.6-3.6s14 12.4 14 21.8V488c0 9.4-5.5 17.9-14 21.8s-18.5 2.5-25.6-3.6L304 471.6l-40.4 34.6c-9 7.7-22.3 7.7-31.2 0L192 471.6l-40.4 34.6c-9 7.7-22.3 7.7-31.2 0L80 471.6 39.6 506.2c-7.1 6.1-17.1 7.5-25.6 3.6S0 497.4 0 488V24C0 14.6 5.5 6.1 14 2.2zM96 144c-8.8 0-16 7.2-16 16s7.2 16 16 16H288c8.8 0 16-7.2 16-16s-7.2-16-16-16H96zM80 352c0 8.8 7.2 16 16 16H288c8.8 0 16-7.2 16-16s-7.2-16-16-16H96c-8.8 0-16 7.2-16 16zM96 240c-8.8 0-16 7.2-16 16s7.2 16 16 16H288c8.8 0 16-7.2 16-16s-7.2-16-16-16H96z"/></svg>
+ 
+ {% else %}
+              <i class="fa {{ menu.icon }} fw"></i>          
+            {% endif %}
+            {{ menu.name }}</a>{% else %}<a href="#collapse{{ i }}" data-toggle="collapse" class="parent collapsed"><i class="fa {{ menu.icon }} fw"></i> {{ menu.name }}</a>{% endif %}
+        {% if menu.children %}
+          <ul id="collapse{{ i }}" class="collapse">
+            {% set j = 0 %}
+            {% for children_1 in menu.children %}
+              <li>{% if children_1.href %}
+                  <a href="{{ children_1.href }}">{{ children_1.name }}</a>
+                {% else %}
+                  <a href="#collapse{{ i }}-{{ j }}" data-toggle="collapse" class="parent collapsed">{{ children_1.name }}</a>
+                {% endif %}
+
+                {% if children_1.children %}
+                  <ul id="collapse{{ i }}-{{ j }}" class="collapse">
+                    {% set k = 0 %}
+                    {% for children_2 in children_1.children %}
+                      <li>{% if children_2.href %}
+                          <a href="{{ children_2.href }}">{{ children_2.name }}</a>
+                        {% else %}
+                          <a href="#collapse-{{ i }}-{{ j }}-{{ k }}" data-toggle="collapse" class="parent collapsed">{{ children_2.name }}</a>
+                        {% endif %}
+                        {% if children_2.children %}
+                          <ul id="collapse-{{ i }}-{{ j }}-{{ k }}" class="collapse">
+                            {% for children_3 in children_2.children %}
+                              <li><a href="{{ children_3.href }}">{{ children_3.name }}</a></li>
+                            {% endfor %}
+                          </ul>
+                        {% endif %}</li>
+                      {% set k = k + 1 %}
+                    {% endfor %}
+                  </ul>
+                {% endif %} </li>
+              {% set j = j + 1 %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% set i = i + 1 %}
+    {% endfor %}
+  </ul>
+
+</nav>

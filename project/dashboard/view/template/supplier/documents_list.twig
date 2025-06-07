@@ -1,0 +1,305 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-documents').submit() : false;"><i class="fa fa-trash-o"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-success" onclick="exportDocuments();"><i class="fa fa-download"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <!-- Document Statistics Cards -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-file-text fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ documents|length }}</div>
+                <div>{{ info_total_documents }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-clock-o fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ expiring_count|default(0) }}</div>
+                <div>{{ text_expiring_soon }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-danger">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exclamation-triangle fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ expired_count|default(0) }}</div>
+                <div>{{ text_expired }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-upload fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ recent_uploads|default(0) }}</div>
+                <div>{{ info_recent_uploads }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-title">{{ filter_title }}</label>
+                <input type="text" name="filter_title" value="{{ filter_title }}" placeholder="{{ filter_title }}" id="input-title" class="form-control" />
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-supplier">{{ filter_supplier }}</label>
+                <select name="filter_supplier_id" id="input-supplier" class="form-control">
+                  <option value="">{{ text_all_suppliers }}</option>
+                  {% for supplier in suppliers %}
+                  {% if supplier.supplier_id == filter_supplier_id %}
+                  <option value="{{ supplier.supplier_id }}" selected="selected">{{ supplier.name }}</option>
+                  {% else %}
+                  <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-document-type">{{ filter_document_type }}</label>
+                <select name="filter_document_type" id="input-document-type" class="form-control">
+                  <option value="">{{ text_all_types }}</option>
+                  {% for type_key, type_name in document_types %}
+                  {% if type_key == filter_document_type %}
+                  <option value="{{ type_key }}" selected="selected">{{ type_name }}</option>
+                  {% else %}
+                  <option value="{{ type_key }}">{{ type_name }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-status">{{ filter_status }}</label>
+                <select name="filter_status" id="input-status" class="form-control">
+                  <option value=""></option>
+                  {% if filter_status == '1' %}
+                  <option value="1" selected="selected">{{ text_active }}</option>
+                  {% else %}
+                  <option value="1">{{ text_active }}</option>
+                  {% endif %}
+                  {% if filter_status == '0' %}
+                  <option value="0" selected="selected">{{ text_archived }}</option>
+                  {% else %}
+                  <option value="0">{{ text_archived }}</option>
+                  {% endif %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 text-right">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+              <button type="button" id="button-reset" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_reset }}</button>
+            </div>
+          </div>
+        </div>
+        
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-documents">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">{% if sort == 'sd.title' %}<a href="{{ sort_title }}" class="{{ order|lower }}">{{ column_title }}</a>{% else %}<a href="{{ sort_title }}">{{ column_title }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 's.name' %}<a href="{{ sort_supplier }}" class="{{ order|lower }}">{{ column_supplier }}</a>{% else %}<a href="{{ sort_supplier }}">{{ column_supplier }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'sd.document_type' %}<a href="{{ sort_type }}" class="{{ order|lower }}">{{ column_document_type }}</a>{% else %}<a href="{{ sort_type }}">{{ column_document_type }}</a>{% endif %}</td>
+                  <td class="text-right">{{ column_file_size }}</td>
+                  <td class="text-left">{% if sort == 'sd.expiry_date' %}<a href="{{ sort_expiry_date }}" class="{{ order|lower }}">{{ column_expiry_date }}</a>{% else %}<a href="{{ sort_expiry_date }}">{{ column_expiry_date }}</a>{% endif %}</td>
+                  <td class="text-left">{{ column_status }}</td>
+                  <td class="text-left">{% if sort == 'sd.date_added' %}<a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>{% else %}<a href="{{ sort_date_added }}">{{ column_date_added }}</a>{% endif %}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if documents %}
+                {% for document in documents %}
+                <tr>
+                  <td class="text-center">{% if document.document_id in selected %}<input type="checkbox" name="selected[]" value="{{ document.document_id }}" checked="checked" />{% else %}<input type="checkbox" name="selected[]" value="{{ document.document_id }}" />{% endif %}</td>
+                  <td class="text-left">
+                    <strong>{{ document.title }}</strong>
+                    {% if document.expiry_date %}
+                      {% set days_to_expiry = (document.expiry_date|date('U') - 'now'|date('U')) / 86400 %}
+                      {% if days_to_expiry < 0 %}
+                        <span class="label label-danger">{{ text_expired }}</span>
+                      {% elseif days_to_expiry <= 30 %}
+                        <span class="label label-warning">{{ text_expiring_soon }}</span>
+                      {% endif %}
+                    {% endif %}
+                  </td>
+                  <td class="text-left">{{ document.supplier_name }}</td>
+                  <td class="text-left">{{ document.document_type }}</td>
+                  <td class="text-right">{{ document.file_size }}</td>
+                  <td class="text-left">{{ document.expiry_date ?: text_no_expiry }}</td>
+                  <td class="text-left">
+                    {% if document.status == text_active %}
+                    <span class="label label-success">{{ document.status }}</span>
+                    {% else %}
+                    <span class="label label-default">{{ document.status }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-left">{{ document.date_added }}</td>
+                  <td class="text-right">
+                    <div class="btn-group">
+                      <a href="{{ document.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
+                      <a href="{{ document.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                      <a href="{{ document.download }}" data-toggle="tooltip" title="{{ button_download }}" class="btn btn-success btn-sm"><i class="fa fa-download"></i></a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="9">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=supplier/documents&user_token={{ user_token }}';
+    
+    var filter_title = $('input[name=\'filter_title\']').val();
+    if (filter_title) {
+        url += '&filter_title=' + encodeURIComponent(filter_title);
+    }
+    
+    var filter_supplier_id = $('select[name=\'filter_supplier_id\']').val();
+    if (filter_supplier_id !== '') {
+        url += '&filter_supplier_id=' + filter_supplier_id;
+    }
+    
+    var filter_document_type = $('select[name=\'filter_document_type\']').val();
+    if (filter_document_type !== '') {
+        url += '&filter_document_type=' + filter_document_type;
+    }
+    
+    var filter_status = $('select[name=\'filter_status\']').val();
+    if (filter_status !== '') {
+        url += '&filter_status=' + filter_status;
+    }
+    
+    location = url;
+});
+
+$('#button-reset').on('click', function() {
+    location = 'index.php?route=supplier/documents&user_token={{ user_token }}';
+});
+
+function exportDocuments() {
+    var url = 'index.php?route=supplier/documents/export&user_token={{ user_token }}';
+    
+    // Add current filters to export
+    var filter_title = $('input[name=\'filter_title\']').val();
+    if (filter_title) {
+        url += '&filter_title=' + encodeURIComponent(filter_title);
+    }
+    
+    var filter_supplier_id = $('select[name=\'filter_supplier_id\']').val();
+    if (filter_supplier_id !== '') {
+        url += '&filter_supplier_id=' + filter_supplier_id;
+    }
+    
+    var filter_document_type = $('select[name=\'filter_document_type\']').val();
+    if (filter_document_type !== '') {
+        url += '&filter_document_type=' + filter_document_type;
+    }
+    
+    var filter_status = $('select[name=\'filter_status\']').val();
+    if (filter_status !== '') {
+        url += '&filter_status=' + filter_status;
+    }
+    
+    window.open(url, '_blank');
+}
+
+// Initialize tooltips
+$('[data-toggle="tooltip"]').tooltip();
+
+// Auto-refresh for expiry status
+setInterval(function() {
+    // Update expiry labels if needed
+    $('.label-warning, .label-danger').each(function() {
+        // Could add real-time expiry status updates here
+    });
+}, 60000); // Check every minute
+//--></script>
+
+{{ footer }}

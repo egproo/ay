@@ -1,0 +1,406 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary">
+          <i class="fa fa-pencil"></i>
+        </a>
+        <a href="{{ print }}" data-toggle="tooltip" title="{{ button_print }}" class="btn btn-warning" target="_blank">
+          <i class="fa fa-print"></i>
+        </a>
+        <button type="button" data-toggle="tooltip" title="طباعة الصفحة" class="btn btn-default" onclick="window.print();">
+          <i class="fa fa-file-pdf-o"></i>
+        </button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - عرض التفاصيل</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- معلومات الباركود -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-info-circle"></i> معلومات الباركود
+              <span class="label label-{{ barcode_info.is_active ? 'success' : 'danger' }} pull-right">
+                {{ barcode_info.is_active ? 'مفعل' : 'معطل' }}
+              </span>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <table class="table table-condensed">
+                  <tr>
+                    <td><strong>المنتج:</strong></td>
+                    <td>{{ barcode_info.product_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>موديل:</strong></td>
+                    <td>{{ barcode_info.model ? barcode_info.model : '-' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>SKU:</strong></td>
+                    <td>{{ barcode_info.sku ? barcode_info.sku : '-' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>قيمة الباركود:</strong></td>
+                    <td><code class="barcode-value">{{ barcode_info.barcode_value }}</code></td>
+                  </tr>
+                  <tr>
+                    <td><strong>نوع الباركود:</strong></td>
+                    <td>
+                      <span class="label label-info">
+                        {% if barcode_info.barcode_type == 'EAN13' %}EAN-13 (أوروبي)
+                        {% elseif barcode_info.barcode_type == 'EAN8' %}EAN-8 (أوروبي مختصر)
+                        {% elseif barcode_info.barcode_type == 'UPC' %}UPC (أمريكي)
+                        {% elseif barcode_info.barcode_type == 'CODE128' %}Code 128 (صناعي)
+                        {% elseif barcode_info.barcode_type == 'CODE39' %}Code 39 (تقليدي)
+                        {% elseif barcode_info.barcode_type == 'QR' %}QR Code (ثنائي الأبعاد)
+                        {% elseif barcode_info.barcode_type == 'DATAMATRIX' %}Data Matrix (مصفوفة)
+                        {% elseif barcode_info.barcode_type == 'PDF417' %}PDF417 (متقدم)
+                        {% else %}مخصص{% endif %}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>الوحدة:</strong></td>
+                    <td>{{ barcode_info.unit_name ? barcode_info.unit_name ~ ' (' ~ barcode_info.unit_symbol ~ ')' : 'الوحدة الأساسية' }}</td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-condensed">
+                  <tr>
+                    <td><strong>الخيار:</strong></td>
+                    <td>{{ barcode_info.option_name ? barcode_info.option_name : '-' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>قيمة الخيار:</strong></td>
+                    <td>{{ barcode_info.option_value_name ? barcode_info.option_value_name : '-' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>باركود أساسي:</strong></td>
+                    <td>
+                      {% if barcode_info.is_primary %}
+                      <span class="label label-success">نعم</span>
+                      {% else %}
+                      <span class="label label-default">لا</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>تم إنشاؤه تلقائياً:</strong></td>
+                    <td>
+                      {% if barcode_info.auto_generated %}
+                      <span class="label label-warning">نعم</span>
+                      {% else %}
+                      <span class="label label-info">يدوي</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>تاريخ الإنشاء:</strong></td>
+                    <td>{{ barcode_info.date_added }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>آخر تعديل:</strong></td>
+                    <td>{{ barcode_info.date_modified }}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+            
+            {% if barcode_info.notes %}
+            <div class="row">
+              <div class="col-md-12">
+                <div class="well">
+                  <strong>ملاحظات:</strong><br>
+                  {{ barcode_info.notes }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- إحصائيات الاستخدام -->
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bar-chart"></i> إحصائيات الاستخدام</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h3 class="text-success">{{ barcode_info.scan_count }}</h3>
+                  <small>إجمالي المسح</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h3 class="text-warning">{{ barcode_info.print_count }}</h3>
+                  <small>إجمالي الطباعة</small>
+                </div>
+              </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+              <div class="col-xs-12">
+                <div class="text-center">
+                  <h4 class="text-primary">{{ barcode_info.scan_count + barcode_info.print_count }}</h4>
+                  <small>إجمالي الاستخدام</small>
+                </div>
+              </div>
+            </div>
+            
+            {% if barcode_info.last_scanned %}
+            <hr>
+            <div class="text-center">
+              <strong>آخر مسح:</strong><br>
+              <small class="text-muted">{{ barcode_info.last_scanned }}</small>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- عرض الباركود -->
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-qrcode"></i> عرض الباركود</h3>
+      </div>
+      <div class="panel-body text-center">
+        <div class="barcode-display">
+          <div class="barcode-visual">
+            <!-- هنا يمكن إضافة مكتبة لعرض الباركود بصرياً -->
+            <div class="barcode-placeholder">
+              <i class="fa fa-qrcode fa-5x text-muted"></i>
+              <br><br>
+              <code class="barcode-value-large">{{ barcode_info.barcode_value }}</code>
+            </div>
+          </div>
+          
+          <div class="barcode-details" style="margin-top: 20px;">
+            <div class="row">
+              <div class="col-md-3">
+                <strong>النوع:</strong><br>
+                <span class="text-info">{{ barcode_info.barcode_type }}</span>
+              </div>
+              <div class="col-md-3">
+                <strong>الطول:</strong><br>
+                <span class="text-primary">{{ barcode_info.barcode_value|length }} حرف</span>
+              </div>
+              <div class="col-md-3">
+                <strong>التشفير:</strong><br>
+                <span class="text-success">صحيح</span>
+              </div>
+              <div class="col-md-3">
+                <strong>قابلية القراءة:</strong><br>
+                <span class="text-warning">عالية</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- سجل المسح -->
+    {% if scan_log %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-search"></i> سجل المسح (آخر 10 عمليات)</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>التاريخ والوقت</th>
+                <th>المستخدم</th>
+                <th>نوع المسح</th>
+                <th>الموقع</th>
+                <th>ملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in scan_log %}
+              <tr>
+                <td>{{ log.scan_date }}</td>
+                <td>{{ log.user_name }}</td>
+                <td>
+                  <span class="label label-{{ log.scan_type == 'manual' ? 'info' : 'success' }}">
+                    {{ log.scan_type == 'manual' ? 'يدوي' : 'تلقائي' }}
+                  </span>
+                </td>
+                <td>{{ log.location ? log.location : '-' }}</td>
+                <td>{{ log.notes ? log.notes : '-' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- سجل الطباعة -->
+    {% if print_log %}
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-print"></i> سجل الطباعة (آخر 10 عمليات)</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>التاريخ والوقت</th>
+                <th>المستخدم</th>
+                <th>نوع الطباعة</th>
+                <th>الكمية</th>
+                <th>الطابعة</th>
+                <th>ملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in print_log %}
+              <tr>
+                <td>{{ log.print_date }}</td>
+                <td>{{ log.user_name }}</td>
+                <td>
+                  <span class="label label-{{ log.print_type == 'single' ? 'info' : 'warning' }}">
+                    {{ log.print_type == 'single' ? 'واحدة' : 'مجمعة' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge badge-primary">{{ log.quantity }}</span>
+                </td>
+                <td>{{ log.printer ? log.printer : 'افتراضي' }}</td>
+                <td>{{ log.notes ? log.notes : '-' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+@media print {
+    .page-header, .breadcrumb, .btn {
+        display: none !important;
+    }
+    
+    .panel {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+
+.barcode-value {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.barcode-value-large {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #f9f9f9;
+    padding: 10px 15px;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 10px 0;
+}
+
+.barcode-display {
+    background-color: #fff;
+    border: 2px dashed #ddd;
+    padding: 30px;
+    margin: 20px 0;
+    border-radius: 10px;
+}
+
+.barcode-placeholder {
+    padding: 40px 20px;
+}
+
+.barcode-details .row > div {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.badge-primary {
+    background-color: #337ab7;
+}
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.panel-heading h3 {
+    margin: 0;
+}
+
+.text-center h3, .text-center h4 {
+    margin: 10px 0;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // تحسين عرض الطباعة
+    window.addEventListener('beforeprint', function() {
+        $('.table-responsive').removeClass('table-responsive');
+    });
+    
+    window.addEventListener('afterprint', function() {
+        $('.table').parent().addClass('table-responsive');
+    });
+    
+    // إضافة تأثيرات بصرية للإحصائيات
+    $('.text-center h3, .text-center h4').each(function() {
+        var $this = $(this);
+        var finalValue = parseInt($this.text());
+        $this.text('0');
+        
+        $({ counter: 0 }).animate({ counter: finalValue }, {
+            duration: 1500,
+            easing: 'swing',
+            step: function() {
+                $this.text(Math.ceil(this.counter));
+            }
+        });
+    });
+});
+</script>
+
+{{ footer }}

@@ -1,0 +1,122 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <button type="button" id="button-filter" data-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-invoice').slideToggle();" class="btn btn-info"><i class="fa fa-filter"></i></button>
+                <button type="button" class="btn btn-default" onclick="location.reload();"><i class="fa fa-refresh"></i> {{ button_refresh }}</button>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div id="filter-invoice" style="display: none;" class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label" for="input-status">{{ entry_status }}</label>
+                            <select name="filter_status" id="input-status" class="form-control">
+                                <option value="">{{ text_all }}</option>
+                                <option value="pending">{{ text_pending }}</option>
+                                <option value="submitted">{{ text_submitted }}</option>
+                                <option value="accepted">{{ text_accepted }}</option>
+                                <option value="rejected">{{ text_rejected }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label" for="input-date-from">{{ entry_date_from }}</label>
+                            <div class="input-group date">
+                                <input type="text" name="filter_date_from" value="" placeholder="{{ entry_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label" for="input-date-to">{{ entry_date_to }}</label>
+                            <div class="input-group date">
+                                <input type="text" name="filter_date_to" value="" placeholder="{{ entry_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label" for="input-supplier">{{ entry_supplier }}</label>
+                            <input type="text" name="filter_supplier" value="" placeholder="{{ entry_supplier }}" id="input-supplier" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ column_invoice_id }}</th>
+                                <th>{{ column_order_id }}</th>
+                                <th>{{ column_customer }}</th>
+                                <th>{{ column_status }}</th>
+                                <th>{{ column_date_issued }}</th>
+                                <th>{{ column_total }}</th>
+                                <th>{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if invoices %}
+                                {% for invoice in invoices %}
+                                    <tr>
+                                        <td>{{ invoice.invoice_id }}</td>
+                                        <td>{{ invoice.order_id }}</td>
+                                        <td>{{ invoice.receiver_name }}</td>
+                                        <td>{{ invoice.status }}</td>
+                                        <td>{{ invoice.date_time_issued }}</td>
+                                        <td>{{ invoice.total }}</td>
+                                        <td class="text-right">
+                                            <a href="{{ invoice.view }}" class="btn btn-info"><i class="fa fa-eye"></i></a>
+                                            <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 text-left">{{ pagination }}</div>
+                    <div class="col-sm-6 text-right">{{ results }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ footer }}

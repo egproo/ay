@@ -1,0 +1,602 @@
+{{ header }}{{ column_left }}
+<div class="container-fluid">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" id="button-export" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-outline-secondary">
+          <i class="fas fa-download"></i>
+        </button>
+        <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+          <i class="fas fa-plus"></i>
+        </a>
+        <button type="button" id="button-delete" data-bs-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" disabled>
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error %}
+      <div class="alert alert-danger alert-dismissible">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    
+    {% if success %}
+      <div class="alert alert-success alert-dismissible">
+        <i class="fas fa-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4>{{ statistics.total_shipments|default(0) }}</h4>
+                <p class="mb-0">{{ text_total_shipments }}</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-shipping-fast fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-warning text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4>{{ statistics.pending_shipments|default(0) }}</h4>
+                <p class="mb-0">{{ text_pending_shipments }}</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-clock fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-info text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4>{{ statistics.active_shipments|default(0) }}</h4>
+                <p class="mb-0">{{ text_active_shipments }}</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-truck fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h4>{{ statistics.completed_shipments|default(0) }}</h4>
+                <p class="mb-0">{{ text_completed_shipments }}</p>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-check fa-2x"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-filter"></i> {{ button_filter }}
+        </h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-bs-toggle="collapse" data-bs-target="#filter-panel">
+            <i class="fas fa-minus"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body collapse show" id="filter-panel">
+        <form id="filter-form">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_shipment_number }}</label>
+                <input type="text" name="filter_shipment_number" class="form-control" placeholder="{{ placeholder_search }}">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_order_number }}</label>
+                <input type="text" name="filter_order_number" class="form-control">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_customer }}</label>
+                <input type="text" name="filter_customer" class="form-control">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_carrier }}</label>
+                <select name="filter_carrier_id" class="form-select">
+                  <option value="">{{ text_all_carriers }}</option>
+                  {% for carrier in carriers %}
+                    <option value="{{ carrier.carrier_id }}">{{ carrier.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_status }}</label>
+                <select name="filter_status" class="form-select">
+                  <option value="">{{ text_all_statuses }}</option>
+                  {% for status_key, status_value in statuses %}
+                    <option value="{{ status_key }}">{{ status_value }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_date_from }}</label>
+                <input type="date" name="filter_date_from" class="form-control">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">{{ entry_date_to }}</label>
+                <input type="date" name="filter_date_to" class="form-control">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="mb-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                  <button type="button" id="button-filter" class="btn btn-primary">
+                    <i class="fas fa-search"></i> {{ button_filter }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Shipments Table -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <i class="fas fa-list"></i> {{ text_list }}
+        </h3>
+        <div class="card-tools">
+          <button type="button" id="button-bulk-update" class="btn btn-sm btn-outline-primary" disabled>
+            <i class="fas fa-edit"></i> {{ button_bulk_update }}
+          </button>
+          <button type="button" id="button-create-from-order" class="btn btn-sm btn-outline-success">
+            <i class="fas fa-plus-circle"></i> {{ button_create_from_order }}
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover" id="shipments-table">
+            <thead>
+              <tr>
+                <th width="1">
+                  <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                </th>
+                <th>{{ column_shipment_number }}</th>
+                <th>{{ column_order_number }}</th>
+                <th>{{ column_customer }}</th>
+                <th>{{ column_carrier }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_date_shipped }}</th>
+                <th>{{ column_tracking_number }}</th>
+                <th>{{ column_shipping_cost }}</th>
+                <th>{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody id="shipments-tbody">
+              <tr>
+                <td colspan="10" class="text-center">
+                  <i class="fas fa-spinner fa-spin"></i> {{ text_loading }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="row mt-3">
+          <div class="col-sm-6">
+            <div id="pagination-info"></div>
+          </div>
+          <div class="col-sm-6">
+            <nav aria-label="Page navigation">
+              <ul class="pagination justify-content-end" id="pagination">
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tracking Modal -->
+<div class="modal fade" id="tracking-modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-map-marker-alt"></i> {{ text_tracking_info }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="tracking-content">
+        <div class="text-center">
+          <i class="fas fa-spinner fa-spin"></i> {{ text_loading }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Update Modal -->
+<div class="modal fade" id="bulk-update-modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-edit"></i> {{ button_bulk_update }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="bulk-update-form">
+          <div class="mb-3">
+            <label class="form-label">{{ entry_status }}</label>
+            <select name="status" class="form-select" required>
+              <option value="">{{ text_select }}</option>
+              {% for status_key, status_value in statuses %}
+                <option value="{{ status_key }}">{{ status_value }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ text_comment }}</label>
+            <textarea name="comment" class="form-control" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" id="button-bulk-update-confirm" class="btn btn-primary">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var current_page = 1;
+var total_pages = 1;
+
+$(document).ready(function() {
+    loadShipments();
+    
+    // Filter button
+    $('#button-filter').on('click', function() {
+        current_page = 1;
+        loadShipments();
+    });
+    
+    // Export button
+    $('#button-export').on('click', function() {
+        var params = $('#filter-form').serialize();
+        window.location = 'index.php?route=shipping/shipment/export&user_token={{ user_token }}&' + params;
+    });
+    
+    // Delete button
+    $('#button-delete').on('click', function() {
+        var selected = [];
+        $('input[name*="selected"]:checked').each(function() {
+            selected.push($(this).val());
+        });
+        
+        if (selected.length > 0) {
+            if (confirm('{{ confirm_delete }}')) {
+                $.ajax({
+                    url: 'index.php?route=shipping/shipment/delete&user_token={{ user_token }}',
+                    type: 'post',
+                    data: {selected: selected},
+                    success: function(data) {
+                        loadShipments();
+                        showAlert('success', '{{ text_success_delete }}');
+                    },
+                    error: function() {
+                        showAlert('danger', 'Error occurred while deleting shipments');
+                    }
+                });
+            }
+        }
+    });
+    
+    // Bulk update
+    $('#button-bulk-update').on('click', function() {
+        var selected = [];
+        $('input[name*="selected"]:checked').each(function() {
+            selected.push($(this).val());
+        });
+        
+        if (selected.length > 0) {
+            $('#bulk-update-modal').modal('show');
+        }
+    });
+    
+    $('#button-bulk-update-confirm').on('click', function() {
+        var selected = [];
+        $('input[name*="selected"]:checked').each(function() {
+            selected.push($(this).val());
+        });
+        
+        var formData = $('#bulk-update-form').serialize();
+        
+        $.ajax({
+            url: 'index.php?route=shipping/shipment/bulkUpdateStatus&user_token={{ user_token }}',
+            type: 'post',
+            data: formData + '&shipment_ids=' + selected.join(','),
+            dataType: 'json',
+            success: function(json) {
+                $('#bulk-update-modal').modal('hide');
+                if (json.success) {
+                    showAlert('success', json.success);
+                    loadShipments();
+                } else if (json.error) {
+                    showAlert('danger', json.error);
+                }
+            }
+        });
+    });
+    
+    // Checkbox change event
+    $(document).on('change', 'input[name*="selected"]', function() {
+        var selected = $('input[name*="selected"]:checked').length;
+        $('#button-delete, #button-bulk-update').prop('disabled', selected === 0);
+    });
+});
+
+function loadShipments() {
+    var formData = $('#filter-form').serialize();
+    formData += '&start=' + ((current_page - 1) * 20) + '&limit=20';
+    
+    $.ajax({
+        url: '{{ ajax_shipments_url }}',
+        type: 'post',
+        data: formData,
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                displayShipments(json.shipments);
+                updatePagination(json.total);
+            } else if (json.error) {
+                showAlert('danger', json.error);
+            }
+        }
+    });
+}
+
+function displayShipments(shipments) {
+    var html = '';
+    
+    if (shipments.length > 0) {
+        $.each(shipments, function(index, shipment) {
+            var statusClass = getStatusClass(shipment.status);
+            
+            html += '<tr>';
+            html += '<td><input type="checkbox" name="selected[]" value="' + shipment.shipment_id + '" /></td>';
+            html += '<td>' + shipment.shipment_number + '</td>';
+            html += '<td>' + shipment.order_number + '</td>';
+            html += '<td>' + shipment.customer_name + '</td>';
+            html += '<td>' + shipment.carrier_name + '</td>';
+            html += '<td><span class="badge bg-' + statusClass + '">' + shipment.status_text + '</span></td>';
+            html += '<td>' + shipment.date_shipped + '</td>';
+            html += '<td>' + shipment.tracking_number + '</td>';
+            html += '<td>' + shipment.shipping_cost + '</td>';
+            html += '<td>';
+            html += '<div class="btn-group">';
+            html += '<a href="' + shipment.edit + '" class="btn btn-sm btn-primary" title="{{ button_edit }}"><i class="fas fa-edit"></i></a>';
+            html += '<button type="button" class="btn btn-sm btn-info" onclick="trackShipment(' + shipment.shipment_id + ')" title="{{ button_track }}"><i class="fas fa-map-marker-alt"></i></button>';
+            html += '<a href="' + shipment.print_label + '" class="btn btn-sm btn-secondary" title="{{ button_print_label }}"><i class="fas fa-print"></i></a>';
+            html += '</div>';
+            html += '</td>';
+            html += '</tr>';
+        });
+    } else {
+        html = '<tr><td colspan="10" class="text-center">{{ text_no_results }}</td></tr>';
+    }
+    
+    $('#shipments-tbody').html(html);
+}
+
+function getStatusClass(status) {
+    var classes = {
+        'pending': 'warning',
+        'processing': 'info',
+        'shipped': 'primary',
+        'in_transit': 'info',
+        'out_for_delivery': 'warning',
+        'delivered': 'success',
+        'returned': 'danger',
+        'cancelled': 'secondary'
+    };
+    
+    return classes[status] || 'secondary';
+}
+
+function trackShipment(shipmentId) {
+    $('#tracking-modal').modal('show');
+    $('#tracking-content').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> {{ text_loading }}</div>');
+    
+    $.ajax({
+        url: '{{ ajax_track_url }}',
+        type: 'post',
+        data: {shipment_id: shipmentId},
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                displayTrackingInfo(json.tracking_data);
+            } else if (json.error) {
+                $('#tracking-content').html('<div class="alert alert-danger">' + json.error + '</div>');
+            }
+        }
+    });
+}
+
+function displayTrackingInfo(data) {
+    var html = '<div class="tracking-info">';
+    html += '<div class="row mb-3">';
+    html += '<div class="col-md-6"><strong>{{ text_current_status }}:</strong> ' + data.current_status + '</div>';
+    html += '<div class="col-md-6"><strong>{{ column_tracking_number }}:</strong> ' + data.tracking_number + '</div>';
+    html += '</div>';
+    
+    if (data.carrier_tracking && data.carrier_tracking.events) {
+        html += '<h6>{{ text_tracking_events }}</h6>';
+        html += '<div class="timeline">';
+        
+        $.each(data.carrier_tracking.events, function(index, event) {
+            html += '<div class="timeline-item">';
+            html += '<div class="timeline-marker"></div>';
+            html += '<div class="timeline-content">';
+            html += '<h6>' + event.status + '</h6>';
+            html += '<p>' + event.description + '</p>';
+            html += '<small class="text-muted">' + event.date + ' - ' + event.location + '</small>';
+            html += '</div>';
+            html += '</div>';
+        });
+        
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    $('#tracking-content').html(html);
+}
+
+function updatePagination(total) {
+    var totalPages = Math.ceil(total / 20);
+    var html = '';
+    
+    // Previous button
+    if (current_page > 1) {
+        html += '<li class="page-item"><a class="page-link" href="#" onclick="changePage(' + (current_page - 1) + ')">Previous</a></li>';
+    }
+    
+    // Page numbers
+    for (var i = 1; i <= totalPages; i++) {
+        if (i == current_page) {
+            html += '<li class="page-item active"><span class="page-link">' + i + '</span></li>';
+        } else {
+            html += '<li class="page-item"><a class="page-link" href="#" onclick="changePage(' + i + ')">' + i + '</a></li>';
+        }
+    }
+    
+    // Next button
+    if (current_page < totalPages) {
+        html += '<li class="page-item"><a class="page-link" href="#" onclick="changePage(' + (current_page + 1) + ')">Next</a></li>';
+    }
+    
+    $('#pagination').html(html);
+    $('#pagination-info').html('Showing ' + ((current_page - 1) * 20 + 1) + ' to ' + Math.min(current_page * 20, total) + ' of ' + total + ' entries');
+}
+
+function changePage(page) {
+    current_page = page;
+    loadShipments();
+}
+
+function showAlert(type, message) {
+    var alertHtml = '<div class="alert alert-' + type + ' alert-dismissible">';
+    alertHtml += '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + message;
+    alertHtml += '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    alertHtml += '</div>';
+    
+    $('.container-fluid .page-header').after(alertHtml);
+    
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+</script>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #007bff;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #007bff;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -31px;
+    top: 15px;
+    width: 2px;
+    height: calc(100% + 5px);
+    background-color: #dee2e6;
+}
+
+.timeline-item:last-child:before {
+    display: none;
+}
+
+.timeline-content {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #007bff;
+}
+</style>
+
+{{ footer }}

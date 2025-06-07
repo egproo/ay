@@ -1,0 +1,854 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="refresh-dashboard" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-success">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <a href="{{ export_report }}" data-toggle="tooltip" title="{{ button_export_report }}" class="btn btn-info">
+          <i class="fa fa-download"></i>
+        </a>
+        <button type="button" id="auto-refresh-toggle" data-toggle="tooltip" title="{{ text_auto_refresh }}" class="btn btn-default">
+          <i class="fa fa-clock-o"></i>
+        </button>
+        <button type="button" data-toggle="tooltip" title="طباعة الصفحة" class="btn btn-default" onclick="window.print();">
+          <i class="fa fa-print"></i>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- فلاتر سريعة -->
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <form method="get" id="filter-form" class="form-inline">
+          <input type="hidden" name="route" value="inventory/interactive_dashboard" />
+          <input type="hidden" name="user_token" value="{{ user_token }}" />
+
+          <div class="form-group">
+            <label for="filter_date_from">{{ text_from_date }}:</label>
+            <input type="date" name="filter_date_from" value="{{ filter_date_from }}" id="filter_date_from" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="filter_date_to">{{ text_to_date }}:</label>
+            <input type="date" name="filter_date_to" value="{{ filter_date_to }}" id="filter_date_to" class="form-control" />
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-filter"></i> {{ text_filter }}
+          </button>
+
+          <a href="{{ refresh }}" class="btn btn-default">
+            <i class="fa fa-refresh"></i> {{ text_clear_filters }}
+          </a>
+
+          <div class="pull-right">
+            <small class="text-muted">{{ text_last_updated }}: <span id="last-update-time">{{ "now"|date("d/m/Y H:i:s") }}</span></small>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- مؤشرات الأداء الرئيسية -->
+    <div class="row">
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-cubes fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" data-value="{{ statistics.total_products|replace({',': ''}) }}">{{ statistics.total_products }}</div>
+                <div>{{ text_total_products }}</div>
+              </div>
+            </div>
+          </div>
+          <a href="{{ manage_products }}">
+            <div class="panel-footer">
+              <span class="pull-left">{{ text_view_details }}</span>
+              <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+              <div class="clearfix"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" data-value="{{ statistics.active_products|replace({',': ''}) }}">{{ statistics.active_products }}</div>
+                <div>{{ text_active_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exclamation-triangle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" data-value="{{ statistics.low_stock_products|replace({',': ''}) }}">{{ statistics.low_stock_products }}</div>
+                <div>{{ text_low_stock_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-danger">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-times-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" data-value="{{ statistics.out_of_stock_products|replace({',': ''}) }}">{{ statistics.out_of_stock_products }}</div>
+                <div>{{ text_out_of_stock_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-money fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.total_inventory_value }}</div>
+                <div>{{ text_total_inventory_value }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-purple">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-line-chart fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" data-value="{{ statistics.movements_30_days|replace({',': ''}) }}">{{ statistics.movements_30_days }}</div>
+                <div>{{ text_movements_30_days }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- مؤشرات الأداء الرئيسية (KPIs) -->
+    <div class="row">
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-tachometer"></i> {{ text_kpis }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <div class="kpi-circle" data-percent="{{ kpis.inventory_turnover * 10 }}">
+                    <span class="kpi-value">{{ kpis.inventory_turnover }}</span>
+                  </div>
+                  <small>{{ text_inventory_turnover }}</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <div class="kpi-circle" data-percent="{{ kpis.inventory_accuracy }}">
+                    <span class="kpi-value">{{ kpis.inventory_accuracy }}%</span>
+                  </div>
+                  <small>{{ text_inventory_accuracy }}</small>
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-xs-12">
+                <div class="text-center">
+                  <div class="kpi-circle" data-percent="{{ kpis.stock_availability }}">
+                    <span class="kpi-value">{{ kpis.stock_availability }}%</span>
+                  </div>
+                  <small>{{ text_stock_availability }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- التنبيهات الذكية -->
+      <div class="col-md-4">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bell"></i> {{ text_smart_alerts }}</h3>
+          </div>
+          <div class="panel-body" style="max-height: 300px; overflow-y: auto;">
+            {% if smart_alerts %}
+            {% for alert in smart_alerts %}
+            <div class="alert alert-{{ alert.type }} alert-sm">
+              <i class="fa {{ alert.icon }}"></i>
+              <strong>{{ alert.title }}</strong><br>
+              <small>{{ alert.message }}</small>
+              {% if alert.action_url %}
+              <a href="{{ alert.action_url }}" class="btn btn-xs btn-{{ alert.type }} pull-right">
+                {{ text_take_action }}
+              </a>
+              {% endif %}
+              <div class="clearfix"></div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center text-muted">
+              <i class="fa fa-check-circle fa-3x"></i>
+              <p>{{ message_no_alerts }}</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- إجراءات سريعة -->
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bolt"></i> {{ text_quick_actions }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-6">
+                <a href="{{ manage_products }}" class="btn btn-primary btn-block btn-sm">
+                  <i class="fa fa-cubes"></i><br>{{ text_manage_products }}
+                </a>
+              </div>
+              <div class="col-xs-6">
+                <a href="{{ stock_movements }}" class="btn btn-info btn-block btn-sm">
+                  <i class="fa fa-history"></i><br>{{ text_stock_movements }}
+                </a>
+              </div>
+            </div>
+            <br>
+            <div class="row">
+              <div class="col-xs-6">
+                <a href="{{ stock_adjustments }}" class="btn btn-warning btn-block btn-sm">
+                  <i class="fa fa-edit"></i><br>{{ text_stock_adjustments }}
+                </a>
+              </div>
+              <div class="col-xs-6">
+                <a href="{{ inventory_count }}" class="btn btn-success btn-block btn-sm">
+                  <i class="fa fa-check"></i><br>{{ text_inventory_count }}
+                </a>
+              </div>
+            </div>
+            <br>
+            <div class="row">
+              <div class="col-xs-6">
+                <a href="{{ stock_transfers }}" class="btn btn-default btn-block btn-sm">
+                  <i class="fa fa-exchange"></i><br>{{ text_stock_transfers }}
+                </a>
+              </div>
+              <div class="col-xs-6">
+                <a href="{{ barcode_management }}" class="btn btn-purple btn-block btn-sm">
+                  <i class="fa fa-qrcode"></i><br>{{ text_barcode_management }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bar-chart"></i> {{ text_movement_chart }}
+              <div class="btn-group pull-right">
+                <button type="button" class="btn btn-xs btn-default" data-chart="movement">حركة المخزون</button>
+                <button type="button" class="btn btn-xs btn-default" data-chart="profitability">الربحية</button>
+              </div>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="main-chart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_category_chart }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="category-chart" width="200" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الجداول التفصيلية -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-trophy"></i> {{ text_top_selling_products }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if top_selling_products %}
+            <div class="table-responsive">
+              <table class="table table-condensed table-hover">
+                <thead>
+                  <tr>
+                    <th>المنتج</th>
+                    <th class="text-center">المبيعات</th>
+                    <th class="text-center">الإيراد</th>
+                    <th class="text-center">الحالة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for product in top_selling_products %}
+                  <tr>
+                    <td>
+                      <strong>{{ product.name|slice(0, 25) }}{% if product.name|length > 25 %}...{% endif %}</strong>
+                      <br><small class="text-muted">{{ product.sku }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-success">{{ product.total_sold }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="text-success">{{ product.total_revenue|number_format(2) }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="label label-{{ product.stock_status == 'in_stock' ? 'success' : (product.stock_status == 'low_stock' ? 'warning' : 'danger') }}">
+                        {% if product.stock_status == 'in_stock' %}{{ text_in_stock }}
+                        {% elseif product.stock_status == 'low_stock' %}{{ text_low_stock }}
+                        {% elseif product.stock_status == 'out_of_stock' %}{{ text_out_of_stock }}
+                        {% else %}{{ text_overstock }}{% endif %}
+                      </span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">لا توجد بيانات مبيعات</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-exclamation-triangle"></i> {{ text_low_stock_products }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if low_stock_products %}
+            <div class="table-responsive">
+              <table class="table table-condensed table-hover">
+                <thead>
+                  <tr>
+                    <th>المنتج</th>
+                    <th class="text-center">المتاح</th>
+                    <th class="text-center">الحد الأدنى</th>
+                    <th class="text-center">النسبة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for product in low_stock_products %}
+                  <tr>
+                    <td>
+                      <strong>{{ product.name|slice(0, 25) }}{% if product.name|length > 25 %}...{% endif %}</strong>
+                      <br><small class="text-muted">{{ product.sku }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-warning">{{ product.available_quantity }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="text-muted">{{ product.reorder_level }}</span>
+                    </td>
+                    <td class="text-center">
+                      <div class="progress progress-sm">
+                        <div class="progress-bar progress-bar-warning" style="width: {{ product.stock_percentage }}%"></div>
+                      </div>
+                      <small>{{ product.stock_percentage }}%</small>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">لا توجد منتجات منخفضة المخزون</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.huge { font-size: 28px; font-weight: bold; }
+.panel-green { border-color: #5cb85c; }
+.panel-green > .panel-heading { border-color: #5cb85c; color: white; background-color: #5cb85c; }
+.panel-purple { border-color: #9b59b6; }
+.panel-purple > .panel-heading { border-color: #9b59b6; color: white; background-color: #9b59b6; }
+.btn-purple { background-color: #9b59b6; border-color: #9b59b6; color: white; }
+.btn-purple:hover { background-color: #8e44ad; border-color: #8e44ad; color: white; }
+
+.kpi-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(#5cb85c 0deg, #5cb85c calc(var(--percent) * 3.6deg), #e9ecef calc(var(--percent) * 3.6deg), #e9ecef 360deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  position: relative;
+}
+
+.kpi-circle::before {
+  content: '';
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+}
+
+.kpi-value {
+  position: relative;
+  z-index: 1;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.alert-sm {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.progress-sm {
+  height: 10px;
+  margin-bottom: 5px;
+}
+
+.badge-success { background-color: #5cb85c; }
+.badge-warning { background-color: #f0ad4e; }
+.badge-info { background-color: #5bc0de; }
+.badge-danger { background-color: #d9534f; }
+
+@media print {
+    .page-header, .breadcrumb, .btn, .panel-footer {
+        display: none !important;
+    }
+
+    .panel {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .row {
+        page-break-inside: avoid;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    let autoRefreshInterval;
+    let mainChart, categoryChart;
+
+    // تهيئة الرسوم البيانية
+    initializeCharts();
+
+    // تهيئة مؤشرات الأداء الدائرية
+    initializeKPICircles();
+
+    // تأثيرات بصرية للإحصائيات
+    animateStatistics();
+
+    // تحديث تلقائي
+    $('#auto-refresh-toggle').on('click', function() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+            $(this).removeClass('btn-success').addClass('btn-default');
+            $(this).find('i').removeClass('fa-pause').addClass('fa-clock-o');
+        } else {
+            autoRefreshInterval = setInterval(refreshDashboard, 300000); // كل 5 دقائق
+            $(this).removeClass('btn-default').addClass('btn-success');
+            $(this).find('i').removeClass('fa-clock-o').addClass('fa-pause');
+        }
+    });
+
+    // تحديث يدوي
+    $('#refresh-dashboard').on('click', function() {
+        refreshDashboard();
+    });
+
+    // تغيير نوع الرسم البياني
+    $('[data-chart]').on('click', function() {
+        const chartType = $(this).data('chart');
+        $('[data-chart]').removeClass('btn-primary').addClass('btn-default');
+        $(this).removeClass('btn-default').addClass('btn-primary');
+        loadChartData(chartType);
+    });
+
+    function initializeCharts() {
+        // رسم حركة المخزون الرئيسي
+        const mainCtx = document.getElementById('main-chart').getContext('2d');
+        mainChart = new Chart(mainCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+
+        // رسم الفئات الدائري
+        const categoryCtx = document.getElementById('category-chart').getContext('2d');
+        categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: []
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed.toLocaleString() + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // تحميل البيانات الأولية
+        loadChartData('movement');
+        loadCategoryChart();
+    }
+
+    function loadChartData(type) {
+        $.ajax({
+            url: 'index.php?route=inventory/interactive_dashboard/getChartData&user_token={{ user_token }}',
+            type: 'GET',
+            data: { type: type, days: 30 },
+            dataType: 'json',
+            success: function(data) {
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+
+                mainChart.data = data;
+                mainChart.update();
+            },
+            error: function() {
+                console.error('خطأ في تحميل بيانات الرسم البياني');
+            }
+        });
+    }
+
+    function loadCategoryChart() {
+        $.ajax({
+            url: 'index.php?route=inventory/interactive_dashboard/getChartData&user_token={{ user_token }}',
+            type: 'GET',
+            data: { type: 'categories' },
+            dataType: 'json',
+            success: function(data) {
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+
+                categoryChart.data = data;
+                categoryChart.update();
+            },
+            error: function() {
+                console.error('خطأ في تحميل بيانات رسم الفئات');
+            }
+        });
+    }
+
+    function initializeKPICircles() {
+        $('.kpi-circle').each(function() {
+            const percent = $(this).data('percent') || 0;
+            $(this).css('--percent', Math.min(percent, 100));
+
+            // تأثير تدريجي
+            let currentPercent = 0;
+            const targetPercent = Math.min(percent, 100);
+            const increment = targetPercent / 50;
+
+            const interval = setInterval(() => {
+                currentPercent += increment;
+                if (currentPercent >= targetPercent) {
+                    currentPercent = targetPercent;
+                    clearInterval(interval);
+                }
+                $(this).css('--percent', currentPercent);
+            }, 20);
+        });
+    }
+
+    function animateStatistics() {
+        $('.huge[data-value]').each(function() {
+            const $this = $(this);
+            const finalValue = parseInt($this.data('value')) || 0;
+            let currentValue = 0;
+            const increment = Math.ceil(finalValue / 50);
+
+            const interval = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    currentValue = finalValue;
+                    clearInterval(interval);
+                }
+                $this.text(currentValue.toLocaleString());
+            }, 30);
+        });
+    }
+
+    function refreshDashboard() {
+        const $refreshBtn = $('#refresh-dashboard');
+        const originalHtml = $refreshBtn.html();
+
+        $refreshBtn.html('<i class="fa fa-spinner fa-spin"></i>').prop('disabled', true);
+
+        $.ajax({
+            url: 'index.php?route=inventory/interactive_dashboard/refreshData&user_token={{ user_token }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                // تحديث الإحصائيات
+                updateStatistics(data.statistics);
+
+                // تحديث التنبيهات
+                updateAlerts(data.alerts);
+
+                // تحديث مؤشرات الأداء
+                updateKPIs(data.kpis);
+
+                // تحديث الرسوم البيانية
+                loadChartData('movement');
+                loadCategoryChart();
+
+                // تحديث وقت آخر تحديث
+                $('#last-update-time').text(data.timestamp);
+
+                // إظهار رسالة نجاح
+                showNotification('تم تحديث البيانات بنجاح', 'success');
+            },
+            error: function() {
+                showNotification('خطأ في تحديث البيانات', 'error');
+            },
+            complete: function() {
+                $refreshBtn.html(originalHtml).prop('disabled', false);
+            }
+        });
+    }
+
+    function updateStatistics(stats) {
+        Object.keys(stats).forEach(key => {
+            const $element = $(`[data-value]`).filter(function() {
+                return $(this).closest('.panel').find('div:contains("' + key + '")').length > 0;
+            });
+
+            if ($element.length) {
+                const newValue = parseInt(stats[key]) || 0;
+                $element.data('value', newValue);
+                animateValueChange($element, newValue);
+            }
+        });
+    }
+
+    function updateAlerts(alerts) {
+        const $alertContainer = $('.panel-warning .panel-body');
+
+        if (alerts.length === 0) {
+            $alertContainer.html(`
+                <div class="text-center text-muted">
+                    <i class="fa fa-check-circle fa-3x"></i>
+                    <p>{{ message_no_alerts }}</p>
+                </div>
+            `);
+        } else {
+            let alertsHtml = '';
+            alerts.forEach(alert => {
+                alertsHtml += `
+                    <div class="alert alert-${alert.type} alert-sm">
+                        <i class="fa ${alert.icon}"></i>
+                        <strong>${alert.title}</strong><br>
+                        <small>${alert.message}</small>
+                        ${alert.action_url ? `<a href="${alert.action_url}" class="btn btn-xs btn-${alert.type} pull-right">{{ text_take_action }}</a>` : ''}
+                        <div class="clearfix"></div>
+                    </div>
+                `;
+            });
+            $alertContainer.html(alertsHtml);
+        }
+    }
+
+    function updateKPIs(kpis) {
+        Object.keys(kpis).forEach(key => {
+            const $circle = $(`.kpi-circle:has(.kpi-value:contains("${key}"))`);
+            if ($circle.length) {
+                const newPercent = parseFloat(kpis[key]) || 0;
+                $circle.data('percent', newPercent);
+                $circle.css('--percent', newPercent);
+                $circle.find('.kpi-value').text(newPercent + (key.includes('percentage') ? '%' : ''));
+            }
+        });
+    }
+
+    function animateValueChange($element, newValue) {
+        const currentValue = parseInt($element.text().replace(/,/g, '')) || 0;
+        const difference = newValue - currentValue;
+        const steps = 30;
+        const increment = difference / steps;
+        let step = 0;
+
+        const interval = setInterval(() => {
+            step++;
+            const value = Math.round(currentValue + (increment * step));
+            $element.text(value.toLocaleString());
+
+            if (step >= steps) {
+                clearInterval(interval);
+                $element.text(newValue.toLocaleString());
+            }
+        }, 20);
+    }
+
+    function showNotification(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+        const notification = $(`
+            <div class="alert ${alertClass} alert-dismissible" style="position: fixed; top: 70px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fa ${icon}"></i> ${message}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        `);
+
+        $('body').append(notification);
+
+        setTimeout(() => {
+            notification.fadeOut(() => notification.remove());
+        }, 5000);
+    }
+
+    // تحسين عرض الطباعة
+    window.addEventListener('beforeprint', function() {
+        $('.table-responsive').removeClass('table-responsive');
+    });
+
+    window.addEventListener('afterprint', function() {
+        $('.table').parent().addClass('table-responsive');
+    });
+
+    // تفعيل tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>
+
+{{ footer }}

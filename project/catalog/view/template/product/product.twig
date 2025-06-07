@@ -1,0 +1,2420 @@
+{{ header }}
+<div id="product-info" class="container-fluid py-0 px-0">
+  <div class="row">
+    {{ column_left }}
+    <div id="content" class="col-md-12 px-1">
+      {{ content_top }}
+
+      <div class="row">
+        <!-- قسم صور المنتج -->
+        {% if thumb or images %}
+          <div style="padding:10px" class="col-md-5 col-sm-12">
+            <div style="max-width:480px;margin:0 auto;position: relative;" class="image magnific-popup">
+              <div class="wishlist{{modelname}}{{ product_id }}">
+                <span id="spa{{totalwishlist}}"></span>
+                {% if totalwishlist > 0 %}
+                  <span style="
+                    position: absolute;
+                    top: 8px;
+                    left: 18px;
+                    padding: 3px 6px;
+                    font-weight: 600;
+                    border-radius: 0.25rem;
+                    text-transform: uppercase;
+                    text-decoration: none;
+                    background: transparent;
+                    border: none;
+                    font-size: 25px;
+                    margin-top: 18px;
+                    z-index:99;
+                    color: #e42709;
+                    cursor: pointer;
+                  ">
+                    <i class="addwishlist fa-solid fa-heart"></i>
+                  </span>
+                {% else %}
+                  <span style="
+                    position: absolute;
+                    top: 8px;
+                    left: 18px;
+                    padding: 3px 6px;
+                    font-weight: 600;
+                    border-radius: 0.25rem;
+                    text-transform: uppercase;
+                    text-decoration: none;
+                    background: transparent;
+                    border: none;
+                    font-size: 25px;
+                    margin-top: 18px;
+                    z-index:99;
+                    color: #e42709;
+                    cursor: pointer;
+                  ">
+                    <i class="addwishlist fa-regular fa-heart"></i>
+                  </span>
+                {% endif %}
+                <input type="hidden" name="product_id" value="{{ product_id }}"/>
+              </div>
+
+              <div class="swiper mySwiperx" style="margin-bottom:35px">
+                <div class="swiper-wrapper">
+                  <div class="swiper-slide">
+                    <div style="display: block; width: 100%; padding-top: 90%; position: relative;">
+                      <img loading="lazy" style="max-width: 100%; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" src="{{ thumb }}" title="{{ heading_title }}" alt="{{ heading_title }}" class="img-thumbnail mb-3"/>
+                    </div>
+                  </div>
+                  {% for image in images %}
+                    <div class="swiper-slide">
+                      <div style="display: block; width: 100%; padding-top: 90%; position: relative;">
+                        <img loading="lazy" style="max-width: 100%; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" src="{{ image.thumb }}" title="{{ heading_title }}" alt="{{ heading_title }}" class="img-thumbnail"/>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                <!-- أزرار التحكم بالسلايدر المحسنة -->
+                <div class="swiper-button-next simplified-arrow"></div>
+                <div class="swiper-button-prev simplified-arrow"></div>
+                <!-- مؤشرات عدد الصور -->
+                <div style="margin-bottom:-30px;width:100%" class="image-count position-absolute bottom-0 end-0 bg-dark text-white px-2 py-1 rounded">
+                  <span class="current-slide">1</span> / <span class="total-slides">{{ images|length + 1 }}</span>
+                </div> 
+              </div>
+
+              <!-- إضافة قسم معلومات إضافية تحت الصورة (مرئي فقط على سطح المكتب) -->
+              <div class="product-additional-info mt-3 d-none d-md-block">
+
+{% if userdevice == 'pc' %}
+
+{{ description }}
+{% endif %}
+
+{% if userdevice == 'mobile' %}
+{{ description }}
+
+{% endif %}
+{{ description }}
+
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        
+        <!-- قسم معلومات المنتج -->
+        <div class="col-md-6 col-sm-12 imagepadding" >
+          <h1 class="product-title mb-3">{{ heading_title }}</h1>
+          <h2 class="product-hook mb-3">{{ hook }}</h2>
+          <h3 class="product-short-desc mb-3">{{ short_desc }}</h3>          
+          <!-- قسم التنبيهات -->
+          <div id="alert" class="mb-3"></div>
+          
+          <!-- نموذج المنتج -->
+          <form id="form-product" data-oc-toggle="noajax">
+
+            <!-- قسم الوحدات -->
+            {% if product_units %}
+              <div class="mb-3">
+                <label for="input-unit" class="form-label">{{ entry_unit }}</label>
+                <select name="unit_id" id="input-unit" class="form-select">
+                  {% for unit in product_units %}
+                    <option value="{{ unit.unit_id }}" data-conversion="{{ unit.conversion_factor }}">
+                      {{ unit.unit_name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div id="error-unit" class="invalid-feedback"></div>
+              </div>
+            {% endif %}
+            
+            <!-- قسم الخيارات -->
+              {% if options %}
+                <hr>
+                <h3>{{ text_option }}</h3>
+                <div id="options-container">
+                  {% for option in options %}
+
+                    {% if option.type == 'select' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label for="input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label> <select name="option[{{ option.product_option_id }}]" id="input-option-{{ option.product_option_id }}" class="form-select">
+                          {% for option_value in option.product_option_value %}
+                            <option value="{{ option_value.product_option_value_id }}">{{ option_value.name }}
+                              {% if option_value.price %}
+                                ({{ option_value.price_prefix }}{{ option_value.price }})
+                              {% endif %}</option>
+                          {% endfor %}
+                        </select>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'radio' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label class="form-label">{{ option.name }}</label>
+                        <div id="input-option-{{ option.product_option_id }}">
+                          {% for option_value in option.product_option_value %}
+                            <div class="form-check">
+                              <input type="radio" name="option[{{ option.product_option_id }}]" value="{{ option_value.product_option_value_id }}" id="input-option-value-{{ option_value.product_option_value_id }}" class="form-check-input"/> <label for="input-option-value-{{ option_value.product_option_value_id }}" class="form-check-label">{% if option_value.image %}<img src="{{ option_value.image }}" alt="{{ option_value.name }} {% if option_value.price %}{{ option_value.price_prefix }} {{ option_value.price }}{% endif %}" class="img-thumbnail"/>{% endif %}
+                                {{ option_value.name }}
+                                {% if option_value.price %}
+                                  ({{ option_value.price_prefix }}{{ option_value.price }})
+                                {% endif %}</label>
+                            </div>
+                          {% endfor %}
+                        </div>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'checkbox' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label class="form-label">{{ option.name }}</label>
+                        <div id="input-option-{{ option.product_option_id }}">
+                          {% for option_value in option.product_option_value %}
+                            <div class="form-check">
+                              <input type="checkbox" name="option[{{ option.product_option_id }}][]" value="{{ option_value.product_option_value_id }}" id="input-option-value-{{ option_value.product_option_value_id }}" class="form-check-input"/> <label for="input-option-value-{{ option_value.product_option_value_id }}" class="form-check-label">
+                                {% if option_value.image %}
+                                  <img src="{{ option_value.image }}" alt="{{ option_value.name }} {% if option_value.price %}{{ option_value.price_prefix }} {{ option_value.price }}{% endif %}" class="img-thumbnail"/>{% endif %}
+                                {{ option_value.name }}
+                                {% if option_value.price %}
+                                  ({{ option_value.price_prefix }}{{ option_value.price }})
+                                {% endif %}</label>
+                            </div>
+                          {% endfor %}
+                        </div>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'text' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label for="input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label> <input type="text" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" placeholder="{{ option.name }}" id="input-option-{{ option.product_option_id }}" class="form-control"/>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'textarea' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label for="input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label> <textarea name="option[{{ option.product_option_id }}]" rows="5" placeholder="{{ option.name }}" id="input-option-{{ option.product_option_id }}" class="form-control">{{ option.value }}</textarea>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'file' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label for="button-upload-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label>
+                        <div>
+                          <button type="button" id="button-upload-{{ option.product_option_id }}" data-oc-toggle="upload" data-oc-url="{{ upload }}" data-oc-target="#input-option-{{ option.product_option_id }}" data-oc-size-max="{{ config_file_max_size }}" data-oc-size-error="{{ error_upload_size }}" class="btn btn-light btn-block"><i class="fa-solid fa-upload"></i> {{ button_upload }}</button>
+                          <input type="hidden" name="option[{{ option.product_option_id }}]" value="" id="input-option-{{ option.product_option_id }}"/>
+                        </div>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'date' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label for="input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label>
+                        <input type="date" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}" class="form-control"/>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'time' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label for="input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label>
+                        <input type="time" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}" class="form-control"/>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+
+                    {% if option.type == 'datetime' %}
+                      <div class="mb-3{% if option.required %} required{% endif %}">
+                        <label for="input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label>
+                        <input type="datetime-local" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}" class="form-control"/>
+                        <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+
+            <!-- قسم الأسعار -->
+            <div class="price-section bg-light p-3 rounded mb-4 position-relative">
+              <div class="price-wrapper">
+
+                    <div id="special-box">
+                      <span id="old-price-value" class="old-price text-muted">{{ price_data.base_price.formatted }}</span>
+                        <h2 id="special-price-value" class="current-price">{{ price_data.special_price.formatted }}</h2>
+                        <span class="saving-badge position-absolute top-0 end-0 bg-success text-white px-2 py-1 rounded">
+                          -{{ price_data.special_price.discount_percentage }}%
+                        </span>
+                    </div>
+
+                  <div id="price-box">
+                    <h2 id="price-value" class="current-price">{{ price_data.current_price.formatted }}</h2>
+                </div>
+
+                <!-- معلومات الضريبة -->
+                <div class="tax-info">
+                  {{ text_tax_included }}: <span id="tax_amount_formatted">{{ price_data.tax_amount.formatted }}</span>
+                </div>
+            
+                <!-- التوفير الكلي -->
+                  <div id="total-saving-box" class="total-saving">
+                    {{ text_you_save }}: <span id="formatted_savings">{{ discount_data.formatted_savings }}</span>
+                  </div>
+
+                
+              </div>
+
+            </div>
+            
+            
+            
+            
+                        
+            <!-- قسم الكمية -->
+            <div class="quantity-section mb-4">
+              <label for="quantity-slider" class="form-label">{{ entry_qty }}</label>
+              
+              <!-- شريط تحديد الكمية -->
+            <input type="range" 
+                   id="quantity-slider" 
+                   class="form-range mb-3" 
+                   min="{{ quantity_data.minimum }}" 
+                   max="{{ quantity_data.maximum }}" 
+                   value="{{ quantity_data.minimum }}" 
+                   step="1">
+              
+              <!-- حقل النص وأزرار الزيادة/الإنقاص -->
+              <div class="input-group number-spinner">
+                <button type="button"  class="btn btn-outline-secondary" data-dir="dwn" aria-label="خفض الكمية">
+                  <i class="fa fa-minus"></i>
+                </button>
+                <input type="number" 
+                       name="quantity" 
+                       value="{{ quantity_data.minimum }}" 
+                       id="input-quantity" 
+                       class="form-control text-center" 
+                       min="{{ quantity_data.minimum }}" 
+                       max="{{ quantity_data.available }}" aria-label="كمية المنتج"/>
+                <button type="button"  class="btn btn-outline-secondary" data-dir="up" aria-label="زيادة الكمية">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </div>
+              <!-- زر إضافة إلى السلة -->
+              <div class="cart-section mb-4 mt-4">
+                <button type="submit" 
+                        id="button-cart" 
+                        class="btn btn-primary btn-lg w-100">
+                  <i class="fas fa-shopping-cart me-2"></i>
+                  {{ button_cart }}
+                </button>
+                
+                {% if minimum_quantity > 1 %}
+                  <div class="alert alert-info mt-2 d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2"></i> 
+                    {{ text_minimum }}
+                  </div>
+                {% endif %}
+              </div>                  
+
+<!-- قسم خصومات الكمية -->
+{% if product_quantity_discounts %}
+<div class="discount-container bg-gray-100 p-1 rounded-lg">
+  <h4 class="text-xl font-bold mb-4">{{ text_quantity_discounts }}</h4>
+  
+  <div class="discount-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for discount in product_quantity_discounts %}
+<div class="discount-card" 
+     data-buy-quantity="{{ discount.buy_quantity }}"
+     data-discount-id="{{ discount.discount_id }}">
+    <div class="discount-details {% if discount.buy_quantity > discount.current_quantity %}hidden{% endif %}">
+        <div class="discount-type flex justify-between items-center">
+            <span class="text-lg font-semibold 
+                {% if discount.type == 'buy_x_get_y' %}text-blue-600{% else %}text-purple-600{% endif %}">
+                {{ discount.type == 'buy_x_get_y' ? 'منتجات مجانية' : 'خصم' }}
+            </span>
+            
+            <div class="discount-badge 
+                {% if discount.type == 'buy_x_get_y' %}
+                    bg-blue-100 text-blue-800
+                {% else %}
+                    bg-purple-100 text-purple-800
+                {% endif %}
+                px-2 py-1 rounded-full text-sm">
+                {{ discount.display_text }}
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                <div class="progress-bar bg-green-500 h-full" 
+                     style="width: {{ (discount.current_quantity / discount.buy_quantity) * 100 }}%"></div>
+            </div>
+            
+            <div class="flex justify-between text-sm text-gray-600">
+                    الحالي: {{ discount.current_quantity }} / {{ discount.buy_quantity }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+    {% endfor %}
+  </div>
+  
+  {% if next_discount %}
+    <div class="next-discount-alert mt-4 bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded">
+      <p class="text-yellow-800">
+        اشتري {{ next_discount.buy_quantity }} وحدة إضافية لفتح الخصم التالي!
+      </p>
+    </div>
+  {% endif %}
+ 
+</div>
+{% endif %}
+
+{% if product_bundles is defined and product_bundles|length > 0 %}
+  <div class="bundle-offer-section mb-4 p-1 bg-light rounded position-relative">
+    <h2 class="section-title">{{ text_buy_together }}</h2>
+    
+    {% for bundle in product_bundles %}
+      {% if bundle.items is defined and bundle.items|length > 0 %}
+
+        <!-- باقة واحدة -->
+        <div class="bundle-offer-item mb-3 p-3 bg-white rounded shadow-sm position-relative"
+             data-bundle-id="{{ bundle.bundle_id }}">
+        
+          <!-- لو هناك توفير بالنسبة المئوية؛ سنُظهره أو نخفيه بجافاسكربت -->
+          <span class="position-absolute bottom-0 end-0 bg-success text-white px-2 py-1 js-bundle-saving-badge bundle-saving-badge bundlebadgeegproo">
+            <i class="fas fa-tags me-1"></i>
+            <span class="js-bundle-saving-percent">0</span><br>%
+          </span>
+        
+          <div class="d-flex align-items-center mb-2">
+            <input type="checkbox"
+                   class="form-check-input me-2 bundle-select-checkbox"
+                   data-bundle-id="{{ bundle.bundle_id }}"
+                   name="selected_bundles[]"
+                   value="{{ bundle.bundle_id }}">
+            <h5 class="mb-0">{{ bundle.name }}</h5>
+          </div>
+        
+          <table class="table table-sm table-borderless mb-2">
+            <tbody>
+
+              {% for item in bundle.items %}
+                <!-- كل منتج داخل الباقة -->
+                <tr 
+                  data-product-id="{{ item.product_id }}"
+                  data-unit-id="{{ item.unit_id }}"
+                  class="bundle-item-row"
+                >
+                  <td style="width:50px;">
+                    <img src="{{ item.image }}"
+                         alt="{{ item.name }}"
+                         class="img-thumbnail"
+                         width="50"
+                         height="50"
+                         style="object-fit: cover;">
+                  </td>
+
+                  <td>
+                    <!-- اسم المنتج + الكمية -->
+                    <span class="fw-bold">{{ item.name }}</span><br>
+                    <small class="text-muted">{{ item.quantity }} x {{ item.unit_name }}</small>
+                    
+                    <!-- إن كانت هناك خيارات مختارة مسبقًا -->
+                    {% if item.selected_options and item.selected_options|length > 0 %}
+                      <ul class="bundle-item-chosen-options mt-2">
+                        {% for so in item.selected_options %}
+                          <li>
+                            <strong>{{ so.option_name }}:</strong>
+                            {{ so.option_value }}
+                            {% if so.formatted_price %}
+                              <small class="text-muted">({{ so.formatted_price }})</small>
+                            {% endif %}
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                    
+                    <!-- عنصر لعرض الخيارات المختارة لهذا المنتج (لتحديثها بالجافاسكربت) -->
+                    <div class="bundle-item-chosen-options mt-2"
+                         data-bundle-id="{{ bundle.bundle_id }}"
+                         data-product-id="{{ item.product_id }}">
+                      <!-- سيتم تعبئته بالجافاسكربت أثناء updatePrice -->
+                    </div>
+                  </td>
+
+                  <td class="text-end">
+                    {% if item.is_free %}
+                      <!-- منتج مجاني -->
+                      <i class="fa-solid fa-gift text-blue-600 me-2" style="font-size:22px"></i> 
+                      <span class="text-muted text-decoration-line-through me-2 js-bundle-item-original">
+                        {{ item.base_price_formatted }}
+                      </span>
+                      <span class="badge bg-info ms-1" style="font-size:0.75rem;">{{ text_free }}</span>
+
+                    {% else %}
+                        <span class="text-primary fw-bold js-bundle-item-final">
+                          {{ item.line_total_with_tax_formatted }}
+                        </span>
+
+                    {% endif %}
+                  </td>
+
+                </tr>
+              {% endfor %}
+              
+            </tbody>
+          </table>
+        
+          <!-- منطقة المجموع الإجمالي لهذه الباقة -->
+          <div class="d-flex bg-light justify-content-between align-items-center position-relative">
+
+            {% if bundle.discount_type %}
+              {% if bundle.discount_type == 'percentage' %}
+                <i class="fas fa-percentage me-2 text-black" style="font-size:22px"></i>
+              {% elseif bundle.discount_type == 'fixed' %}
+                <i class="fas fa-money-bill-wave me-2 text-black" style="font-size:22px"></i>
+              {% elseif bundle.discount_type == 'buy_x_get_y' %}
+                <i class="fas fa-gift me-2 text-black" style="font-size:22px"></i>
+              {% endif %}
+            {% endif %}
+
+            <div class="bundle-total-info">
+              <span class="fw-bold">{{ text_bundle_total_1 }} </span>
+              <span class="text-success fw-bold final-bundle-total js-bundle-final">{{ bundle.total_price }}</span>
+        
+              <span class="fw-bold">{{ text_bundle_total_2 }} </span>
+              <span class="text-muted text-decoration-line-through me-2 mb-2 final-bundle-original-total js-bundle-original">
+                {{ bundle.original_price }}
+              </span>
+        
+              <br>
+        
+              {% if bundle.savings %}
+                <i style="font-size:22px" class="fas fa-money-bill-wave me-2 text-black"></i>
+                <span class="fw-bold">{{ text_bundle_total_3 }} </span>
+                <span class="text-success ms-2 js-bundle-saving" style="font-size:0.9rem; z-index:99">
+                  {{ bundle.savings }}
+                </span>
+              {% endif %}
+            </div>
+            
+            <!-- التحقق إن كانت هناك منتجات تحتاج خيارات إضافية -->
+            {% set has_options = false %}
+            {% for b_item in bundle.items %}
+              {% if b_item.options is defined and b_item.options|length > 0 %}
+                {% set has_options = true %}
+              {% endif %}
+            {% endfor %}
+        
+            {% if has_options %}
+              <button type="button"
+                      class="btn btn-secondary btn-sm open-bundle-options"
+                      data-bundle-id="{{ bundle.bundle_id }}">
+                {{ text_customize_bundle }}
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+
+          
+            </div>
+            
+            <input type="hidden" name="product_id" value="{{ product_id }}" id="input-product-id"/>
+            
+
+
+
+            
+          </form>
+        </div>
+      </div>
+            <!-- قسم توصيات المنتجات -->
+
+{% if product_recommendations %}
+    <div class="product-recommendations">
+        <h3>{{ text_recommendations }}</h3>
+        
+        {% if product_recommendations|filter((recommendation) => recommendation.recommendation_type == 'upsell') %}
+            <div class="upsell-recommendations card-body">
+                <h3 style="line-height: 50px;margin-top: 10px; border-bottom: 1px solid #ebe9e9; padding-inline: 20px; font-weight: 900; color: #000;font-size: 14px; line-height: 25px;">{{ text_upsell }}</h3>       
+                <div class="fold">
+                    <div class="carousel">
+                        <div class="carousel__container">
+                            <div class="carousel__wrapper">
+                                <div class="swiper mySwiperscroll-upsell">
+                                    <div class="swiper-wrapper">
+                                    {% for recommendation in product_recommendations|filter((recommendation) => recommendation.recommendation_type == 'upsell') %}
+                                        <div class="carousel__slide swiper-slide" data-recommendation-id="{{ recommendation.recommendation_id }}">
+                                           {{ recommendation.fullproduct }}
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </div>    
+                            </div>
+                        </div>
+                    </div>
+                </div>                                   
+
+                <script>
+                const swiperUpsell = new Swiper('.mySwiperscroll-upsell', {
+                    slidesPerView: 1,
+                    lazy: true,
+                    rewind: true,
+                    spaceBetween: 32,
+                    resistanceRatio : 0,
+                    autoplay: {
+                        delay: 7000,
+                        disableOnInteraction: false
+                    },    
+                    breakpoints: {
+                        0: { slidesPerView: 1, spaceBetween: 0, resistanceRatio: 0.85 },        
+                        260: { slidesPerView: 1, spaceBetween: 0, resistanceRatio: 0.85 },
+                        320: { slidesPerView: 1, spaceBetween: 0, resistanceRatio: 0.85 },  
+                        360: { slidesPerView: 2, spaceBetween: 2, resistanceRatio: 0.55 },        
+                        767: { slidesPerView: 2, spaceBetween: 10, resistanceRatio: 0.85 },        
+                        980: { slidesPerView: 3, spaceBetween: 10, resistanceRatio: 0.85 },
+                        1199: { slidesPerView: 4, spaceBetween: 10, resistanceRatio: 0.85 },
+                        1280: { slidesPerView: 5, spaceBetween: 10, resistanceRatio : 0 },
+                        1540: { slidesPerView: 6, spaceBetween: 10, resistanceRatio : 0 },
+                        5000: { slidesPerView: 8, spaceBetween: 32, resistanceRatio : 0 },        
+                    },
+                    keyboard: { enabled: true },
+                    navigation: false,
+                    pagination: false, 
+                    scrollbar: false,      
+                });
+                </script>              
+            </div>
+        {% endif %}
+        
+        {% if product_recommendations|filter((recommendation) => recommendation.recommendation_type == 'cross_sell') %}
+            <div class="cross-sell-recommendations card-body">
+                <h3 style="line-height: 50px;margin-top: 10px; border-bottom: 1px solid #ebe9e9; padding-inline: 20px; font-weight: 900; color: #000;font-size: 14px; line-height: 25px;">{{ text_cross_sell }}</h3>       
+                <div class="fold">
+                    <div class="carousel">
+                        <div class="carousel__container">
+                            <div class="carousel__wrapper">
+                                <div class="swiper mySwiperscroll-crosssell">
+                                    <div class="swiper-wrapper">
+                                    {% for recommendation in product_recommendations|filter((recommendation) => recommendation.recommendation_type == 'cross_sell') %}
+                                        <div class="carousel__slide swiper-slide" data-recommendation-id="{{ recommendation.recommendation_id }}">
+                                           {{ recommendation.fullproduct }}
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                </div>    
+                            </div>
+                        </div>
+                    </div>
+                </div>                                   
+
+                <script>
+                const swiperCrossSell = new Swiper('.mySwiperscroll-crosssell', {
+                    slidesPerView: 1,
+                    lazy: true,
+                    rewind: true,
+                    spaceBetween: 32,
+                    resistanceRatio : 0,
+                    autoplay: {
+                        delay: 7000,
+                        disableOnInteraction: false
+                    },    
+                    breakpoints: {
+                        0: { slidesPerView: 1, spaceBetween: 0, resistanceRatio: 0.85 },        
+                        260: { slidesPerView: 1, spaceBetween: 0, resistanceRatio: 0.85 },
+                        320: { slidesPerView: 1, spaceBetween: 0, resistanceRatio: 0.85 },  
+                        360: { slidesPerView: 2, spaceBetween: 2, resistanceRatio: 0.55 },        
+                        767: { slidesPerView: 2, spaceBetween: 10, resistanceRatio: 0.85 },        
+                        980: { slidesPerView: 3, spaceBetween: 10, resistanceRatio: 0.85 },
+                        1199: { slidesPerView: 4, spaceBetween: 10, resistanceRatio: 0.85 },
+                        1280: { slidesPerView: 5, spaceBetween: 10, resistanceRatio : 0 },
+                        1540: { slidesPerView: 6, spaceBetween: 10, resistanceRatio : 0 },
+                        5000: { slidesPerView: 8, spaceBetween: 32, resistanceRatio : 0 },        
+                    },
+                    keyboard: { enabled: true },
+                    navigation: false,
+                    pagination: false, 
+                    scrollbar: false,      
+                });
+                </script>              
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+<!-- تبويبات المنتج -->
+      {% if review_status %}
+        <div class="product-tabs mt-4">
+          <ul class="nav nav-tabs" role="tablist">
+            {% if review_status %}
+              <li class="nav-item">
+                <a class="nav-link active" 
+                   href="#tab-review" 
+                   data-bs-toggle="tab">
+                  {{ tab_review }}
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+          <div class="tab-content mt-3">
+            {% if review_status %}
+              <div id="tab-review" class="tab-pane fade show active">
+                {{ review }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+      
+<!-- نافذة اختيار الخيارات (Modal) -->
+<div class="modal fade" id="optionModal" tabindex="-1" aria-labelledby="optionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg"> <!-- زيادة حجم النافذة لتناسب عدة منتجات -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="optionModalLabel">{{ text_select_options }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ button_close }}"></button>
+            </div>
+            <div class="modal-body">
+                <!-- سيتم تحميل الخيارات هنا ديناميكيًا -->
+                <div id="bundle-options-container"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+                <button type="button" class="btn btn-primary save-bundle-options">{{ button_save }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+      
+      {{ content_bottom }}
+    </div>
+    {{ column_right }}
+  </div>
+</div>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+  // تهيئة سلايدر صور المنتج الرئيسي
+  var swiper = new Swiper(".mySwiperx", {
+    effect: "slide",
+    grabCursor: true,
+    autoplay: {
+      delay: 12000,
+      disableOnInteraction: false,
+    },
+    lazy: {
+      loadPrevNext: true,
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true,
+    },
+    navigation: {
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
+    },
+    on: {
+      slideChange: function () {
+        var current = this.realIndex + 1;
+        var total = this.slides.length;
+        $('.mySwiperx .image-count .current-slide').text(current);
+        $('.mySwiperx .image-count .total-slides').text(total);
+      },
+    },
+  });
+
+  // عند إرسال نموذج المنتج لإضافة للسلة
+  $('#form-product').on('submit', function(e) {
+    e.preventDefault();
+    addToCart();
+  });
+
+  // حركة أنيميشن عند إضافة المنتج للسلة
+  function animateAddToCart() {
+    var cart = $('.cart-icon'); // تأكد من وجود أيقونة للسلة بعنصر .cart-icon
+    var imgtodrag = $('.mySwiperx .swiper-slide img').eq(0);
+
+    if (imgtodrag.length && cart.length) {
+      var imgclone = imgtodrag.clone()
+        .offset({
+          top: imgtodrag.offset().top,
+          left: imgtodrag.offset().left
+        })
+        .css({
+          'opacity': '0.8',
+          'position': 'absolute',
+          'height': '150px',
+          'width': '150px',
+          'z-index': '1000',
+          'border-radius': '50%',
+          'object-fit': 'cover'
+        })
+        .appendTo($('body'))
+        .animate({
+          'top': cart.offset().top + 10,
+          'left': cart.offset().left + 10,
+          'width': 75,
+          'height': 75
+        }, 1000, 'easeInOutExpo');
+
+      imgclone.animate({
+        'width': 0,
+        'height': 0
+      }, function () {
+        $(this).detach();
+      });
+    }
+  }
+
+  // إضافة المنتج الرئيسي للسلة
+  function addToCart() {
+    var formData = $('#form-product').serializeArray();
+    var data = {};
+
+    $.each(formData, function() {
+      if (this.name.includes('option[')) {
+        var optionMatch = this.name.match(/option\[(\d+)\](\[\])?/);
+        if (optionMatch) {
+          var optionId = optionMatch[1];
+          var isArray = optionMatch[2] === '[]';
+          if (isArray) {
+            if (!data['options']) data['options'] = {};
+            if (!data['options'][optionId]) data['options'][optionId] = [];
+            data['options'][optionId].push(this.value);
+          } else {
+            if (!data['options']) data['options'] = {};
+            data['options'][optionId] = this.value;
+          }
+        }
+      } else {
+        data[this.name] = this.value;
+      }
+    });
+
+    var quantity = parseInt(data['quantity']);
+    if (isNaN(quantity) || quantity < parseInt($('#input-quantity').attr('min'))) {
+      showNotification('error', text_invalid_quantity);
+      return;
+    }
+    data['quantity'] = quantity;
+    //تمرير منتجات الباقة وخيارات كل منتج ان وجد وسعره لو كان هناك خصم او مجاني
+    // منتجات الباقة تكون منتجات عاديه لكنها تضاف مع شراء المنتج الرئيسي
+    // مع اختيار الباقة يتم تخزين خيارات المنتجات التي تحتاج خيارات وبها  مشكلi
+    data['bundle_products'] = getBundleProducts(); 
+     data['bundle_options'] = window.selectedBundleOptions || {}
+
+    $.ajax({
+      url: 'index.php?route=checkout/cart/add',
+      type: 'post',
+      data: data,
+      dataType: 'json',
+      beforeSend: function() {
+        $('#button-cart').prop('disabled', true);
+      },
+      complete: function() {
+        $('#button-cart').prop('disabled', false);
+      },
+      success: function(json) {
+        $('#form-product').find('.is-invalid').removeClass('is-invalid');
+        $('#form-product').find('.invalid-feedback').removeClass('d-block');
+        $('.alert-dismissible').remove();
+
+        if (json['error']) {
+          for (var key in json['error']) {
+            $('#input-' + key.replace(/_/g, '-')).addClass('is-invalid');
+            $('#error-' + key.replace(/_/g, '-')).html(json['error'][key]).addClass('d-block');
+          }
+        }
+
+        if (json['success']) {
+          $('#alert').prepend('<div class="alert alert-success alert-dismissible fade show"><i class="fa-solid fa-circle-check me-2"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+          $('#header-cart').load('index.php?route=common/cart/info');
+          $('#carttotalproductscount').load('index.php?route=common/cart/info2');
+          $("#side-header-cart").load('index.php?route=common/cart3/info');
+
+          animateAddToCart();
+
+          setTimeout(function(){
+            $('.alert-dismissible').remove();
+          },5000);   
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        showNotification('error', text_error);
+      }
+    });
+  }
+
+/**
+ * اجلب منتجات الباقة المختارة (بما فيها المنتج_id والكمية والسعر المجاني أو غير مجاني والخيارات).
+ * ستعيد مصفوفة من الكائنات، كل كائن يمثّل منتجًا من منتجات الباقة.
+ */
+function getBundleProducts() {
+    let bundleProducts = [];
+
+    // نمر على جميع عناصر الباقة التي تم اختيارها (التي عليها check)
+    $('.bundle-select-checkbox:checked').each(function() {
+        // نعرف رقم الباقة
+        let bundleId = $(this).val();
+
+        // نصل إلى حاوية هذه الباقة
+        let $bundleItem = $(this).closest('.bundle-offer-item');
+
+        // كل صف (tr) من الجدول قد يُمثل منتجًا ضمن هذه الباقة
+        $bundleItem.find('tr').each(function() {
+            // قد نحتاج تخزين product_id في data-attribute
+            // مثلاً: <tr data-product-id="123">... 
+            // إن لم يكن موجودًا، يمكنك تخزينه بأي طريقة أخرى
+            let productId = $(this).data('product-id');
+
+            // إن لم يكن هناك data-product-id، تجاهل هذا الصف
+            if (!productId) {
+                return;
+            }
+
+            // الكمية قد تكون ثابتة ضمن الباقة أو تُخزّن في data-attribute
+            // أو ربما من بنية الـJSON الخاص بهذه الباقة
+            // هنا كمثال نفرض أن quantity ثابت في كود الـ(Back-End) بـ item.quantity
+            // أو نضعه = 1
+            let quantity = 1; 
+            
+            // الوحدة (إن كانت تدعم تعدد الوحدات)، افترضنا (37) وحدة أساسية،
+            // أو اسحبها من data-attribute إن كانت مخزنة
+            let unitId = $(this).data('unit-id');
+
+            // هل المنتج مجاني ضمن هذه الباقة (is_free)؟
+            // مثلاً لو لديك عنصر يشير أنه مجاني:
+            let isFree = $(this).find('.badge.bg-info').length > 0 ? 1 : 0;
+
+            // خيارات المنتج الداخلي في هذه الباقة (لو مخزّنة في selectedBundleOptions مثلاً)
+            let itemOptions = {};
+            if (window.selectedBundleOptions 
+             && window.selectedBundleOptions[bundleId] 
+             && window.selectedBundleOptions[bundleId][productId]) 
+            {
+                // نخزنها كما هي
+                itemOptions = window.selectedBundleOptions[bundleId][productId];
+            }
+
+            // إضافة كائن يمثل هذا المنتج (من الباقة) إلى مصفوفة bundleProducts
+            bundleProducts.push({
+                product_id: productId,
+                quantity: quantity,
+                unit_id: unitId,
+                is_free: isFree,   // إن كنت تستخدم هذا المنطق
+                options: itemOptions
+            });
+        });
+    });
+
+    return bundleProducts;
+}
+
+/**
+ * بناء الخيارات ديناميكيًا وضبط الاختيارات السابقة، مع اختيار الأقل سعرًا (Select/Radio) إذا لم يكن هناك اختيار سابق.
+ * مع إضافة رسائل تصحيح لكل خطوة.
+ *
+ * @param {Array}  options        مصفوفة الكائنات التي تمثل كل خيار (product_option_id، name، type... إلخ)
+ *                                وتضم كلّ خيار مصفوفة product_option_value (في حال كان سلكت/راديو/تشيكبوكس)
+ * @param {Object} selectedValues كائن يضم المفتاح = product_option_id والقيمة = ما اختاره المستخدم.
+ *                                قد يكون قيمة واحدة (للراديو/السلكت/النص) أو مصفوفة (تشيكبوكس).
+ */
+function updateOptions(options, selectedValues = {}) {
+  // سجلّ أولًا ما وصل للدالة
+  console.log('[updateOptions] START');
+  console.log('options:', options);
+  console.log('selectedValues:', selectedValues);
+
+  // حاوية الخيارات في الـDOM
+  const optionsContainer = $('#options-container');
+  // تفريغ القديم
+  optionsContainer.empty();
+
+  // سنمرّ على كل خيار
+  options.forEach((option, idxOption) => {
+    // debug
+    console.log(`\n[updateOptions] Processing option index=${idxOption}, product_option_id=${option.product_option_id}, type=${option.type}, name=${option.name}`);
+
+    const pid = option.product_option_id;
+    // ما الذي اختاره المستخدم سابقًا (إن وجد)
+    const userSelected = selectedValues[pid];
+    console.log('userSelected for this option:', userSelected);
+
+    let optionHtml = '';
+    const requiredClass = option.required ? ' required' : '';
+
+    // -----------------------------------------
+    // منطق بسيط لإيجاد الأقل سعرًا (في السلكت/الراديو)
+    // سنضعه "إنلاين" بدلًا من الدالة المنفصلة.
+    // -----------------------------------------
+    // وظيفة صغيرة داخلية لاستنتاج سعر الخيار (موجَب/سالب/استبدال)
+    function computeCostPrefix(val) {
+      // parseFloat(val.price)
+      let cost = parseFloat(val.price) || 0;
+
+      if (val.price_prefix === '-') {
+        cost = cost * -1;
+      } else if (val.price_prefix === '=') {
+        // نختار قيمة صغيرة جدا؛ لضمان أنه "الأقل"
+        cost = -999999;
+      }
+      return cost;
+    }
+
+    // ======= لو نوعه SELECT =======
+    if (option.type === 'select') {
+      let autoSelectedValueId = null;
+
+      // إن لم يكن لدى المستخدم أي اختيار سابق
+      // نحاول اعتماد الأقل سعرًا
+      if (typeof userSelected === 'undefined' || userSelected === '' || userSelected === null) {
+        let minCost = Infinity;
+        option.product_option_value.forEach((val) => {
+          const c = computeCostPrefix(val);
+          if (c < minCost) {
+            minCost = c;
+            autoSelectedValueId = val.product_option_value_id;
+          }
+        });
+        console.log('[updateOptions] (SELECT) autoSelectedValueId =', autoSelectedValueId, ' minCost=', minCost);
+      }
+
+      // إن كان المستخدم قد اختار قيمة سابقة، نعتمدها
+      const finalSelected = (autoSelectedValueId && !userSelected)
+        ? autoSelectedValueId
+        : userSelected;
+
+      console.log('[updateOptions] (SELECT) finalSelected=', finalSelected);
+
+      // نبني قائمة الخيارات <option> ... </option>
+      const selectHtml = option.product_option_value.map((val) => {
+        const isSelected = (finalSelected == val.product_option_value_id) ? 'selected' : '';
+        return `
+          <option value="${val.product_option_value_id}" ${isSelected}>
+            ${val.name}
+            ${val.price ? '(' + val.price_prefix + val.price + ')' : ''}
+          </option>`;
+      }).join('');
+
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label for="input-option-${pid}" class="form-label">${option.name}</label>
+          <select name="option[${pid}]" id="input-option-${pid}" class="form-select">
+            ${selectHtml}
+          </select>
+        </div>
+      `;
+    }
+
+    // ======= لو نوعه RADIO =======
+    else if (option.type === 'radio') {
+      let autoSelectedValueId = null;
+
+      if (typeof userSelected === 'undefined' || userSelected === '' || userSelected === null) {
+        let minCost = Infinity;
+        option.product_option_value.forEach((val) => {
+          const c = computeCostPrefix(val);
+          if (c < minCost) {
+            minCost = c;
+            autoSelectedValueId = val.product_option_value_id;
+          }
+        });
+        console.log('[updateOptions] (RADIO) autoSelectedValueId=', autoSelectedValueId, ' minCost=', minCost);
+      }
+
+      const finalSelected = (autoSelectedValueId && !userSelected)
+        ? autoSelectedValueId
+        : userSelected;
+
+      console.log('[updateOptions] (RADIO) finalSelected=', finalSelected);
+
+      const radioHtml = option.product_option_value.map((val) => {
+        const isChecked = (finalSelected == val.product_option_value_id) ? 'checked' : '';
+        return `
+          <div class="form-check">
+            <input type="radio"
+                   name="option[${pid}]"
+                   value="${val.product_option_value_id}"
+                   id="input-option-value-${val.product_option_value_id}"
+                   class="form-check-input"
+                   ${isChecked} />
+            <label for="input-option-value-${val.product_option_value_id}" class="form-check-label">
+              ${val.name}
+              ${val.price ? '(' + val.price_prefix + val.price + ')' : ''}
+            </label>
+          </div>
+        `;
+      }).join('');
+
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label class="form-label">${option.name}</label>
+          <div id="input-option-${pid}">
+            ${radioHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // ======= لو نوعه CHECKBOX =======
+    else if (option.type === 'checkbox') {
+      // لا معنى هنا للأقل سعرًا عادةً
+      // إن وجد userSelected فهو مصفوفة، وإلا فارغة
+      const userSelectedArr = Array.isArray(userSelected) ? userSelected : [];
+      console.log('[updateOptions] (CHECKBOX) userSelectedArr=', userSelectedArr);
+
+      const checkHtml = option.product_option_value.map((val) => {
+        const isChecked = userSelectedArr.includes(val.product_option_value_id) ? 'checked' : '';
+        return `
+          <div class="form-check">
+            <input type="checkbox"
+                   name="option[${pid}][]"
+                   value="${val.product_option_value_id}"
+                   id="input-option-value-${val.product_option_value_id}"
+                   class="form-check-input"
+                   ${isChecked} />
+            <label for="input-option-value-${val.product_option_value_id}" class="form-check-label">
+              ${val.name}
+              ${val.price ? '(' + val.price_prefix + val.price + ')' : ''}
+            </label>
+          </div>
+        `;
+      }).join('');
+
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label class="form-label">${option.name}</label>
+          <div id="input-option-${pid}">
+            ${checkHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // ======= لو نوعه TEXT =======
+    else if (option.type === 'text') {
+      const val = (typeof userSelected === 'string') ? userSelected : '';
+      console.log('[updateOptions] (TEXT) val=', val);
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label for="input-option-${pid}" class="form-label">${option.name}</label>
+          <input type="text"
+                 name="option[${pid}]"
+                 value="${val}"
+                 placeholder="${option.name}"
+                 id="input-option-${pid}"
+                 class="form-control"/>
+        </div>
+      `;
+    }
+
+    // ======= لو نوعه TEXTAREA =======
+    else if (option.type === 'textarea') {
+      const val = (typeof userSelected === 'string') ? userSelected : '';
+      console.log('[updateOptions] (TEXTAREA) val=', val);
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label for="input-option-${pid}" class="form-label">${option.name}</label>
+          <textarea name="option[${pid}]"
+                    rows="5"
+                    placeholder="${option.name}"
+                    id="input-option-${pid}"
+                    class="form-control">${val}</textarea>
+        </div>
+      `;
+    }
+
+    // ======= لو نوعه DATE =======
+    else if (option.type === 'date') {
+      const val = (typeof userSelected === 'string') ? userSelected : '';
+      console.log('[updateOptions] (DATE) val=', val);
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label for="input-option-${pid}" class="form-label">${option.name}</label>
+          <input type="date"
+                 name="option[${pid}]"
+                 value="${val}"
+                 id="input-option-${pid}"
+                 class="form-control"/>
+        </div>
+      `;
+    }
+
+    // ======= لو نوعه TIME =======
+    else if (option.type === 'time') {
+      const val = (typeof userSelected === 'string') ? userSelected : '';
+      console.log('[updateOptions] (TIME) val=', val);
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label for="input-option-${pid}" class="form-label">${option.name}</label>
+          <input type="time"
+                 name="option[${pid}]"
+                 value="${val}"
+                 id="input-option-${pid}"
+                 class="form-control"/>
+        </div>
+      `;
+    }
+
+    // ======= لو نوعه DATETIME =======
+    else if (option.type === 'datetime') {
+      const val = (typeof userSelected === 'string') ? userSelected : '';
+      console.log('[updateOptions] (DATETIME) val=', val);
+      optionHtml = `
+        <div class="mb-3${requiredClass}">
+          <label for="input-option-${pid}" class="form-label">${option.name}</label>
+          <input type="datetime-local"
+                 name="option[${pid}]"
+                 value="${val}"
+                 id="input-option-${pid}"
+                 class="form-control"/>
+        </div>
+      `;
+    }
+
+    // أضف الـHTML النهائي لهذا الخيار
+    optionsContainer.append(optionHtml);
+  });
+
+  // في النهاية، بعد بناء كل الخيارات، نضع مستمعي التغيير
+  optionsContainer.find('select, input, textarea').on('change', function() {
+    console.log('[updateOptions] => An option changed. Will call updatePrice()...');
+    updatePrice();
+  });
+
+  console.log('[updateOptions] END.\n');
+}
+
+
+function gatherSelectedBundles() {
+  let selected = [];
+  $('.bundle-select-checkbox:checked').each(function() {
+    selected.push($(this).val());
+  });
+  
+  return selected;
+}
+/**
+ * دالة لتحديث السعر والبيانات المرتبطة (خصومات، باقات، إلخ)
+ * يستدعيها الحدث onchange على الخيارات/الوحدات، أو يدوياً بعد تغير المعطيات.
+ */
+function updatePrice() {
+  // 1) جهّز البيانات المطلوب إرسالها للسيرفر
+  let requestData = {
+    product_id: $('#input-product-id').val(),
+    unit_id:    $('#input-unit').val(),
+    quantity:   $('#input-quantity').val(),
+    options:    gatherSelectedOptions(),
+    selected_bundles: gatherSelectedBundles(),
+    bundle_options: window.selectedBundleOptions || {}
+  };
+
+  console.log('[updatePrice] Data to send => ', requestData);
+
+  $.ajax({
+    url: 'index.php?route=product/product/getUnitPrice',
+    type: 'post',
+    data: requestData,
+    dataType: 'json',
+    beforeSend: function() {
+      // عرض مؤشر التحميل
+      $('.price-section').addClass('loading');
+    },
+    complete: function() {
+      // إزالة المؤشر
+      $('.price-section').removeClass('loading');
+    },
+    success: function(json) {
+      console.log('[updatePrice] Response => ', json);
+      if (json.success) {
+        // (1) تحديث سعر المنتج الرئيسي
+        updatePriceDisplay(json.price_data);
+
+        // (2) تحديث حدود الكمية
+        updateQuantityLimits(json.quantity_data);
+
+        // (3) تحديث خصومات الكمية
+        updateDiscountDisplay(
+          json.quantity_data.current,
+          json.product_quantity_discounts,
+          json.next_discount
+        );
+
+        // (4) في حال رجعت خيارات ديناميكية
+        if (json.options) {
+          updateOptions(json.options, json.selected_values);
+        }
+
+        // (5) تحديث خيارات منتجات الباقة المختارة
+        $('.bundle-item-chosen-options').empty(); 
+        if (json.bundle_data && json.bundle_data.selected_bundles) {
+          json.bundle_data.selected_bundles.forEach((bundle) => {
+            if (bundle.items && bundle.items.length > 0) {
+              bundle.items.forEach((item) => {
+                let $optionsContainer = $('.bundle-item-chosen-options[data-bundle-id="' + bundle.bundle_id + '"][data-product-id="' + item.product_id + '"]');
+                if (!$optionsContainer.length) return;
+
+                if (item.selected_options && item.selected_options.length > 0) {
+                  let html = '<ul class="m-0 p-0" style="list-style: none;">';
+                  item.selected_options.forEach(opt => {
+                    html += `
+                      <li>
+                        <strong>${opt.option_name}:</strong>
+                        <span>${opt.option_value}</span>
+                        ${opt.formatted_price
+                          ? '<small class="text-muted ms-1">(' + opt.formatted_price + ')</small>'
+                          : ''
+                        }
+                      </li>
+                    `;
+                  });
+                  html += '</ul>';
+                  $optionsContainer.html(html);
+                } else {
+                  $optionsContainer.html('');
+                }
+              });
+            }
+          });
+        }
+
+        // (6) تحديث أسعار الباقة بالواجهة
+        // 'json.bundles' => مصفوفة من الباقات
+if (json.bundles && json.bundles.length > 0) {
+  json.bundles.forEach(function(bundle) {
+    const $bundleItem = $('.bundle-offer-item[data-bundle-id="' + bundle.bundle_id + '"]');
+    if (!$bundleItem.length) return;
+
+    // تحدّث إجمالي الباقة
+    $bundleItem.find('.final-bundle-total').text(bundle.total_price);
+    $bundleItem.find('.final-bundle-original-total').text(bundle.original_price);
+
+    if (bundle.savings && bundle.savings !== 'false') {
+      $bundleItem.find('.bundle-saving-badge')
+                 .text(bundle.savings_percentage + '%')
+                 .show();
+      $bundleItem.find('.js-bundle-saving').text(bundle.savings);
+    } else {
+      $bundleItem.find('.bundle-saving-badge').hide();
+      $bundleItem.find('.js-bundle-saving').text('');
+    }
+
+    // تحدّث كل عنصر بالباقة
+    if (bundle.items && bundle.items.length > 0) {
+      bundle.items.forEach(function(bItem) {
+        let $row = $bundleItem.find('.bundle-item-row[data-product-id="' + bItem.product_id + '"]');
+        
+        // لو المنتج مجاني
+        if (bItem.is_free) {
+          // ...
+        } else {
+          // حدّث السعر النهائي
+          $row.find('.js-bundle-item-final').text(bItem.line_total_with_tax_formatted);
+        }
+      });
+    }
+  });
+}
+
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      showNotification('error', text_error);
+    }
+  });
+}
+
+
+
+
+  function updateQuantityLimits(quantityData) {
+    $('#quantity-slider').attr('min', quantityData.minimum);
+    $('#quantity-slider').attr('max', quantityData.maximum);
+    $('#input-quantity').attr('min', quantityData.minimum);
+    $('#input-quantity').attr('max', quantityData.maximum);
+  }
+
+  function updatePriceDisplay(data) {
+    $('#total-saving-box').hide();
+    $('#special-box').hide();
+    $('#price-box').hide();
+    $('.saving-badge').hide();
+
+    if (data.special_price && data.unit_price.special) {
+        //must change to full price old
+      $('#old-price-value').html(data.unit_price.price_formatted).show();
+      // must change to full special
+      $('#special-price-value').html(data.unit_price.special_formatted).show();
+      // will be for full price and special at backend
+      $('.saving-badge').html('-' + data.unit_price.discount_percentage + '%').show();
+      $('#special-box').show();
+      $('#price-box').hide();      
+      $('#price-value').hide();
+      $('.saving-badge').show();
+
+      if(data.savings.amount > 0){
+          //full price - full special
+        $('#formatted_savings').html(data.savings.formatted).show();
+        $('#total-saving-box').show();
+      } else {
+        $('#total-saving-box').hide();
+      }
+      $('#tax_amount_formatted').html(data.tax_amount.formatted).show();
+    } else {
+      $('#price-box').show();      
+      $('#total-saving-box').hide();
+      $('#special-box').hide();
+      $('.saving-badge').hide();
+      $('#old-price-value').hide();
+      $('#special-price-value').hide();
+      $('#price-value').html(data.current_price.formatted).show();
+      $('#tax_amount_formatted').html(data.tax_amount.formatted).show();
+    }
+  }
+  
+  function updateDiscountDisplay(currentQuantity, productQuantityDiscounts, nextDiscount) {
+    if (!productQuantityDiscounts || productQuantityDiscounts.length === 0) {
+        $('.discount-container').hide();
+        return;
+    } else {
+        $('.discount-container').show();
+    }
+
+    const filteredDiscounts = productQuantityDiscounts.reduce((acc, discount) => {
+        if (!acc[discount.buy_quantity] || getDiscountValue(discount) > getDiscountValue(acc[discount.buy_quantity])) {
+            acc[discount.buy_quantity] = discount;
+        }
+        return acc;
+    }, {});
+
+    const sortedDiscounts = Object.values(filteredDiscounts).sort((a, b) => a.buy_quantity - b.buy_quantity);
+
+    const discountContainer = $('.discount-grid');
+    discountContainer.empty(); 
+
+    sortedDiscounts.forEach(discount => {
+        const isActive = currentQuantity === discount.buy_quantity;
+        const isEligible = currentQuantity < discount.buy_quantity;
+
+        let discountLabel = '';
+        let discountIcon = '';
+        if (discount.type === 'buy_x_get_y') {
+            discountIcon = '<i class="fa-solid fa-gift text-blue-600 me-2"></i>';
+            discountLabel = `شراء ${discount.buy_quantity} والحصول على ${discount.get_quantity} مجانًا`;
+        } else if (discount.type === 'buy_x_get_discount') {
+            discountIcon = '<i class="fa-solid fa-percent text-purple-600 me-2"></i>';
+            discountLabel = `شراء ${discount.buy_quantity} والحصول على خصم ${discount.discount_value}%`;
+        }
+
+        const progressPercentage = isEligible ? Math.min((currentQuantity / discount.buy_quantity) * 100, 100) : 100;
+
+        const discountCard = `
+            <div data-discount-id="${discount.discount_id}" data-buy-quantity="${discount.buy_quantity}" class="discount-card ${isActive ? 'active bg-success text-white' : 'bg-gray-100 text-dark'} rounded-lg p-3 shadow-sm">
+                <div class="discount-header flex justify-between items-center mb-2">
+                    ${discountIcon}
+                    <span class="font-semibold">${discountLabel}</span>
+                </div>
+                <div class="progress mb-2">
+                    <div class="progress-bar ${isActive ? 'progress-bar-active' : ''}" style="width: ${progressPercentage}%;"></div>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>اطلب: ${discount.buy_quantity} قطعة</span>
+                    ${isEligible ? `<span>حاليا: ${currentQuantity} ويتبقى ${discount.buy_quantity - currentQuantity}</span>` : ''}
+                </div>
+            </div>
+        `;
+        discountContainer.append(discountCard);
+    });
+
+    if (nextDiscount) {
+        const unitsNeeded = nextDiscount.buy_quantity - currentQuantity;
+        if (unitsNeeded > 0) {
+            $('.next-discount-alert').html(`
+                <i class="fa-solid fa-info-circle me-2"></i>
+                اشتري ${unitsNeeded} وحدة إضافية لفتح الخصم التالي!
+            `).show();
+        } else {
+            $('.next-discount-alert').hide();
+        }
+    } else {
+        $('.next-discount-alert').hide();
+    }
+
+    $('.progress-bar-active').css('background', '#ffffff');
+  }
+
+  function getDiscountValue(discount) {
+    if (discount.type === 'buy_x_get_y') {
+        return discount.get_quantity;
+    } else if (discount.type === 'buy_x_get_discount') {
+        return discount.discount_value;
+    }
+    return 0;
+  }
+
+
+  $(document).on('change', '#input-quantity, #input-unit, [name^="option["]', function() {
+    updatePrice();
+});
+
+
+
+
+$('.bundle-select-checkbox').on('change', function() {
+  if (!window.selectedBundleOptions) {
+    window.selectedBundleOptions = {}; // يبدأ كائن فارغ
+  }
+
+  const bundleId = $(this).val();
+
+  if ($(this).is(':checked')) {
+    // بمجرد اختيار الباقة، استدعِ دالة تحميل خيارات الباقة مباشرة
+    loadBundleOptions(bundleId);
+  } else {
+    // في حال أزال المستخدم علامة الصح
+    if (window.selectedBundleOptions[bundleId]) {
+      delete window.selectedBundleOptions[bundleId];
+    }
+    updatePrice();
+  }
+});
+
+    
+  $('.number-spinner button').on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var btn = $(this);
+    var spinner = btn.closest('.number-spinner');
+    var input = spinner.find('input');
+    var min = parseInt(input.attr('min')) || 1;
+    var max = parseInt(input.attr('max')) || Infinity;
+    var oldValue = parseInt(input.val()) || min;
+    var newVal = oldValue;
+
+    if (btn.attr('data-dir') === 'up') {
+      newVal = Math.min(oldValue + 1, max);
+    } else {
+      newVal = Math.max(oldValue - 1, min);
+    }
+
+    input.val(newVal);
+    $('#quantity-slider').val(newVal);
+    updatePrice();
+  });
+
+  $('.discount-container').on('click', '.discount-card', function(e) {
+    e.preventDefault(); 
+    e.stopPropagation(); 
+
+    var buyQuantity = $(this).data('buy-quantity');
+    $('#input-quantity').val(buyQuantity);
+    $('#quantity-slider').val(buyQuantity);
+    updatePrice();
+  });
+
+  $('#quantity-slider').on('input change', function() {
+    var quantity = parseInt($(this).val());
+    $('#input-quantity').val(quantity);
+    updatePrice();
+  });
+
+  $('#input-quantity').on('input change', function() {
+    var quantity = parseInt($(this).val());
+    $('#quantity-slider').val(quantity);
+    updatePrice();
+  });
+
+  function gatherSelectedOptions() {
+    var options = {};
+    $('[name^="option["]').each(function() {
+      var name = $(this).attr('name');
+      var optionMatch = name.match(/option\[(\d+)\](\[\])?/);
+      if (optionMatch) {
+        var optionId = optionMatch[1];
+        var isArray = optionMatch[2] === '[]';
+        if ($(this).is(':checkbox')) {
+          if ($(this).is(':checked')) {
+            if (!options[optionId]) options[optionId] = [];
+            options[optionId].push($(this).val());
+          }
+        } else if ($(this).is(':radio')) {
+          if ($(this).is(':checked')) {
+            options[optionId] = $(this).val();
+          }
+        } else if ($(this).is('select')) {
+          options[optionId] = $(this).val();
+        } else {
+          options[optionId] = $(this).val();
+        }
+      }
+    });
+    return options;
+  }
+
+  function showNotification(type, message) {
+    var alertClass = type === 'success' ? 'alert-success' : 
+                     type === 'error' ? 'alert-danger' : 
+                     'alert-warning';
+    
+    var alert = $('<div class="alert ' + alertClass + ' alert-dismissible fade show">' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    message +
+                  '</div>');
+                  
+    $('#alert').prepend(alert);
+    
+    setTimeout(function() {
+      alert.alert('close');
+    }, 5000);
+  }
+
+  function initializeOptions() {
+    $('.options-section').find('.required').each(function() {
+      var option = $(this);
+      if (option.find('select').length) {
+        var select = option.find('select');
+        if (select.find('option').length > 1) {
+          select.find('option').eq(1).prop('selected', true);
+        }
+      } else if (option.find('input[type="radio"]').length) {
+        option.find('input[type="radio"]').first().prop('checked', true);
+      }
+    });
+
+    var initialQuantity = parseInt($('#input-quantity').val());
+    $('#quantity-slider').val(initialQuantity);
+    updatePrice();
+  }
+
+  initializeOptions();
+
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+
+  var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+  var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+    return new bootstrap.Popover(popoverTriggerEl);
+  });
+
+
+  // وظائف تتعلق بالباقات
+  $('.bundles-container').on('click', '.open-bundle-options', function() {
+      var bundleId = $(this).data('bundle-id');
+      loadBundleOptions(bundleId);
+  });
+
+
+
+
+  $('.bundles-container').on('click', '.add-bundle-direct', function() {
+      var bundleId = $(this).data('bundle-id');
+      addBundleToCartDirect(bundleId);
+  });
+
+  function loadBundleOptions(bundleId) {
+    $.ajax({
+      url: 'index.php?route=product/product/getBundleOptions',
+      type: 'GET',
+      data: { bundle_id: bundleId },
+      dataType: 'json',
+      beforeSend: function() {
+        $('#bundle-options-container').html('<p>' + 'جاري التحميل ..' + '</p>');
+      },
+      success: function(json) {
+        if (json.success) {
+          var bundleOptionsHtml = '';
+          json.bundle_products.forEach(function(product) {
+            bundleOptionsHtml += `
+              <div class="bundle-product mb-4" data-product-id="${product.product_id}">
+                <h5>${product.name}</h5>
+                <input type="hidden" name="bundle_product_id[]" value="${product.product_id}"/>
+                ${product.options && product.options.length > 0 ? renderProductOptions(product) : '<p>' + 'لا توجد خيارات' + '</p>'}
+              </div>
+            `;
+          });
+          $('#bundle-options-container').html(bundleOptionsHtml);
+          $('#optionModal').modal('show');
+        } else if (json.error) {
+          console.error('Error loading bundle options:', json.error);
+          
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error loading bundle options:', error);
+      }
+    });
+  }
+
+  function renderProductOptions(product) {
+    var optionsHtml = '';
+    if (product.options && product.options.length > 0) {
+      product.options.forEach(function(option) {
+        optionsHtml += buildOptionHtml(option, `bundle_option[${product.product_id}][${option.product_option_id}]`);
+      });
+    }
+    return optionsHtml;
+  }
+
+  function buildOptionHtml(option, optionName) {
+    var optionHtml = '';
+    // نفس المنطق المستخدم في updateOptions ولكن مع optionName مختلف
+    if (option.type === 'select') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label for="${optionName}" class="form-label">${option.name}</label>
+                <select name="${optionName}" id="${optionName}" class="form-select">
+                    ${option.product_option_value.map(value => `
+                        <option value="${value.product_option_value_id}">${value.name} ${value.price ? `(${value.price_prefix}${value.price})` : ''}</option>
+                    `).join('')}
+                </select>
+            </div>`;
+    } else if (option.type === 'radio') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label class="form-label">${option.name}</label>
+                <div>
+                    ${option.product_option_value.map(value => `
+                        <div class="form-check">
+                            <input type="radio" name="${optionName}" value="${value.product_option_value_id}" id="${optionName}-${value.product_option_value_id}" class="form-check-input"/>
+                            <label for="${optionName}-${value.product_option_value_id}" class="form-check-label">
+                                ${value.name} ${value.price ? `(${value.price_prefix}${value.price})` : ''}
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+    } else if (option.type === 'checkbox') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label class="form-label">${option.name}</label>
+                <div>
+                    ${option.product_option_value.map(value => `
+                        <div class="form-check">
+                            <input type="checkbox" name="${optionName}[]" value="${value.product_option_value_id}" id="${optionName}-${value.product_option_value_id}" class="form-check-input"/>
+                            <label for="${optionName}-${value.product_option_value_id}" class="form-check-label">
+                                ${value.name} ${value.price ? `(${value.price_prefix}${value.price})` : ''}
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+    } else if (option.type === 'text') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label for="${optionName}" class="form-label">${option.name}</label>
+                <input type="text" name="${optionName}" value="" placeholder="${option.name}" id="${optionName}" class="form-control"/>
+            </div>`;
+    } else if (option.type === 'textarea') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label for="${optionName}" class="form-label">${option.name}</label>
+                <textarea name="${optionName}" rows="3" placeholder="${option.name}" id="${optionName}" class="form-control"></textarea>
+            </div>`;
+    } else if (option.type === 'date') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label for="${optionName}" class="form-label">${option.name}</label>
+                <input type="date" name="${optionName}" value="" id="${optionName}" class="form-control"/>
+            </div>`;
+    } else if (option.type === 'time') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label for="${optionName}" class="form-label">${option.name}</label>
+                <input type="time" name="${optionName}" value="" id="${optionName}" class="form-control"/>
+            </div>`;
+    } else if (option.type === 'datetime') {
+        optionHtml += `
+            <div class="mb-3${option.required ? ' required' : ''}">
+                <label for="${optionName}" class="form-label">${option.name}</label>
+                <input type="datetime-local" name="${optionName}" value="" id="${optionName}" class="form-control"/>
+            </div>`;
+    }
+
+    return optionHtml;
+  }
+
+// عند تغيير الـ checkbox (الباقة)
+$('.bundle-select-checkbox').on('change', function() {
+  const bundleId = $(this).val();
+
+  // إذا كان وضع علامة صح
+  if ($(this).is(':checked')) {
+    // سجل أن المستخدم لم يحفظ بعد
+    window.bundleModalSaved = false;
+
+    // سجل رقم الباقة العالمية
+    window.currentBundleId = bundleId;
+
+    // افتح المودال بتحميل خيارات الباقة
+    loadBundleOptions(bundleId);
+
+    // تابع إغلاق المودال:
+    $('#optionModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
+      // لو المستخدم لم يحفظ 
+      if (!window.bundleModalSaved) {
+        // تراجع عن علامة الصح
+        $(`.bundle-select-checkbox[value="${bundleId}"]`).prop('checked', false);
+        // امسح أي بيانات
+        if (window.selectedBundleOptions && window.selectedBundleOptions[bundleId]) {
+          delete window.selectedBundleOptions[bundleId];
+        }
+        // حدّث السعر
+        updatePrice();
+      }
+    });
+
+  } else {
+    // المستخدم أزال الصح يدويًا
+    if (window.selectedBundleOptions && window.selectedBundleOptions[bundleId]) {
+      delete window.selectedBundleOptions[bundleId];
+    }
+    updatePrice();
+  }
+});
+
+
+// عند الضغط على زر حفظ بالمودال
+$('.save-bundle-options').on('click', function() {
+  // نفترض هنا دالة تجمع الخيارات
+  saveBundleSelection(); // تختزن في window.selectedBundleOptions[bundleId] 
+  // لنشير إلى أنّه تم الحفظ فعلًا
+  window.bundleModalSaved = true;
+
+  // أغلق المودال (Bootstrap 5)
+  const modalEl = document.getElementById('optionModal');
+  const bsModal = bootstrap.Modal.getInstance(modalEl);
+  if (bsModal) {
+    bsModal.hide();
+  }
+});
+
+
+function saveBundleSelection() {
+  // لو أول مرة نستخدمه
+  if (!window.selectedBundleOptions) {
+    window.selectedBundleOptions = {};
+  }
+
+  // التعرّف على معرف الباقة
+  // ممكن أنت مررتِه كمتحول عام في الـJS أو تخزينه عند فتح المودال
+  const bundleId = window.currentBundleId; 
+  if (!bundleId) return;
+
+  // جهّز مصفوفة/كائن
+  if (!window.selectedBundleOptions[bundleId]) {
+    window.selectedBundleOptions[bundleId] = {};
+  }
+
+  // اجلب كل الأقسام التي تمثل منتجًا داخل المودال:
+  $('#bundle-options-container .bundle-product').each(function() {
+    // نفترض وضعنا data-attribute للـ productId:
+    const productId = $(this).data('product-id');
+  console.log('productId =', productId);
+
+      let productId2 = $(this).closest('tr').data('product-id');
+  console.log('productId =', productId2);
+  
+    if (!productId) return;
+
+    // اجلب الحقول (مثال):
+    let productOptions = {};
+
+    $(this).find('select, input, textarea').each(function() {
+      const name = $(this).attr('name'); 
+      // مثلًا name="bundle_option[999][66]"..
+      // ابحث عن product_option_id بشكل Regex...
+
+      // مثلاً:
+      const match = name.match(/\[(\d+)\]$/);
+      if (match) {
+        let productOptionId = match[1];
+        // التحقق هل checkbox or radio
+        if ($(this).is(':checkbox')) {
+          if ($(this).is(':checked')) {
+            if (!productOptions[productOptionId]) {
+              productOptions[productOptionId] = [];
+            }
+            productOptions[productOptionId].push($(this).val());
+          }
+        } else if ($(this).is(':radio')) {
+          if ($(this).is(':checked')) {
+            productOptions[productOptionId] = $(this).val();
+          }
+        } else {
+          // select أو نصي...
+          productOptions[productOptionId] = $(this).val();
+        }
+      }
+    });
+
+    // واحفظها:
+    window.selectedBundleOptions[bundleId][productId] = productOptions;
+    console.error(window.selectedBundleOptions);
+  });
+
+  // أغلق المودال
+const modalEl = document.getElementById('optionModal');
+const bsModal = bootstrap.Modal.getInstance(modalEl);
+if (bsModal) {
+  bsModal.hide();
+} else {
+  console.warn('No bootstrap.Modal instance found for #optionModal');
+}
+
+  // استدعِ updatePrice() لتحديث السعر
+  updatePrice();
+}
+
+
+
+});
+
+</script>
+
+<style>
+/* ======= التنسيقات العامة ======= */
+
+/* حالة تحميل (Spinner) عند تنفيذ عمليات AJAX */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* تأثير الدوران للـSpinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ======= معرض صور المنتج ======= */
+.product-gallery-section {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+/* حاوية الصورة الرئيسية */
+.image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.image-container img {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+.image-container:hover img {
+    transform: scale(1.05);
+}
+
+/* أيقونة قائمة الرغبات (القلب) */
+.wishlist-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.wishlist-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* عدّاد الصور في السلايدر */
+.image-count {
+    position: absolute;
+    bottom: 10px;
+    right: 0px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 18px;
+    font-size: 0.8rem;
+}
+
+/* ======= تنسيقات الأسعار ======= */
+.price-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+.price-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* تنسيق الأسعار الأساسية والخاصة */
+.price-wrapper {
+    position: relative;
+}
+.old-price {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+.current-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #28a745;
+    margin: 0;
+}
+.current-price.text-danger {
+    color: #dc3545;
+}
+
+/* شارة التوفير */
+.saving-badge {
+    position: absolute;
+    top: 0;
+    background: #dc3545;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transform: rotate(5deg);
+    animation: badgePulse 2s infinite;
+}
+.bundle-saving-badge {
+    position: absolute;
+    bottom: 28px !important;
+    margin-inline-end: 15px !important;
+    background: #dc3545;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transform: rotate(5deg);
+    animation: badgePulse 2s infinite;
+}
+
+/* معلومات الضريبة */
+.tax-info {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* حركة نبض للشارة */
+@keyframes badgePulse {
+    0% { transform: rotate(5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.05); }
+    100% { transform: rotate(5deg) scale(1); }
+}
+
+/* ======= الوحدات والخيارات ======= */
+.options-section {
+    margin-bottom: 2rem;
+}
+.required > .form-label::after {
+    content: " *";
+    color: red;
+}
+.option-radio-group,
+.option-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* تنسيق خيارات الراديو والـCheckbox */
+.option-radio label,
+.option-checkbox label {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.option-radio input:checked + label,
+.option-checkbox input:checked + label {
+    border-color: #3498db;
+    background: rgba(52,152,219,0.05);
+}
+
+/* ======= تنسيقات الكمية ======= */
+.quantity-section {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+}
+.form-range {
+    height: 8px;
+}
+.form-range::-webkit-slider-thumb {
+    background: #3498db;
+}
+
+/* أزرار زيادة/نقصان الكمية */
+.number-spinner {
+    width: 100%;
+    margin: 0 auto;
+}
+.number-spinner .btn {
+    padding: 0.5rem 0.8rem;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    transition: all 0.2s ease;
+}
+.number-spinner .btn:hover {
+    background: #e9ecef;
+}
+.number-spinner input {
+    text-align: center;
+    border-left: none;
+    border-right: none;
+    background: #fff;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+/* ======= تنسيقات خصومات الكمية ======= */
+.discount-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+}
+.discounts-title {
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* بطاقات الخصم */
+.discount-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.discount-card {
+    position: relative;
+    background: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+.discount-card:hover {
+    transform: translateY(-5px);
+    border-color: #ffc107;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.discount-card.active {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+.discount-header i {
+    font-size: 1.2rem;
+}
+.progress {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.progress-bar {
+    background: #28a745;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.progress-bar-active {
+    background: #ffffff !important;
+}
+.next-discount-alert {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    background: #fff3cd;
+    border-left: 4px solid #ffeeba;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+
+/* ======= تنسيقات الباقات ======= */
+.bundles-section {
+    margin-top: 2rem;
+    direction: inherit;
+}
+/* لا تغيير ل .bundles-container لأنه قد يرث تنسيق حسب الحاجة */
+.bundle-row {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.bundle-row::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(-45deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+.bundle-row:hover::before {
+    opacity: 1;
+}
+.bundle-item img {
+    transition: transform 0.3s ease;
+}
+.bundle-item img:hover {
+    transform: scale(1.1);
+}
+.savings-info {
+    background-color: #f0f5f3;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+.add-bundle {
+    position: relative;
+    overflow: hidden;
+}
+.add-bundle::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: all 0.5s ease;
+}
+.add-bundle:hover::after {
+    left: 100%;
+}
+
+/* الباقة ضمن الكارد */
+.bundle-product {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+.bundle-product:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+.bundle-product h5 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: #0f1740;
+}
+
+/* عرض خيارات الباقة */
+.bundle-item-options {
+    margin-top: 1rem;
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+}
+.bundle-item-options h6 {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+/* تنسيق النافذة المنبثقة للخيارات */
+#optionModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.bundle-summary .savings-info {
+    font-size: 0.95rem;
+}
+.bundle-summary .final-total {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* ======= تنسيقات التوصيات (Upsell / Cross-sell) ======= */
+.recommendations-section {
+    margin-top: 3rem;
+}
+.recommendation-card {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.recommendation-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+/* ======= تنسيقات الأزرار ======= */
+.btn-primary {
+    background: #f99f1e;
+    border: none;
+    color: #000;
+    padding: 0.8rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+.btn-primary:hover {
+    background: #e5a100 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52,152,219,0.3);
+}
+
+/* تحسين زر السلة */
+.cart-icon {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+.cart-icon:hover {
+    transform: scale(1.1);
+}
+
+/* تخصيص لشاشة أصغر */
+@media (max-width: 992px) {
+    .bundle-summary {
+        text-align: center;
+    }
+    .image-count {
+        display: none;
+    }
+}
+
+.imagepadding {
+    padding-inline-start: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+@media (max-width: 768px) {
+    .imagepadding {
+        padding-inline-start: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .price-section {
+        padding: 1rem;
+    }
+    .current-price {
+        font-size: 1.5rem;
+    }
+    .option-radio-group,
+    .option-checkbox-group {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    .discount-cards {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+@media (max-width: 576px) {
+    .number-spinner {
+        width: 100%;
+    }
+}
+
+/* لون وتنسيق حالات المخزون إن وجدت */
+.stock-status {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    margin-top: 1rem;
+}
+.stock-status i {
+    margin-right: 0.5rem;
+}
+.stock-status.text-success i {
+    color: #28a745;
+}
+.stock-status.text-danger i {
+    color: #dc3545;
+}
+
+/* الحد الأدنى للكمية */
+.minimum-qty-warning {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+.minimum-qty-warning i {
+    color: #ffc107;
+    margin-right: 0.3rem;
+}
+
+/* تبسيط أزرار السلايدر */
+.swiper-button-next.simplified-arrow,
+.swiper-button-prev.simplified-arrow {
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.swiper-button-next.simplified-arrow::after,
+.swiper-button-prev.simplified-arrow::after {
+    font-size: 16px;
+    color: #fff;
+}
+
+/* تأثير السلايدر (cards) */
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ======= انتهاء تنسيقات CSS ======= */
+</style>
+
+{{ footer }}

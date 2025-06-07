@@ -1,0 +1,569 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-export" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-info"><i class="fa fa-download"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label" for="date-start">{{ text_date_range }}</label>
+              <div class="input-group date">
+                <input type="text" name="date_start" value="{{ date_start }}" placeholder="{{ text_date_range }}" data-date-format="YYYY-MM-DD" id="date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label" for="date-end">&nbsp;</label>
+              <div class="input-group date">
+                <input type="text" name="date_end" value="{{ date_end }}" placeholder="{{ text_date_range }}" data-date-format="YYYY-MM-DD" id="date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">&nbsp;</label>
+              <div>
+                <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ text_apply }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- الإنفاق حسب الفئة -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_spending_by_category }}</h3>
+          </div>
+          <div class="panel-body chart-container">
+            <canvas id="spending-category-chart" style="min-height: 300px;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- اتجاه الإنفاق -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-line-chart"></i> {{ text_spending_trend }}</h3>
+          </div>
+          <div class="panel-body chart-container">
+            <canvas id="spending-trend-chart" style="min-height: 300px;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- أفضل الموردين -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_top_suppliers }}</h3>
+          </div>
+          <div class="panel-body chart-container">
+            <canvas id="top-suppliers-chart" style="min-height: 300px;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- أداء الموردين -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-tachometer"></i> {{ text_supplier_performance }}</h3>
+          </div>
+          <div class="panel-body chart-container">
+            <canvas id="supplier-performance-chart" style="min-height: 300px;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- توزيع حالة أوامر الشراء -->
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_po_status }}</h3>
+          </div>
+          <div class="panel-body chart-container">
+            <canvas id="po-status-chart" style="min-height: 280px;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- متوسط وقت التوريد -->
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-clock-o"></i> {{ text_lead_time }}</h3>
+          </div>
+          <div class="panel-body chart-container">
+            <canvas id="lead-time-chart" style="min-height: 280px;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- إحصائيات مطابقة الفواتير -->
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-check-square-o"></i> {{ text_invoice_matching }}</h3>
+          </div>
+          <div class="panel-body chart-container">
+            <canvas id="invoice-matching-chart" style="min-height: 280px;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- تنبيهات تفاوت الأسعار -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-exclamation-triangle"></i> {{ text_price_variance }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table id="price-variance-table" class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_po_number }}</th>
+                <th>{{ column_product }}</th>
+                <th>{{ column_supplier }}</th>
+                <th>{{ column_order_price }}</th>
+                <th>{{ column_invoice_price }}</th>
+                <th>{{ column_variance_percent }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if price_variance_alerts %}
+                {% for alert in price_variance_alerts %}
+                <tr {% if alert.variance_percent > 10 %}class="danger"{% elseif alert.variance_percent > 5 %}class="warning"{% endif %}>
+                  <td>{{ alert.po_number }}</td>
+                  <td>{{ alert.product_name }}</td>
+                  <td>{{ alert.supplier_name }}</td>
+                  <td class="text-right">{{ alert.order_price }}</td>
+                  <td class="text-right">{{ alert.invoice_price }}</td>
+                  <td class="text-right {{ alert.variance_percent > 0 ? 'text-danger' : 'text-success' }}">{{ alert.variance_percent }}%</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js for modern charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script type="text/javascript">
+// Global variables
+var user_token = '{{ user_token }}';
+var language = {
+    text_no_results: '{{ text_no_results }}',
+    text_loading: '{{ text_loading }}',
+    text_spending_trend: '{{ text_spending_trend }}',
+    text_amount: '{{ text_amount }}',
+    text_days: '{{ text_days }}',
+    text_full_match: '{{ text_full_match }}',
+    text_partial_match: '{{ text_partial_match }}',
+    text_no_match: '{{ text_no_match }}',
+    text_avg_lead_time: '{{ text_avg_lead_time }}',
+    error_date_range_required: '{{ error_date_range_required }}',
+    error_loading_data: '{{ error_loading_data }}'
+};
+
+// Chart containers mapping
+var chartContainers = {
+    'spending-category': 'spending-category-chart',
+    'spending-trend': 'spending-trend-chart',
+    'top-suppliers': 'top-suppliers-chart',
+    'supplier-performance': 'supplier-performance-chart',
+    'po-status': 'po-status-chart',
+    'lead-time': 'lead-time-chart',
+    'invoice-matching': 'invoice-matching-chart'
+};
+</script>
+
+<script src="view/javascript/purchase/purchase_analytics.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  // تهيئة اختيار التاريخ
+  $('.date').datetimepicker({
+    pickTime: false
+  });
+
+  // Legacy compatibility - use new functions from external JS
+  // The external JS file will handle all chart rendering and AJAX calls
+});
+
+// دالة لتحديث جميع الرسوم البيانية
+function renderCharts() {
+  var date_start = $('input[name=\'date_start\']').val();
+  var date_end = $('input[name=\'date_end\']').val();
+
+  // الإنفاق حسب الفئة
+  $.ajax({
+    url: 'index.php?route=purchase/purchase_analytics/ajaxGetSpendingData&user_token={{ user_token }}',
+    dataType: 'json',
+    data: {
+      date_start: date_start,
+      date_end: date_end,
+      type: 'category'
+    },
+    success: function(json) {
+      if (json.data) {
+        renderCategoryChart(json.data);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+
+  // اتجاه الإنفاق
+  $.ajax({
+    url: 'index.php?route=purchase/purchase_analytics/ajaxGetSpendingData&user_token={{ user_token }}',
+    dataType: 'json',
+    data: {
+      date_start: date_start,
+      date_end: date_end,
+      type: 'trend'
+    },
+    success: function(json) {
+      if (json.data) {
+        renderTrendChart(json.data);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+
+  // أفضل الموردين
+  $.ajax({
+    url: 'index.php?route=purchase/purchase_analytics/ajaxGetSpendingData&user_token={{ user_token }}',
+    dataType: 'json',
+    data: {
+      date_start: date_start,
+      date_end: date_end,
+      type: 'supplier'
+    },
+    success: function(json) {
+      if (json.data) {
+        renderSuppliersChart(json.data);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+
+  // أداء الموردين
+  $.ajax({
+    url: 'index.php?route=purchase/purchase_analytics/ajaxGetSpendingData&user_token={{ user_token }}',
+    dataType: 'json',
+    data: {
+      date_start: date_start,
+      date_end: date_end,
+      type: 'performance'
+    },
+    success: function(json) {
+      if (json.data) {
+        renderPerformanceChart(json.data);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+
+  // توزيع حالة أوامر الشراء
+  $.ajax({
+    url: 'index.php?route=purchase/purchase_analytics/ajaxGetSpendingData&user_token={{ user_token }}',
+    dataType: 'json',
+    data: {
+      date_start: date_start,
+      date_end: date_end,
+      type: 'status'
+    },
+    success: function(json) {
+      if (json.data) {
+        renderStatusChart(json.data);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+
+  // متوسط وقت التوريد
+  $.ajax({
+    url: 'index.php?route=purchase/purchase_analytics/ajaxGetSpendingData&user_token={{ user_token }}',
+    dataType: 'json',
+    data: {
+      date_start: date_start,
+      date_end: date_end,
+      type: 'lead_time'
+    },
+    success: function(json) {
+      if (json.data) {
+        renderLeadTimeChart(json.data);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+
+  // إحصائيات مطابقة الفواتير
+  $.ajax({
+    url: 'index.php?route=purchase/purchase_analytics/ajaxGetSpendingData&user_token={{ user_token }}',
+    dataType: 'json',
+    data: {
+      date_start: date_start,
+      date_end: date_end,
+      type: 'matching'
+    },
+    success: function(json) {
+      if (json.data) {
+        renderMatchingChart(json.data);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+}
+
+// رسم بياني للإنفاق حسب الفئة
+function renderCategoryChart(data) {
+  var chart = c3.generate({
+    bindto: '#chart-spending-category',
+    data: {
+      columns: data.map(function(item) {
+        return [item.name, parseFloat(item.amount)];
+      }),
+      type: 'pie'
+    },
+    pie: {
+      label: {
+        format: function(value, ratio, id) {
+          return id + ': ' + value;
+        }
+      }
+    },
+    tooltip: {
+      format: {
+        value: function(value, ratio, id) {
+          return value + ' (' + (ratio * 100).toFixed(1) + '%)';
+        }
+      }
+    }
+  });
+}
+
+// رسم بياني لاتجاه الإنفاق
+function renderTrendChart(data) {
+  var dates = ['x'];
+  var amounts = ['{{ text_amount }}'];
+
+  data.forEach(function(item) {
+    dates.push(item.date_period);
+    amounts.push(parseFloat(item.amount));
+  });
+
+  var chart = c3.generate({
+    bindto: '#chart-spending-trend',
+    data: {
+      x: 'x',
+      columns: [
+        dates,
+        amounts
+      ],
+      type: 'area'
+    },
+    axis: {
+      x: {
+        type: 'timeseries',
+        tick: {
+          format: '%Y-%m-%d'
+        }
+      },
+      y: {
+        tick: {
+          format: function(d) { return d.toFixed(2); }
+        }
+      }
+    },
+    point: {
+      r: 4
+    }
+  });
+}
+
+// رسم بياني لأفضل الموردين
+function renderSuppliersChart(data) {
+  var chart = c3.generate({
+    bindto: '#chart-top-suppliers',
+    data: {
+      json: data,
+      keys: {
+        x: 'name',
+        value: ['amount']
+      },
+      type: 'bar',
+      labels: true
+    },
+    axis: {
+      x: {
+        type: 'category'
+      },
+      y: {
+        tick: {
+          format: function(d) { return d.toFixed(2); }
+        }
+      }
+    },
+    bar: {
+      width: {
+        ratio: 0.5
+      }
+    }
+  });
+}
+
+// رسم بياني لأداء الموردين
+function renderPerformanceChart(data) {
+  var chart = c3.generate({
+    bindto: '#chart-supplier-performance',
+    data: {
+      json: data,
+      keys: {
+        x: 'name',
+        value: ['quality_rate', 'on_time_rate']
+      },
+      type: 'bar'
+    },
+    axis: {
+      x: {
+        type: 'category'
+      },
+      y: {
+        max: 100,
+        tick: {
+          format: function(d) { return d + '%'; }
+        }
+      }
+    },
+    bar: {
+      width: {
+        ratio: 0.7
+      }
+    }
+  });
+}
+
+// رسم بياني لتوزيع حالة أوامر الشراء
+function renderStatusChart(data) {
+  var chart = c3.generate({
+    bindto: '#chart-po-status',
+    data: {
+      columns: data.map(function(item) {
+        return [item.name, parseInt(item.count)];
+      }),
+      type: 'pie'
+    },
+    legend: {
+      position: 'right'
+    }
+  });
+}
+
+// رسم بياني لمتوسط وقت التوريد
+function renderLeadTimeChart(data) {
+  var chart = c3.generate({
+    bindto: '#chart-lead-time',
+    data: {
+      columns: [
+        ['{{ text_avg_lead_time }}', data.average]
+      ],
+      type: 'gauge'
+    },
+    gauge: {
+      label: {
+        format: function(value) { return value.toFixed(1) + ' {{ text_days }}'; },
+        show: true
+      },
+      min: 0,
+      max: 30,
+      units: ' {{ text_days }}',
+      width: 30
+    },
+    color: {
+      pattern: ['#60B044', '#F6C600', '#F97600', '#FF0000'],
+      threshold: {
+        values: [7, 14, 21, 30]
+      }
+    }
+  });
+}
+
+// رسم بياني لإحصائيات مطابقة الفواتير
+function renderMatchingChart(data) {
+  var chart = c3.generate({
+    bindto: '#chart-invoice-matching',
+    data: {
+      columns: [
+        ['{{ text_full_match }}', data.full_match],
+        ['{{ text_partial_match }}', data.partial_match],
+        ['{{ text_no_match }}', data.no_match]
+      ],
+      type: 'donut'
+    },
+    donut: {
+      title: '{{ text_invoice_matching }}',
+      width: 50
+    },
+    color: {
+      pattern: ['#60B044', '#F6C600', '#F97600']
+    }
+  });
+}
+//--></script>
+{{ footer }}

@@ -1,0 +1,298 @@
+[
+  {
+    "route": "dashboard/kpi",
+    "module": "dashboard",
+    "screen": "kpi",
+    "controller_path": "dashboard/controller/dashboard/kpi.php",
+    "model_path": "dashboard/model/dashboard/kpi.php",
+    "view_path": "dashboard/view/template/dashboard/kpi.twig",
+    "language_path": "dashboard/language/ar/dashboard/kpi.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - جميع المكونات موجودة فعلياً",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "dashboard/goals",
+    "module": "dashboard",
+    "screen": "goals",
+    "controller_path": "dashboard/controller/dashboard/goals.php",
+    "model_path": "dashboard/model/dashboard/goals.php",
+    "view_path": "dashboard/view/template/dashboard/goals.twig",
+    "language_path": "dashboard/language/ar/dashboard/goals.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - جميع المكونات موجودة فعلياً",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "dashboard/alerts",
+    "module": "dashboard",
+    "screen": "alerts",
+    "controller_path": "dashboard/controller/dashboard/alerts.php",
+    "model_path": "dashboard/model/dashboard/alerts.php",
+    "view_path": "dashboard/view/template/dashboard/alerts.twig",
+    "language_path": "dashboard/language/ar/dashboard/alerts.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - جميع المكونات موجودة فعلياً",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "dashboard/inventory_analytics",
+    "module": "dashboard",
+    "screen": "inventory_analytics",
+    "controller_path": "dashboard/controller/dashboard/inventory_analytics.php",
+    "model_path": "dashboard/model/dashboard/inventory_analytics.php",
+    "view_path": "dashboard/view/template/dashboard/inventory_analytics.twig",
+    "language_path": "dashboard/language/ar/dashboard/inventory_analytics.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - جميع المكونات موجودة فعلياً",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "dashboard/profitability",
+    "module": "dashboard",
+    "screen": "profitability",
+    "controller_path": "dashboard/controller/dashboard/profitability.php",
+    "model_path": "dashboard/model/dashboard/profitability.php",
+    "view_path": "dashboard/view/template/dashboard/profitability.twig",
+    "language_path": "dashboard/language/ar/dashboard/profitability.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - جميع المكونات موجودة فعلياً",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "setting/setting",
+    "module": "setting",
+    "screen": "setting",
+    "controller_path": "dashboard/controller/setting/setting.php",
+    "model_path": "dashboard/model/setting/setting.php",
+    "view_path": "dashboard/view/template/setting/setting.twig",
+    "language_path": "dashboard/language/ar/setting/setting.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - الأساس لكل النظام (Point 0)",
+    "priority": "مكتمل - أساسي",
+    "estimated_hours": 0
+  },
+  {
+    "route": "cash/cash",
+    "module": "cash",
+    "screen": "cash",
+    "controller_path": "dashboard/controller/finance/cash.php",
+    "model_path": "dashboard/model/cash/cash.php",
+    "view_path": "dashboard/view/template/finance/cash_form.twig",
+    "language_path": "dashboard/language/ar/finance/cash.php",
+    "files_status": {
+      "controller": "موجود بمسار مختلف",
+      "model": "موجود",
+      "view": "موجود بمسار مختلف",
+      "language": "موجود بمسار مختلف"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل مع تضارب أسماء",
+    "last_verified": "2024-12-19",
+    "notes": "تضارب: موجود في finance/cash و cash/cash - يحتاج إصلاح column_left.php",
+    "priority": "إصلاح فوري",
+    "estimated_hours": 0.5,
+    "issues": ["تضارب في المسارات", "يحتاج توحيد تحت finance/"]
+  },
+  {
+    "route": "bank/bank",
+    "module": "bank",
+    "screen": "bank",
+    "controller_path": "dashboard/controller/finance/bank.php",
+    "model_path": "dashboard/model/bank/bank.php",
+    "view_path": "dashboard/view/template/finance/bank_form.twig",
+    "language_path": "dashboard/language/ar/finance/bank.php",
+    "files_status": {
+      "controller": "موجود بمسار مختلف",
+      "model": "موجود",
+      "view": "موجود بمسار مختلف",
+      "language": "موجود بمسار مختلف"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل مع تضارب أسماء",
+    "last_verified": "2024-12-19",
+    "notes": "تضارب: موجود في finance/bank و bank/bank - يحتاج إصلاح column_left.php",
+    "priority": "إصلاح فوري",
+    "estimated_hours": 0.5,
+    "issues": ["تضارب في المسارات", "يحتاج توحيد تحت finance/"]
+  },
+  {
+    "route": "accounts/balance_sheet",
+    "module": "accounts",
+    "screen": "balance_sheet",
+    "controller_path": "dashboard/controller/accounts/balance_sheet.php",
+    "model_path": "dashboard/model/accounts/balance_sheet.php",
+    "view_path": "dashboard/view/template/accounts/balance_sheet_form.twig",
+    "language_path": "dashboard/language/ar/accounts/balance_sheet.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - قائمة المركز المالي متطورة",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "accounts/income_statement",
+    "module": "accounts",
+    "screen": "income_statement",
+    "controller_path": "dashboard/controller/accounts/income_statement.php",
+    "model_path": "dashboard/model/accounts/income_statement.php",
+    "view_path": "dashboard/view/template/accounts/income_statement_form.twig",
+    "language_path": "dashboard/language/ar/accounts/income_statement.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - قائمة الدخل متطورة",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "accounts/cash_flow",
+    "module": "accounts",
+    "screen": "cash_flow",
+    "controller_path": "dashboard/controller/accounts/cash_flow.php",
+    "model_path": "dashboard/model/accounts/cash_flow.php",
+    "view_path": "dashboard/view/template/accounts/cash_flow_form.twig",
+    "language_path": "dashboard/language/ar/accounts/cash_flow.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - قائمة التدفقات النقدية متطورة",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "purchase/goods_receipt",
+    "module": "purchase",
+    "screen": "goods_receipt",
+    "controller_path": "dashboard/controller/purchase/goods_receipt.php",
+    "model_path": "dashboard/model/purchase/goods_receipt.php",
+    "view_path": "dashboard/view/template/purchase/goods_receipt_form.twig",
+    "language_path": "dashboard/language/ar/purchase/goods_receipt.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - استلام البضائع متطور",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "purchase/quotation",
+    "module": "purchase",
+    "screen": "quotation",
+    "controller_path": "dashboard/controller/purchase/quotation.php",
+    "model_path": "dashboard/model/purchase/quotation.php",
+    "view_path": "dashboard/view/template/purchase/quotation_form.twig",
+    "language_path": "dashboard/language/ar/purchase/quotation.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - عروض أسعار الموردين متطورة",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  },
+  {
+    "route": "purchase/requisition",
+    "module": "purchase",
+    "screen": "requisition",
+    "controller_path": "dashboard/controller/purchase/requisition.php",
+    "model_path": "dashboard/model/purchase/requisition.php",
+    "view_path": "dashboard/view/template/purchase/requisition_edit_form.twig",
+    "language_path": "dashboard/language/ar/purchase/requisition.php",
+    "files_status": {
+      "controller": "موجود",
+      "model": "موجود",
+      "view": "موجود",
+      "language": "موجود"
+    },
+    "completion_percentage": 100.0,
+    "status": "مكتمل",
+    "last_verified": "2024-12-19",
+    "notes": "مكتمل - طلبات الشراء متطورة",
+    "priority": "مكتمل",
+    "estimated_hours": 0
+  }
+]

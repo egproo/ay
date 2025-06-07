@@ -1,0 +1,188 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_shift_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="well">
+              <h4>{{ text_shift_info }}</h4>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_user }}</label>
+                <div class="col-sm-8">{{ shift.user_name }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_terminal }}</label>
+                <div class="col-sm-8">{{ shift.terminal_name }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_branch }}</label>
+                <div class="col-sm-8">{{ shift.branch_name }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_start_time }}</label>
+                <div class="col-sm-8">{{ shift.start_time }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_end_time }}</label>
+                <div class="col-sm-8">{{ shift.end_time ? shift.end_time : text_ongoing }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_status }}</label>
+                <div class="col-sm-8">
+                  {% if shift.status == text_status_active %}
+                  <span class="label label-success">{{ shift.status }}</span>
+                  {% elseif shift.status == text_status_closed %}
+                  <span class="label label-warning">{{ shift.status }}</span>
+                  {% else %}
+                  <span class="label label-info">{{ shift.status }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="well">
+              <h4>{{ text_financial_info }}</h4>
+              <div class="form-group">
+                <label class="col-sm-6 control-label">{{ entry_starting_cash }}</label>
+                <div class="col-sm-6 text-right">{{ shift.starting_cash }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-6 control-label">{{ entry_ending_cash }}</label>
+                <div class="col-sm-6 text-right">{{ shift.ending_cash ? shift.ending_cash : '-' }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-6 control-label">{{ entry_expected_cash }}</label>
+                <div class="col-sm-6 text-right">{{ shift.expected_cash ? shift.expected_cash : '-' }}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-6 control-label">{{ entry_cash_difference }}</label>
+                <div class="col-sm-6 text-right">
+                  {% if shift.cash_difference > 0 %}
+                  <span class="text-success">+{{ shift.cash_difference }}</span>
+                  {% elseif shift.cash_difference < 0 %}
+                  <span class="text-danger">{{ shift.cash_difference }}</span>
+                  {% else %}
+                  {{ shift.cash_difference ? shift.cash_difference : '-' }}
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-12">{{ entry_notes }}</label>
+                <div class="col-sm-12">
+                  <div class="well well-sm">{{ shift.notes ? shift.notes : text_no_notes }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-sm-8">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_transactions }}</h3>
+              </div>
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <td class="text-left">{{ column_date }}</td>
+                        <td class="text-left">{{ column_type }}</td>
+                        <td class="text-left">{{ column_payment_method }}</td>
+                        <td class="text-right">{{ column_amount }}</td>
+                        <td class="text-left">{{ column_reference }}</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% if transactions %}
+                      {% for transaction in transactions %}
+                      <tr>
+                        <td class="text-left">{{ transaction.created_at }}</td>
+                        <td class="text-left">
+                          {% if transaction.type == 'sale' %}
+                          <span class="label label-success">{{ transaction.type }}</span>
+                          {% elseif transaction.type == 'cash_in' %}
+                          <span class="label label-info">{{ transaction.type }}</span>
+                          {% elseif transaction.type == 'cash_out' %}
+                          <span class="label label-warning">{{ transaction.type }}</span>
+                          {% elseif transaction.type == 'refund' %}
+                          <span class="label label-danger">{{ transaction.type }}</span>
+                          {% else %}
+                          <span class="label label-default">{{ transaction.type }}</span>
+                          {% endif %}
+                        </td>
+                        <td class="text-left">{{ transaction.payment_method }}</td>
+                        <td class="text-right">{{ transaction.amount }}</td>
+                        <td class="text-left">{{ transaction.reference }}</td>
+                      </tr>
+                      {% endfor %}
+                      {% else %}
+                      <tr>
+                        <td class="text-center" colspan="5">{{ text_no_transactions }}</td>
+                      </tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_payment_summary }}</h3>
+              </div>
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <td class="text-left">{{ column_payment_method }}</td>
+                        <td class="text-right">{{ column_count }}</td>
+                        <td class="text-right">{{ column_total }}</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% if payment_summary %}
+                      {% for payment in payment_summary %}
+                      <tr>
+                        <td class="text-left">{{ payment.payment_method }}</td>
+                        <td class="text-right">{{ payment.count }}</td>
+                        <td class="text-right">{{ payment.total }}</td>
+                      </tr>
+                      {% endfor %}
+                      {% else %}
+                      <tr>
+                        <td class="text-center" colspan="3">{{ text_no_sales }}</td>
+                      </tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

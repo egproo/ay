@@ -1,0 +1,363 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <div class="btn-group">
+          <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-download"></i> {{ text_export }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="{{ export_excel }}"><i class="fa fa-file-excel-o"></i> {{ text_export_excel }}</a></li>
+            <li><a href="{{ export_pdf }}"><i class="fa fa-file-pdf-o"></i> {{ text_export_pdf }}</a></li>
+            <li class="divider"></li>
+            <li><a href="{{ print }}" target="_blank"><i class="fa fa-print"></i> {{ text_print }}</a></li>
+          </ul>
+        </div>
+        <a href="{{ analytics }}" data-toggle="tooltip" title="{{ text_analytics }}" class="btn btn-info">
+          <i class="fa fa-bar-chart"></i>
+        </a>
+        <button type="button" data-toggle="tooltip" title="{{ text_refresh }}" class="btn btn-default" onclick="location.reload();">
+          <i class="fa fa-refresh"></i>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- Stock Summary Cards -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-cubes fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stocks|length }}</div>
+                <div>{{ text_total_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stocks|filter(stock => stock.status == 'in_stock')|length }}</div>
+                <div>{{ text_in_stock }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exclamation-triangle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stocks|filter(stock => stock.status == 'low_stock')|length }}</div>
+                <div>{{ text_low_stock }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-danger">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-times-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stocks|filter(stock => stock.status == 'out_of_stock')|length }}</div>
+                <div>{{ text_out_of_stock }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-filter"></i> {{ text_filters }}
+          <button type="button" class="btn btn-xs btn-default pull-right" data-toggle="collapse" data-target="#filter-panel">
+            <i class="fa fa-chevron-down"></i>
+          </button>
+        </h3>
+      </div>
+      <div id="filter-panel" class="panel-collapse collapse">
+        <div class="panel-body">
+          <form method="get" id="filter-form">
+            <input type="hidden" name="route" value="inventory/current_stock" />
+            <input type="hidden" name="user_token" value="{{ user_token }}" />
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_product_name">{{ entry_filter_product_name }}</label>
+                  <input type="text" name="filter_product_name" value="{{ filter_product_name }}" placeholder="{{ entry_filter_product_name }}" id="filter_product_name" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_sku">{{ entry_filter_sku }}</label>
+                  <input type="text" name="filter_sku" value="{{ filter_sku }}" placeholder="{{ entry_filter_sku }}" id="filter_sku" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_category_id">{{ entry_filter_category }}</label>
+                  <select name="filter_category_id" id="filter_category_id" class="form-control">
+                    <option value="">{{ text_all_categories }}</option>
+                    {% for category in categories %}
+                    <option value="{{ category.category_id }}"{% if category.category_id == filter_category_id %} selected="selected"{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_warehouse_id">{{ entry_filter_warehouse }}</label>
+                  <select name="filter_warehouse_id" id="filter_warehouse_id" class="form-control">
+                    <option value="">{{ text_all_warehouses }}</option>
+                    {% for warehouse in warehouses %}
+                    <option value="{{ warehouse.warehouse_id }}"{% if warehouse.warehouse_id == filter_warehouse_id %} selected="selected"{% endif %}>{{ warehouse.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_stock_status">{{ entry_filter_stock_status }}</label>
+                  <select name="filter_stock_status" id="filter_stock_status" class="form-control">
+                    <option value="">{{ text_all_statuses }}</option>
+                    <option value="in_stock"{% if filter_stock_status == 'in_stock' %} selected="selected"{% endif %}>{{ text_in_stock }}</option>
+                    <option value="low_stock"{% if filter_stock_status == 'low_stock' %} selected="selected"{% endif %}>{{ text_low_stock }}</option>
+                    <option value="out_of_stock"{% if filter_stock_status == 'out_of_stock' %} selected="selected"{% endif %}>{{ text_out_of_stock }}</option>
+                    <option value="overstock"{% if filter_stock_status == 'overstock' %} selected="selected"{% endif %}>{{ text_overstock }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-9">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <div>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                    <a href="{{ refresh }}" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_clear }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Table -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th><a href="{{ sort_product_name }}"{% if sort == 'pd.name' %} class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}"{% endif %}>{{ column_product_name }}</a></th>
+                <th><a href="{{ sort_sku }}"{% if sort == 'p.sku' %} class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}"{% endif %}>{{ column_sku }}</a></th>
+                <th>{{ column_category }}</th>
+                <th>{{ column_warehouse }}</th>
+                <th class="text-center"><a href="{{ sort_current_stock }}"{% if sort == 'current_stock' %} class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}"{% endif %}>{{ column_current_stock }}</a></th>
+                <th class="text-center">{{ column_reserved_stock }}</th>
+                <th class="text-center">{{ column_available_stock }}</th>
+                <th class="text-right">{{ column_unit_cost }}</th>
+                <th class="text-right"><a href="{{ sort_total_value }}"{% if sort == 'total_value' %} class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}"{% endif %}>{{ column_total_value }}</a></th>
+                <th class="text-center">{{ column_reorder_level }}</th>
+                <th class="text-center">{{ column_max_level }}</th>
+                <th>{{ column_last_movement }}</th>
+                <th class="text-center">{{ column_status }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if stocks %}
+              {% for stock in stocks %}
+              <tr class="stock-{{ stock.status }}">
+                <td>
+                  <strong>{{ stock.product_name }}</strong>
+                  {% if stock.model %}
+                  <br><small class="text-muted">{{ stock.model }}</small>
+                  {% endif %}
+                </td>
+                <td>{{ stock.sku }}</td>
+                <td>{{ stock.category_name }}</td>
+                <td>{{ stock.warehouse_name }}</td>
+                <td class="text-center">
+                  <span class="badge badge-{{ stock.status_class }}">{{ stock.current_stock }}</span>
+                </td>
+                <td class="text-center">{{ stock.reserved_stock }}</td>
+                <td class="text-center">
+                  <strong>{{ stock.available_stock }}</strong>
+                </td>
+                <td class="text-right">{{ stock.unit_cost }}</td>
+                <td class="text-right">
+                  <strong>{{ stock.total_value }}</strong>
+                </td>
+                <td class="text-center">{{ stock.reorder_level }}</td>
+                <td class="text-center">{{ stock.max_level }}</td>
+                <td>{{ stock.last_movement_date }}</td>
+                <td class="text-center">
+                  <span class="label label-{{ stock.status_class }}">{{ stock.status_text }}</span>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="13">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.huge {
+  font-size: 40px;
+}
+
+.panel-green {
+  border-color: #5cb85c;
+}
+
+.panel-green > .panel-heading {
+  border-color: #5cb85c;
+  color: white;
+  background-color: #5cb85c;
+}
+
+.panel-red {
+  border-color: #d9534f;
+}
+
+.panel-red > .panel-heading {
+  border-color: #d9534f;
+  color: white;
+  background-color: #d9534f;
+}
+
+.stock-out_of_stock {
+  background-color: #f2dede;
+}
+
+.stock-low_stock {
+  background-color: #fcf8e3;
+}
+
+.stock-overstock {
+  background-color: #d9edf7;
+}
+
+.stock-in_stock {
+  background-color: #dff0d8;
+}
+
+.table th a {
+  color: #333;
+  text-decoration: none;
+}
+
+.table th a.asc:after {
+  content: ' ↑';
+}
+
+.table th a.desc:after {
+  content: ' ↓';
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Auto-refresh every 5 minutes
+    setInterval(function() {
+        if ($('#auto-refresh').is(':checked')) {
+            location.reload();
+        }
+    }, 300000);
+    
+    // Filter form submission
+    $('#filter-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var url = 'index.php?route=inventory/current_stock&user_token={{ user_token }}';
+        var filter = '';
+        
+        $('input[name^="filter_"], select[name^="filter_"]').each(function() {
+            if ($(this).val() != '') {
+                filter += '&' + $(this).attr('name') + '=' + encodeURIComponent($(this).val());
+            }
+        });
+        
+        location = url + filter;
+    });
+    
+    // Clear filters
+    $('#clear-filters').on('click', function() {
+        $('input[name^="filter_"], select[name^="filter_"]').val('');
+        $('#filter-form').submit();
+    });
+});
+</script>
+
+{{ footer }}

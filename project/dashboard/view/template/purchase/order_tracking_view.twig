@@ -1,0 +1,376 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ update }}" data-toggle="tooltip" title="{{ button_update }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+      <div class="col-md-8">
+        <!-- Order Details Panel -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_order_details }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if order %}
+            <div class="row">
+              <div class="col-sm-6">
+                <table class="table table-striped">
+                  <tr>
+                    <td><strong>{{ column_po_number }}:</strong></td>
+                    <td>{{ order.po_number }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ column_supplier }}:</strong></td>
+                    <td>{{ order.supplier_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ column_order_date }}:</strong></td>
+                    <td>{{ order.order_date }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ column_status }}:</strong></td>
+                    <td>
+                      <span class="label label-{% if order.status == 'approved' %}success{% elseif order.status == 'pending' %}warning{% elseif order.status == 'cancelled' %}danger{% else %}default{% endif %}">{{ order.status }}</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-sm-6">
+                <table class="table table-striped">
+                  <tr>
+                    <td><strong>{{ column_total }}:</strong></td>
+                    <td>{{ order.total_amount }} {{ order.currency_code }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ entry_expected_delivery }}:</strong></td>
+                    <td>{{ order.expected_delivery_date ? order.expected_delivery_date : 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ entry_actual_delivery }}:</strong></td>
+                    <td>{{ order.actual_delivery_date ? order.actual_delivery_date : 'N/A' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_current_status }}:</strong></td>
+                    <td>
+                      {% if tracking_history %}
+                      <span class="label label-{% if tracking_history[0].status_change == 'fully_received' %}success{% elseif tracking_history[0].status_change == 'partially_received' %}info{% elseif tracking_history[0].status_change == 'cancelled' %}danger{% else %}default{% endif %}">{{ tracking_history[0].status_change }}</span>
+                      {% else %}
+                      <span class="label label-default">{{ text_status_created }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+            {% if order.notes %}
+            <div class="row">
+              <div class="col-sm-12">
+                <strong>{{ entry_notes }}:</strong>
+                <p>{{ order.notes }}</p>
+              </div>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="alert alert-warning">{{ error_not_found }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <!-- Quick Actions Panel -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-cogs"></i> {{ text_quick_actions }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="btn-group-vertical btn-block">
+              <button type="button" class="btn btn-info" onclick="showUpdateStatusModal()">
+                <i class="fa fa-refresh"></i> {{ button_update_status }}
+              </button>
+              <button type="button" class="btn btn-success" onclick="showDeliveryModal()">
+                <i class="fa fa-truck"></i> {{ button_update_delivery }}
+              </button>
+              <button type="button" class="btn btn-default" onclick="refreshTracking()">
+                <i class="fa fa-refresh"></i> {{ button_refresh }}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Delivery Status Panel -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-truck"></i> {{ text_delivery_info }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if order %}
+            {% set delivery_status = 'pending' %}
+            {% if order.actual_delivery_date %}
+              {% set delivery_status = 'delivered' %}
+            {% elseif order.expected_delivery_date %}
+              {% set days_diff = date(order.expected_delivery_date).diff(date()).days %}
+              {% if days_diff < 0 %}
+                {% set delivery_status = 'overdue' %}
+              {% elseif days_diff <= 3 %}
+                {% set delivery_status = 'upcoming' %}
+              {% endif %}
+            {% endif %}
+            
+            <div class="text-center">
+              {% if delivery_status == 'delivered' %}
+              <i class="fa fa-check-circle fa-3x text-success"></i>
+              <h4 class="text-success">{{ text_delivered }}</h4>
+              <p>{{ order.actual_delivery_date }}</p>
+              {% elseif delivery_status == 'overdue' %}
+              <i class="fa fa-exclamation-triangle fa-3x text-danger"></i>
+              <h4 class="text-danger">{{ text_overdue }}</h4>
+              <p>{{ abs(days_diff) }} {{ text_days_overdue }}</p>
+              {% elseif delivery_status == 'upcoming' %}
+              <i class="fa fa-clock-o fa-3x text-warning"></i>
+              <h4 class="text-warning">{{ text_upcoming }}</h4>
+              <p>{{ days_diff }} {{ text_days_until }}</p>
+              {% else %}
+              <i class="fa fa-clock-o fa-3x text-info"></i>
+              <h4 class="text-info">{{ text_pending }}</h4>
+              <p>{{ text_no_delivery_date }}</p>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tracking History Panel -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-history"></i> {{ text_tracking_history }}</h3>
+      </div>
+      <div class="panel-body">
+        {% if tracking_history %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_tracking_date }}</th>
+                <th>{{ column_status_change }}</th>
+                <th>{{ column_notes }}</th>
+                <th>{{ column_created_by }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for history in tracking_history %}
+              <tr>
+                <td>{{ history.status_date }}</td>
+                <td>
+                  <span class="label label-{% if history.status_change == 'fully_received' %}success{% elseif history.status_change == 'partially_received' %}info{% elseif history.status_change == 'cancelled' %}danger{% else %}default{% endif %}">{{ history.status_change }}</span>
+                </td>
+                <td>{{ history.notes ? history.notes : '-' }}</td>
+                <td>{{ history.created_by_name ? history.created_by_name : 'System' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">{{ warning_no_tracking }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Status Modal -->
+<div id="modal-update-status" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ button_update_status }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-update-status">
+          <input type="hidden" name="po_id" value="{{ po_id }}" />
+          <div class="form-group">
+            <label class="control-label" for="status-change">{{ entry_status_change }}</label>
+            <select name="status_change" id="status-change" class="form-control" required>
+              <option value="">{{ text_select }}</option>
+              <option value="created">{{ text_status_created }}</option>
+              <option value="sent_to_vendor">{{ text_status_sent_to_vendor }}</option>
+              <option value="confirmed_by_vendor">{{ text_status_confirmed_by_vendor }}</option>
+              <option value="partially_received">{{ text_status_partially_received }}</option>
+              <option value="fully_received">{{ text_status_fully_received }}</option>
+              <option value="cancelled">{{ text_status_cancelled }}</option>
+              <option value="closed">{{ text_status_closed }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="status-notes">{{ entry_notes }}</label>
+            <textarea name="notes" id="status-notes" rows="3" class="form-control" placeholder="{{ help_tracking_notes }}"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="updateStatus()">{{ button_update }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Delivery Modal -->
+<div id="modal-update-delivery" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ button_update_delivery }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-update-delivery">
+          <input type="hidden" name="po_id" value="{{ po_id }}" />
+          <div class="form-group">
+            <label class="control-label" for="expected-delivery">{{ entry_expected_delivery }}</label>
+            <div class="input-group date">
+              <input type="text" name="expected_delivery_date" id="expected-delivery" class="form-control" data-date-format="YYYY-MM-DD" value="{{ order.expected_delivery_date }}" />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="actual-delivery">{{ entry_actual_delivery }}</label>
+            <div class="input-group date">
+              <input type="text" name="actual_delivery_date" id="actual-delivery" class="form-control" data-date-format="YYYY-MM-DD" value="{{ order.actual_delivery_date }}" />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="delivery-notes">{{ entry_notes }}</label>
+            <textarea name="notes" id="delivery-notes" rows="3" class="form-control" placeholder="{{ help_delivery_notes }}"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="updateDelivery()">{{ button_update }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+function showUpdateStatusModal() {
+    $('#modal-update-status').modal('show');
+}
+
+function showDeliveryModal() {
+    $('#modal-update-delivery').modal('show');
+}
+
+function updateStatus() {
+    $.ajax({
+        url: 'index.php?route=purchase/order_tracking/ajaxUpdateStatus&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-update-status').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-update-status .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-update-status .btn-primary').button('reset');
+        },
+        success: function(json) {
+            $('.alert-dismissible').remove();
+            
+            if (json['error']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+            
+            if (json['success']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                
+                $('#modal-update-status').modal('hide');
+                
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+function updateDelivery() {
+    $.ajax({
+        url: 'index.php?route=purchase/order_tracking/ajaxUpdateDelivery&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-update-delivery').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-update-delivery .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-update-delivery .btn-primary').button('reset');
+        },
+        success: function(json) {
+            $('.alert-dismissible').remove();
+            
+            if (json['error']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+            
+            if (json['success']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                
+                $('#modal-update-delivery').modal('hide');
+                
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+function refreshTracking() {
+    location.reload();
+}
+
+$('.date').datetimepicker({
+    language: '{{ datepicker }}',
+    pickTime: false
+});
+//--></script>
+{{ footer }}

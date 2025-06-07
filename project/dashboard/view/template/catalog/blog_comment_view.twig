@@ -1,0 +1,245 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        {% if comment.can_edit %}
+          <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+        {% endif %}
+        
+        {% if comment.can_reply %}
+          <a href="{{ reply }}" data-toggle="tooltip" title="{{ button_reply }}" class="btn btn-info"><i class="fa fa-reply"></i></a>
+        {% endif %}
+        
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <!-- Información del comentario -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-comments"></i> {{ text_comment_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">{{ entry_post }}</label>
+              <div>
+                {% if post_link %}
+                <a href="{{ post_link }}" target="_blank">{{ post_title }}</a>
+                {% else %}
+                {{ post_title }}
+                {% endif %}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label">{{ entry_author }}</label>
+              <div>{{ comment.author }}</div>
+            </div>
+            <div class="form-group">
+              <label class="control-label">{{ entry_email }}</label>
+              <div>{{ comment.email }}</div>
+            </div>
+            {% if comment.website %}
+            <div class="form-group">
+              <label class="control-label">{{ entry_website }}</label>
+              <div><a href="{{ comment.website }}" target="_blank">{{ comment.website }}</a></div>
+            </div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">{{ entry_status }}</label>
+              <div>
+                <span class="label label-{{ comment.status_class }}">{{ comment.status }}</span>
+                
+                {% if comment.can_edit %}
+                  {% if comment.status_value == 0 %}
+                    <button type="button" class="btn btn-success btn-xs approve-button" onclick="approveComment('{{ comment.comment_id }}', 1)">
+                      <i class="fa fa-check"></i> {{ button_approve }}
+                    </button>
+                  {% else %}
+                    <button type="button" class="btn btn-warning btn-xs disapprove-button" onclick="approveComment('{{ comment.comment_id }}', 0)">
+                      <i class="fa fa-ban"></i> {{ button_disapprove }}
+                    </button>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label">{{ entry_date_added }}</label>
+              <div>{{ comment.date_added }}</div>
+            </div>
+            <div class="form-group">
+              <label class="control-label">{{ entry_ip }}</label>
+              <div>{{ comment.ip }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Comentario padre si existe -->
+        {% if parent_comment %}
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_parent_comment }}</h3>
+              </div>
+              <div class="panel-body">
+                <div class="parent-comment">
+                  <div class="parent-author">
+                    <strong>{{ parent_comment.author }}</strong> <small class="text-muted">{{ parent_comment.date_added }}</small>
+                  </div>
+                  <div class="parent-content">
+                    {{ parent_comment.content }}
+                  </div>
+                  <div class="parent-link">
+                    <a href="{{ parent_comment.link }}" class="btn btn-info btn-xs"><i class="fa fa-external-link"></i> {{ button_view_parent }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Contenido del comentario -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_comment_content }}</h3>
+              </div>
+              <div class="panel-body">
+                <div class="comment-content">
+                  {{ comment.content }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Respuestas a este comentario -->
+        {% if replies %}
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-success">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_replies }} ({{ replies|length }})</h3>
+              </div>
+              <div class="panel-body">
+                <div class="replies-list">
+                  {% for reply in replies %}
+                  <div class="reply">
+                    <div class="reply-header">
+                      <strong>{{ reply.author }}</strong> 
+                      <span class="label label-{{ reply.status_class }}">{{ reply.status }}</span>
+                      <small class="text-muted">{{ reply.date_added }}</small>
+                    </div>
+                    <div class="reply-content">
+                      {{ reply.content }}
+                    </div>
+                    <div class="reply-actions">
+                      <a href="{{ reply.link }}" class="btn btn-info btn-xs"><i class="fa fa-eye"></i> {{ button_view }}</a>
+                      <a href="{{ reply.edit }}" class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i> {{ button_edit }}</a>
+                    </div>
+                    <hr>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style type="text/css">
+.comment-content, .parent-content, .reply-content {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+
+.parent-comment {
+  margin-bottom: 20px;
+}
+
+.parent-author, .reply-header {
+  margin-bottom: 10px;
+}
+
+.reply {
+  margin-bottom: 20px;
+}
+
+.reply:last-child hr {
+  display: none;
+}
+
+.label {
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+}
+
+.approve-button, .disapprove-button {
+  margin-left: 10px;
+}
+</style>
+
+<script type="text/javascript">
+// Función para aprobar/desaprobar comentarios vía AJAX
+function approveComment(commentId, status) {
+  $.ajax({
+    url: 'index.php?route=catalog/blog_comment/ajaxApprove&user_token={{ user_token }}',
+    type: 'POST',
+    dataType: 'json',
+    data: {
+      comment_id: commentId,
+      status: status
+    },
+    beforeSend: function() {
+      $('.approve-button, .disapprove-button').button('loading');
+    },
+    complete: function() {
+      $('.approve-button, .disapprove-button').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        // Mostrar notificación
+        var alertClass = (status == 1) ? 'alert-success' : 'alert-warning';
+        $('<div class="alert ' + alertClass + ' alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>').insertBefore('.panel-default:first');
+        
+        // Recargar la página después de 1 segundo
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+      
+      if (json.error) {
+        alert(json.error);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+}
+</script>
+
+{{ footer }}

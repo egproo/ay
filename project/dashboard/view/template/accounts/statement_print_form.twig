@@ -1,0 +1,117 @@
+{{ header }}{{ column_left }}
+
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>  
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+  width:100%;
+} 
+
+.select2-container{width:100% !important;}
+</style>
+    <div class="page-header">
+    <div class="container-fluid">
+        <form id="form-statement" method="post" action="{{ action }}" class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">{{ text_select_mode }}</label>
+                <div class="col-sm-10">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="statement_mode" value="single" checked onchange="toggleAccountRange(false)">
+                            {{ text_single_account }}
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="statement_mode" value="range" onchange="toggleAccountRange(true)">
+                            {{ text_account_range }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div id="single-account-select" class="form-group">
+                <label class="col-sm-2 control-label" for="input-account">{{ text_account }}</label>
+                <div class="col-sm-10">
+                    <select name="account" id="input-account" class="form-control select2">
+                        {% for account in accounts %}
+                        <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div id="account-range-select" class="form-group" style="display: none;">
+                <label class="col-sm-2 control-label" for="input-account-start">{{ text_account_start }}</label>
+                <div class="col-sm-4">
+                    <select name="account_start" id="input-account-start" class="form-control select2">
+                        {% for account in accounts %}
+                        <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <label class="col-sm-2 control-label" for="input-account-end">{{ text_account_end }}</label>
+                <div class="col-sm-4">
+                    <select name="account_end" id="input-account-end" class="form-control select2">
+                        {% for account in accounts %}
+                        <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-date-start">{{ text_date_start }}</label>
+                <div class="col-sm-4">
+                    <input type="date" name="date_start" id="input-date-start" class="form-control" required>
+                </div>
+                <label class="col-sm-2 control-label" for="input-date-end">{{ text_date_end }}</label>
+                <div class="col-sm-4">
+                    <input type="date" name="date_end" id="input-date-end" class="form-control" required>
+                </div>
+                
+            </div>
+            <div class="text-right">
+                <button type="submit" class="btn btn-primary">{{ button_submit }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="form-errors" class="alert alert-danger" style="display: none;"></div>
+
+<script>
+function validateForm() {
+    var startDate = document.getElementById('input-date-start').value;
+    var endDate = document.getElementById('input-date-end').value;
+    var errors = [];
+
+    if (!startDate) {
+        errors.push('Please select a start date.');
+    }
+    if (!endDate) {
+        errors.push('Please select an end date.');
+    }
+
+    if (errors.length > 0) {
+        document.getElementById('form-errors').innerHTML = errors.join('<br>');
+        document.getElementById('form-errors').style.display = 'block';
+        return false;
+    }
+
+    return true;
+}
+
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+
+    function toggleAccountRange(isRange) {
+        if (isRange) {
+            $('#single-account-select').hide();
+            $('#account-range-select').show();
+        } else {
+            $('#single-account-select').show();
+            $('#account-range-select').hide();
+        }
+    }
+</script>
+{{ footer }}

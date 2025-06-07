@@ -1,0 +1,234 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-purchase').toggleClass('hidden-sm hidden-xs');" class="btn btn-default hidden-md hidden-lg"><i class="fa fa-filter"></i></button>
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-purchase').submit() : false;"><i class="fa fa-trash-o"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="row">
+      <div id="filter-purchase" class="col-md-3 col-md-push-9 col-sm-12 hidden-sm hidden-xs">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label" for="input-reference">{{ entry_reference }}</label>
+              <input type="text" name="filter_reference" value="{{ filter_reference }}" placeholder="{{ entry_reference }}" id="input-reference" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-department">{{ entry_department }}</label>
+              <select name="filter_department" id="input-department" class="form-control">
+                <option value=""></option>
+                {% for department in departments %}
+                {% if department.department_id == filter_department %}
+                <option value="{{ department.department_id }}" selected="selected">{{ department.name }}</option>
+                {% else %}
+                <option value="{{ department.department_id }}">{{ department.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-branch">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-control">
+                <option value=""></option>
+                {% for branch in branches %}
+                {% if branch.branch_id == filter_branch %}
+                <option value="{{ branch.branch_id }}" selected="selected">{{ branch.name }}</option>
+                {% else %}
+                <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-status">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-control">
+                <option value=""></option>
+                {% for status in statuses %}
+                {% if status.status_id == filter_status %}
+                <option value="{{ status.status_id }}" selected="selected">{{ status.name }}</option>
+                {% else %}
+                <option value="{{ status.status_id }}">{{ status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-date-start">{{ entry_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-date-end">{{ entry_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+            <div class="form-group text-right">
+              <button type="button" id="button-filter" class="btn btn-default"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9 col-md-pull-3 col-sm-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+          </div>
+          <div class="panel-body">
+            <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-purchase">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                      <td class="text-left">{% if sort == 'pr.reference_no' %}
+                        <a href="{{ sort_reference }}" class="{{ order|lower }}">{{ column_reference }}</a>
+                        {% else %}
+                        <a href="{{ sort_reference }}">{{ column_reference }}</a>
+                        {% endif %}</td>
+                      <td class="text-left">{% if sort == 'pr.department' %}
+                        <a href="{{ sort_department }}" class="{{ order|lower }}">{{ column_department }}</a>
+                        {% else %}
+                        <a href="{{ sort_department }}">{{ column_department }}</a>
+                        {% endif %}</td>
+                      <td class="text-left">{% if sort == 'pr.branch' %}
+                        <a href="{{ sort_branch }}" class="{{ order|lower }}">{{ column_branch }}</a>
+                        {% else %}
+                        <a href="{{ sort_branch }}">{{ column_branch }}</a>
+                        {% endif %}</td>
+                      <td class="text-left">{% if sort == 'pr.status' %}
+                        <a href="{{ sort_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                        {% else %}
+                        <a href="{{ sort_status }}">{{ column_status }}</a>
+                        {% endif %}</td>
+                      <td class="text-right">{% if sort == 'pr.total' %}
+                        <a href="{{ sort_total }}" class="{{ order|lower }}">{{ column_total }}</a>
+                        {% else %}
+                        <a href="{{ sort_total }}">{{ column_total }}</a>
+                        {% endif %}</td>
+                      <td class="text-left">{% if sort == 'pr.date_added' %}
+                        <a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>
+                        {% else %}
+                        <a href="{{ sort_date_added }}">{{ column_date_added }}</a>
+                        {% endif %}</td>
+                      <td class="text-right">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if purchase_requests %}
+                    {% for purchase_request in purchase_requests %}
+                    <tr>
+                      <td class="text-center">{% if purchase_request.purchase_request_id in selected %}
+                        <input type="checkbox" name="selected[]" value="{{ purchase_request.purchase_request_id }}" checked="checked" />
+                        {% else %}
+                        <input type="checkbox" name="selected[]" value="{{ purchase_request.purchase_request_id }}" />
+                        {% endif %}</td>
+                      <td class="text-left">{{ purchase_request.reference_no }}</td>
+                      <td class="text-left">{{ purchase_request.department }}</td>
+                      <td class="text-left">{{ purchase_request.branch }}</td>
+                      <td class="text-left">{{ purchase_request.status }}</td>
+                      <td class="text-right">{{ purchase_request.total }}</td>
+                      <td class="text-left">{{ purchase_request.date_added }}</td>
+                      <td class="text-right"><a href="{{ purchase_request.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fa fa-eye"></i></a> <a href="{{ purchase_request.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a> <a href="{{ purchase_request.delete }}" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="return confirm('{{ text_confirm }}');"><i class="fa fa-trash-o"></i></a></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td class="text-center" colspan="8">{{ text_no_results }}</td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </form>
+            <div class="row">
+              <div class="col-sm-6 text-left">{{ pagination }}</div>
+              <div class="col-sm-6 text-right">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+$('#button-filter').on('click', function() {
+	url = 'index.php?route=purchase/purchase_request&user_token={{ user_token }}';
+
+	var filter_reference = $('input[name=\'filter_reference\']').val();
+
+	if (filter_reference) {
+		url += '&filter_reference=' + encodeURIComponent(filter_reference);
+	}
+
+	var filter_department = $('select[name=\'filter_department\']').val();
+
+	if (filter_department) {
+		url += '&filter_department=' + encodeURIComponent(filter_department);
+	}
+
+	var filter_branch = $('select[name=\'filter_branch\']').val();
+
+	if (filter_branch) {
+		url += '&filter_branch=' + encodeURIComponent(filter_branch);
+	}
+
+	var filter_status = $('select[name=\'filter_status\']').val();
+
+	if (filter_status) {
+		url += '&filter_status=' + encodeURIComponent(filter_status);
+	}
+
+	var filter_date_start = $('input[name=\'filter_date_start\']').val();
+
+	if (filter_date_start) {
+		url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+	}
+
+	var filter_date_end = $('input[name=\'filter_date_end\']').val();
+
+	if (filter_date_end) {
+		url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+	}
+
+	location = url;
+});
+//--></script>
+<script type="text/javascript"><!--
+$('.date').datetimepicker({
+	language: '{{ datepicker }}',
+	pickTime: false
+});
+//--></script>
+{{ footer }}

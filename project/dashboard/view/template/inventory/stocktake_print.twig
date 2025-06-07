@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+  <base href="{{ base }}" />
+  <link href="view/stylesheet/bootstrap.css" rel="stylesheet" media="all" />
+  <link href="view/stylesheet/print.css" rel="stylesheet" media="all" />
+  <script src="view/javascript/jquery/jquery-3.6.0.min.js"></script>
+  <script src="view/javascript/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <style type="text/css">
+    @media print {
+      body {
+        padding: 10mm;
+      }
+      
+      .page-header, .btn-print {
+        display: none;
+      }
+      
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      .table th, .table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      
+      .table th {
+        background-color: #f2f2f2;
+      }
+      
+      .text-success {
+        color: #28a745;
+      }
+      
+      .text-danger {
+        color: #dc3545;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <div class="float-end">
+        <button type="button" class="btn btn-primary btn-print" onclick="window.print();"><i class="fas fa-print"></i> {{ button_print }}</button>
+      </div>
+      <h1>{{ title }}</h1>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card mb-3">
+          <div class="card-header">{{ config_company_name }}</div>
+          <div class="card-body">
+            <p>{{ config_address }}</p>
+            <p>{{ config_email }}</p>
+            <p>{{ config_telephone }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card mb-3">
+          <div class="card-header">{{ text_stocktake_details }}</div>
+          <div class="card-body">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ entry_reference }}</strong></td>
+                <td>{{ reference }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ entry_branch }}</strong></td>
+                <td>{{ branch_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ entry_stocktake_date }}</strong></td>
+                <td>{{ stocktake_date }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ entry_type }}</strong></td>
+                <td>{{ type_text }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ entry_status }}</strong></td>
+                <td>{{ status_text }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_created_by }}</strong></td>
+                <td>{{ created_by_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_date_created }}</strong></td>
+                <td>{{ date_added }}</td>
+              </tr>
+              {% if status == 'completed' %}
+                <tr>
+                  <td><strong>{{ text_completed_by }}</strong></td>
+                  <td>{{ completed_by_name }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_date_completed }}</strong></td>
+                  <td>{{ date_completed }}</td>
+                </tr>
+              {% endif %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card mb-3">
+          <div class="card-header">{{ text_stocktake_products }}</div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>{{ column_product }}</th>
+                    <th>{{ column_model }}</th>
+                    <th>{{ column_sku }}</th>
+                    <th>{{ column_unit }}</th>
+                    <th class="text-end">{{ column_expected_quantity }}</th>
+                    <th class="text-end">{{ column_counted_quantity }}</th>
+                    <th class="text-end">{{ column_variance_quantity }}</th>
+                    <th class="text-end">{{ column_variance_percentage }}</th>
+                    <th>{{ column_notes }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if products %}
+                    {% for product in products %}
+                      <tr>
+                        <td>{{ product.product_name }}</td>
+                        <td>{{ product.model }}</td>
+                        <td>{{ product.sku }}</td>
+                        <td>{{ product.unit_name }}</td>
+                        <td class="text-end">{{ product.expected_quantity }}</td>
+                        <td class="text-end">{{ product.counted_quantity }}</td>
+                        <td class="text-end">
+                          {% if product.variance_quantity > 0 %}
+                            <span class="text-success">+{{ product.variance_quantity }}</span>
+                          {% elseif product.variance_quantity < 0 %}
+                            <span class="text-danger">{{ product.variance_quantity }}</span>
+                          {% else %}
+                            <span>{{ product.variance_quantity }}</span>
+                          {% endif %}
+                        </td>
+                        <td class="text-end">
+                          {% if product.variance_percentage > 0 %}
+                            <span class="text-success">+{{ product.variance_percentage }}%</span>
+                          {% elseif product.variance_percentage < 0 %}
+                            <span class="text-danger">{{ product.variance_percentage }}%</span>
+                          {% else %}
+                            <span>{{ product.variance_percentage }}%</span>
+                          {% endif %}
+                        </td>
+                        <td>{{ product.notes }}</td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="9" class="text-center">{{ text_no_results }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">{{ text_stocktake_summary }}</div>
+          <div class="card-body">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ text_total_products }}</strong></td>
+                <td>{{ total_products }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_total_expected }}</strong></td>
+                <td>{{ total_expected }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_total_counted }}</strong></td>
+                <td>{{ total_counted }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_total_variance }}</strong></td>
+                <td>
+                  {% if total_variance > 0 %}
+                    <span class="text-success">+{{ total_variance }}</span>
+                  {% elseif total_variance < 0 %}
+                    <span class="text-danger">{{ total_variance }}</span>
+                  {% else %}
+                    <span>{{ total_variance }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_variance_percentage }}</strong></td>
+                <td>
+                  {% if variance_percentage > 0 %}
+                    <span class="text-success">+{{ variance_percentage }}%</span>
+                  {% elseif variance_percentage < 0 %}
+                    <span class="text-danger">{{ variance_percentage }}%</span>
+                  {% else %}
+                    <span>{{ variance_percentage }}%</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_variance_value }}</strong></td>
+                <td>{{ variance_value }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        {% if notes %}
+          <div class="card">
+            <div class="card-header">{{ entry_notes }}</div>
+            <div class="card-body">
+              <p>{{ notes }}</p>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

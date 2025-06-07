@@ -1,0 +1,463 @@
+{{ header }}{{ column_left }}
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+}
+
+.attachment-item, .preview-item {
+    display: inline-block;
+    margin-right: 10px;
+    border: 1px dashed #ddd;
+    padding: 5px;
+}
+</style>
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+{% if nextj %}
+        <a href="{{ nextj }}" data-toggle="tooltip" title="{{ button_next }}" class="btn btn-default"><i class="fa fa-arrow-right"></i></a>
+{% endif %}
+{% if lastj %}
+        <a href="{{ lastj }}" data-toggle="tooltip" title="{{ button_last }}" class="btn btn-default"><i class="fa fa-arrow-left"></i></a>
+{% endif %}
+
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+{% if journal_id %}
+<button onclick="printMultipleJournals();" class="btn btn-info"><i class="fa fa-print"></i> {{button_print}}</button>
+
+<script>
+function printMultipleJournals() {
+    var selected = [];
+    var jor_id = '{{ journal_id }}';
+    selected.push(jor_id);
+    
+    if (selected.length > 0) {
+        window.open('index.php?route=accounts/journal/print_multiple&user_token={{ user_token }}&journal_ids=' + selected.join(','));
+    } else {
+        alert('Please save first to print.');
+    }
+}
+</script>
+{% endif %}
+
+        <button onclick="saveJournalEntry();" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h3 style="line-height: 35px;">{{ new_journal_entry }}</h3>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="show-messages" id="show-messages">
+        
+    </div>
+
+    <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-journal" class="form-horizontal">
+        {% if journal_id %}
+        <input type="hidden" name="journal_id" value="{{ journal_id }}">
+        {% endif %}
+      <div class="row">
+        <div class="col-md-2"  title="{{text_refnum}}" >
+          <input type="text" name="refnum" class="form-control" placeholder="{{text_refnum}}"  value="{{ refnum }}" >
+        </div>          
+        <div class="col-md-2" title="{{ column_thedate }}" >
+           <input type="date" name="thedate" class="form-control" value="{{ thedate | default('now' | date('Y-m-d')) }}" >
+        </div>
+
+
+        <div class="col-md-2  text-center">
+          <h4 style="line-height: 35px;">{{entry_debit}}: <span id="total_debit" class="text-info">0.00</span> <span style="display:none" id="total_debith" class="text-info">0.00</span></h4>
+
+        </div>
+        <div class="col-md-2  text-center">
+          <h4 style="line-height: 35px;">{{entry_credit}}: <span id="total_credit" class="text-info">0.00</span><span style="display:none" id="total_credith" class="text-info">0.00</span></h4>
+          
+        </div>
+        <div class="col-md-4  text-center">
+          <h4 style="line-height: 35px;">{{ text_journal_entriesbalance }}: <span id="balance_status" class="text-success">{{ text_balanced }}</span></h4>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6" id="debit_entries" style="border:0.5px dashed #888;padding: 10px;">
+           <div class="pull-right">
+                         <button type="button" onclick="addEntry('debit');" class="btn btn-info">{{ button_add_debit }}</button>
+           </div>
+          <h4 style="line-height: 35px;">{{ text_debit_entries }} :</h4>
+          
+        </div>
+        <div class="col-md-6" id="credit_entries" style="border:0.5px dashed #888;padding: 10px;">
+           <div class="pull-right">
+                         <button type="button" onclick="addEntry('credit');" class="btn btn-info">{{ button_add_credit }}</button>
+           </div>            
+          <h4 style="line-height: 35px;">{{ text_credit_entries }}:</h4>
+        </div>
+      </div>
+
+      <div class="form-group required">
+        <div class="col-sm-12">
+          <textarea name="description" rows="2" placeholder="{{ column_thedescription }}" id="input-description" class="form-control">{{ description | default('') }}</textarea>
+          {% if error_description %}
+          <div class="text-danger">{{ error_description }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+
+          <!-- Attachment input field -->
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-attachment">{{ text_new_attachments }}</label>
+                <div class="col-sm-10">
+                    <input type="file" name="attachments[]" id="input-attachment" class="form-control" multiple>
+                    <small class="text-muted"></small>
+                    <div style="display: flex;max-height: 90px;margin-top:8px" id="attachment-preview">
+                        <!-- new attachments will be preview here -->
+                    </div>                    
+                </div>
+            </div>
+
+          <div id="existing-attachmentsp" style="display: none"  class="form-group">
+                    <label>{{text_existing_attachments}}</label>
+                <div class="col-sm-12">
+                    <div style="display: flex;max-height: 90px;" id="existing-attachments">
+                        <!-- Existing attachments will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+    </form>
+  </div>
+</div>
+<script>
+
+    // JavaScript code for previewing attachments
+    document.getElementById('input-attachment').addEventListener('change', function() {
+        var previewContainer = document.getElementById('attachment-preview');
+        previewContainer.innerHTML = ''; // Clear previous previews
+
+        // Iterate over selected files and create previews
+        Array.from(this.files).forEach(function(file) {
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var imgElement = document.createElement('img');
+                imgElement.src = event.target.result;
+                imgElement.alt = file.name;
+                imgElement.setAttribute("style", "margin-inline-end: 10px;max-width:50px");
+                previewContainer.appendChild(imgElement);
+            };
+            reader.readAsDataURL(file); // Read file as Data URL
+        });
+    });
+    
+let debitIndex = 0;
+let creditIndex = 0;
+let entries = {
+    debit: [],
+    credit: []
+};
+
+function addEntryToDOM(type, index, accountCode, amount) {
+    const container = document.getElementById(`${type}_entries`);
+    const div = document.createElement('div');
+    div.className = 'form-group entry-row';
+    div.id = `entry_${type}_${index}`;
+    var accountsData = {{ accounts|json_encode|raw }};
+
+    let optionsHTML = '';
+    accountsData.forEach(account => {
+        const selected = account.account_code === accountCode ? ' selected' : '';
+        optionsHTML += `<option value="${account.account_code}"${selected}>${account.name} (${account.account_code})</option>`;
+    });
+
+    div.innerHTML = `
+        <div style="padding-inline-start: 10px;padding-inline-end: 0px;font-size: 12px;" class="col-sm-6">
+            <select name="entries[${type}][${index}][account_code]" class="form-control account-select">
+                ${optionsHTML}
+            </select>
+        </div>
+        <div style="padding-right: 2px;padding-left: 2px;" class="col-sm-4">
+            <input min="0" type="number" name="entries[${type}][${index}][amount]" class="form-control amount-field" value="${amount}" placeholder="Enter amount">
+        </div>
+        <div style="padding-right: 2px;padding-left: 2px;" class="col-sm-1">
+            <button type="button" onclick="removeEntry('${type}', ${index});" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button>
+        </div>
+    `;
+    container.appendChild(div);
+
+    // Initialize Select2
+    $(div).find('.account-select').select2({
+        width: '100%',
+        placeholder: "Select an account"
+    });
+
+    // Add event listener for changes to the amount field
+    div.querySelector('.amount-field').addEventListener('input', function() {
+        updateEntryAmount(type, index, this.value);
+    });
+}
+
+
+function addEntry(type, accountCode, amount) {
+    const index = type === 'debit' ? debitIndex++ : creditIndex++;
+    entries[type].push({ index, accountCode, amount });
+    addEntryToDOM(type, index, accountCode, amount);
+    updateTotals();
+    validateTotals();
+}
+
+
+function updateEntryAmount(type, index, amount) {
+    // تحديث المبلغ في الذاكرة
+    const entry = entries[type].find(entry => entry.index === index);
+    if (entry) {
+        entry.amount = amount;
+        updateTotals();
+        validateTotals();
+    }
+}
+
+function removeEntry(type, index) {
+    entries[type] = entries[type].filter(entry => entry.index !== index);
+    document.getElementById(`entry_${type}_${index}`).remove();
+    updateTotals();
+    validateTotals();
+}
+
+
+function updateTotals() {
+    let totalDebit = 0, totalCredit = 0;
+    entries.debit.forEach(entry => totalDebit += parseFloat(entry.amount) || 0);
+    entries.credit.forEach(entry => totalCredit += parseFloat(entry.amount) || 0);
+    document.getElementById('total_debith').textContent = totalDebit.toFixed(2);
+    document.getElementById('total_credith').textContent = totalCredit.toFixed(2);
+    
+    document.getElementById('total_debit').textContent = formatAmount(totalDebit);
+    document.getElementById('total_credit').textContent = formatAmount(totalCredit);
+    checkBalance();
+}
+
+function formatAmount(amount) {
+    // Use JavaScript's built-in toLocaleString() function to format numbers with thousands separators
+    return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function checkBalance() {
+    const totalDebit = parseFloat(document.getElementById('total_debith').textContent);
+    const totalCredit = parseFloat(document.getElementById('total_credith').textContent);
+    const balanceElement = document.getElementById('balance_status');
+    if (totalDebit === totalCredit) {
+        balanceElement.textContent = '{{text_balanced}}';
+        balanceElement.className = 'text-success';
+    } else {
+        balanceElement.textContent = '{{text_unbalanced}}';
+        balanceElement.className = 'text-danger';
+    }
+    
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // يمكن إضافة قيود مبدئية هنا إذا كانت مطلوبة
+    var journal_id = '{{journal_id}}';
+    if(journal_id == '' || journal_id == '0'){
+    addEntry('debit', '', '0');
+    addEntry('credit', '', '0');
+    }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    var entries = JSON.parse('{{ entries_json | raw }}');
+
+    // Handling Debit Entries
+    if (Array.isArray(entries.debit)) {
+        entries.debit.forEach(function(entry) {
+            addEntry('debit', entry.account_code, parseFloat(entry.amount));
+        });
+    }
+
+    // Handling Credit Entries
+    if (Array.isArray(entries.credit)) {
+        entries.credit.forEach(function(entry) {
+            addEntry('credit', entry.account_code, parseFloat(entry.amount));
+        });
+    }
+
+
+    // Recalculate totals after entries are loaded
+    updateTotals();
+    validateTotals();
+});
+
+
+
+function validateTotals() {
+    let totalDebit = 0, totalCredit = 0;
+    document.querySelectorAll('.amount-field').forEach(function(input) {
+        const type = input.name.includes('debit') ? 'debit' : 'credit';
+        const value = parseFloat(input.value) || 0;
+        if (type === 'debit') {
+            totalDebit += value;
+        } else {
+            totalCredit += value;
+        }
+    });
+
+    // Check if the entries are balanced and update UI accordingly
+    const balanceStatus = document.getElementById('balance_status');
+    if (totalDebit === totalCredit) {
+        clearErrorMessages();
+    } else {
+        displayErrorMessage('تحذير: يجب أن تكون قيم المدين والدائن متساوية!');
+    }
+}
+
+function formatAmount(amount) {
+    return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function displayErrorMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function displaySuccessMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-success"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function clearErrorMessages() {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = '';
+    errorContainer.style.display = 'none';
+}
+
+
+function saveJournalEntry() {
+    var formData = new FormData($('#form-journal')[0]); // أو استخدم document.getElementById('form-journal')
+    $.ajax({
+        url: $('#form-journal').attr('action'), // يمكنك أيضًا استبداله برابط الطلب مباشرةً
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        dataType: 'json', // توقع استجابة بتنسيق JSON
+        success: function(data) {
+            if (data.success) {
+                displaySuccessMessage('Journal Saved Successfully!');
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.href = '{{ cancel }}'; // استبدل برابط الإلغاء الخاص بك
+                }
+            } else {
+                console.log(data.error); // يقوم بتسجيل الخطأ في الكونسول
+                if (data.error && typeof data.error === 'object') {
+                    // تحقق من كون الخطأ عبارة عن كائن واستخرج الرسائل
+                    var errorMessages = Object.values(data.error).join('<br>');
+                    displayErrorMessage(errorMessages);
+                } else {
+                    // إذا كان الخطأ نصًا مباشرةً، فقط قم بعرضه
+                    displayErrorMessage(data.error || 'An unknown error occurred.');
+                }
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('AJAX error:', textStatus, errorThrown);
+            displayErrorMessage('AJAX request failed: ' + textStatus);
+        }
+    });
+}
+
+function displayErrorMessage(message) {
+    $('#show-messages').html(`<div class="alert alert-danger">${message}</div>`).show();
+}
+
+function displaySuccessMessage(message) {
+    $('#show-messages').html(`<div class="alert alert-success">${message}</div>`).show();
+}
+
+ // Load and display existing attachments
+    function displayAttachments(attachments) {
+        var container = document.getElementById('existing-attachments');
+        container.innerHTML = ''; // Clear previous attachments
+        attachments.forEach(attachment => {
+            var div = document.createElement('div');
+            div.className = 'attachment-item';
+            div.innerHTML = `
+                <img style="max-width: 70px; height: auto;" src="${attachment.url}" title="${attachment.name}" alt="${attachment.name}">
+                <button type="button" style="padding: 0px 2px;font-size: 8px;line-height: 1.5;border-radius: 2px;position: absolute;top: 0px;left: 0px;" onclick="removeAttachment(this, '${attachment.id}');" class="btn btn-danger btn-xs"><i class="fa fa-close"></i></button>
+            `;
+            div.setAttribute("style", "position: relative;text-align: center;margin-inline-end: 10px;max-width:90px;min-width:90px;max-height:90px;min-height:90px;border:1px dashed #666;padding: 10px;display: inline-block;");
+            
+            container.appendChild(div);
+
+        });
+    }
+
+    // Function to asynchronously fetch and display existing attachments
+    function loadExistingAttachments(journalId) {
+        fetch('{{ get_attachments_url }}')
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                if(data.attachments){
+                    displayAttachments(data.attachments);
+                    var container = document.getElementById('existing-attachmentsp');
+                    container.setAttribute("style", "display: block;");
+                }
+                
+                
+            } else {
+                    var container = document.getElementById('existing-attachmentsp');
+                container.setAttribute("style", "display: none;");            
+                console.error('Failed to load attachments:', data.error);
+            }
+        })
+        .catch(error => console.error('Error fetching attachments:', error));
+    }
+    
+    // Call this function if editing an existing journal entry
+    if ('{{ journal_id }}') {
+        loadExistingAttachments('{{ journal_id }}');
+    }
+
+// Function to remove an attachment
+function removeAttachment(element, attachmentId) {
+    // Prevent default form submission behavior
+    event.preventDefault();
+
+    $.ajax({
+        url: '{{ delete_attachment_url }}',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            attachmentId: attachmentId
+        },
+        success: function(json) {
+            displaySuccessMessage('attashment Removed Successfully!');
+            element.parentNode.remove();
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            displayErrorMessage('Failed to remove attachment');
+        }
+    });
+
+}
+
+
+
+function scrollToError() {
+    document.getElementById('show-messages').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+</script>
+
+
+
+
+{{ footer }}

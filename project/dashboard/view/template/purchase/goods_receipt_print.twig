@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+  <base href="{{ base }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <link href="view/javascript/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="all" />
+  <script type="text/javascript" src="view/javascript/jquery/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+  <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+  <link type="text/css" href="view/stylesheet/stylesheet.css" rel="stylesheet" media="all" />
+  <style type="text/css">
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .company-info {
+      margin-bottom: 10px;
+    }
+    .document-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .info-section {
+      margin-bottom: 20px;
+    }
+    .info-group {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    .info-column {
+      flex: 1;
+      margin-right: 20px;
+    }
+    .info-column:last-child {
+      margin-right: 0;
+    }
+    .info-row {
+      margin-bottom: 5px;
+    }
+    .info-label {
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+      text-align: left;
+      font-weight: bold;
+    }
+    .text-center {
+      text-align: center;
+    }
+    .text-right {
+      text-align: right;
+    }
+    .totals {
+      width: 40%;
+      margin-left: auto;
+      margin-top: 20px;
+    }
+    .footer {
+      margin-top: 40px;
+      border-top: 1px solid #ddd;
+      padding-top: 20px;
+      font-size: 11px;
+      color: #666;
+    }
+    @media print {
+      body {
+        padding: 0;
+      }
+      .no-print {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom: 20px;">
+    <button type="button" onclick="window.print();" style="padding: 5px 10px;">
+      <i class="fa fa-print"></i> Print
+    </button>
+    <button type="button" onclick="window.close();" style="padding: 5px 10px;">
+      <i class="fa fa-close"></i> Close
+    </button>
+  </div>
+
+  <div class="header">
+    <div>
+      <div class="document-title">{{ text_goods_receipt }}</div>
+      <div class="company-info">
+        <div><strong>{{ config_name }}</strong></div>
+        <div>{{ config_address }}</div>
+        <div>{{ config_telephone }}</div>
+        <div>{{ config_email }}</div>
+      </div>
+    </div>
+    <div style="text-align: right;">
+      {% if logo %}
+        <img src="{{ logo }}" alt="{{ config_name }}" style="max-width: 180px; max-height: 80px;">
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-group">
+      <div class="info-column">
+        <div class="info-row">
+          <span class="info-label">{{ text_receipt_number }}:</span> {{ receipt.receipt_number }}
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ text_po_number }}:</span> {{ order.po_number }}
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ text_receipt_date }}:</span> {{ receipt.receipt_date }}
+        </div>
+      </div>
+      <div class="info-column">
+        <div class="info-row">
+          <span class="info-label">{{ text_supplier }}:</span> {{ order.supplier_name }}
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ text_reference }}:</span> {{ receipt.reference ? receipt.reference : '-' }}
+        </div>
+        <div class="info-row">
+          <span class="info-label">{{ text_print_date }}:</span> {{ print_date }}
+        </div>
+      </div>
+    </div>
+    
+    {% if receipt.notes %}
+    <div class="info-row">
+      <span class="info-label">{{ text_notes }}:</span> {{ receipt.notes }}
+    </div>
+    {% endif %}
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 40%;">{{ column_product }}</th>
+        <th class="text-center" style="width: 10%;">{{ column_quantity }}</th>
+        <th style="width: 15%;">{{ column_unit }}</th>
+        <th class="text-right" style="width: 15%;">{{ column_unit_cost }}</th>
+        <th class="text-right" style="width: 20%;">{{ column_total_cost }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set receipt_total = 0 %}
+      {% for item in items %}
+        {% set item_total = item.quantity_received * item.unit_price %}
+        {% set receipt_total = receipt_total + item_total %}
+        <tr>
+          <td>{{ item.product_name }}</td>
+          <td class="text-center">{{ item.quantity_received }}</td>
+          <td>{{ item.unit_name }}</td>
+          <td class="text-right">{{ item.unit_price|number_format(2) }}</td>
+          <td class="text-right">{{ item_total|number_format(2) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" class="text-right"><strong>{{ text_total }}</strong></td>
+        <td class="text-right"><strong>{{ receipt_total|number_format(2) }}</strong></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="footer">
+    <div class="info-group" style="margin-top: 60px;">
+      <div class="info-column text-center">
+        <div style="border-top: 1px solid #ddd; padding-top: 5px;">{{ text_received_by }}</div>
+      </div>
+      <div class="info-column text-center">
+        <div style="border-top: 1px solid #ddd; padding-top: 5px;">{{ text_approved_by }}</div>
+      </div>
+      <div class="info-column text-center">
+        <div style="border-top: 1px solid #ddd; padding-top: 5px;">{{ text_supplier_rep }}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

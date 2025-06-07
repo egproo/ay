@@ -1,0 +1,2882 @@
+======================
+File: ./sales_analysis.php
+======================
+<?php
+class ControllerAccountsSalesAnalysis extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/sales_analysis');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/sales_analysis/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/sales_analysis_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/sales_analysis');
+        $this->load->model('accounts/sales_analysis');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_sales_analysis->getSalesAnalysisData($date_start, $date_end);
+            $data['products'] = $results['products'];
+            $data['total_sales'] = $results['total_sales'];
+        } else {
+            $data['products'] = [];
+            $data['total_sales'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+        $data['text_sales_analysis'] = $this->language->get('text_sales_analysis');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_total_sales'] = $this->language->get('text_total_sales');
+
+        $data['text_product_name'] = $this->language->get('text_product_name');
+        $data['text_total_quantity'] = $this->language->get('text_total_quantity');
+        $data['text_total_sales_col'] = $this->language->get('text_total_sales_col');
+        $data['text_avg_price'] = $this->language->get('text_avg_price');
+
+        $this->response->setOutput($this->load->view('accounts/sales_analysis_list', $data));
+    }
+}
+
+
+
+======================
+File: ./balance_sheet.php
+======================
+<?php
+class ControllerAccountsBalanceSheet extends Controller {
+    public function index() {
+        $this->load->language('accounts/balance_sheet');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/balance_sheet/print', 'user_token=' . $this->session->data['user_token'], true);
+        
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/balance_sheet_print_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/balance_sheet');
+        $this->load->model('accounts/trial_balance');
+    
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        // الحصول على التواريخ ونطاق الحسابات
+        $date_start = $this->request->post['start_date'] ?: date('Y-01-01');
+        $date_end = $this->request->post['end_date'] ?: date('Y-m-d');
+        $account_start = $this->request->post['account_start'] ?: $this->model_accounts_trial_balance->getMinAccountCode();
+        $account_end = $this->request->post['account_end'] ?: $this->model_accounts_trial_balance->getMaxAccountCode();
+    
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+    
+        // استرجاع بيانات ميزان المراجعة
+        $trial_balance = $this->model_accounts_trial_balance->getAccountRangeData($date_start, $date_end, $account_start, $account_end);
+        $accounts = $this->formatAccounts($trial_balance['accounts']);
+        $data['accounts'] = $accounts;
+        
+        // تسجيل بيانات ميزان المراجعة
+        //error_log("Trial Balance Data: " . print_r($trial_balance, true));
+
+        // تصفية الحسابات حسب النوع
+        $data['assets_non_current'] = $this->filterAccounts($trial_balance['accounts'], 'non_current_assets');
+        $data['assets_current'] = $this->filterAccounts($trial_balance['accounts'], 'current_assets');
+        $data['liabilities_non_current'] = $this->filterAccounts($trial_balance['accounts'], 'non_current_liabilities');
+        $data['liabilities_current'] = $this->filterAccounts($trial_balance['accounts'], 'current_liabilities');
+        $data['equity'] = $this->filterAccounts($trial_balance['accounts'], 'equity');
+
+        // التحقق من إقفال حساب 25 (صافي أرباح (خسائر) العام)
+        $profit_loss_balance = $this->calculateProfitLossAccount($trial_balance['accounts']);
+        
+        $profit_loss_account_closed = false;
+        foreach ($trial_balance['accounts'] as $account) {
+            if ($account['account_code'] == 25 && $account['closing_balance'] != 0) {
+                $profit_loss_account_closed = true;
+                $data['equity'][] = $account; // تضمين حساب 25 إذا كان مغلقًا
+                break;
+            }
+        }
+
+        if (!$profit_loss_account_closed) {
+            // حساب صافي الربح أو الخسارة يدويًا وإضافته إلى الملكية
+            $profit_loss_account = [
+                'account_code' => 25,
+                'name' => 'صافي أرباح (خسائر) العام',
+                'closing_balance' => $profit_loss_balance,
+                'closing_balance_formatted' => $this->currency->format($profit_loss_balance, $this->config->get('config_currency'))
+            ];
+            
+            $data['equity'][] = $profit_loss_account;
+
+            if ($profit_loss_balance < 0) {
+                $data['total_equity'] -= abs($profit_loss_balance); // الخسارة تُطرح
+            } else {
+                $data['total_equity'] += $profit_loss_balance; // الربح يُضاف
+            }
+
+            // تسجيل حساب صافي الربح أو الخسارة
+            //error_log("Profit/Loss Account (Manually Added): " . print_r($profit_loss_account, true));
+        }
+
+        // حساب الإجماليات
+        $data['total_assets_non_current'] = $this->calculateTotal($data['assets_non_current']);
+        $data['total_assets_current'] = $this->calculateTotal($data['assets_current']);
+        $data['total_liabilities_non_current'] = $this->calculateTotal($data['liabilities_non_current']);
+        $data['total_liabilities_current'] = $this->calculateTotal($data['liabilities_current']);
+        $data['total_equity'] = $this->calculateTotal($data['equity']);
+
+        $data['total_assets'] = $data['total_assets_non_current'] + $data['total_assets_current'];
+        $data['total_liabilities'] = $data['total_liabilities_non_current'] + $data['total_liabilities_current'];
+        $data['total_equity_liabilities'] = $data['total_liabilities'] + $data['total_equity'];
+
+        // تنسيق الإجماليات
+        $data['total_assets_formatted'] = $this->currency->format($data['total_assets'], $this->config->get('config_currency'));
+        $data['total_liabilities_formatted'] = $this->currency->format($data['total_liabilities'], $this->config->get('config_currency'));
+        $data['total_equity_formatted'] = $this->currency->format($data['total_equity'], $this->config->get('config_currency'));
+        $data['total_equity_liabilities_formatted'] = $this->currency->format($data['total_equity_liabilities'], $this->config->get('config_currency'));
+
+        // تسجيل الإجماليات
+        //error_log("Total Assets: " . print_r($data['total_assets'], true));
+        //error_log("Total Liabilities: " . print_r($data['total_liabilities'], true));
+        //error_log("Total Equity: " . print_r($data['total_equity'], true));
+        //error_log("Total Equity and Liabilities: " . print_r($data['total_equity_liabilities'], true));
+
+        $this->response->setOutput($this->load->view('accounts/balance_sheet_print', $data));
+    }
+
+    /**
+     * استثناء الحساب 25 من حسابات الملكية الأساسية
+     * والتعامل معه بشكل منفصل بناءً على ما إذا كان مغلقًا أم لا
+     */
+    private function getAccountCodesByType($type) {
+        $account_codes = [];
+
+        switch ($type) {
+            case 'non_current_assets':
+                $account_codes = [111, 112, 113, 114, 115, 116, 117, 118, 119]; // إضافة المزيد حسب الحاجة
+                break;
+            case 'current_assets':
+                $account_codes = [121, 122, 123, 124, 125, 126, 127, 128];
+                break;
+            case 'non_current_liabilities':
+                $account_codes = [311, 312, 313, 314, 315, 316, 317, 318, 319];
+                break;
+            case 'current_liabilities':
+                $account_codes = [321, 322, 323, 324, 325, 326, 327, 328, 329];
+                break;
+            case 'equity':
+                $account_codes = [21, 22, 23, 24, 26, 27]; // تم إزالة الحساب 25
+                break;
+        }
+
+        return $account_codes;
+    }
+
+    /**
+     * تصفية الحسابات بناءً على النوع
+     */
+    private function filterAccounts($accounts, $type) {
+        $filtered_accounts = [];
+        $account_codes = $this->getAccountCodesByType($type);
+
+        foreach ($accounts as $account) {
+            if (in_array($account['account_code'], $account_codes)) {
+                // حساب الأرصدة بشكل صحيح بناءً على نوع الحساب
+                if ($type == 'non_current_assets' || $type == 'current_assets') {
+                    $account['closing_balance'] = $account['closing_balance_debit'] - $account['closing_balance_credit'];
+                } else if ($type == 'non_current_liabilities' || $type == 'current_liabilities' || $type == 'equity') {
+                    $account['closing_balance'] = $account['closing_balance_credit'] - $account['closing_balance_debit'];
+                }
+                $account['closing_balance_formatted'] = $this->currency->format($account['closing_balance'], $this->config->get('config_currency'));
+                $filtered_accounts[] = $account;
+            }
+        }
+
+        // تسجيل الحسابات المفلترة
+        //error_log("Filtered Accounts for type {$type}: " . print_r($filtered_accounts, true));
+
+        return $filtered_accounts;
+    }
+
+    /**
+     * تنسيق الحسابات
+     */
+    private function formatAccounts($accounts) {
+        $formatted_accounts = [];
+        foreach ($accounts as $account) {
+            $account['closing_balance'] = $account['closing_balance_debit'] - $account['closing_balance_credit'];
+            $account['closing_balance_formatted'] = $this->currency->format($account['closing_balance'], $this->config->get('config_currency'));
+            $formatted_accounts[] = $account;
+        }
+        return $formatted_accounts;
+    }
+    
+    /**
+     * حساب إجمالي الحسابات
+     */
+    private function calculateTotal($accounts) {
+        $total = 0;
+        foreach ($accounts as $account) {
+            $total += $account['closing_balance'];
+        }
+
+        // تسجيل إجمالي الحسابات
+        //error_log("Calculated Total: " . print_r($total, true));
+
+        return $total;
+    }
+
+    /**
+     * حساب صافي الربح أو الخسارة بناءً على حسابات معينة
+     */
+    private function calculateProfitLossAccount($accounts) {
+        $profit_loss_balance = 0;
+        $balance_code_4 = 0;
+        $balance_code_5 = 0;
+    
+        foreach ($accounts as $account) {
+            if ($account['account_code'] == 4) {
+                $balance_code_4 = $account['closing_balance'];
+            } elseif ($account['account_code'] == 5) {
+                $balance_code_5 = $account['closing_balance'];
+            }
+        }
+
+        // قارن بين رصيد حساب 4 ورصيد حساب 5 لتحديد إذا كان ينبغي جمعهما أو خصم أحدهما
+        if ($balance_code_5 > $balance_code_4) {
+            $profit_loss_balance = ($balance_code_5 + $balance_code_4);
+        } elseif ($balance_code_5 < $balance_code_4) {
+            $profit_loss_balance = -1 * ($balance_code_5 + $balance_code_4);
+        } else { // عندما يكونا متساويين
+            $profit_loss_balance = 0;
+        }
+        // error_log("Profit/Loss Balance: " . print_r($profit_loss_balance, true));
+
+        return $profit_loss_balance * 1;
+    }
+}
+
+
+
+======================
+File: ./fixed_assets_report.php
+======================
+<?php
+class ControllerAccountsFixedAssetsReport extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/fixed_assets_report');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/fixed_assets_report/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/fixed_assets_report_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/fixed_assets_report');
+        $this->load->model('accounts/fixed_assets_report');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_fixed_assets_report->getFixedAssetsReportData($date_start, $date_end);
+            $data['assets'] = $results['assets'];
+            $data['total_depreciation'] = $results['total_depreciation'];
+        } else {
+            $data['assets'] = [];
+            $data['total_depreciation'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_fixed_assets_report'] = $this->language->get('text_fixed_assets_report');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_total_depreciation'] = $this->language->get('text_total_depreciation');
+
+        $data['text_asset_code'] = $this->language->get('text_asset_code');
+        $data['text_asset_name'] = $this->language->get('text_asset_name');
+        $data['text_purchase_date'] = $this->language->get('text_purchase_date');
+        $data['text_purchase_value'] = $this->language->get('text_purchase_value');
+        $data['text_current_value'] = $this->language->get('text_current_value');
+        $data['text_method'] = $this->language->get('text_method');
+        $data['text_useful_life'] = $this->language->get('text_useful_life');
+        $data['text_salvage_value'] = $this->language->get('text_salvage_value');
+        $data['text_period_depreciation'] = $this->language->get('text_period_depreciation');
+        $data['text_new_current_value'] = $this->language->get('text_new_current_value');
+
+        $this->response->setOutput($this->load->view('accounts/fixed_assets_report_list', $data));
+    }
+}
+
+
+
+======================
+File: ./income_statement.php
+======================
+<?php
+class ControllerAccountsIncomeStatement extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/income_statement');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/income_statement/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/income_statement_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/income_statement');
+        $this->load->model('accounts/income_statement');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_income_statement->getIncomeStatementData($date_start, $date_end);
+            $data['revenues'] = $results['revenues'];
+            $data['expenses'] = $results['expenses'];
+            $data['total_revenues'] = $results['total_revenues'];
+            $data['total_expenses'] = $results['total_expenses'];
+            $data['net_income'] = $results['net_income'];
+        } else {
+            $data['revenues'] = [];
+            $data['expenses'] = [];
+            $data['total_revenues'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['total_expenses'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['net_income'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_income_statement'] = $this->language->get('text_income_statement');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_revenues'] = $this->language->get('text_revenues');
+        $data['text_expenses'] = $this->language->get('text_expenses');
+        $data['text_total_revenues'] = $this->language->get('text_total_revenues');
+        $data['text_total_expenses'] = $this->language->get('text_total_expenses');
+        $data['text_net_income'] = $this->language->get('text_net_income');
+
+        $this->response->setOutput($this->load->view('accounts/income_statement_list', $data));
+    }
+}
+
+
+
+======================
+File: ./trial_balance_new.php
+======================
+<?php
+class ControllerAccountsTrialBalanceNew extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/trial_balance_new');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/trial_balance_new/print', 'user_token=' . $this->session->data['user_token'], true);
+        
+        // يمكن تحميل نموذج الحسابات لاختيار الحسابات مثلا
+        $this->load->model('accounts/chartaccount');
+        $data['accounts_list'] = $this->model_accounts_chartaccount->getAccountsToEntry(); // نفترض أنها تعيد قائمة الحسابات
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['entry_account_start'] = $this->language->get('entry_account_start');
+        $data['entry_account_end'] = $this->language->get('entry_account_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/trial_balance_new_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/trial_balance_new');
+        $this->load->model('accounts/trial_balance_new');
+    
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+        $account_start = $this->request->post['account_start'] ?: $this->model_accounts_trial_balance_new->getMinAccountCode();
+        $account_end = $this->request->post['account_end'] ?: $this->model_accounts_trial_balance_new->getMaxAccountCode();
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($account_start && $account_end && $date_start && $date_end) {
+            $results = $this->model_accounts_trial_balance_new->getAccountRangeData($date_start, $date_end, $account_start, $account_end);
+            $data['accounts'] = $results['accounts'];
+            $data['sums'] = $results['sums'];
+        } else {
+            $data['accounts'] = [];
+            $data['sums'] = [];
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_total'] = $this->language->get('text_total');
+        $data['text_account_code'] = $this->language->get('text_account_code');
+        $data['text_account_name'] = $this->language->get('text_account_name');
+        $data['text_opening_balance_debit'] = $this->language->get('text_opening_balance_debit');
+        $data['text_opening_balance_credit'] = $this->language->get('text_opening_balance_credit');
+        $data['text_period_debit'] = $this->language->get('text_period_debit');
+        $data['text_period_credit'] = $this->language->get('text_period_credit');
+        $data['text_closing_balance_debit'] = $this->language->get('text_closing_balance_debit');
+        $data['text_closing_balance_credit'] = $this->language->get('text_closing_balance_credit');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_trial_balance_new'] = $this->language->get('text_trial_balance_new');
+        $data['text_period'] = $this->language->get('text_period');
+
+        $this->response->setOutput($this->load->view('accounts/trial_balance_new_list', $data));
+    }
+}
+
+
+
+======================
+File: ./tax_return.php
+======================
+<?php
+class ControllerAccountsTaxReturn extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/tax_return');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/tax_return/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/tax_return_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/tax_return');
+        $this->load->model('accounts/tax_return');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_tax_return->getTaxReturnData($date_start, $date_end);
+            $data['accounting_profit'] = $results['accounting_profit'];
+            $data['non_deductible'] = $results['non_deductible'];
+            $data['exempt_income'] = $results['exempt_income'];
+            $data['taxable_profit'] = $results['taxable_profit'];
+            $data['tax_rate'] = $results['tax_rate'];
+            $data['tax_due'] = $results['tax_due'];
+        } else {
+            $data['accounting_profit'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['non_deductible'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['exempt_income'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['taxable_profit'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['tax_rate'] = 0;
+            $data['tax_due'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_tax_return'] = $this->language->get('text_tax_return');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_accounting_profit'] = $this->language->get('text_accounting_profit');
+        $data['text_non_deductible'] = $this->language->get('text_non_deductible');
+        $data['text_exempt_income'] = $this->language->get('text_exempt_income');
+        $data['text_taxable_profit'] = $this->language->get('text_taxable_profit');
+        $data['text_tax_rate'] = $this->language->get('text_tax_rate');
+        $data['text_tax_due'] = $this->language->get('text_tax_due');
+
+        $this->response->setOutput($this->load->view('accounts/tax_return_list', $data));
+    }
+}
+
+
+
+======================
+File: ./trial_balance.php
+======================
+<?php
+class ControllerAccountsTrialBalance extends Controller {
+    public function index() {
+        $this->load->language('accounts/trial_balance');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/trial_balance/print', 'user_token=' . $this->session->data['user_token'], true);
+        $this->load->model('accounts/chartaccount');
+        $data['accounts'] = $this->model_accounts_chartaccount->getAccountsToEntry();
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_no_results'] = $this->language->get('text_no_results');
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/trial_balance_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/trial_balance');
+        $this->load->model('accounts/trial_balance');
+    
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+    
+        // Handling dates with defaults
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01'); // Default to start of current year
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d'); // Default to today
+    
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+    
+        // Handling accounts with defaults
+        $account_start = $this->request->post['account_start'] ?: $this->model_accounts_trial_balance->getMinAccountCode();
+        $account_end = $this->request->post['account_end'] ?: $this->model_accounts_trial_balance->getMaxAccountCode();
+    
+        if ($account_start && $account_end && $date_start && $date_end) {
+            $data['accounts'] = $this->model_accounts_trial_balance->getAccountRangeData($date_start, $date_end, $account_start, $account_end);
+            
+          /*
+              echo "<pre>";
+        print_r($data['accounts']);
+        echo "</pre>";
+        exit; 
+        */
+        } else {
+            $data['accounts'] = [];
+            $this->session->data['error'] = $this->language->get('error_no_data');
+            $this->response->redirect($this->url->link('accounts/trial_balance', 'user_token=' . $this->session->data['user_token'], true));
+            return;
+        }
+    
+        $this->response->setOutput($this->load->view('accounts/trial_balance_list', $data));
+    }
+    
+}
+
+
+
+======================
+File: ./income_statement2.php
+======================
+<?php
+class ControllerAccountsIncomeStatement extends Controller {
+    public function index() {
+        $this->load->language('accounts/income_statement');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/income_statement/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/income_statement_print_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/income_statement');
+        $this->load->model('accounts/trial_balance');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['start_date'] ?: date('Y-01-01');
+        $date_end = $this->request->post['end_date'] ?: date('Y-m-d');
+        $account_start = $this->request->post['account_start'] ?: $this->model_accounts_trial_balance->getMinAccountCode();
+        $account_end = $this->request->post['account_end'] ?: $this->model_accounts_trial_balance->getMaxAccountCode();
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        // استرجاع بيانات ميزان المراجعة
+        $trial_balance = $this->model_accounts_trial_balance->getAccountRangeData($date_start, $date_end, $account_start, $account_end);
+
+        // تسجيل بيانات ميزان المراجعة
+        error_log("Trial Balance Data: " . print_r($trial_balance, true));
+
+        // جمع البيانات وتصنيفها
+        $data['revenues'] = $this->filterAccounts($trial_balance['accounts'], 'revenues');
+        $data['costs'] = $this->filterAccounts($trial_balance['accounts'], 'costs');
+        $data['expenses'] = $this->filterAccounts($trial_balance['accounts'], 'expenses');
+        $data['other_income'] = $this->filterAccounts($trial_balance['accounts'], 'other_income');
+        $data['other_expenses'] = $this->filterAccounts($trial_balance['accounts'], 'other_expenses');
+        $data['financial_income'] = $this->filterAccounts($trial_balance['accounts'], 'financial_income');
+        $data['financial_expenses'] = $this->filterAccounts($trial_balance['accounts'], 'financial_expenses');
+
+        // حساب الإجماليات
+        $data['total_revenues'] = $this->calculateTotal($data['revenues']);
+        $data['total_costs'] = $this->calculateTotal($data['costs']);
+        $data['total_expenses'] = $this->calculateTotal($data['expenses']);
+        $data['total_other_income'] = $this->calculateTotal($data['other_income']);
+        $data['total_other_expenses'] = $this->calculateTotal($data['other_expenses']);
+        $data['total_financial_income'] = $this->calculateTotal($data['financial_income']);
+        $data['total_financial_expenses'] = $this->calculateTotal($data['financial_expenses']);
+
+        // حساب صافي الربح أو الخسارة
+        $data['net_profit_loss'] = $data['total_revenues'] - $data['total_costs'] - $data['total_expenses'] + $data['total_other_income'] - $data['total_other_expenses'] + $data['total_financial_income'] - $data['total_financial_expenses'];
+
+        // تنسيق الإجماليات
+        $data['total_revenues_formatted'] = $this->currency->format($data['total_revenues'], $this->config->get('config_currency'));
+        $data['total_costs_formatted'] = $this->currency->format($data['total_costs'], $this->config->get('config_currency'));
+        $data['total_expenses_formatted'] = $this->currency->format($data['total_expenses'], $this->config->get('config_currency'));
+        $data['total_other_income_formatted'] = $this->currency->format($data['total_other_income'], $this->config->get('config_currency'));
+        $data['total_other_expenses_formatted'] = $this->currency->format($data['total_other_expenses'], $this->config->get('config_currency'));
+        $data['total_financial_income_formatted'] = $this->currency->format($data['total_financial_income'], $this->config->get('config_currency'));
+        $data['total_financial_expenses_formatted'] = $this->currency->format($data['total_financial_expenses'], $this->config->get('config_currency'));
+        $data['net_profit_loss_formatted'] = $this->currency->format($data['net_profit_loss'], $this->config->get('config_currency'));
+
+        // تسجيل الإجماليات
+        error_log("Total Revenues: " . print_r($data['total_revenues'], true));
+        error_log("Total Costs: " . print_r($data['total_costs'], true));
+        error_log("Total Expenses: " . print_r($data['total_expenses'], true));
+        error_log("Net Profit/Loss: " . print_r($data['net_profit_loss'], true));
+
+        $this->response->setOutput($this->load->view('accounts/income_statement_print', $data));
+    }
+
+    private function filterAccounts($accounts, $type) {
+        $filtered_accounts = [];
+        $account_codes = $this->getAccountCodesByType($type);
+
+        foreach ($accounts as $account) {
+            if (in_array($account['account_code'], $account_codes)) {
+                // حساب الأرصدة بشكل صحيح بناءً على نوع الحساب
+                if (in_array($type, ['revenues', 'other_income', 'financial_income'])) {
+                    $account['closing_balance'] = $account['closing_balance_credit'] - $account['closing_balance_debit'];
+                } else {
+                    $account['closing_balance'] = $account['closing_balance_debit'] - $account['closing_balance_credit'];
+                }
+                $account['closing_balance_formatted'] = $this->currency->format($account['closing_balance'], $this->config->get('config_currency'));
+                $filtered_accounts[] = $account;
+            }
+        }
+
+        // تسجيل الحسابات المفلترة
+        error_log("Filtered Accounts for type {$type}: " . print_r($filtered_accounts, true));
+
+        return $filtered_accounts;
+    }
+
+    private function getAccountCodesByType($type) {
+        $account_codes = [];
+
+        switch ($type) {
+            case 'revenues':
+                $account_codes = [511, 412, 413, 414, 415, 416, 417, 418, 419]; // Add more as needed
+                break;
+            case 'costs':
+                $account_codes = [421, 422, 423, 424, 425, 426, 427, 428];
+                break;
+            case 'expenses':
+                $account_codes = [431, 432, 433, 434, 435, 436, 437, 438];
+                break;
+            case 'other_income':
+                $account_codes = [441, 442, 443, 444, 445, 446, 447, 448, 449];
+                break;
+            case 'other_expenses':
+                $account_codes = [451, 452, 453, 454, 455, 456, 457, 458, 459];
+                break;
+            case 'financial_income':
+                $account_codes = [461, 462, 463, 464, 465, 466, 467, 468, 469];
+                break;
+            case 'financial_expenses':
+                $account_codes = [471, 472, 473, 474, 475, 476, 477, 478, 479];
+                break;
+        }
+
+        return $account_codes;
+    }
+
+    private function calculateTotal($accounts) {
+        $total = 0;
+        foreach ($accounts as $account) {
+            $total += $account['closing_balance'];
+        }
+
+        // تسجيل إجمالي الحسابات
+        error_log("Calculated Total: " . print_r($total, true));
+
+        return $total;
+    }
+}
+
+
+======================
+File: ./fixed_assets.php
+======================
+<?php
+class ControllerAccountsFixedAssets extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/fixed_assets');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/fixed_assets/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+        $this->response->setOutput($this->load->view('accounts/fixed_assets_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/fixed_assets');
+        $this->load->model('accounts/fixed_assets');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        $results = $this->model_accounts_fixed_assets->getFixedAssetsData($date_end);
+
+        $data = array_merge($data, $results);
+
+        $data['text_fixed_assets_report'] = $this->language->get('text_fixed_assets_report');
+        $data['text_end_date'] = $this->language->get('text_end_date');
+        $data['text_assets'] = $this->language->get('text_assets');
+        $data['text_accum_depr'] = $this->language->get('text_accum_depr');
+        $data['text_net_value'] = $this->language->get('text_net_value');
+
+        $this->response->setOutput($this->load->view('accounts/fixed_assets_list', $data));
+    }
+}
+
+
+
+======================
+File: ./statementaccount.php
+======================
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+class ControllerAccountsStatementaccount extends Controller {
+    public function index() {
+        $this->load->language('accounts/statementaccount');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/statementaccount/print', 'user_token=' . $this->session->data['user_token'], true);
+    $this->load->model('accounts/chartaccount'); // تأكد من تحميل النموذج المناسب
+    $data['accounts'] = $this->model_accounts_chartaccount->getAccountsToEntry();
+	    // Additional template data
+    $data['heading_title'] = $this->language->get('heading_title');
+    $data['text_no_results'] = $this->language->get('text_no_results');
+    $data['text_account_start'] = $this->language->get('text_account_start');
+    $data['text_account_end'] = $this->language->get('text_account_end');
+    $data['text_date_start'] = $this->language->get('text_date_start');
+    $data['text_date_end'] = $this->language->get('text_date_end');
+    $data['button_submit'] = $this->language->get('button_submit');
+    $data['text_no_results'] = $this->language->get('text_no_results');
+    
+  	$data['header'] = $this->load->controller('common/header');
+  	$data['user_token'] =  $this->session->data['user_token'];
+	$data['column_left'] = $this->load->controller('common/column_left');
+	$data['footer'] = $this->load->controller('common/footer');
+        // Load view template
+        $this->response->setOutput($this->load->view('accounts/statement_print_form', $data));
+    }
+
+public function print() {
+    $this->load->language('accounts/statementaccount');
+    $this->load->model('accounts/statementaccount');
+
+    $data['whoprint'] = $this->user->getUserName();
+    $data['printdate'] = date('Y-m-d h:i');
+    $data['lang'] = $this->language->get('code');
+    $data['direction'] = $this->language->get('direction');   
+    $data['title'] = $this->language->get('print_title');
+    // Date formatting and account processing
+    $date_start = $this->request->post['date_start'];
+    $date_end = $this->request->post['date_end'];
+    if(empty($date_start) && empty($date_end)){
+       $data['start_date'] = '';
+       $data['end_date'] = '';     
+    }else{
+       $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+       $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));      
+    }
+    
+    $accounts = array();
+    // Logic to fetch account or accounts based on the mode (single or range)
+    $statement_mode = $this->request->post['statement_mode'] ?? 'single';
+    if ($statement_mode == 'single' && !empty($this->request->post['account'])) {
+        // Single account logic
+        $account_code = $this->request->post['account'];
+        $accounts = $this->model_accounts_statementaccount->getAccountsRange($account_code, $account_code,$date_start,$date_end);
+    } elseif ($statement_mode == 'range' && !empty($this->request->post['account_start']) && !empty($this->request->post['account_end'])) {
+        // Range logic
+        $account_start = $this->request->post['account_start'];
+        $account_end = $this->request->post['account_end'];
+        $accounts = $this->model_accounts_statementaccount->getAccountsRange($account_start, $account_end,$date_start,$date_end);
+        $data['title'] = $this->language->get('direction') == 'rtl' ? 'طباعة كشف حساب النطاق' : 'Print Range Account Statement';
+    } else {
+        // Handle errors or redirect
+        $this->response->redirect($this->url->link('accounts/statementaccount', '', true));
+        return;
+    }
+
+
+
+    $data['accounts'] = $accounts;
+    $this->response->setOutput($this->load->view('accounts/statement_print', $data));
+}
+
+
+
+}
+
+
+
+======================
+File: ./inventory_valuation.php
+======================
+<?php
+class ControllerAccountsInventoryValuation extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/inventory_valuation');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/inventory_valuation/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/inventory_valuation_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/inventory_valuation');
+        $this->load->model('accounts/inventory_valuation');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_inventory_valuation->getInventoryValuationData($date_start, $date_end);
+            $data['products'] = $results['products'];
+            $data['total_value'] = $results['total_value'];
+        } else {
+            $data['products'] = [];
+            $data['total_value'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_inventory_valuation'] = $this->language->get('text_inventory_valuation');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_total_value'] = $this->language->get('text_total_value');
+
+        $data['text_product_name'] = $this->language->get('text_product_name');
+        $data['text_opening_qty'] = $this->language->get('text_opening_qty');
+        $data['text_in_qty'] = $this->language->get('text_in_qty');
+        $data['text_out_qty'] = $this->language->get('text_out_qty');
+        $data['text_closing_qty'] = $this->language->get('text_closing_qty');
+        $data['text_average_cost'] = $this->language->get('text_average_cost');
+        $data['text_inventory_value'] = $this->language->get('text_inventory_value');
+
+        $this->response->setOutput($this->load->view('accounts/inventory_valuation_list', $data));
+    }
+}
+
+
+
+
+======================
+File: ./chartaccount.php
+======================
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+class ControllerAccountsChartaccount extends Controller {
+	private $error = array();
+
+	public function index() {
+		$this->load->language('accounts/chartaccount');
+
+		$this->document->setTitle($this->language->get('heading_title'));
+
+		$this->load->model('accounts/chartaccount');
+
+		$this->getList();
+	}
+	public function add() {
+		$this->load->language('accounts/chartaccount');
+
+		$this->document->setTitle($this->language->get('heading_title'));
+
+		$this->load->model('accounts/chartaccount');
+
+		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
+			$this->model_accounts_chartaccount->addAccount($this->request->post);
+
+			$this->session->data['success'] = $this->language->get('text_success');
+
+			$url = '';
+
+			if (isset($this->request->get['sort'])) {
+				$url .= '&sort=' . $this->request->get['sort'];
+			}
+
+			if (isset($this->request->get['order'])) {
+				$url .= '&order=' . $this->request->get['order'];
+			}
+
+			if (isset($this->request->get['page'])) {
+				$url .= '&page=' . $this->request->get['page'];
+			}
+
+			$this->response->redirect($this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . $url, true));
+		}
+
+		$this->getForm();
+	}
+
+	public function edit() {
+		$this->load->language('accounts/chartaccount');
+
+		$this->document->setTitle($this->language->get('heading_title'));
+
+		$this->load->model('accounts/chartaccount');
+
+		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validateForm()) {
+			$this->model_accounts_chartaccount->editAccount($this->request->get['account_id'], $this->request->post);
+
+			$this->session->data['success'] = $this->language->get('text_success');
+
+			$url = '';
+
+			if (isset($this->request->get['sort'])) {
+				$url .= '&sort=' . $this->request->get['sort'];
+			}
+
+			if (isset($this->request->get['order'])) {
+				$url .= '&order=' . $this->request->get['order'];
+			}
+
+			if (isset($this->request->get['page'])) {
+				$url .= '&page=' . $this->request->get['page'];
+			}
+
+			$this->response->redirect($this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . $url, true));
+		}
+
+		$this->getForm();
+	}
+
+	public function delete() {
+		$this->load->language('accounts/chartaccount');
+
+		$this->document->setTitle($this->language->get('heading_title'));
+
+		$this->load->model('accounts/chartaccount');
+
+		if (isset($this->request->post['selected']) && $this->validateDelete()) {
+			foreach ($this->request->post['selected'] as $account_id) {
+				$this->model_accounts_chartaccount->deleteAccount($account_id);
+			}
+
+			$this->session->data['success'] = $this->language->get('text_success');
+
+			$url = '';
+
+			if (isset($this->request->get['sort'])) {
+				$url .= '&sort=' . $this->request->get['sort'];
+			}
+
+			if (isset($this->request->get['order'])) {
+				$url .= '&order=' . $this->request->get['order'];
+			}
+
+			if (isset($this->request->get['page'])) {
+				$url .= '&page=' . $this->request->get['page'];
+			}
+
+			$this->response->redirect($this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . $url, true));
+		}
+
+		$this->getList();
+	}
+
+	protected function getList() {
+		if (isset($this->request->get['sort'])) {
+			$sort = $this->request->get['sort'];
+		} else {
+			$sort = 'account_code';
+		}
+
+		if (isset($this->request->get['order'])) {
+			$order = $this->request->get['order'];
+		} else {
+			$order = 'ASC';
+		}
+
+		if (isset($this->request->get['page'])) {
+			$page = (int)$this->request->get['page'];
+		} else {
+			$page = 1;
+		}
+
+		$url = '';
+
+		if (isset($this->request->get['sort'])) {
+			$url .= '&sort=' . $this->request->get['sort'];
+		}
+
+		if (isset($this->request->get['order'])) {
+			$url .= '&order=' . $this->request->get['order'];
+		}
+
+		if (isset($this->request->get['page'])) {
+			$url .= '&page=' . $this->request->get['page'];
+		}
+
+		$data['breadcrumbs'] = array();
+
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('text_home'),
+			'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
+		);
+
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('heading_title'),
+			'href' => $this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . $url, true)
+		);
+
+		$data['add'] = $this->url->link('accounts/chartaccount/add', 'user_token=' . $this->session->data['user_token'] . $url, true);
+		$data['delete'] = $this->url->link('accounts/chartaccount/delete', 'user_token=' . $this->session->data['user_token'] . $url, true);
+
+		$data['accounts'] = array();
+
+		$filter_data = array(
+			'sort'  => $sort,
+			'order' => $order,
+			'start' => ($page - 1) * 999999999,
+			'limit' => 999999999
+		);
+
+		$account_total = $this->model_accounts_chartaccount->getTotalAccounts();
+
+		$results = $this->model_accounts_chartaccount->getAccounts($filter_data);
+
+		foreach ($results as $result) {
+			$data['accounts'][] = array(
+				'account_id' => $result['account_id'],
+				'account_code'        => $result['account_code'],
+				'account_type'        => $result['account_type'],
+				'name'        => $result['name'],
+				'edit'        => $this->url->link('accounts/chartaccount/edit', 'user_token=' . $this->session->data['user_token'] . '&account_id=' . $result['account_id'] . $url, true),
+				'delete'      => $this->url->link('accounts/chartaccount/delete', 'user_token=' . $this->session->data['user_token'] . '&account_id=' . $result['account_id'] . $url, true)
+			);
+		}
+
+		if (isset($this->error['warning'])) {
+			$data['error_warning'] = $this->error['warning'];
+		} else {
+			$data['error_warning'] = '';
+		}
+
+		if (isset($this->session->data['success'])) {
+			$data['success'] = $this->session->data['success'];
+
+			unset($this->session->data['success']);
+		} else {
+			$data['success'] = '';
+		}
+
+		if (isset($this->request->post['selected'])) {
+			$data['selected'] = (array)$this->request->post['selected'];
+		} else {
+			$data['selected'] = array();
+		}
+
+		$url = '';
+
+		if ($order == 'ASC') {
+			$url .= '&order=DESC';
+		} else {
+			$url .= '&order=ASC';
+		}
+
+		if (isset($this->request->get['page'])) {
+			$url .= '&page=' . $this->request->get['page'];
+		}
+		$data['sort_account_code'] = $this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . '&sort=account_code' . $url, true);
+		$data['sort_name'] = $this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . '&sort=name' . $url, true);
+        $data['export_action'] = $this->url->link('extension/export_import/download', 'user_token=' . $this->session->data['user_token'], true);
+        $data['import_action'] = $this->url->link('extension/export_import/upload', 'user_token=' . $this->session->data['user_token'], true);
+
+
+
+		$url = '';
+
+		if (isset($this->request->get['sort'])) {
+			$url .= '&sort=' . $this->request->get['sort'];
+		}
+
+		if (isset($this->request->get['order'])) {
+			$url .= '&order=' . $this->request->get['order'];
+		}
+
+		$pagination = new Pagination();
+		$pagination->total = $account_total;
+		$pagination->page = $page;
+		$pagination->limit = 999999999;
+		$pagination->url = $this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . $url . '&page={page}', true);
+
+		$data['pagination'] = $pagination->render();
+
+		$data['results'] = sprintf($this->language->get('text_pagination'), ($account_total) ? (($page - 1) * 999999999) + 1 : 0, ((($page - 1) * 999999999) > ($account_total - 999999999)) ? $account_total : ((($page - 1) * 999999999) + 999999999), $account_total, ceil($account_total / 999999999));
+
+		$data['sort'] = $sort;
+		$data['order'] = $order;
+
+		$data['header'] = $this->load->controller('common/header');
+		$data['column_left'] = $this->load->controller('common/column_left');
+		$data['footer'] = $this->load->controller('common/footer');
+
+		$this->response->setOutput($this->load->view('accounts/account_list', $data));
+	}
+
+
+	protected function getForm() {
+		$data['text_form'] = !isset($this->request->get['account_id']) ? $this->language->get('text_add') : $this->language->get('text_edit');
+
+		if (isset($this->error['warning'])) {
+			$data['error_warning'] = $this->error['warning'];
+		} else {
+			$data['error_warning'] = '';
+		}
+
+		if (isset($this->error['name'])) {
+			$data['error_name'] = $this->error['name'];
+		} else {
+			$data['error_name'] = array();
+		}
+
+
+		if (isset($this->error['parent'])) {
+			$data['error_parent'] = $this->error['parent'];
+		} else {
+			$data['error_parent'] = '';
+		}
+
+		$url = '';
+
+		if (isset($this->request->get['sort'])) {
+			$url .= '&sort=' . $this->request->get['sort'];
+		}
+
+		if (isset($this->request->get['order'])) {
+			$url .= '&order=' . $this->request->get['order'];
+		}
+
+		if (isset($this->request->get['page'])) {
+			$url .= '&page=' . $this->request->get['page'];
+		}
+
+		$data['breadcrumbs'] = array();
+
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('text_home'),
+			'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
+		);
+
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('heading_title'),
+			'href' => $this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . $url, true)
+		);
+
+		if (!isset($this->request->get['account_id'])) {
+			$data['action'] = $this->url->link('accounts/chartaccount/add', 'user_token=' . $this->session->data['user_token'] . $url, true);
+		} else {
+			$data['action'] = $this->url->link('accounts/chartaccount/edit', 'user_token=' . $this->session->data['user_token'] . '&account_id=' . $this->request->get['account_id'] . $url, true);
+		}
+
+		$data['cancel'] = $this->url->link('accounts/chartaccount', 'user_token=' . $this->session->data['user_token'] . $url, true);
+
+		if (isset($this->request->get['account_id']) && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
+			$account_info = $this->model_accounts_chartaccount->getAccount($this->request->get['account_id']);
+		}
+
+		$data['user_token'] = $this->session->data['user_token'];
+
+		$this->load->model('localisation/language');
+
+		$data['languages'] = $this->model_localisation_language->getLanguages();
+
+		if (isset($this->request->post['account_description'])) {
+			$data['account_description'] = $this->request->post['account_description'];
+		} elseif (isset($this->request->get['account_id'])) {
+			$data['account_description'] = $this->model_accounts_chartaccount->getAccountDescriptions($this->request->get['account_id']);
+		} else {
+			$data['account_description'] = array();
+		}
+
+		if (isset($this->request->post['parent_id'])) {
+			$data['parent_id'] = $this->request->post['parent_id'];
+		} elseif (!empty($account_info)) {
+			$data['parent_id'] = $account_info['parent_id'];
+		} else {
+			$data['parent_id'] = 0;
+		}
+		if (isset($this->request->post['account_code'])) {
+			$data['account_code'] = $this->request->post['account_code'];
+		} elseif (!empty($account_info)) {
+			$data['account_code'] = $account_info['account_code'];
+		} else {
+			$data['account_code'] = 0;
+		}
+		if (isset($this->request->post['account_type'])) {
+			$data['account_type'] = $this->request->post['account_type'];
+		} elseif (!empty($account_info)) {
+			$data['account_type'] = $account_info['account_type'];
+		} else {
+			$data['account_type'] = 'debit';
+		}		
+		if (isset($this->request->post['status'])) {
+			$data['status'] = $this->request->post['status'];
+		} elseif (!empty($account_info)) {
+			$data['status'] = $account_info['status'];
+		} else {
+			$data['status'] = true;
+		}
+
+
+		$data['header'] = $this->load->controller('common/header');
+		$data['column_left'] = $this->load->controller('common/column_left');
+		$data['footer'] = $this->load->controller('common/footer');
+
+		$this->response->setOutput($this->load->view('accounts/account_form', $data));
+	}
+
+	protected function validateForm() {
+		if (!$this->user->hasPermission('modify', 'accounts/chartaccount')) {
+			$this->error['warning'] = $this->language->get('error_permission');
+		}
+
+		foreach ($this->request->post['account_description'] as $language_id => $value) {
+			if ((utf8_strlen($value['name']) < 1) || (utf8_strlen($value['name']) > 255)) {
+				$this->error['name'][$language_id] = $this->language->get('error_name');
+			}
+
+		}
+
+
+		if ($this->request->post['parent_id'] == $this->request->get['account_id']) {
+			$this->error['parent'] = $this->language->get('error_parent');
+		}
+			
+		
+
+
+		if ($this->error && !isset($this->error['warning'])) {
+			$this->error['warning'] = $this->language->get('error_warning');
+		}
+
+		return !$this->error;
+	}
+
+	protected function validateDelete() {
+		if (!$this->user->hasPermission('modify', 'accounts/chartaccount')) {
+			$this->error['warning'] = $this->language->get('error_permission');
+		}
+
+		return !$this->error;
+	}
+
+	protected function validateRepair() {
+		if (!$this->user->hasPermission('modify', 'accounts/chartaccount')) {
+			$this->error['warning'] = $this->language->get('error_permission');
+		}
+
+		return !$this->error;
+	}
+
+	public function autocomplete() {
+		$json = array();
+
+		if (isset($this->request->get['filter_name'])) {
+			$this->load->model('accounts/chartaccount');
+
+			$filter_data = array(
+				'filter_name' => $this->request->get['filter_name'],
+				'sort'        => 'name',
+				'order'       => 'ASC',
+				'start'       => 0,
+				'limit'       => 5
+			);
+
+			$results = $this->model_accounts_chartaccount->getAccounts($filter_data);
+
+			foreach ($results as $result) {
+				$json[] = array(
+					'account_id' => $result['account_id'],
+					'name'        => strip_tags(html_entity_decode($result['name'], ENT_QUOTES, 'UTF-8'))
+				);
+			}
+		}
+		
+
+		$sort_order = array();
+
+		foreach ($json as $key => $value) {
+			$sort_order[$key] = $value['name'];
+		}
+
+		array_multisort($sort_order, SORT_ASC, $json);
+
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));
+	}
+}
+
+
+
+======================
+File: ./vat_report.php
+======================
+<?php
+class ControllerAccountsVatReport extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/vat_report');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/vat_report/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/vat_report_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/vat_report');
+        $this->load->model('accounts/vat_report');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_vat_report->getVatReportData($date_start, $date_end);
+            $data['vat_sales'] = $results['vat_sales'];
+            $data['vat_purchases'] = $results['vat_purchases'];
+            $data['net_vat'] = $results['net_vat'];
+        } else {
+            $data['vat_sales'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['vat_purchases'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['net_vat'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_vat_report'] = $this->language->get('text_vat_report');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_vat_sales'] = $this->language->get('text_vat_sales');
+        $data['text_vat_purchases'] = $this->language->get('text_vat_purchases');
+        $data['text_net_vat'] = $this->language->get('text_net_vat');
+
+        $this->response->setOutput($this->load->view('accounts/vat_report_list', $data));
+    }
+}
+
+
+
+======================
+File: ./cash_flow.php
+======================
+<?php
+class ControllerAccountsCashFlow extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/cash_flow');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/cash_flow/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/cash_flow_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/cash_flow');
+        $this->load->model('accounts/cash_flow');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_cash_flow->getCashFlowData($date_start, $date_end);
+            $data['operating'] = $results['operating'];
+            $data['investing'] = $results['investing'];
+            $data['financing'] = $results['financing'];
+            $data['total_operating'] = $results['total_operating'];
+            $data['total_investing'] = $results['total_investing'];
+            $data['total_financing'] = $results['total_financing'];
+            $data['net_change'] = $results['net_change'];
+        } else {
+            $data['operating'] = [];
+            $data['investing'] = [];
+            $data['financing'] = [];
+            $data['total_operating'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['total_investing'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['total_financing'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['net_change'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_cash_flow'] = $this->language->get('text_cash_flow');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_operating_activities'] = $this->language->get('text_operating_activities');
+        $data['text_investing_activities'] = $this->language->get('text_investing_activities');
+        $data['text_financing_activities'] = $this->language->get('text_financing_activities');
+        $data['text_total_operating'] = $this->language->get('text_total_operating');
+        $data['text_total_investing'] = $this->language->get('text_total_investing');
+        $data['text_total_financing'] = $this->language->get('text_total_financing');
+        $data['text_net_change'] = $this->language->get('text_net_change');
+        $data['text_account_name'] = $this->language->get('text_account_name');
+        $data['text_amount'] = $this->language->get('text_amount');
+
+        $this->response->setOutput($this->load->view('accounts/cash_flow_list', $data));
+    }
+}
+
+
+
+======================
+File: ./purchase_analysis.php
+======================
+<?php
+class ControllerAccountsPurchaseAnalysis extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/purchase_analysis');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/purchase_analysis/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/purchase_analysis_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/purchase_analysis');
+        $this->load->model('accounts/purchase_analysis');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_purchase_analysis->getPurchaseAnalysisData($date_start, $date_end);
+            $data['vendors'] = $results['vendors'];
+            $data['total_purchases'] = $results['total_purchases'];
+        } else {
+            $data['vendors'] = [];
+            $data['total_purchases'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_purchase_analysis'] = $this->language->get('text_purchase_analysis');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_total_purchases'] = $this->language->get('text_total_purchases');
+
+        $data['text_vendor_name'] = $this->language->get('text_vendor_name');
+        $data['text_po_count'] = $this->language->get('text_po_count');
+        $data['text_total_purchases_col'] = $this->language->get('text_total_purchases_col');
+        $data['text_avg_po'] = $this->language->get('text_avg_po');
+
+        $this->response->setOutput($this->load->view('accounts/purchase_analysis_list', $data));
+    }
+}
+
+
+
+======================
+File: ./changes_in_equity.php
+======================
+<?php
+class ControllerAccountsChangesInEquity extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/changes_in_equity');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/changes_in_equity/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/changes_in_equity_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/changes_in_equity');
+        $this->load->model('accounts/changes_in_equity');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_changes_in_equity->getChangesInEquityData($date_start, $date_end);
+            $data['accounts'] = $results['accounts'];
+            $data['total_opening'] = $results['total_opening'];
+            $data['total_movement'] = $results['total_movement'];
+            $data['total_closing'] = $results['total_closing'];
+        } else {
+            $data['accounts'] = [];
+            $data['total_opening'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['total_movement'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['total_closing'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_changes_in_equity'] = $this->language->get('text_changes_in_equity');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+        $data['text_opening_balance'] = $this->language->get('text_opening_balance');
+        $data['text_movement'] = $this->language->get('text_movement');
+        $data['text_closing_balance'] = $this->language->get('text_closing_balance');
+        $data['text_account_name'] = $this->language->get('text_account_name');
+        $data['text_total'] = $this->language->get('text_total');
+
+        $this->response->setOutput($this->load->view('accounts/changes_in_equity_list', $data));
+    }
+}
+
+
+
+======================
+File: ./journal.php
+======================
+<?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+class ControllerAccountsJournal extends Controller {
+	private $error = array();
+
+	public function index() {
+		$this->load->language('accounts/journal');
+
+		$this->document->setTitle($this->language->get('heading_title'));
+
+		$this->load->model('accounts/journal');
+
+		$this->getList();
+	}
+	
+    public function add() {
+
+        $this->load->language('accounts/journal');
+        $this->document->setTitle($this->language->get('heading_title'));
+        
+        $this->load->model('accounts/journal');
+    
+
+        $this->getForm();
+    }
+
+public function print_pdf() {
+    $this->load->language('accounts/journal');
+    $this->load->model('accounts/journal');
+
+    if (!$this->user->hasPermission('modify', 'accounts/journal')) {
+        $json['error'] = $this->language->get('error_permission');
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+        return;
+    }
+
+    $journal_ids = isset($this->request->post['journal_ids']) ? $this->request->post['journal_ids'] : [];
+    
+    if (empty($journal_ids)) {
+        $json['error'] = 'No journals selected for printing.';
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+        return;
+    }
+
+    $pdf = new TCPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $pdf->SetCreator(PDF_CREATOR);
+    $pdf->SetAuthor('Your Company Name');
+    $pdf->SetTitle('Journal Entries');
+    $pdf->SetSubject('Multiple Journal Entries');
+
+    $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+    $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+    $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+    $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+    
+    foreach ($journal_ids as $journal_id) {
+        $journal_data = $this->model_accounts_journal->getJournal($journal_id);
+        if ($journal_data) {
+            $pdf->AddPage();
+            $html = $this->formatJournalForPrinting($journal_data);
+            $pdf->writeHTML($html, true, false, true, false, '');
+        }
+    }
+
+    $pdf_name = 'journals_' . date('YmdHis') . '.pdf';
+    $pdf->Output(DIR_DOWNLOAD . $pdf_name, 'F');  // Save the PDF to a file
+
+    $json['success'] = 'PDF generated successfully.';
+    $json['pdf_url'] = HTTP_CATALOG . 'system/download/' . $pdf_name;
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+}
+
+public function print_multiple() {
+    $this->load->model('accounts/journal');
+    $journal_ids = isset($this->request->get['journal_ids']) ? explode(',', $this->request->get['journal_ids']) : [];
+
+    $journals_data = [];
+foreach ($journal_ids as $journal_id) {
+    $journal_info = $this->model_accounts_journal->getJournal($journal_id);
+    $journal_data['whoprint'] = $this->user->getUserName();
+    $journal_data['printdate'] = date('Y-m-d h:i');
+    
+    $entries = $journal_info['entries'];
+    $total_debit = 0;
+    $total_credit = 0;
+    $formatted_entries = [];
+    
+    foreach ($entries as $entry) {
+        if ($entry['is_debit']) {
+            $total_debit += $entry['amount'];
+        } else {
+            $total_credit += $entry['amount'];
+        }
+        
+        // استدعاء الدالة للحصول على معلومات الحساب
+        $account_info = $this->getAccount($entry['account_code']);
+        
+        // إضافة معلومات الحساب إلى كل إدخال
+        $formatted_entry = [
+            'account_code' => $account_info['account_code'],
+            'name' => $account_info['name'],
+            'debit' => $entry['is_debit']?$this->currency->format($entry['amount'], $this->config->get('config_currency')):"", // يمكن تغييره إلى $entry['debit'] إذا كان هناك خطأ في الاسم
+            'credit' => $entry['is_debit']?"":$this->currency->format($entry['amount'], $this->config->get('config_currency')), // يمكن تغييره إلى $entry['credit'] إذا كان هناك خطأ في الاسم
+        ];
+        
+        $formatted_entries[] = $formatted_entry;
+    }
+    
+    // إضافة المعلومات المنسقة للحسابات إلى بيانات القيد
+    $journal_data['entries'] = $formatted_entries;
+    
+    // تعيين الرصيد الإجمالي للقيد
+    $journal_data['total_debit'] = $this->currency->format($total_debit, $this->config->get('config_currency'), 1);
+    $journal_data['total_credit'] = $this->currency->format($total_credit, $this->config->get('config_currency'), 1);
+    $journal_data['journal_id'] = $journal_info['journal_id'];
+    $journal_data['description'] = $journal_info['description'];
+    $journal_data['refnum'] = $journal_info['refnum'];
+    $journal_data['is_cancelled'] = $journal_info['is_cancelled'];
+    $journal_data['cancelled_by'] = $journal_info['cancelled_by'];
+    $journal_data['cancelled_date'] = $journal_info['cancelled_date'];
+    $journal_data['last_edit_by'] = $journal_info['last_edit_by'];
+    $journal_data['audited'] = $journal_info['audited'];
+    $journal_data['audit_by'] = $journal_info['audit_by'];
+    $journal_data['audit_date'] = $journal_info['audit_date'];
+    $journal_data['thedate'] = date($this->language->get('date_format_short'), strtotime($journal_info['thedate']));
+    $journal_data['total_debit'] = $this->currency->format($journal_info['total_debit'], $this->config->get('config_currency'));
+    $journal_data['total_credit'] = $this->currency->format($journal_info['total_credit'], $this->config->get('config_currency'));
+    $journal_data['is_balanced'] = $journal_info['is_balanced'];
+    $journal_data['entrytype'] = $journal_info['entrytype'];
+    $journal_data['created_at'] = $journal_info['created_at'];
+    $journal_data['updated_at'] = $journal_info['updated_at'];
+    $journal_data['added_by'] = $journal_info['added_by'];
+
+
+
+
+    // إضافة بيانات القيد إلى قائمة البيانات النهائية
+   if ($journal_data) {
+        $journals_data[] = $journal_data;
+    }
+
+
+    }
+
+    if (!empty($journals_data)) {
+        $data['journals'] = $journals_data;
+        
+		echo($this->response->setOutput($this->load->view('accounts/journal_print_partial', $data)));
+    } else {
+        //$this->response->redirect($this->url->link('error/not_found', 'user_token=' . $this->session->data['user_token'], true));
+    }
+}
+    public function getAccount($account_code){
+        $sql = "SELECT a.account_id, ad.name, a.account_code, a.status, a.parent_id FROM " . DB_PREFIX . "accounts a LEFT JOIN " . DB_PREFIX . "account_description ad ON (a.account_id = ad.account_id) WHERE a.account_code='".$account_code."' and ad.language_id = '" . (int)$this->config->get('config_language_id') . "'";
+    
+        $query = $this->db->query($sql);
+        return $query->row;
+    }
+public function print_single() {
+    $this->load->model('accounts/journal');
+    $journal_id = isset($this->request->get['journal_id']) ? $this->request->get['journal_id'] : 0;
+    $journals_data = [];
+    $journal_data = $this->model_accounts_journal->getJournal($journal_id);
+    if ($journal_data) {
+        // Generate PDF or pass data to the view
+        $data['journals'][] = $journal_data;
+        $this->response->setOutput($this->load->view('accounts/journal_print_partial', $data));
+    } else {
+        $this->response->redirect($this->url->link('error/not_found', 'user_token=' . $this->session->data['user_token'], true));
+    }
+}
+
+private function formatJournalForPrinting($journal_data) {
+    $html = '<h2>Journal Entry: ' . $journal_data['journal_id'] . '</h2>';
+    $html .= '<table cellspacing="0" cellpadding="5" border="1" style="width: 100%;">';
+    $html .= '<tr>';
+    $html .= '<th colspan="2" style="text-align:center;">مدين</th>';
+    $html .= '<th colspan="2" style="text-align:center;">دائن</th>';
+    $html .= '</tr>';
+    $html .= '<tr>';
+    $html .= '<th>حساب</th>';
+    $html .= '<th>المبلغ</th>';
+    $html .= '<th>حساب</th>';
+    $html .= '<th>المبلغ</th>';
+    $html .= '</tr>';
+
+    $total_debit = 0;
+    $total_credit = 0;
+
+    // تخيل أن لدينا بيانات الديون والائتمان في مصفوفات
+    foreach ($journal_data['entries'] as $entry) {
+        if ($entry['is_debit']) {
+            $html .= '<tr>';
+            $html .= '<td>' . $entry['account_name'] . '</td>';
+            $html .= '<td>' . number_format($entry['amount'], 2) . '</td>';
+            $html .= '<td></td>';  // خلية فارغة للجانب الدائن
+            $html .= '<td></td>';  // خلية فارغة للجانب الدائن
+            $html .= '</tr>';
+            $total_debit += $entry['amount'];
+        } else {
+            $html .= '<tr>';
+            $html .= '<td></td>';  // خلية فارغة للجانب المدين
+            $html .= '<td></td>';  // خلية فارغة للجانب المدين
+            $html .= '<td>' . $entry['account_name'] . '</td>';
+            $html .= '<td>' . number_format($entry['amount'], 2) . '</td>';
+            $html .= '</tr>';
+            $total_credit += $entry['amount'];
+        }
+    }
+
+    $html .= '<tr>';
+    $html .= '<th>إجمالي المدين</th>';
+    $html .= '<th>' . number_format($total_debit, 2) . '</th>';
+    $html .= '<th>إجمالي الدائن</th>';
+    $html .= '<th>' . number_format($total_credit, 2) . '</th>';
+    $html .= '</tr>';
+    $html .= '</table>';
+
+    return $html;
+}
+
+
+public function reverse_multiple() {
+    $json = array();
+    if (!$this->user->hasPermission('modify', 'accounts/journal')) {
+        $json['error'] = $this->language->get('error_permission');
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+        return;
+    }
+    $this->load->model('accounts/journal');
+
+    $journal_ids = isset($this->request->post['journal_ids']) ? $this->request->post['journal_ids'] : [];
+
+    foreach ($journal_ids as $journal_id) {
+        // قم بإلغاء القيد
+        $result = $this->model_accounts_journal->addReverseJournal($journal_id);
+        if (!$result) {
+            $json['error'] = 'Failed to cancel journal ID: ' . $journal_id;
+            $this->response->addHeader('Content-Type: application/json');
+            $this->response->setOutput(json_encode($json));
+            return;
+        }
+    }
+
+    $json['success'] = 'Selected journals have been successfully cancelled.';
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+}
+
+public function cancel_multiple() {
+    $json = array();
+    if (!$this->user->hasPermission('modify', 'accounts/journal')) {
+        $json['error'] = $this->language->get('error_permission');
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+        return;
+    }
+    $this->load->model('accounts/journal');
+
+    $journal_ids = isset($this->request->post['journal_ids']) ? $this->request->post['journal_ids'] : [];
+
+    foreach ($journal_ids as $journal_id) {
+        // قم بإلغاء القيد
+        $result = $this->model_accounts_journal->cancelJournal($journal_id);
+        if (!$result) {
+            $json['error'] = 'Failed to cancel journal ID: ' . $journal_id;
+            $this->response->addHeader('Content-Type: application/json');
+            $this->response->setOutput(json_encode($json));
+            return;
+        }
+    }
+
+    $json['success'] = 'Selected journals have been successfully cancelled.';
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+}
+
+ public function saveAdd() {
+    $this->load->language('accounts/journal');
+    $this->document->setTitle($this->language->get('heading_title'));
+    $this->load->model('accounts/journal');
+
+    $json = array();
+
+    if ($this->request->server['REQUEST_METHOD'] == 'POST' && $this->validateForm()) {
+        $data = $this->request->post;
+        $data['added_by'] = $this->user->getUserName();
+        
+        // Handle attachments from the form
+        $data['attachments'] = array();
+        if(!empty($this->request->files['attachments'])){
+        $data['attachments'] = $this->request->files['attachments'];
+        }else{
+        $data['attachments'] = array();
+        }
+
+        $journal_id = $this->model_accounts_journal->addJournal($data);
+
+        if ($journal_id) {
+            $json['success'] = $this->language->get('text_success');
+            $json['redirect'] = html_entity_decode($this->url->link('accounts/journal/edit', 'user_token=' . $this->session->data['user_token'] . '&journal_id=' . $journal_id, true));
+        } else {
+            $json['error'] = $this->language->get('error_save');
+        }
+    } else {
+        $json['error'] = $this->error;
+    }
+
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+}   
+    
+    
+    
+    
+        
+    public function edit() {
+        $this->load->language('accounts/journal');
+        $this->document->setTitle($this->language->get('heading_title'));
+        
+        $this->load->model('accounts/journal');
+        
+
+        $this->getForm();
+    }
+    public function saveEdit() {
+        $this->load->language('accounts/journal');
+        $this->document->setTitle($this->language->get('heading_title'));
+        $this->load->model('accounts/journal');
+    
+        $json = array();
+    
+        if ($this->request->server['REQUEST_METHOD'] == 'POST' && $this->validateForm()) {
+            $data = $this->request->post;
+            $data['last_edit_by'] = $this->user->getUserName();
+            $data['attachments'] = array();
+
+            // Similar to add, handle file uploads
+            if(!empty($this->request->files['attachments'])){
+            $data['attachments'] = $this->request->files['attachments'];
+            }else{
+            $data['attachments'] = array();
+            }
+            
+            $this->model_accounts_journal->editJournal($this->request->get['journal_id'], $data);
+    
+            $json['success'] = $this->language->get('text_updated');
+            $json['redirect'] = html_entity_decode($this->url->link('accounts/journal', 'user_token=' . $this->session->data['user_token'], true));
+        } else {
+            if($this->error['description']){
+               $json['error'] = $this->language->get('error_description_required');
+            }else if($this->error['thedate']){
+               $json['error'] = $this->language->get('error_date_required');
+            }else if($this->error['entries']){
+               $json['error'] = $this->language->get('error_entries_required');
+            }else if($this->error['balance']){
+               $json['error'] = $this->language->get('error_unbalanced');
+            }
+        } 
+                
+
+
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+    
+
+
+    }
+    
+
+
+public function deleteAttachment() {
+    $json = array();
+    $this->load->model('accounts/journal');
+    
+    $this->load->language('accounts/journal');
+    if (!$this->user->hasPermission('modify', 'accounts/journal')) {
+        $json['error'] = $this->language->get('error_permission');
+    } else {
+        $attachmentId = $this->request->post['attachmentId'];
+        if ($this->model_accounts_journal->deleteAttachmentById($attachmentId)) {
+            $json['success'] = $this->language->get('text_delete');
+        } else {
+            $json['error'] = $this->language->get('error_delete');
+        }
+    }
+
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+}
+
+  
+    
+protected function getList() {
+    $data = array();
+
+    // Load models and language
+    $this->load->model('accounts/journal');
+    $this->load->language('accounts/journal');
+
+    // Collect filters
+    $filter_date_start = isset($this->request->get['filter_date_start']) ? $this->request->get['filter_date_start'] : null;
+    $filter_date_end = isset($this->request->get['filter_date_end']) ? $this->request->get['filter_date_end'] : null;
+    $filter_journal_id = isset($this->request->get['filter_journal_id']) ? $this->request->get['filter_journal_id'] : null;
+    $filter_description = isset($this->request->get['filter_description']) ? $this->request->get['filter_description'] : null;
+    $include_cancelled = $this->request->get['include_cancelled'] ?? 0;
+    $limit = isset($this->request->get['limit']) ? (int)$this->request->get['limit'] : 10;
+    $page = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+    
+    $filter_data = array(
+        'filter_date_start' => $filter_date_start,
+        'filter_date_end' => $filter_date_end,
+        'filter_journal_id' => $filter_journal_id,
+        'filter_description' => $filter_description,
+        'include_cancelled' => $include_cancelled,
+        'start' => ($page - 1) * $limit,
+        'limit' => $limit        
+    );
+
+    if (isset($this->request->get['show_all']) && $this->request->get['show_all']) {
+        unset($filter_data['start'], $filter_data['limit']);
+    }
+
+
+    $total_journals = $this->model_accounts_journal->getTotalJournals($filter_data); // Model needs a method to count journals
+    $total_pages = ceil($total_journals / $limit);
+    $data['current_page'] = $page;
+    $data['pages'] = $total_pages;
+        
+    // Fetch the journals
+    $results = $this->model_accounts_journal->getJournals($filter_data);
+
+    foreach ($results as $result) {
+        $data['journals'][] = array(
+            'journal_id'   => $result['journal_id'],
+            'thedate'      => date($this->language->get('date_format_short'), strtotime($result['thedate'])),
+            'description'  => $result['description'],
+            'refnum'  => $result['refnum'],
+            'added_by'  => $result['added_by'],
+            'last_edit_by'  => $result['last_edit_by'],
+            'audited'  => $result['audited'],  
+            'audit_date'  => $result['audit_date'],  
+            'is_cancelled'  => $result['is_cancelled'],
+            'cancelled_by'  => $result['cancelled_by'],
+            'cancelled_date'  => $result['cancelled_date'],
+            'audit_by'  => $result['audit_by'],
+            'total_debit'  => $this->currency->format($result['total_debit'], $this->config->get('config_currency'), 1),
+            'total_credit'  => $this->currency->format($result['total_credit'], $this->config->get('config_currency'), 1),
+            'is_balanced'  => $result['is_balanced'] ? $this->language->get('text_yes') : $this->language->get('text_no'),
+            'edit'  => html_entity_decode($this->url->link('accounts/journal/edit', 'user_token=' . $this->session->data['user_token']. '&journal_id=' . $result['journal_id'], true)),
+            'print'  => html_entity_decode($this->url->link('accounts/journal/print', 'user_token=' . $this->session->data['user_token']. '&journal_id=' . $result['journal_id'], true))
+        );
+    }
+	$data['add'] = html_entity_decode($this->url->link('accounts/journal/add', 'user_token=' . $this->session->data['user_token'], true));
+	$data['delete'] = html_entity_decode($this->url->link('accounts/journal/delete', 'user_token=' . $this->session->data['user_token'], true));
+    $data['get_cancel_multiple'] = html_entity_decode($this->url->link('accounts/journal/cancel_multiple', 'user_token=' . $this->session->data['user_token'], true));
+    $data['get_print_multiple'] = html_entity_decode($this->url->link('accounts/journal/print_multiple', 'user_token=' . $this->session->data['user_token'], true));
+
+    
+    $data['cancelled'] = html_entity_decode($this->url->link('accounts/journal', 'user_token=' . $this->session->data['user_token'], true));
+
+$pagination = new Pagination();
+$pagination->total = $total_journals; // Total number of items (journals)
+$pagination->page = $page; // Current page index
+$pagination->limit = 1; // Items per page
+$pagination->num_links = 5; // Number of links to show
+$pagination->url = 'javascript:void(0);'; // Dummy URL since we're handling pages in JS
+$pagination->onclick = "filterJournals({page}); return false;"; // JavaScript function
+
+$data['pagination'] = $pagination->render(); // Generate and store the output
+
+
+    // Additional template data
+    $data['heading_title'] = $this->language->get('heading_title');
+    $data['text_no_results'] = $this->language->get('text_no_results');
+  	$data['header'] = $this->load->controller('common/header');
+  	$data['user_token'] =  $this->session->data['user_token'];
+	$data['column_left'] = $this->load->controller('common/column_left');
+	$data['footer'] = $this->load->controller('common/footer');
+    // View template path
+    $this->response->setOutput($this->load->view('accounts/journal_list', $data));
+}
+
+public function getJournals() {
+    $this->load->language('accounts/journal');
+    $this->load->model('accounts/journal');
+
+    $filter_date_start = isset($this->request->get['filter_date_start']) ? $this->request->get['filter_date_start'] : null;
+    $filter_date_end = isset($this->request->get['filter_date_end']) ? $this->request->get['filter_date_end'] : null;
+    $filter_journal_id = isset($this->request->get['filter_journal_id']) ? $this->request->get['filter_journal_id'] : null;
+    $filter_description = isset($this->request->get['filter_description']) ? $this->request->get['filter_description'] : null;
+    $include_cancelled = $this->request->get['include_cancelled'] ?? 0;
+    $limit = isset($this->request->get['limit']) ? (int)$this->request->get['limit'] : 50;
+    $page = isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1;
+    
+
+
+    $filter_data = array(
+        'filter_date_start' => $filter_date_start,
+        'filter_date_end' => $filter_date_end,
+        'filter_journal_id' => $filter_journal_id,
+        'filter_description' => $filter_description,
+        'include_cancelled' => $include_cancelled,
+        'start' => ($page - 1) * $limit,
+        'limit' => $limit       
+    );
+    
+    if (isset($this->request->get['show_all']) && $this->request->get['show_all']) {
+        unset($filter_data['start'], $filter_data['limit']);
+    }
+
+
+
+    $results = $this->model_accounts_journal->getJournals($filter_data);
+    $total_journals = $this->model_accounts_journal->getTotalJournals($filter_data); // Model needs a method to count journals
+    $total_pages = ceil($total_journals / $limit);
+    
+    $data['journals'] = array();
+    foreach ($results as $result) {
+        $data['journals'][] = array(
+            'journal_id'   => $result['journal_id'],
+            'thedate'      => date($this->language->get('date_format_short'), strtotime($result['thedate'])),
+            'description'  => $result['description'],
+            'refnum'  => $result['refnum'],
+            'added_by'  => $result['added_by'],
+            'last_edit_by'  => $result['last_edit_by'],
+            'audited'  => $result['audited'],
+            'is_cancelled'  => $result['is_cancelled'],
+            'cancelled_by'  => $result['cancelled_by'], 
+            'cancelled_date'  => $result['cancelled_date'], 
+            'audit_date'  => $result['audit_date'],  
+            'audit_by'  => $result['audit_by'],            
+            'total_debit'  => $this->currency->format($result['total_debit'],  $this->config->get('config_currency'), 1),
+            'total_credit' => $this->currency->format($result['total_credit'], $this->config->get('config_currency'), 1),
+            'is_balanced'  => $result['is_balanced'] ? $this->language->get('text_yes') : $this->language->get('text_no'),
+            'edit'  => html_entity_decode($this->url->link('accounts/journal/edit', 'user_token=' . $this->session->data['user_token'] . '&journal_id=' . $result['journal_id'], true)),
+            'print'  => html_entity_decode($this->url->link('accounts/journal/print', 'user_token=' . $this->session->data['user_token']. '&journal_id=' . $result['journal_id'], true))
+        );
+    }
+
+    $html = $this->load->view('accounts/journal_list_partial', $data);
+
+
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode(array(
+        'html' => $html,
+        'total_pages' => $total_pages,
+        'current_page' => $page,
+    )));
+}
+public function printJournal() {
+    $this->load->language('accounts/journal');
+    $journal_id = isset($this->request->get['journal_id']) ? $this->request->get['journal_id'] : 0;
+		$data['lang'] = $this->language->get('code');
+		$data['direction'] = $this->language->get('direction');
+    $this->load->model('accounts/journal');
+    $journal_info = $this->model_accounts_journal->getJournal($journal_id);
+
+    if ($journal_info) {
+        // استرجاع تفاصيل القيد
+        $data['whoprint'] = $this->user->getUserName();
+        $data['thedate'] = date($this->language->get('date_format_short'), strtotime($journal_info['thedate']));
+        $data['printdate'] = date('Y-m-d h:i');
+
+
+        $data['journal_id'] = $journal_info['journal_id'];
+        $data['description'] = $journal_info['description'];
+        $data['refnum'] = $journal_info['refnum'];
+        $data['is_cancelled'] = $journal_info['is_cancelled'];
+        $data['cancelled_by'] = $journal_info['cancelled_by'];
+        $data['cancelled_date'] = $journal_info['cancelled_date'];
+        $data['last_edit_by'] = $journal_info['last_edit_by'];
+        $data['audited'] = $journal_info['audited'];
+        $data['audit_by'] = $journal_info['audit_by'];
+        $data['audit_date'] = $journal_info['audit_date'];
+        $data['thedate'] = date($this->language->get('date_format_short'), strtotime($journal_info['thedate']));
+        $data['total_debit'] = $this->currency->format($journal_info['total_debit'], $this->config->get('config_currency'));
+        $data['total_credit'] = $this->currency->format($journal_info['total_credit'], $this->config->get('config_currency'));
+        $data['is_balanced'] = $journal_info['is_balanced'];
+        $this->response->setOutput($this->load->view('accounts/journal_print_partial', $data));
+        
+    } else {
+        return new Action('error/not_found');
+    }
+}
+
+private function generatePDF($data) {
+    require_once(DIR_SYSTEM . 'library/tcpdf/tcpdf.php');
+
+    $pdf = new TCPDF('P', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+    // set document information
+    $pdf->SetCreator(PDF_CREATOR);
+    $pdf->SetAuthor('Your Name');
+    $pdf->SetTitle('Journal Report');
+    $pdf->SetSubject('Generated PDF for Journal Entry');
+
+    // set default header data
+    $pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, 'Journal Entry ' . $data['journal_id'], "Date: " . $data['thedate']);
+
+    // set header and footer fonts
+    $pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+    $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+
+    // set default monospaced font
+    $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+
+    // set margins
+    $pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+    $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+    $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+    // set auto page breaks
+    $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+
+    // set image scale factor
+    $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
+
+    // add a page
+    $pdf->AddPage();
+
+    // print a line of text
+    $text = <<<EOD
+Journal ID: {$data['journal_id']}
+Date: {$data['thedate']}
+Description: {$data['description']}
+Total Debit: {$data['total_debit']}
+Total Credit: {$data['total_credit']}
+EOD;
+
+    $pdf->writeHTMLCell(0, 0, '', '', $text, 0, 1, 0, true, '', true);
+
+    // Close and output PDF document
+    $pdf->Output('journal_' . $data['journal_id'] . '.pdf', 'I');
+}
+
+public function getJournalDetails() {
+    $this->load->language('accounts/journal');
+    $journal_id = isset($this->request->get['journal_id']) ? $this->request->get['journal_id'] : 0;
+
+    // Check user permissions
+    if (!$this->user->hasPermission('modify', 'accounts/journal')) {
+        $this->session->data['error'] = $this->language->get('error_permission');
+        $this->response->redirect(html_entity_decode($this->url->link('common/home', 'user_token=' . $this->session->data['user_token'], true)));
+    }
+
+    // Load the model and get the journal details
+    $this->load->model('accounts/journal');
+
+    $data['entries'] = $this->model_accounts_journal->getJournalEntries($journal_id);
+
+    // Render the Twig template with the provided data
+    $html = $this->load->view('accounts/journal_print_partial.twig', $data);
+
+    // Set the response headers and output the JSON response
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode(array('html' => $html)));
+}
+
+
+protected function getForm() {
+    $data = array();
+    
+    $this->load->language('accounts/journal');
+    
+    $data['heading_title'] = $this->language->get('heading_title');
+    
+    $data['text_form'] = !isset($this->request->get['journal_id']) ? $this->language->get('text_add') : $this->language->get('text_edit');
+    		$data['lang'] = $this->language->get('code');
+		$data['direction'] = $this->language->get('direction');
+    $data['entry_account_code'] = $this->language->get('entry_account_code');
+    $data['entry_is_debit'] = $this->language->get('entry_is_debit');
+    $data['entry_amount'] = $this->language->get('entry_amount');
+    $data['entry_description'] = $this->language->get('entry_description');
+    $data['entry_attachment'] = $this->language->get('entry_attachment');
+    
+    $data['button_save'] = $this->language->get('button_save');
+    $data['button_cancel'] = $this->language->get('button_cancel');
+
+    $data['user_token'] = $this->session->data['user_token'];
+
+    $journal_id = isset($this->request->get['journal_id']) ? $this->request->get['journal_id'] : 0;
+    $data['journal_id'] = $journal_id;
+
+
+        $njournal_info = $this->model_accounts_journal->getJournal($journal_id+1);
+if(!empty($njournal_info)){
+    $data['nextj'] = html_entity_decode($this->url->link('accounts/journal/edit', 'user_token=' . $this->session->data['user_token'] . '&journal_id=' . $journal_id+1, true));
+}
+        $ljournal_info = $this->model_accounts_journal->getJournal($journal_id-1);
+if(!empty($ljournal_info)){
+    $data['lastj'] = html_entity_decode($this->url->link('accounts/journal/edit', 'user_token=' . $this->session->data['user_token'] . '&journal_id=' . $journal_id-1, true));
+
+}
+    if ($journal_id && ($this->request->server['REQUEST_METHOD'] != 'POST')) {
+        $journal_info = $this->model_accounts_journal->getJournal($journal_id);
+    }
+
+    if (!empty($this->request->post['thedate'])) {
+        $data['thedate'] = $this->request->post['thedate'];
+    } elseif (!empty($journal_info)) {
+        $data['thedate'] = $journal_info['thedate'];
+    } else {
+        $data['thedate'] = date('Y-m-d');
+    }
+
+    if (!empty($this->request->post['refnum'])) {
+        $data['refnum'] = $this->request->post['refnum'];
+    } elseif (!empty($journal_info)) {
+        $data['refnum'] = $journal_info['refnum'];
+    } else {
+        $data['refnum'] = '';
+    }
+
+
+    if (!empty($this->request->post['description'])) {
+        $data['description'] = $this->request->post['description'];
+    } elseif (!empty($journal_info)) {
+        $data['description'] = $journal_info['description'];
+    } else {
+        $data['description'] = '';
+    }
+
+
+    // Ensuring JSON data for entries is prepared
+    if (isset($this->request->post['entries'])) {
+        $entries = $this->request->post['entries'];
+    } elseif ($journal_id) {
+        $journalEntries = $this->model_accounts_journal->getJournalEntries($journal_id);
+        $data['entries_json'] = json_encode($journalEntries);
+
+    } else {
+        $entries = ['debit' => [], 'credit' => []];
+        $data['entries_json'] = json_encode($entries);
+    }
+ 
+
+    if (!empty($this->request->files['attachments'])) {
+        foreach ($this->request->files['attachments']['name'] as $key => $value) {
+            if ($this->request->files['attachments']['error'][$key] == UPLOAD_ERR_OK) {
+                $file_name = basename($this->request->files['attachments']['name'][$key]);
+                $file_temp = $this->request->files['attachments']['tmp_name'][$key];
+                $file_path = 'catalog/attachments/' . $file_name;
+                move_uploaded_file($file_temp, DIR_IMAGE . $file_path); // Make sure DIR_IMAGE points to your image directory
+                $attachments[] = array(
+                    'file_name' => $file_name,
+                    'file_path' => $file_path
+                );
+            }
+        }
+        
+        //$data['attachments_json'] = json_encode($attachments);
+        //$data['attachments'][] = $attachments;   
+        
+    } elseif ($journal_id) {
+        $journal = $this->model_accounts_journal->getJournal($journal_id);
+        $data['attachments_json'] = json_encode($journal['attachments']);
+        $data['attachments'][] = $journal['attachments'];
+    } else {
+       $data['attachments'][] = [];
+       $data['attachments_json'] = json_encode([]);
+    }
+
+    $data['upload_url'] = html_entity_decode($this->url->link('accounts/journal/uploadAttachment', 'user_token=' . $this->session->data['user_token'], true));
+    $data['delete_attachment_url'] = html_entity_decode($this->url->link('accounts/journal/deleteAttachment', 'user_token=' . $this->session->data['user_token'], true));
+    $data['get_attachments_url'] = html_entity_decode($this->url->link('accounts/journal/getAttachments', 'user_token=' . $this->session->data['user_token'] . '&journal_id=' . $journal_id, true));
+    $data['get_cancel_multiple'] = html_entity_decode($this->url->link('accounts/journal/cancel_multiple', 'user_token=' . $this->session->data['user_token'], true));
+    $data['get_print_multiple'] = html_entity_decode($this->url->link('accounts/journal/print_multiple', 'user_token=' . $this->session->data['user_token'], true));
+    
+  
+    
+    
+    
+    $data['action'] = !isset($this->request->get['journal_id']) ? html_entity_decode($this->url->link('accounts/journal/saveAdd', 'user_token=' . $this->session->data['user_token'], true)) : html_entity_decode($this->url->link('accounts/journal/saveEdit', 'user_token=' . $this->session->data['user_token'] . '&journal_id=' . $this->request->get['journal_id'], true));
+    $data['cancel'] = html_entity_decode($this->url->link('accounts/journal', 'user_token=' . $this->session->data['user_token'], true));
+   
+    $this->load->model('accounts/chartaccount'); // تأكد من تحميل النموذج المناسب
+    $data['accounts'] = $this->model_accounts_chartaccount->getAccountsToEntry();
+	
+    $data['header'] = $this->load->controller('common/header');
+    $data['column_left'] = $this->load->controller('common/column_left');
+    $data['footer'] = $this->load->controller('common/footer');
+
+    $this->response->setOutput($this->load->view('accounts/journal_form', $data));
+}
+public function getAttachments() {
+    $json = array();
+
+    $this->load->language('accounts/journal');
+    $journal_id = isset($this->request->get['journal_id']) ? $this->request->get['journal_id'] : 0;
+
+    if (!$this->user->hasPermission('modify', 'accounts/journal')) {
+        $json['error'] = $this->language->get('error_permission');
+    } else {
+        $this->load->model('accounts/journal');
+        $attachments = $this->model_accounts_journal->getAttachments($journal_id);
+
+        $json['success'] = true;
+        if($attachments){
+        $json['attachments'] = array_map(function ($attachment) {
+            return [
+                'id' => $attachment['attachment_id'],  // Ensure your model provides this
+                'name' => $attachment['file_name'],
+                'url' => $attachment['file_path']  // Adjust path as needed
+            ];
+        }, $attachments);
+        }
+    }
+
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+}
+
+public function checkBalance() {
+    $this->load->language('accounts/journal');
+    $json = array();
+
+    if ($this->request->server['REQUEST_METHOD'] == 'POST') {
+        $this->load->model('accounts/journal');
+
+        if (isset($this->request->post['entries'])) {
+            $is_balanced = $this->model_accounts_journal->isBalancedJournal($this->request->post['entries']);
+            if ($is_balanced) {
+                $json['success'] = $this->language->get('text_balanced');
+            } else {
+                $json['error'] = $this->language->get('error_unbalanced');
+            }
+        } else {
+            $json['error'] = $this->language->get('error_no_data');
+        }
+    } else {
+        $json['error'] = $this->language->get('error_method');
+    }
+
+    $this->response->addHeader('Content-Type: application/json');
+    $this->response->setOutput(json_encode($json));
+}
+
+
+
+
+protected function validateForm() {
+     $this->error = [];
+    $this->load->language('accounts/journal');
+    
+    if (!$this->user->hasPermission('modify', 'accounts/journal')) {
+        $this->error['warning'] = $this->language->get('error_permission');
+        return false;
+    }
+    
+    if (empty($this->request->post['thedate'])) {
+        $this->error['thedate'] = $this->language->get('error_date_required');
+        return false;
+
+    }
+
+    if (empty($this->request->post['description'])) {
+        $this->error['description'] =  $this->language->get('error_description_required');
+        return false;
+
+    }
+
+    // Validate debit and credit entries
+    if (empty($this->request->post['entries']['debit']) || empty($this->request->post['entries']['credit'])) {
+        $this->error['entries'] = $this->language->get('error_entries_required');
+        return false;
+
+    }
+
+    // Check if totals match
+    $total_debit = array_sum(array_column($this->request->post['entries']['debit'], 'amount'));
+    $total_credit = array_sum(array_column($this->request->post['entries']['credit'], 'amount'));
+    if ($total_debit !== $total_credit) {
+        $this->error['balance'] = $this->language->get('error_unbalanced');
+        return false;
+
+    }
+    
+
+    return true;
+}
+
+
+
+
+
+    
+}
+
+
+
+======================
+File: ./profitability_analysis.php
+======================
+<?php
+class ControllerAccountsProfitabilityAnalysis extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/profitability_analysis');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/profitability_analysis/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_start'] = $this->language->get('entry_date_start');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/profitability_analysis_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/profitability_analysis');
+        $this->load->model('accounts/profitability_analysis');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_start = $this->request->post['date_start'] ?: date('Y-01-01');
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+
+        $data['start_date'] = date($this->language->get('date_format_short'), strtotime($date_start));
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_start && $date_end) {
+            $results = $this->model_accounts_profitability_analysis->getProfitabilityData($date_start, $date_end);
+            $data = array_merge($data, $results);
+        } else {
+            $data['revenue'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['cogs'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['operating_expenses'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['gross_profit'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['operating_profit'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['other_expenses'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['net_profit'] = $this->currency->format(0, $this->config->get('config_currency'));
+            $data['gross_margin'] = '0.00%';
+            $data['operating_margin'] = '0.00%';
+            $data['net_margin'] = '0.00%';
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_profitability_analysis'] = $this->language->get('text_profitability_analysis');
+        $data['text_period'] = $this->language->get('text_period');
+        $data['text_from'] = $this->language->get('text_from');
+        $data['text_to'] = $this->language->get('text_to');
+
+        $data['text_revenue'] = $this->language->get('text_revenue');
+        $data['text_cogs'] = $this->language->get('text_cogs');
+        $data['text_operating_expenses'] = $this->language->get('text_operating_expenses');
+        $data['text_gross_profit'] = $this->language->get('text_gross_profit');
+        $data['text_operating_profit'] = $this->language->get('text_operating_profit');
+        $data['text_other_expenses'] = $this->language->get('text_other_expenses');
+        $data['text_net_profit'] = $this->language->get('text_net_profit');
+
+        $data['text_gross_margin'] = $this->language->get('text_gross_margin');
+        $data['text_operating_margin'] = $this->language->get('text_operating_margin');
+        $data['text_net_margin'] = $this->language->get('text_net_margin');
+
+        $this->response->setOutput($this->load->view('accounts/profitability_analysis_list', $data));
+    }
+}
+
+
+
+======================
+File: ./aging_report.php
+======================
+<?php
+class ControllerAccountsAgingReport extends Controller {
+    private $error = array();
+
+    public function index() {
+        $this->load->language('accounts/aging_report');
+        $this->document->setTitle($this->language->get('heading_title'));
+
+        $data['action'] = $this->url->link('accounts/aging_report/print', 'user_token=' . $this->session->data['user_token'], true);
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['text_form'] = $this->language->get('text_form');
+        $data['entry_date_end'] = $this->language->get('entry_date_end');
+        $data['button_filter'] = $this->language->get('button_filter');
+
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['error_warning'] = isset($this->error['warning'])?$this->error['warning']:'';
+
+        $data['header'] = $this->load->controller('common/header');
+        $data['column_left'] = $this->load->controller('common/column_left');
+        $data['footer'] = $this->load->controller('common/footer');
+
+        $this->response->setOutput($this->load->view('accounts/aging_report_form', $data));
+    }
+
+    public function print() {
+        $this->load->language('accounts/aging_report');
+        $this->load->model('accounts/aging_report');
+
+        $data['title'] = $this->language->get('print_title');
+        $data['printdate'] = date('Y-m-d H:i:s');
+        $data['user_token'] = $this->session->data['user_token'];
+        $data['lang'] = $this->language->get('code');
+        $data['direction'] = $this->language->get('direction');  
+        $data['whoprint'] = $this->user->getUserName();
+
+        $date_end = $this->request->post['date_end'] ?: date('Y-m-d');
+        $data['end_date'] = date($this->language->get('date_format_short'), strtotime($date_end));
+
+        if ($date_end) {
+            $results = $this->model_accounts_aging_report->getAgingReportData($date_end);
+            $data['buckets'] = $results['buckets'];
+            $data['customers_data'] = $results['customers_data'];
+        } else {
+            $data['buckets'] = [
+                '0-30' => $this->currency->format(0, $this->config->get('config_currency')),
+                '31-60' => $this->currency->format(0, $this->config->get('config_currency')),
+                '61-90' => $this->currency->format(0, $this->config->get('config_currency')),
+                '>90' => $this->currency->format(0, $this->config->get('config_currency'))
+            ];
+            $data['customers_data'] = [];
+            $this->error['warning'] = $this->language->get('error_no_data');
+        }
+
+        $data['text_aging_report'] = $this->language->get('text_aging_report');
+        $data['text_period_end'] = $this->language->get('text_period_end');
+        $data['text_buckets'] = $this->language->get('text_buckets');
+        $data['text_customer_details'] = $this->language->get('text_customer_details');
+
+        $data['text_0_30'] = $this->language->get('text_0_30');
+        $data['text_31_60'] = $this->language->get('text_31_60');
+        $data['text_61_90'] = $this->language->get('text_61_90');
+        $data['text_over_90'] = $this->language->get('text_over_90');
+
+        $data['text_customer_name'] = $this->language->get('text_customer_name');
+
+        $this->response->setOutput($this->load->view('accounts/aging_report_list', $data));
+    }
+}
+
+
+

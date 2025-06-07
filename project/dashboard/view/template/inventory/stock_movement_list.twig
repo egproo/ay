@@ -1,0 +1,573 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <div class="btn-group">
+          <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-download"></i> {{ button_export_excel }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="{{ export_excel }}"><i class="fa fa-file-excel-o"></i> {{ button_export_excel }}</a></li>
+            <li><a href="{{ export_pdf }}"><i class="fa fa-file-pdf-o"></i> {{ button_export_pdf }}</a></li>
+            <li class="divider"></li>
+            <li><a href="{{ print }}" target="_blank"><i class="fa fa-print"></i> {{ button_print }}</a></li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-bar-chart"></i> التقارير المتخصصة
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="{{ lot_report }}"><i class="fa fa-tags"></i> {{ button_lot_report }}</a></li>
+            <li><a href="{{ expiring_lots }}"><i class="fa fa-clock-o"></i> {{ button_expiring_lots }}</a></li>
+          </ul>
+        </div>
+        <a href="{{ refresh }}" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-default">
+          <i class="fa fa-refresh"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- ملخص الحركات -->
+    <div class="row">
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exchange fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.total_movements }}</div>
+                <div>{{ text_total_movements }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-arrow-down fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.total_quantity_in }}</div>
+                <div>{{ text_total_quantity_in }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-red">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-arrow-up fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.total_quantity_out }}</div>
+                <div>{{ text_total_quantity_out }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-yellow">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-calculator fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.net_quantity }}</div>
+                <div>{{ text_net_quantity }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-money fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.total_value }}</div>
+                <div>{{ text_total_value }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-purple">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-tags fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.total_lots }}</div>
+                <div>{{ text_total_lots }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- تنبيهات الدفعات منتهية الصلاحية -->
+    {% if expiring_lots %}
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-exclamation-triangle"></i> {{ text_expiring_lots }}</h3>
+          </div>
+          <div class="panel-body">
+            <p class="text-muted">{{ text_expiring_lots_desc }}</p>
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>{{ column_product_name }}</th>
+                    <th>{{ column_branch }}</th>
+                    <th>{{ column_lot_number }}</th>
+                    <th>{{ column_expiry_date }}</th>
+                    <th class="text-right">{{ text_remaining_quantity }}</th>
+                    <th class="text-center">{{ text_days_to_expiry }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for lot in expiring_lots %}
+                  <tr>
+                    <td>
+                      <strong>{{ lot.product_name }}</strong>
+                      <br><small class="text-muted">{{ lot.model }}</small>
+                    </td>
+                    <td>{{ lot.branch_name }}</td>
+                    <td><span class="label label-info">{{ lot.lot_number }}</span></td>
+                    <td>{{ lot.expiry_date }}</td>
+                    <td class="text-right">{{ lot.remaining_quantity }}</td>
+                    <td class="text-center">
+                      <span class="label label-{{ lot.urgency_class }}">{{ lot.days_to_expiry }} يوم</span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- تحليل الحركات حسب النوع -->
+    {% if movements_by_type %}
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_movements_by_type }}</h3>
+          </div>
+          <div class="panel-body">
+            <p class="text-muted">{{ text_movements_by_type_desc }}</p>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>{{ column_movement_type }}</th>
+                    <th class="text-center">عدد الحركات</th>
+                    <th class="text-right">{{ text_total_quantity_in }}</th>
+                    <th class="text-right">{{ text_total_quantity_out }}</th>
+                    <th class="text-right">{{ text_total_value }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for movement in movements_by_type %}
+                  <tr>
+                    <td><strong>{{ movement.movement_type_text }}</strong></td>
+                    <td class="text-center"><span class="badge badge-primary">{{ movement.movement_count }}</span></td>
+                    <td class="text-right">{{ movement.total_quantity_in }}</td>
+                    <td class="text-right">{{ movement.total_quantity_out }}</td>
+                    <td class="text-right"><strong>{{ movement.total_value }}</strong></td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- الفلاتر المتقدمة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-filter"></i> {{ text_advanced_filters }}
+          <button type="button" class="btn btn-xs btn-default pull-right" data-toggle="collapse" data-target="#filter-panel">
+            <i class="fa fa-chevron-down"></i>
+          </button>
+        </h3>
+      </div>
+      <div id="filter-panel" class="panel-collapse collapse">
+        <div class="panel-body">
+          <form method="get" id="filter-form">
+            <input type="hidden" name="route" value="inventory/stock_movement" />
+            <input type="hidden" name="user_token" value="{{ user_token }}" />
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_product_name">{{ entry_filter_product_name }}</label>
+                  <input type="text" name="filter_product_name" value="{{ filter_product_name }}" placeholder="{{ entry_filter_product_name }}" id="filter_product_name" class="form-control" />
+                  <div class="help-block">{{ help_filter_product_name }}</div>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_branch_id">{{ entry_filter_branch }}</label>
+                  <select name="filter_branch_id" id="filter_branch_id" class="form-control">
+                    <option value="">{{ text_all }}</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.branch_id }}"{% if branch.branch_id == filter_branch_id %} selected="selected"{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_movement_type">{{ entry_filter_movement_type }}</label>
+                  <select name="filter_movement_type" id="filter_movement_type" class="form-control">
+                    {% for option in movement_type_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_movement_type %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_reference_number">{{ entry_filter_reference_number }}</label>
+                  <input type="text" name="filter_reference_number" value="{{ filter_reference_number }}" placeholder="{{ entry_filter_reference_number }}" id="filter_reference_number" class="form-control" />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_date_from">{{ entry_filter_date_from }}</label>
+                  <input type="date" name="filter_date_from" value="{{ filter_date_from }}" id="filter_date_from" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_date_to">{{ entry_filter_date_to }}</label>
+                  <input type="date" name="filter_date_to" value="{{ filter_date_to }}" id="filter_date_to" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_lot_number">{{ entry_filter_lot_number }}</label>
+                  <input type="text" name="filter_lot_number" value="{{ filter_lot_number }}" placeholder="{{ entry_filter_lot_number }}" id="filter_lot_number" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <div>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                    <a href="{{ refresh }}" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_clear }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول حركات المخزون -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_date }}</th>
+                <th>{{ column_product_name }}</th>
+                <th>{{ column_branch }}</th>
+                <th>{{ column_movement_type }}</th>
+                <th>{{ column_reference }}</th>
+                <th>{{ column_lot_number }}</th>
+                <th class="text-right">{{ column_quantity_in }}</th>
+                <th class="text-right">{{ column_quantity_out }}</th>
+                <th class="text-right">{{ column_running_balance }}</th>
+                <th class="text-right">{{ column_unit_cost }}</th>
+                <th class="text-right">{{ column_average_cost_after }}</th>
+                <th>{{ column_user }}</th>
+                <th class="text-center">{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if stock_movements %}
+              {% for movement in stock_movements %}
+              <tr>
+                <td>
+                  <small>{{ movement.date_added }}</small>
+                  {% if movement.expiry_date %}
+                  <br><span class="label label-info">انتهاء: {{ movement.expiry_date }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <strong>{{ movement.product_name }}</strong>
+                  {% if movement.model %}
+                  <br><small class="text-muted">{{ movement.model }}</small>
+                  {% endif %}
+                  {% if movement.sku %}
+                  <br><small class="text-muted">{{ movement.sku }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {{ movement.branch_name }}
+                  <br><small class="text-muted">{{ movement.branch_type }}</small>
+                </td>
+                <td>
+                  <span class="label label-{{ movement.movement_type_class }}">{{ movement.movement_type_text }}</span>
+                  {% if movement.reference_type_text %}
+                  <br><small class="text-muted">{{ movement.reference_type_text }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if movement.reference_number %}
+                  {% if movement.view_reference %}
+                  <a href="{{ movement.view_reference }}" target="_blank">{{ movement.reference_number }}</a>
+                  {% else %}
+                  {{ movement.reference_number }}
+                  {% endif %}
+                  {% else %}
+                  <span class="text-muted">---</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if movement.lot_number %}
+                  <span class="label label-default">{{ movement.lot_number }}</span>
+                  {% else %}
+                  <span class="text-muted">---</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  {% if movement.quantity_in_raw > 0 %}
+                  <span class="text-success"><strong>+{{ movement.quantity_in }}</strong></span>
+                  <br><small class="text-muted">{{ movement.unit_symbol }}</small>
+                  {% else %}
+                  <span class="text-muted">---</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  {% if movement.quantity_out_raw > 0 %}
+                  <span class="text-danger"><strong>-{{ movement.quantity_out }}</strong></span>
+                  <br><small class="text-muted">{{ movement.unit_symbol }}</small>
+                  {% else %}
+                  <span class="text-muted">---</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  <strong>{{ movement.running_balance }}</strong>
+                  <br><small class="text-muted">{{ movement.unit_symbol }}</small>
+                </td>
+                <td class="text-right">
+                  {{ movement.unit_cost }}
+                  {% if movement.total_cost_raw > 0 %}
+                  <br><small class="text-muted">إجمالي: {{ movement.total_cost }}</small>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  {{ movement.average_cost_after }}
+                  {% if movement.cost_change != 0 %}
+                  <br><small class="{% if movement.cost_change > 0 %}text-success{% else %}text-danger{% endif %}">
+                    {% if movement.cost_change > 0 %}+{% endif %}{{ movement.cost_change_formatted }}
+                  </small>
+                  {% endif %}
+                </td>
+                <td>
+                  <small>{{ movement.user_name }}</small>
+                  {% if movement.notes %}
+                  <br><small class="text-muted">{{ movement.notes }}</small>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <div class="btn-group">
+                    {% if movement.view_reference %}
+                    <a href="{{ movement.view_reference }}" data-toggle="tooltip" title="{{ button_view_reference }}" class="btn btn-info btn-xs" target="_blank">
+                      <i class="fa fa-external-link"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{{ movement.product_card }}" data-toggle="tooltip" title="{{ button_product_card }}" class="btn btn-primary btn-xs">
+                      <i class="fa fa-list-alt"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="13">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.huge {
+    font-size: 30px;
+}
+
+.panel-green {
+    border-color: #5cb85c;
+}
+
+.panel-green > .panel-heading {
+    border-color: #5cb85c;
+    color: white;
+    background-color: #5cb85c;
+}
+
+.panel-yellow {
+    border-color: #f0ad4e;
+}
+
+.panel-yellow > .panel-heading {
+    border-color: #f0ad4e;
+    color: white;
+    background-color: #f0ad4e;
+}
+
+.panel-red {
+    border-color: #d9534f;
+}
+
+.panel-red > .panel-heading {
+    border-color: #d9534f;
+    color: white;
+    background-color: #d9534f;
+}
+
+.panel-purple {
+    border-color: #9b59b6;
+}
+
+.panel-purple > .panel-heading {
+    border-color: #9b59b6;
+    color: white;
+    background-color: #9b59b6;
+}
+
+.badge-primary {
+    background-color: #337ab7;
+}
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.movement-in {
+    background-color: #f0f9ff;
+}
+
+.movement-out {
+    background-color: #fff5f5;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // تلوين الصفوف حسب نوع الحركة
+    $('table tbody tr').each(function() {
+        var movementType = $(this).find('.label').text();
+        if (movementType.includes('وارد') || movementType.includes('زيادة')) {
+            $(this).addClass('movement-in');
+        } else if (movementType.includes('صادر') || movementType.includes('نقص')) {
+            $(this).addClass('movement-out');
+        }
+    });
+
+    // تحديث تلقائي كل 5 دقائق
+    setInterval(function() {
+        if ($('#auto-refresh').is(':checked')) {
+            location.reload();
+        }
+    }, 300000);
+
+    // فلترة سريعة
+    $('#filter_product_name').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('table tbody tr').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+});
+</script>
+
+{{ footer }}

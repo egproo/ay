@@ -1,0 +1,154 @@
+<div class="tab-pane" id="tab-recommendation">
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#tab-upsell" data-toggle="tab">{{ tab_upsell }}</a></li>
+    <li><a href="#tab-cross-sell" data-toggle="tab">{{ tab_cross_sell }}</a></li>
+  </ul>
+  
+  <div class="tab-content">
+    <!-- Upsell Section -->
+    <div class="tab-pane active" id="tab-upsell">
+      <div class="table-responsive">
+        <table id="upsell" class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th class="text-center">{{ entry_product }}</th>
+              <th class="text-center">{{ entry_unit }}</th>
+              <th class="text-center">{{ entry_customer_group }}</th>
+              <th class="text-center">{{ entry_priority }}</th>
+              <th class="text-center">{{ entry_discount_type }}</th>
+              <th class="text-center">{{ entry_discount_value }}</th>
+              <th class="text-center" width="90">{{ entry_action }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set upsell_row = 0 %}
+            {% for upsell in product_upsells %}
+              <tr id="upsell-row{{ upsell_row }}">
+                <td class="text-center">
+                  <input type="text" name="product_upsell[{{ upsell_row }}][name]" value="{{ upsell.name }}" placeholder="{{ entry_product }}" class="form-control" />
+                  <input type="hidden" name="product_upsell[{{ upsell_row }}][related_product_id]" value="{{ upsell.related_product_id }}" />
+                </td>
+                <td class="text-center">
+                  <select name="product_upsell[{{ upsell_row }}][unit_id]" class="form-control">
+                    {% for unit in upsell.units %}
+                      <option value="{{ unit.unit_id }}" {% if unit.unit_id == upsell.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="text-center">
+                  <select name="product_upsell[{{ upsell_row }}][customer_group_id]" class="form-control">
+                    <option value="0">{{ text_all_customers }}</option>
+                    {% for customer_group in customer_groups %}
+                      <option value="{{ customer_group.customer_group_id }}" {% if customer_group.customer_group_id == upsell.customer_group_id %}selected="selected"{% endif %}>{{ customer_group.name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="text-center"><input type="number" name="product_upsell[{{ upsell_row }}][priority]" value="{{ upsell.priority }}" placeholder="{{ entry_priority }}" class="form-control" min="0" step="1" /></td>
+                <td class="text-center">
+                  <select name="product_upsell[{{ upsell_row }}][discount_type]" class="form-control">
+                    <option value="">{{ text_none }}</option>
+                    <option value="percentage" {% if upsell.discount_type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+                    <option value="fixed" {% if upsell.discount_type == 'fixed' %}selected="selected"{% endif %}>{{ text_fixed }}</option>
+                  </select>
+                </td>
+                <td class="text-center"><input type="number" name="product_upsell[{{ upsell_row }}][discount_value]" value="{{ upsell.discount_value }}" placeholder="{{ entry_discount_value }}" class="form-control" min="0" step="0.01" /></td>
+                <td class="text-center"><button type="button" onclick="RelationsManager.removeUpsell({{ upsell_row }});" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
+              </tr>
+              {% set upsell_row = upsell_row + 1 %}
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6"></td>
+              <td class="text-center"><button type="button" onclick="RelationsManager.addUpsell();" data-toggle="tooltip" title="{{ button_upsell_add }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Cross-sell Section -->
+    <div class="tab-pane" id="tab-cross-sell">
+      <div class="table-responsive">
+        <table id="cross-sell" class="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th class="text-center">{{ entry_product }}</th>
+              <th class="text-center">{{ entry_unit }}</th>
+              <th class="text-center">{{ entry_customer_group }}</th>
+              <th class="text-center">{{ entry_priority }}</th>
+              <th class="text-center">{{ entry_discount_type }}</th>
+              <th class="text-center">{{ entry_discount_value }}</th>
+              <th class="text-center" width="90">{{ entry_action }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set cross_sell_row = 0 %}
+            {% for cross_sell in product_cross_sells %}
+              <tr id="cross-sell-row{{ cross_sell_row }}">
+                <td class="text-center">
+                  <input type="text" name="product_cross_sell[{{ cross_sell_row }}][name]" value="{{ cross_sell.name }}" placeholder="{{ entry_product }}" class="form-control" />
+                  <input type="hidden" name="product_cross_sell[{{ cross_sell_row }}][related_product_id]" value="{{ cross_sell.related_product_id }}" />
+                </td>
+                <td class="text-center">
+                  <select name="product_cross_sell[{{ cross_sell_row }}][unit_id]" class="form-control">
+                    {% for unit in cross_sell.units %}
+                      <option value="{{ unit.unit_id }}" {% if unit.unit_id == cross_sell.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="text-center">
+                  <select name="product_cross_sell[{{ cross_sell_row }}][customer_group_id]" class="form-control">
+                    <option value="0">{{ text_all_customers }}</option>
+                    {% for customer_group in customer_groups %}
+                      <option value="{{ customer_group.customer_group_id }}" {% if customer_group.customer_group_id == cross_sell.customer_group_id %}selected="selected"{% endif %}>{{ customer_group.name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td class="text-center"><input type="number" name="product_cross_sell[{{ cross_sell_row }}][priority]" value="{{ cross_sell.priority }}" placeholder="{{ entry_priority }}" class="form-control" min="0" step="1" /></td>
+                <td class="text-center">
+                  <select name="product_cross_sell[{{ cross_sell_row }}][discount_type]" class="form-control">
+                    <option value="">{{ text_none }}</option>
+                    <option value="percentage" {% if cross_sell.discount_type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+                    <option value="fixed" {% if cross_sell.discount_type == 'fixed' %}selected="selected"{% endif %}>{{ text_fixed }}</option>
+                  </select>
+                </td>
+                <td class="text-center"><input type="number" name="product_cross_sell[{{ cross_sell_row }}][discount_value]" value="{{ cross_sell.discount_value }}" placeholder="{{ entry_discount_value }}" class="form-control" min="0" step="0.01" /></td>
+                <td class="text-center"><button type="button" onclick="RelationsManager.removeCrossSell({{ cross_sell_row }});" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
+              </tr>
+              {% set cross_sell_row = cross_sell_row + 1 %}
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6"></td>
+              <td class="text-center"><button type="button" onclick="RelationsManager.addCrossSell();" data-toggle="tooltip" title="{{ button_cross_sell_add }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    
+    <div class="alert alert-info">
+      <i class="fa fa-info-circle"></i> {{ help_recommendation }}
+    </div>
+    
+    <!-- Help Section -->
+    <div class="help-section panel panel-info" style="margin-top: 20px;">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_recommendation_help }}</h3>
+      </div>
+      <div class="panel-body">
+        <p>{{ text_recommendation_help_intro }}</p>
+        <ul>
+          <li><strong>{{ text_upsell }}:</strong> {{ text_upsell_help }}</li>
+          <li><strong>{{ text_cross_sell }}:</strong> {{ text_cross_sell_help }}</li>
+          <li><strong>{{ text_discount_incentive }}:</strong> {{ text_discount_incentive_help }}</li>
+        </ul>
+        <div class="alert alert-info">
+          <i class="fa fa-info-circle"></i> {{ text_recommendation_help_tip }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

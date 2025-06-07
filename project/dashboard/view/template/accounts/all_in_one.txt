@@ -1,0 +1,3983 @@
+======================
+File: ./sales_analysis_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+    font-size:14px;
+}
+th {
+    background:#eee;
+}
+.summary {
+    margin-top:20px;
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_sales_analysis }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_product_name }}</th>
+    <th>{{ text_total_quantity }}</th>
+    <th>{{ text_total_sales_col }}</th>
+    <th>{{ text_avg_price }}</th>
+</tr>
+</thead>
+<tbody>
+{% for product in products %}
+<tr>
+    <td>{{ product.product_name }}</td>
+    <td>{{ product.total_quantity }}</td>
+    <td>{{ product.total_sales }}</td>
+    <td>{{ product.avg_price }}</td>
+</tr>
+{% endfor %}
+{% if products is empty %}
+<tr><td colspan="4" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="summary">
+    <strong>{{ text_total_sales }}: {{ total_sales }}</strong>
+</div>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./income_statement_print_form.twig
+======================
+{{ header }}{{ column_left }}
+
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>  
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+  width:100%;
+} 
+
+.select2-container{width:100% !important;}
+</style>
+
+
+    <div class="container">
+        <h1 class="text-center">نموذج طباعة قائمة الدخل</h1>
+        <form action="{{ action }}" method="post" id="form-balance-sheet">
+            <div class="form-group">
+                <label for="start_date">تاريخ البداية</label>
+                <input type="date" name="start_date" id="start_date" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">تاريخ النهاية</label>
+                <input type="date" name="end_date" id="end_date" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">طباعة</button>
+        </form>
+    </div>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{{footer}}
+
+
+
+
+======================
+File: ./profitability_analysis_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    font-size:14px;
+}
+th {
+    background:#eee;
+    text-align:left;
+}
+.value-right {
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_profitability_analysis }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<tr><th>{{ text_revenue }}</th><td class="value-right">{{ revenue }}</td></tr>
+<tr><th>{{ text_cogs }}</th><td class="value-right">{{ cogs }}</td></tr>
+<tr><th>{{ text_gross_profit }}</th><td class="value-right">{{ gross_profit }}</td></tr>
+<tr><th>{{ text_operating_expenses }}</th><td class="value-right">{{ operating_expenses }}</td></tr>
+<tr><th>{{ text_operating_profit }}</th><td class="value-right">{{ operating_profit }}</td></tr>
+<tr><th>{{ text_other_expenses }}</th><td class="value-right">{{ other_expenses }}</td></tr>
+<tr><th>{{ text_net_profit }}</th><td class="value-right">{{ net_profit }}</td></tr>
+</table>
+
+<h3>Margins</h3>
+<table>
+<tr><th>{{ text_gross_margin }}</th><td class="value-right">{{ gross_margin }}</td></tr>
+<tr><th>{{ text_operating_margin }}</th><td class="value-right">{{ operating_margin }}</td></tr>
+<tr><th>{{ text_net_margin }}</th><td class="value-right">{{ net_margin }}</td></tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./statement_print.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ direction == 'rtl' ? 'طباعة كشف حساب /  ' ~ accountname : 'Print Account Statement ' ~ accountname }}</title>
+    <base href="https://store.codaym.com/dashboard/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="view/javascript/jquery/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Styles -->
+    <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    {% if direction == 'rtl' %}
+    <link href="view/stylesheet/bootstrap-a.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet-a.css" rel="stylesheet" />
+    {% else %}
+    <link href="view/stylesheet/bootstrap.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet.css" rel="stylesheet" />
+    {% endif %}
+
+    <!-- Favicon -->
+    <link href="https://store.codaym.com/image/catalog/dlogo.png" rel="icon" />
+
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #FFF;
+                font-size: 12px;
+            }
+            .container {
+                width: 100%;
+                padding: 20mm;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .logo {
+                max-height: 50mm;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #000;
+                padding: 5px;
+                text-align:center;
+            }
+            th {
+                background-color: #eeeeee;
+            }
+        }
+    @media print { a[href]::after { content: '' !important } }    
+    </style>
+</head>
+<body>
+    <div class="row">
+{% for account in accounts %}
+<div class="container-fluid" style="page-break-after: always;position: relative;">
+
+              <div class="row" >
+                <div class="col-md-12 text-center" style="padding-top: 20px;">
+                    <div class="col-md-2 col-sm-2" style="padding:10px">
+                    <img src="https://store.codaym.com/image/catalog/dlogo.png" alt="Company Logo" style="max-height: 80px;margin-top: -20px;">
+                   </div> 
+                   
+                    <div class="col-md-7 col-sm-7">
+                        {{text_account_statement}}  / {{account.accountname}}
+                        <br>
+                        {% if start_date and start_date != '00-00-00' and start_date != '' %}
+                        {{text_period_from_to}} {{text_from}} {{account.start_date}} {{text_to}} {{account.end_date}}         
+                        {% endif %}
+                    </div>
+ 
+                  <div class="col-md-3  col-sm-3" style="float: inline-end;text-align: center;"> <span style="white-space: nowrap;">{{ column_whoprint }} : {{ whoprint }}</span> <br> <span style="white-space: nowrap;">{{ printdate }}</span></div>
+
+ 
+                    
+                </div>
+              </div>     
+
+                        <span style="text-align: end;display: block;">{{text_bbalance}} / {{account.opening_balance_formatted}}</span>
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th  class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_date}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_account_number}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_statement}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_debit}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_credit}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_balance}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set balance = 0 %}
+            {% for transaction in account.transactions %}
+            {% set balance = balance + (transaction.is_debit ? transaction.amount : -transaction.amount) %}
+            <tr>
+                <td class="text-center">{{ transaction.thedate }}</td>
+                <td class="text-center">{{ transaction.account_code }}</td>
+<td class="text-center">{{ text_entry_j }} (<a href="{{ transaction.journal_url_edit }}" target="_blank">{{ transaction.journal_id }}</a>) / {{ transaction.description }}</td>
+
+                <td class="text-center">{{ transaction.is_debit ? transaction.amount_formatted : '' }}</td>
+                <td class="text-center">{{ transaction.is_debit ? '' : transaction.amount_formatted }}</td>
+                <td class="text-center">{{ transaction.balance_formatted }} {{ balance > 0 ? ' (' ~ text_debit ~ ')' : ' (' ~ text_credit ~ ')' }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th colspan="5">{{text_total}}</th>
+                <th class="text-center">{{text_ebalance}} / {{ account.closing_balance_formatted }} {{ account.closing_balance > 0 ? ' (' ~ text_debit ~ ')' : ' (' ~ text_credit ~ ')' }}</th>
+            </tr>
+        </tbody>
+
+    </table>
+    
+    
+</div>    
+{% endfor %}
+    
+
+</div>
+</body>
+</html>
+
+
+
+======================
+File: ./balance_sheet_print_form.twig
+======================
+{{ header }}{{ column_left }}
+
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>  
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+  width:100%;
+} 
+
+.select2-container{width:100% !important;}
+</style>
+
+
+    <div class="container">
+        <h1 class="text-center">نموذج طباعة قائمة المركز المالي</h1>
+        <form action="{{ action }}" method="post" id="form-balance-sheet">
+            <div class="form-group">
+                <label for="start_date">تاريخ البداية</label>
+                <input type="date" name="start_date" id="start_date" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">تاريخ النهاية</label>
+                <input type="date" name="end_date" id="end_date" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">طباعة</button>
+        </form>
+    </div>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{{footer}}
+
+
+
+
+
+======================
+File: ./income_statement_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./journal_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+}
+
+.attachment-item, .preview-item {
+    display: inline-block;
+    margin-right: 10px;
+    border: 1px dashed #ddd;
+    padding: 5px;
+}
+</style>
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+{% if nextj %}
+        <a href="{{ nextj }}" data-toggle="tooltip" title="{{ button_next }}" class="btn btn-default"><i class="fa fa-arrow-right"></i></a>
+{% endif %}
+{% if lastj %}
+        <a href="{{ lastj }}" data-toggle="tooltip" title="{{ button_last }}" class="btn btn-default"><i class="fa fa-arrow-left"></i></a>
+{% endif %}
+
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+{% if journal_id %}
+<button onclick="printMultipleJournals();" class="btn btn-info"><i class="fa fa-print"></i> {{button_print}}</button>
+
+<script>
+function printMultipleJournals() {
+    var selected = [];
+    var jor_id = '{{ journal_id }}';
+    selected.push(jor_id);
+    
+    if (selected.length > 0) {
+        window.open('index.php?route=accounts/journal/print_multiple&user_token={{ user_token }}&journal_ids=' + selected.join(','));
+    } else {
+        alert('Please save first to print.');
+    }
+}
+</script>
+{% endif %}
+
+        <button onclick="saveJournalEntry();" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h3 style="line-height: 35px;">{{ new_journal_entry }}</h3>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="show-messages" id="show-messages">
+        
+    </div>
+
+    <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-journal" class="form-horizontal">
+        {% if journal_id %}
+        <input type="hidden" name="journal_id" value="{{ journal_id }}">
+        {% endif %}
+      <div class="row">
+        <div class="col-md-2"  title="{{text_refnum}}" >
+          <input type="text" name="refnum" class="form-control" placeholder="{{text_refnum}}"  value="{{ refnum }}" >
+        </div>          
+        <div class="col-md-2" title="{{ column_thedate }}" >
+           <input type="date" name="thedate" class="form-control" value="{{ thedate | default('now' | date('Y-m-d')) }}" >
+        </div>
+
+
+        <div class="col-md-2  text-center">
+          <h4 style="line-height: 35px;">{{entry_debit}}: <span id="total_debit" class="text-info">0.00</span> <span style="display:none" id="total_debith" class="text-info">0.00</span></h4>
+
+        </div>
+        <div class="col-md-2  text-center">
+          <h4 style="line-height: 35px;">{{entry_credit}}: <span id="total_credit" class="text-info">0.00</span><span style="display:none" id="total_credith" class="text-info">0.00</span></h4>
+          
+        </div>
+        <div class="col-md-4  text-center">
+          <h4 style="line-height: 35px;">{{ text_journal_entriesbalance }}: <span id="balance_status" class="text-success">{{ text_balanced }}</span></h4>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6" id="debit_entries" style="border:0.5px dashed #888;padding: 10px;">
+           <div class="pull-right">
+                         <button type="button" onclick="addEntry('debit');" class="btn btn-info">{{ button_add_debit }}</button>
+           </div>
+          <h4 style="line-height: 35px;">{{ text_debit_entries }} :</h4>
+          
+        </div>
+        <div class="col-md-6" id="credit_entries" style="border:0.5px dashed #888;padding: 10px;">
+           <div class="pull-right">
+                         <button type="button" onclick="addEntry('credit');" class="btn btn-info">{{ button_add_credit }}</button>
+           </div>            
+          <h4 style="line-height: 35px;">{{ text_credit_entries }}:</h4>
+        </div>
+      </div>
+
+      <div class="form-group required">
+        <div class="col-sm-12">
+          <textarea name="description" rows="2" placeholder="{{ column_thedescription }}" id="input-description" class="form-control">{{ description | default('') }}</textarea>
+          {% if error_description %}
+          <div class="text-danger">{{ error_description }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+
+          <!-- Attachment input field -->
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-attachment">{{ text_new_attachments }}</label>
+                <div class="col-sm-10">
+                    <input type="file" name="attachments[]" id="input-attachment" class="form-control" multiple>
+                    <small class="text-muted"></small>
+                    <div style="display: flex;max-height: 90px;margin-top:8px" id="attachment-preview">
+                        <!-- new attachments will be preview here -->
+                    </div>                    
+                </div>
+            </div>
+
+          <div id="existing-attachmentsp" style="display: none"  class="form-group">
+                    <label>{{text_existing_attachments}}</label>
+                <div class="col-sm-12">
+                    <div style="display: flex;max-height: 90px;" id="existing-attachments">
+                        <!-- Existing attachments will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+    </form>
+  </div>
+</div>
+<script>
+
+    // JavaScript code for previewing attachments
+    document.getElementById('input-attachment').addEventListener('change', function() {
+        var previewContainer = document.getElementById('attachment-preview');
+        previewContainer.innerHTML = ''; // Clear previous previews
+
+        // Iterate over selected files and create previews
+        Array.from(this.files).forEach(function(file) {
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var imgElement = document.createElement('img');
+                imgElement.src = event.target.result;
+                imgElement.alt = file.name;
+                imgElement.setAttribute("style", "margin-inline-end: 10px;max-width:50px");
+                previewContainer.appendChild(imgElement);
+            };
+            reader.readAsDataURL(file); // Read file as Data URL
+        });
+    });
+    
+let debitIndex = 0;
+let creditIndex = 0;
+let entries = {
+    debit: [],
+    credit: []
+};
+
+function addEntryToDOM(type, index, accountCode, amount) {
+    const container = document.getElementById(`${type}_entries`);
+    const div = document.createElement('div');
+    div.className = 'form-group entry-row';
+    div.id = `entry_${type}_${index}`;
+    var accountsData = {{ accounts|json_encode|raw }};
+
+    let optionsHTML = '';
+    accountsData.forEach(account => {
+        const selected = account.account_code === accountCode ? ' selected' : '';
+        optionsHTML += `<option value="${account.account_code}"${selected}>${account.name} (${account.account_code})</option>`;
+    });
+
+    div.innerHTML = `
+        <div style="padding-inline-start: 10px;padding-inline-end: 0px;font-size: 12px;" class="col-sm-6">
+            <select name="entries[${type}][${index}][account_code]" class="form-control account-select">
+                ${optionsHTML}
+            </select>
+        </div>
+        <div style="padding-right: 2px;padding-left: 2px;" class="col-sm-4">
+            <input min="0" type="number" name="entries[${type}][${index}][amount]" class="form-control amount-field" value="${amount}" placeholder="Enter amount">
+        </div>
+        <div style="padding-right: 2px;padding-left: 2px;" class="col-sm-1">
+            <button type="button" onclick="removeEntry('${type}', ${index});" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button>
+        </div>
+    `;
+    container.appendChild(div);
+
+    // Initialize Select2
+    $(div).find('.account-select').select2({
+        width: '100%',
+        placeholder: "Select an account"
+    });
+
+    // Add event listener for changes to the amount field
+    div.querySelector('.amount-field').addEventListener('input', function() {
+        updateEntryAmount(type, index, this.value);
+    });
+}
+
+
+function addEntry(type, accountCode, amount) {
+    const index = type === 'debit' ? debitIndex++ : creditIndex++;
+    entries[type].push({ index, accountCode, amount });
+    addEntryToDOM(type, index, accountCode, amount);
+    updateTotals();
+    validateTotals();
+}
+
+
+function updateEntryAmount(type, index, amount) {
+    // تحديث المبلغ في الذاكرة
+    const entry = entries[type].find(entry => entry.index === index);
+    if (entry) {
+        entry.amount = amount;
+        updateTotals();
+        validateTotals();
+    }
+}
+
+function removeEntry(type, index) {
+    entries[type] = entries[type].filter(entry => entry.index !== index);
+    document.getElementById(`entry_${type}_${index}`).remove();
+    updateTotals();
+    validateTotals();
+}
+
+
+function updateTotals() {
+    let totalDebit = 0, totalCredit = 0;
+    entries.debit.forEach(entry => totalDebit += parseFloat(entry.amount) || 0);
+    entries.credit.forEach(entry => totalCredit += parseFloat(entry.amount) || 0);
+    document.getElementById('total_debith').textContent = totalDebit.toFixed(2);
+    document.getElementById('total_credith').textContent = totalCredit.toFixed(2);
+    
+    document.getElementById('total_debit').textContent = formatAmount(totalDebit);
+    document.getElementById('total_credit').textContent = formatAmount(totalCredit);
+    checkBalance();
+}
+
+function formatAmount(amount) {
+    // Use JavaScript's built-in toLocaleString() function to format numbers with thousands separators
+    return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function checkBalance() {
+    const totalDebit = parseFloat(document.getElementById('total_debith').textContent);
+    const totalCredit = parseFloat(document.getElementById('total_credith').textContent);
+    const balanceElement = document.getElementById('balance_status');
+    if (totalDebit === totalCredit) {
+        balanceElement.textContent = '{{text_balanced}}';
+        balanceElement.className = 'text-success';
+    } else {
+        balanceElement.textContent = '{{text_unbalanced}}';
+        balanceElement.className = 'text-danger';
+    }
+    
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // يمكن إضافة قيود مبدئية هنا إذا كانت مطلوبة
+    var journal_id = '{{journal_id}}';
+    if(journal_id == '' || journal_id == '0'){
+    addEntry('debit', '', '0');
+    addEntry('credit', '', '0');
+    }
+});
+document.addEventListener('DOMContentLoaded', function() {
+    var entries = JSON.parse('{{ entries_json | raw }}');
+
+    // Handling Debit Entries
+    if (Array.isArray(entries.debit)) {
+        entries.debit.forEach(function(entry) {
+            addEntry('debit', entry.account_code, parseFloat(entry.amount));
+        });
+    }
+
+    // Handling Credit Entries
+    if (Array.isArray(entries.credit)) {
+        entries.credit.forEach(function(entry) {
+            addEntry('credit', entry.account_code, parseFloat(entry.amount));
+        });
+    }
+
+
+    // Recalculate totals after entries are loaded
+    updateTotals();
+    validateTotals();
+});
+
+
+
+function validateTotals() {
+    let totalDebit = 0, totalCredit = 0;
+    document.querySelectorAll('.amount-field').forEach(function(input) {
+        const type = input.name.includes('debit') ? 'debit' : 'credit';
+        const value = parseFloat(input.value) || 0;
+        if (type === 'debit') {
+            totalDebit += value;
+        } else {
+            totalCredit += value;
+        }
+    });
+
+    // Check if the entries are balanced and update UI accordingly
+    const balanceStatus = document.getElementById('balance_status');
+    if (totalDebit === totalCredit) {
+        clearErrorMessages();
+    } else {
+        displayErrorMessage('تحذير: يجب أن تكون قيم المدين والدائن متساوية!');
+    }
+}
+
+function formatAmount(amount) {
+    return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function displayErrorMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function displaySuccessMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-success"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function clearErrorMessages() {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = '';
+    errorContainer.style.display = 'none';
+}
+
+
+function saveJournalEntry() {
+    var formData = new FormData($('#form-journal')[0]); // أو استخدم document.getElementById('form-journal')
+    $.ajax({
+        url: $('#form-journal').attr('action'), // يمكنك أيضًا استبداله برابط الطلب مباشرةً
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        dataType: 'json', // توقع استجابة بتنسيق JSON
+        success: function(data) {
+            if (data.success) {
+                displaySuccessMessage('Journal Saved Successfully!');
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.href = '{{ cancel }}'; // استبدل برابط الإلغاء الخاص بك
+                }
+            } else {
+                console.log(data.error); // يقوم بتسجيل الخطأ في الكونسول
+                if (data.error && typeof data.error === 'object') {
+                    // تحقق من كون الخطأ عبارة عن كائن واستخرج الرسائل
+                    var errorMessages = Object.values(data.error).join('<br>');
+                    displayErrorMessage(errorMessages);
+                } else {
+                    // إذا كان الخطأ نصًا مباشرةً، فقط قم بعرضه
+                    displayErrorMessage(data.error || 'An unknown error occurred.');
+                }
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('AJAX error:', textStatus, errorThrown);
+            displayErrorMessage('AJAX request failed: ' + textStatus);
+        }
+    });
+}
+
+function displayErrorMessage(message) {
+    $('#show-messages').html(`<div class="alert alert-danger">${message}</div>`).show();
+}
+
+function displaySuccessMessage(message) {
+    $('#show-messages').html(`<div class="alert alert-success">${message}</div>`).show();
+}
+
+ // Load and display existing attachments
+    function displayAttachments(attachments) {
+        var container = document.getElementById('existing-attachments');
+        container.innerHTML = ''; // Clear previous attachments
+        attachments.forEach(attachment => {
+            var div = document.createElement('div');
+            div.className = 'attachment-item';
+            div.innerHTML = `
+                <img style="max-width: 70px; height: auto;" src="${attachment.url}" title="${attachment.name}" alt="${attachment.name}">
+                <button type="button" style="padding: 0px 2px;font-size: 8px;line-height: 1.5;border-radius: 2px;position: absolute;top: 0px;left: 0px;" onclick="removeAttachment(this, '${attachment.id}');" class="btn btn-danger btn-xs"><i class="fa fa-close"></i></button>
+            `;
+            div.setAttribute("style", "position: relative;text-align: center;margin-inline-end: 10px;max-width:90px;min-width:90px;max-height:90px;min-height:90px;border:1px dashed #666;padding: 10px;display: inline-block;");
+            
+            container.appendChild(div);
+
+        });
+    }
+
+    // Function to asynchronously fetch and display existing attachments
+    function loadExistingAttachments(journalId) {
+        fetch('{{ get_attachments_url }}')
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                if(data.attachments){
+                    displayAttachments(data.attachments);
+                    var container = document.getElementById('existing-attachmentsp');
+                    container.setAttribute("style", "display: block;");
+                }
+                
+                
+            } else {
+                    var container = document.getElementById('existing-attachmentsp');
+                container.setAttribute("style", "display: none;");            
+                console.error('Failed to load attachments:', data.error);
+            }
+        })
+        .catch(error => console.error('Error fetching attachments:', error));
+    }
+    
+    // Call this function if editing an existing journal entry
+    if ('{{ journal_id }}') {
+        loadExistingAttachments('{{ journal_id }}');
+    }
+
+// Function to remove an attachment
+function removeAttachment(element, attachmentId) {
+    // Prevent default form submission behavior
+    event.preventDefault();
+
+    $.ajax({
+        url: '{{ delete_attachment_url }}',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+            attachmentId: attachmentId
+        },
+        success: function(json) {
+            displaySuccessMessage('attashment Removed Successfully!');
+            element.parentNode.remove();
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            displayErrorMessage('Failed to remove attachment');
+        }
+    });
+
+}
+
+
+
+function scrollToError() {
+    document.getElementById('show-messages').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+</script>
+
+
+
+
+{{ footer }}
+
+
+
+======================
+File: ./profitability_analysis_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+======================
+File: ./tax_return_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+table {
+    width: 50%;
+    border-collapse: collapse;
+    font-size:14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:right;
+}
+th {
+    background:#eee;
+    text-align:center;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+    text-align:left;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_tax_return }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<tr>
+    <th>{{ text_accounting_profit }}</th>
+    <td>{{ accounting_profit }}</td>
+</tr>
+<tr>
+    <th>{{ text_non_deductible }}</th>
+    <td>{{ non_deductible }}</td>
+</tr>
+<tr>
+    <th>{{ text_exempt_income }}</th>
+    <td>{{ exempt_income }}</td>
+</tr>
+<tr>
+    <th>{{ text_taxable_profit }}</th>
+    <td>{{ taxable_profit }}</td>
+</tr>
+<tr>
+    <th>{{ text_tax_rate }} (%)</th>
+    <td>{{ tax_rate }}</td>
+</tr>
+<tr>
+    <th>{{ text_tax_due }}</th>
+    <td>{{ tax_due }}</td>
+</tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./income_statement_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+}
+th {
+    background:#eee;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+}
+.summary {
+    margin-top:20px;
+}
+.summary td {
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_income_statement }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<div class="section-title">{{ text_revenues }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for rev in revenues %}
+<tr>
+    <td>{{ rev.name }} ({{ rev.account_code }})</td>
+    <td>{{ rev.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_revenues }}</strong></td>
+    <td><strong>{{ total_revenues }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_expenses }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for exp in expenses %}
+<tr>
+    <td>{{ exp.name }} ({{ exp.account_code }})</td>
+    <td>{{ exp.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_expenses }}</strong></td>
+    <td><strong>{{ total_expenses }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<table class="summary">
+<tr>
+    <td><strong>{{ text_net_income }}</strong></td>
+    <td><strong>{{ net_income }}</strong></td>
+</tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./balance_sheet_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./trial_balance_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8" />
+    <base href="https://store.codaym.com/dashboard/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="view/javascript/jquery/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Styles -->
+    <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    {% if direction == 'rtl' %}
+    <link href="view/stylesheet/bootstrap-a.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet-a.css" rel="stylesheet" />
+    {% else %}
+    <link href="view/stylesheet/bootstrap.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet.css" rel="stylesheet" />
+    {% endif %}
+
+    <!-- Favicon -->
+    <link href="https://store.codaym.com/image/catalog/dlogo.png" rel="icon" />
+
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #FFF;
+                font-size: 12px;
+            }
+            .container {
+                width: 100%;
+                padding: 20mm;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .logo {
+                max-height: 50mm;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #000;
+                padding: 5px;
+                text-align:center;
+            }
+            th {
+                background-color: #eeeeee;
+            }
+        }
+    @media print { a[href]::after { content: '' !important } }    
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>{{ text_trial_balance }}</h2>
+            <p>{{ text_period }}: {{text_from}} {{ start_date }} {{text_to}} {{ end_date }}</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>{{ text_account_code }}</th>
+            <th>{{ text_account_name }}</th>
+            <th>{{ text_opening_balance_debit }}</th>
+            <th>{{ text_opening_balance_credit }}</th>
+            <th>{{ text_period_debit }}</th>
+            <th>{{ text_period_credit }}</th>
+            <th>{{ text_closing_balance_debit }}</th>
+            <th>{{ text_closing_balance_credit }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in accounts.accounts %}
+            {% if account.opening_balance_debit != 0 or account.opening_balance_credit != 0 or account.total_debit != 0 or account.total_credit != 0 or account.closing_balance_debit != 0 or account.closing_balance_credit != 0 %}
+            <tr>
+                <td>{{ account.account_code }}</td>
+                <td>{{ account.name }}</td>
+                <td>{{ account.opening_balance_debit_formatted ? account.opening_balance_debit_formatted : '0.00' }}</td>
+                <td>{{ account.opening_balance_credit_formatted ? account.opening_balance_credit_formatted : '0.00' }}</td>
+                <td>{{ account.total_debit_formatted }}</td>
+                <td>{{ account.total_credit_formatted }}</td>
+                <td>{{ account.closing_balance_debit_formatted ? account.closing_balance_debit_formatted : '0.00' }}</td>
+                <td>{{ account.closing_balance_credit_formatted ? account.closing_balance_credit_formatted : '0.00' }}</td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        <tr>
+            <td colspan="2">{{ text_total }}</td>
+            <td>{{ accounts.sums.opening_balance_debit_formatted }}</td>
+            <td>{{ accounts.sums.opening_balance_credit_formatted }}</td>
+            <td>{{ accounts.sums.total_debit_formatted }}</td>
+            <td>{{ accounts.sums.total_credit_formatted }}</td>
+            <td>{{ accounts.sums.closing_balance_debit_formatted }}</td>
+            <td>{{ accounts.sums.closing_balance_credit_formatted }}</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+
+======================
+File: ./journal_list_partial.twig
+======================
+          {% if journals %}
+            {% for journal in journals %}
+              <tr href="{{ journal.edit }}" {% if journal.is_cancelled=='1' %} style="background-color:#ffeaea;" {% endif %}>
+                <td class="text-center"><input type="checkbox" name="selected[]" value="{{ journal.journal_id }}" /></td>                  
+                <td class="text-center">{{ journal.thedate }}</td>
+                <td class="text-center">{{ journal.journal_id }}</td>
+                <td class="text-center">{{ journal.description }}</td>
+                <td class="text-center">{{ journal.total_debit }}</td>
+                <td class="text-center">{{ journal.total_credit }}</td>
+                <td class="text-center">
+                  <i class="fa fa-circle" style="color: {{ journal.is_balanced ? 'green' : 'red' }};"></i>
+                  {{ journal.is_balanced ? text_balanced : text_unbalanced }} {% if journal.is_cancelled=='1' %} <br> (<span style="color:red">{{text_is_cancelled}}</span>) {% endif %}
+                </td>
+              </tr>
+            
+            {% endfor %}
+          {% else %}
+            <tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>
+          {% endif %}
+
+
+======================
+File: ./income_statement_print.twig
+======================
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <title>قائمة الدخل</title>
+    <link href="view/stylesheet/bootstrap.css" type="text/css" rel="stylesheet" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .section-header {
+            background-color: #e6e6e6;
+            font-weight: bold;
+        }
+        .sub-section-header {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">قائمة الدخل</h1>
+    <p class="text-center">من {{ start_date }} إلى {{ end_date }}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>بيان</th>
+                <th>المبلغ</th>
+                <th>رقم الإيضاح</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="section-header">
+                <td colspan="3">إيرادات العمليات المستمرة</td>
+            </tr>
+            {% for item in revenues %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي الإيرادات</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_revenues_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">التكاليف</td>
+            </tr>
+            {% for item in costs %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">مجمل الربح (الخسارة)</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ gross_profit_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">التكاليف التشغيلية</td>
+            </tr>
+            {% for item in operating_expenses %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي التكاليف التشغيلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_operating_expenses_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">ناتج أنشطة التشغيل</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ operating_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">مصروفات أخرى</td>
+            </tr>
+            {% for item in other_expenses %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي المصروفات الأخرى</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_other_expenses_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">إيرادات أخرى</td>
+            </tr>
+            {% for item in other_income %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي الإيرادات الأخرى</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_other_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">صافي الإيرادات الأخرى</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ net_other_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">إيرادات تمويلية</td>
+            </tr>
+            {% for item in finance_income %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي الإيرادات التمويلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_finance_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">مصروفات تمويلية</td>
+            </tr>
+            {% for item in finance_expenses %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي المصروفات التمويلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_finance_expenses_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">صافي الإيرادات التمويلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ net_finance_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">إيرادات استثمارات يتم المحاسبة عنها بطريقة حقوق الملكية</td>
+            </tr>
+            {% for item in equity_income %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي إيرادات استثمارات حقوق الملكية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_equity_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">أرباح (خسائر) قبل الضرائب</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ net_income_before_tax_formatted }}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
+
+
+
+======================
+File: ./inventory_valuation_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+
+{{ footer }}
+
+
+======================
+File: ./fixed_assets_report_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+    font-size:14px;
+}
+th {
+    background:#eee;
+}
+.summary {
+    margin-top:20px;
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_fixed_assets_report }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_asset_code }}</th>
+    <th>{{ text_asset_name }}</th>
+    <th>{{ text_purchase_date }}</th>
+    <th>{{ text_purchase_value }}</th>
+    <th>{{ text_current_value }}</th>
+    <th>{{ text_method }}</th>
+    <th>{{ text_useful_life }}</th>
+    <th>{{ text_salvage_value }}</th>
+    <th>{{ text_period_depreciation }}</th>
+    <th>{{ text_new_current_value }}</th>
+</tr>
+</thead>
+<tbody>
+{% for asset in assets %}
+<tr>
+    <td>{{ asset.asset_code }}</td>
+    <td>{{ asset.name }}</td>
+    <td>{{ asset.purchase_date }}</td>
+    <td>{{ asset.purchase_value }}</td>
+    <td>{{ asset.current_value }}</td>
+    <td>{{ asset.method }}</td>
+    <td>{{ asset.useful_life }}</td>
+    <td>{{ asset.salvage_value }}</td>
+    <td>{{ asset.period_depreciation }}</td>
+    <td>{{ asset.new_current_value }}</td>
+</tr>
+{% endfor %}
+{% if assets is empty %}
+<tr><td colspan="10" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="summary">
+    <strong>{{ text_total_depreciation }}: {{ total_depreciation }}</strong>
+</div>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./aging_report_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./inventory_valuation_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    font-size:14px;
+    text-align:left;
+}
+th {
+    background:#eee;
+}
+.summary {
+    margin-top:20px;
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_inventory_valuation }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_product_name }}</th>
+    <th>{{ text_opening_qty }}</th>
+    <th>{{ text_in_qty }}</th>
+    <th>{{ text_out_qty }}</th>
+    <th>{{ text_closing_qty }}</th>
+    <th>{{ text_average_cost }}</th>
+    <th>{{ text_inventory_value }}</th>
+</tr>
+</thead>
+<tbody>
+{% for product in products %}
+<tr>
+    <td>{{ product.product_name }}</td>
+    <td>{{ product.opening_qty }}</td>
+    <td>{{ product.in_qty }}</td>
+    <td>{{ product.out_qty }}</td>
+    <td>{{ product.closing_qty }}</td>
+    <td>{{ product.average_cost }}</td>
+    <td>{{ product.inventory_value }}</td>
+</tr>
+{% endfor %}
+{% if products is empty %}
+<tr><td colspan="7" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="summary">
+    <strong>{{ text_total_value }}: {{ total_value }}</strong>
+</div>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./changes_in_equity_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./aging_report_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:right;
+}
+th {
+    background:#eee;
+    text-align:center;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_aging_report }}</h2>
+<p>{{ text_period_end }}: {{ end_date }}</p>
+
+<div class="section-title">{{ text_buckets }}</div>
+<table>
+<thead>
+<tr>
+    <th>{{ text_0_30 }}</th>
+    <th>{{ text_31_60 }}</th>
+    <th>{{ text_61_90 }}</th>
+    <th>{{ text_over_90 }}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td>{{ buckets['0-30'] }}</td>
+    <td>{{ buckets['31-60'] }}</td>
+    <td>{{ buckets['61-90'] }}</td>
+    <td>{{ buckets['>90'] }}</td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_customer_details }}</div>
+<table>
+<thead>
+<tr>
+    <th>{{ text_customer_name }}</th>
+    <th>{{ text_0_30 }}</th>
+    <th>{{ text_31_60 }}</th>
+    <th>{{ text_61_90 }}</th>
+    <th>{{ text_over_90 }}</th>
+</tr>
+</thead>
+<tbody>
+{% for cid, cdata in customers_data %}
+<tr>
+    <td style="text-align:left">{{ cdata.customer_name }}</td>
+    <td>{{ cdata['0-30'] }}</td>
+    <td>{{ cdata['31-60'] }}</td>
+    <td>{{ cdata['61-90'] }}</td>
+    <td>{{ cdata['>90'] }}</td>
+</tr>
+{% endfor %}
+{% if customers_data is empty %}
+<tr><td colspan="5" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./trial_balance_form.twig
+======================
+{{ header }}{{ column_left }}
+
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>  
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+  width:100%;
+} 
+
+.select2-container{width:100% !important;}
+</style>
+
+<div class="container-fluid">
+    <div class="row no-print">
+        <div class="col-md-12">
+            <h2>{{ title }}</h2>
+            <form action="{{ action }}" method="post" id="form-trial-balance" class="form-horizontal">
+                <div class="form-group">
+                    <label for="input-account-start" class="col-sm-2 control-label">{{ text_account_start }}</label>
+                    <div class="col-sm-4">
+                        <select name="account_start" id="input-account-start" class="form-control select2">
+                            <option value=""></option>
+                            {% for account in accounts %}
+                            <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <label for="input-account-end" class="col-sm-2 control-label">{{ text_account_end }}</label>
+                    <div class="col-sm-4">
+                        <select name="account_end" id="input-account-end" class="form-control select2">
+                            <option value=""></option>
+                            {% for account in accounts %}
+                                <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="input-date-start" class="col-sm-2 control-label">{{ text_date_start }}</label>
+                    <div class="col-sm-4">
+                        <input type="date" name="date_start" id="input-date-start" class="form-control">
+                    </div>
+                    <label for="input-date-end" class="col-sm-2 control-label">{{ text_date_end }}</label>
+                    <div class="col-sm-4">
+                        <input type="date" name="date_end" id="input-date-end" class="form-control">
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button type="submit" class="btn btn-primary">{{ button_submit }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{{footer}}
+
+
+
+======================
+File: ./balance_sheet_print.twig
+======================
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <title>قائمة المركز المالي</title>
+    <link href="view/stylesheet/bootstrap.css" type="text/css" rel="stylesheet" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .section-header {
+            background-color: #ddd;
+            font-weight: bold;
+        }
+        .sub-section-header {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align:right;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">قائمة المركز المالي</h1>
+    <p class="text-center">من {{ start_date }} إلى {{ end_date }}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>بيان</th>
+                <th>المبلغ</th>
+                <th>رقم الإيضاح</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- الأصول -->
+            <tr class="section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">الأصول</td>
+            </tr>
+            <tr class="sub-section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">أصول غير متداولة</td>
+            </tr>
+            {% for item in assets_non_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="sub-section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">أصول متداولة</td>
+            </tr>
+            {% for item in assets_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr style="background-color: #eee !important;">
+                <td>مجموع الأصول</td>
+                <td>{{ total_assets_formatted }}</td>
+                <td></td>
+            </tr>
+            <!-- الخصوم -->
+            <tr class="section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">الخصوم</td>
+            </tr>
+            <tr class="sub-section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">خصوم غير متداولة</td>
+            </tr>
+            {% for item in liabilities_non_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="sub-section-header">
+                <td colspan="3">خصوم متداولة</td>
+            </tr>
+            {% for item in liabilities_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr style="background-color: #eee !important;">
+                <td>مجموع الخصوم</td>
+                <td>{{ total_liabilities_formatted }}</td>
+                <td></td>
+            </tr>
+            <!-- حقوق الملكية -->
+            <tr class="section-header">
+                <td colspan="3" style="text-align: right;padding-right: 20px;">حقوق الملكية</td>
+            </tr>
+            {% for item in equity %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            {% if profit_loss_account %}
+            <tr>
+                <td>({{ profit_loss_account.account_code }}) - {{ profit_loss_account.name }}</td>
+                <td>
+                    {% if profit_loss_account.closing_balance < 0 %}
+                        ({{ profit_loss_account.closing_balance_formatted | replace({"-": ""}) }})
+                    {% else %}
+                        {{ profit_loss_account.closing_balance_formatted }}
+                    {% endif %}
+                </td>
+                <td></td>
+            </tr>
+            {% endif %}
+            <tr style="background-color: #eee !important;">
+                <td>مجموع حقوق الملكية</td>
+                <td>
+                    {% if total_equity < 0 %}
+                        ({{ total_equity_formatted | replace({"-": ""}) }})
+                    {% else %}
+                        {{ total_equity_formatted }}
+                    {% endif %}
+                </td>
+                
+                <td></td>
+            </tr>
+            <tr style="background-color: #eee !important;">
+                <td>إجمالي الإلتزامات وحقوق الملكية</td>
+                <td>{{ total_equity_liabilities_formatted }}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
+
+
+
+======================
+File: ./vat_report_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./cash_flow_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./purchase_analysis_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+    font-size:14px;
+}
+th {
+    background:#eee;
+}
+.summary {
+    margin-top:20px;
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_purchase_analysis }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_vendor_name }}</th>
+    <th>{{ text_po_count }}</th>
+    <th>{{ text_total_purchases_col }}</th>
+    <th>{{ text_avg_po }}</th>
+</tr>
+</thead>
+<tbody>
+{% for vendor in vendors %}
+<tr>
+    <td>{{ vendor.vendor_name }}</td>
+    <td>{{ vendor.po_count }}</td>
+    <td>{{ vendor.total_purchases }}</td>
+    <td>{{ vendor.avg_po }}</td>
+</tr>
+{% endfor %}
+{% if vendors is empty %}
+<tr><td colspan="4" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="summary">
+    <strong>{{ text_total_purchases }}: {{ total_purchases }}</strong>
+</div>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./fixed_assets_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+    </div>
+  </div>
+  {% if error_warning %}
+  <div class="alert alert-danger">{{ error_warning }}</div>
+  {% endif %}
+  <form action="{{ action }}" method="post">
+    <div class="form-group row">
+      <label class="col-sm-2 control-label" for="input-date-end">{{ entry_date_end }}</label>
+      <div class="col-sm-4">
+        <input type="date" name="date_end" id="input-date-end" class="form-control" />
+      </div>
+    </div>
+    <div class="text-right">
+      <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+    </div>
+  </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./statement_print_form.twig
+======================
+{{ header }}{{ column_left }}
+
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>  
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+  width:100%;
+} 
+
+.select2-container{width:100% !important;}
+</style>
+    <div class="page-header">
+    <div class="container-fluid">
+        <form id="form-statement" method="post" action="{{ action }}" class="form-horizontal">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">{{ text_select_mode }}</label>
+                <div class="col-sm-10">
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="statement_mode" value="single" checked onchange="toggleAccountRange(false)">
+                            {{ text_single_account }}
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="statement_mode" value="range" onchange="toggleAccountRange(true)">
+                            {{ text_account_range }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div id="single-account-select" class="form-group">
+                <label class="col-sm-2 control-label" for="input-account">{{ text_account }}</label>
+                <div class="col-sm-10">
+                    <select name="account" id="input-account" class="form-control select2">
+                        {% for account in accounts %}
+                        <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div id="account-range-select" class="form-group" style="display: none;">
+                <label class="col-sm-2 control-label" for="input-account-start">{{ text_account_start }}</label>
+                <div class="col-sm-4">
+                    <select name="account_start" id="input-account-start" class="form-control select2">
+                        {% for account in accounts %}
+                        <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <label class="col-sm-2 control-label" for="input-account-end">{{ text_account_end }}</label>
+                <div class="col-sm-4">
+                    <select name="account_end" id="input-account-end" class="form-control select2">
+                        {% for account in accounts %}
+                        <option value="{{ account.account_code }}">{{ account.name }} ({{ account.account_code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-date-start">{{ text_date_start }}</label>
+                <div class="col-sm-4">
+                    <input type="date" name="date_start" id="input-date-start" class="form-control" required>
+                </div>
+                <label class="col-sm-2 control-label" for="input-date-end">{{ text_date_end }}</label>
+                <div class="col-sm-4">
+                    <input type="date" name="date_end" id="input-date-end" class="form-control" required>
+                </div>
+                
+            </div>
+            <div class="text-right">
+                <button type="submit" class="btn btn-primary">{{ button_submit }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="form-errors" class="alert alert-danger" style="display: none;"></div>
+
+<script>
+function validateForm() {
+    var startDate = document.getElementById('input-date-start').value;
+    var endDate = document.getElementById('input-date-end').value;
+    var errors = [];
+
+    if (!startDate) {
+        errors.push('Please select a start date.');
+    }
+    if (!endDate) {
+        errors.push('Please select an end date.');
+    }
+
+    if (errors.length > 0) {
+        document.getElementById('form-errors').innerHTML = errors.join('<br>');
+        document.getElementById('form-errors').style.display = 'block';
+        return false;
+    }
+
+    return true;
+}
+
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+
+    function toggleAccountRange(isRange) {
+        if (isRange) {
+            $('#single-account-select').hide();
+            $('#account-range-select').show();
+        } else {
+            $('#single-account-select').show();
+            $('#account-range-select').hide();
+        }
+    }
+</script>
+{{ footer }}
+
+
+
+======================
+File: ./trial_balance_new_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-account-start">{{ entry_account_start }}</label>
+            <div class="col-sm-4">
+                <select name="account_start" id="input-account-start" class="form-control">
+                    <option value="">{{ text_select }}</option>
+                    {% for acc in accounts_list %}
+                        <option value="{{ acc.account_code }}">{{ acc.name }} ({{ acc.account_code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-account-end">{{ entry_account_end }}</label>
+            <div class="col-sm-4">
+                <select name="account_end" id="input-account-end" class="form-control">
+                    <option value="">{{ text_select }}</option>
+                    {% for acc in accounts_list %}
+                        <option value="{{ acc.account_code }}">{{ acc.name }} ({{ acc.account_code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./journal_print_partial.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ direction == 'rtl' ? 'طباعة القيد رقم ' ~ journal_id : 'Print entry number ' ~ journal_id }}</title>
+    <base href="https://store.codaym.com/dashboard/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="view/javascript/jquery/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Styles -->
+    <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    {% if direction == 'rtl' %}
+    <link href="view/stylesheet/bootstrap-a.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet-a.css" rel="stylesheet" />
+    {% else %}
+    <link href="view/stylesheet/bootstrap.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet.css" rel="stylesheet" />
+    {% endif %}
+
+    <!-- Favicon -->
+    <link href="https://store.codaym.com/image/catalog/dlogo.png" rel="icon" />
+
+  <style>
+    @media print {
+      body, html {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: none;
+        box-shadow: none;
+        background: none;
+        page-break-after: always;
+      }
+
+      .container-fluid {
+        padding: 15mm;
+      }
+
+      .table {
+        width: 100%;
+      }
+
+      .table-hover th, .table-hover td {
+        border: 0.5px solid #a7a7a7;
+        padding: 8px;
+        text-align: center;
+      }
+
+      img {
+        max-height: 50mm;
+      }
+    }
+
+    @media print {
+      *, *:before, *:after {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      .table {
+        border-collapse: collapse !important;
+      }
+
+      .table th {
+        background-color: #a7a7a7 !important;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #000 !important;
+      }
+    }
+
+    @media print {
+      .table thead tr td,
+      .table tbody tr td {
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: black !important;
+        font-size: 10px !important;
+        background-color: #fff;
+        padding: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container" title="{{ heading_title }}">
+    {% for journal in journals %}
+    <div style="page-break-after: always;position: relative;">  
+
+        {% if journal.is_cancelled %}
+        <div class="cancelled-overlay">{{text_is_cancelled}}</div>
+        {% endif %}
+
+              <div class="row">
+                  <div style="margin:10px;float: inline-end;text-align: center;">{{ column_whoprint }} : {{ journal.whoprint }} <br> {{ journal.printdate }}</div>
+                <div class="col-md-12 text-center" style="padding-top: 20px;">
+                    <div class="col-md-3 col-sm-3">
+                    <img src="https://store.codaym.com/image/catalog/dlogo.png" alt="Company Logo" style="max-height: 80px;margin-top: -15px;">
+                   </div> 
+                   
+                    <div class="col-md-9 col-sm-9">
+                       <div class="row">
+                           <div class="table-responsive">
+                            <table class="table table-bordered table-hover" style="border-width: 1px;border-style: solid;border-color: black;">
+                                <thead>
+                                    <tr style="border:1px solid #000 !important;">
+                                        <td class="text-center" style="border:1px solid #000  !important;padding: 1px;">{{ column_thedate }}</td>
+                                        <td  class="text-center" style="border:1px solid #000  !important;padding: 1px;">{{ journal_entire_id }}</td>
+                                        <td class="text-center" style="border:0.5px solid #000  !important;padding: 1px;background-colr:#eee">{{ text_journal_type }}</td>
+                                        {% if journal.is_cancelled %}
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;background-colr:#eee">{{ text_status_j }}</td>
+                                        {% endif %} 
+                                    </tr>
+                                </thead>    
+                                <tbody>
+                                        <tr style="border-top: 0.5px solid #a7a7a7;">
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ journal.thedate }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ journal.journal_id }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ journal.entrytype == 1 ? text_manual : text_automatic }}</td>
+                                        {% if journal.is_cancelled %}
+                                         <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ text_is_cancelled }}</td>
+                                        {% endif %}                                        
+                                        </tr>
+                                </tbody>
+                            </table>                
+                        </div>   
+                       </div> 
+                    </div>
+ 
+                    
+                </div>
+              </div> 
+              <div class="table-responsive">
+                  
+                        <table class="table table-bordered table-hover" style="border-width: 1px;border-style: solid;border-color: black;">
+                            <thead>
+                                <tr>
+                                    <td  class="text-center" style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{ text_account_code }}</td>
+                                    <td  class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ text_account_name }}</td>
+                                    <td  class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ entry_dedit }}</td>
+                                    <td  class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ entry_credit }}</td>
+                                </tr>
+                            </thead>      
+                            <tbody>
+                                {% for entry in journal.entries %}
+                                    <tr>
+                                        <td class="text-center" style="max-width:80px;border:0.5px solid #a7a7a7;padding: 10px;">{{ entry.account_code }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;">{{ entry.name }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;">
+                                          {{ entry.debit ? entry.debit : '' }}
+                                        </td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;">
+                                          {{ entry.credit ? entry.credit : '' }}
+                                        </td>
+
+                                    </tr>
+                                {% endfor %}
+                                <tr>
+                                        <td colspan="2" class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ text_journal_total }}</td>
+                                        <td class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ journal.total_debit }}</td>
+                                        <td class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ journal.total_credit }}</td>
+                                    </tr>                              
+                                <tr class="text-start" style="border-bottom:1px solid #a7a7a7 !important; ">
+                                    <td colspan="5" class="text-start" style="border:0.5px solid #a7a7a7;padding: 10px;text-align: start;">{{ text_notes }} : {{journal.description}}</td>
+                                </tr> 
+
+                            </tbody>
+                        </table>                
+               </div>
+
+
+ 
+                   <div class="col-md-12 text-center" style="padding-top: 20px;">
+                    
+
+                  <div class="pull-left text-center">{{ text_last_edited_by }} <br> {{ journal.last_edit_by }} <br> {{ journal.updated_at }}</div>
+                  <div style="min-width: 160px;text-align: center;" class="pull-right text-center"><strong>{{ text_audited_by }}</strong> <br> {{ journal.audit_by }} <br> {{ journal.audit_date }}</div>
+                  <div style="min-width: 160px;text-align: center;" class="pull-right text-center"><strong>{{ text_added_by }}</strong> <br> {{ journal.added_by }} <br> {{ journal.created_at }}</div>
+
+ </div> 
+
+ 
+   </div>
+  {% endfor %}
+</div>
+</body>
+
+</html>
+
+
+
+======================
+File: ./vat_report_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+table {
+    width: 50%;
+    border-collapse: collapse;
+    font-size:14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:right;
+}
+th {
+    background:#eee;
+    text-align:center;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+    text-align:left;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_vat_report }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<tr>
+    <th>{{ text_vat_sales }}</th>
+    <td>{{ vat_sales }}</td>
+</tr>
+<tr>
+    <th>{{ text_vat_purchases }}</th>
+    <td>{{ vat_purchases }}</td>
+</tr>
+<tr>
+    <th>{{ text_net_vat }}</th>
+    <td>{{ net_vat }}</td>
+</tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./tax_return_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+======================
+File: ./account_list.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+    <button type="button" onclick="$('#form-export').submit();" data-toggle="tooltip" title="{{ text_export_accounts }}" class="btn btn-info"><i class="fa fa-download"></i></button>
+      <form id="form-export" action="{{ export_action }}" method="post" style="display:none;">
+    <input type="hidden" name="export_type" value="accounts">
+</form>
+        <button type="button" data-toggle="tooltip" title="Import Accounts" class="btn btn-success" onclick="$('#upload-input').click();"><i class="fa fa-upload"></i></button>
+        <form id="form-import" action="{{ import_action }}" method="post" enctype="multipart/form-data" style="display:none;">
+          <input type="file" name="upload" id="upload-input" onchange="this.form.submit();">
+          <input type="hidden" name="incremental" value="1" checked="checked">
+          <input type="hidden" name="import_type" value="accounts">
+        </form>
+
+      <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a> 
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-account').submit() : false;"><i class="fa fa-trash-o"></i></button>
+
+
+      </div>
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ heading_title }}</h3>
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-account">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-center">{% if sort == 'account_code' %}
+                    <a href="{{ account_code }}" class="{{ order|lower }}">{{ entry_account_code }}</a>
+                    {% else %}
+                    <a href="{{ account_code }}">{{ entry_account_code }}</a>
+                    {% endif %}</td>
+                  <td class="text-center">{% if sort == 'name' %}
+                    <a href="{{ sort_name }}" class="{{ order|lower }}">{{ column_name }}</a>
+                    {% else %}
+                    <a href="{{ sort_name }}">{{ column_name }}</a>
+                    {% endif %}</td>
+                  <td class="text-center">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if accounts %}
+                {% for account in accounts %}
+                <tr>
+                  <td class="text-center">{% if account.account_id in selected %}
+                    <input type="checkbox" name="selected[]" value="{{ account.account_id }}" checked="checked" />
+                    {% else %}
+                    <input type="checkbox" name="selected[]" value="{{ account.account_id }}" />
+                    {% endif %}</td>
+                  <td class="text-center">{{ account.account_code }}</td>
+                  <td class="text-center">{{ account.name }}</td>
+                  <td class="text-center"><a href="{{ account.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="4">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}
+
+
+======================
+File: ./trial_balance_new_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:center;
+}
+th {
+    background:#eee;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_trial_balance_new }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_account_code }}</th>
+    <th>{{ text_account_name }}</th>
+    <th>{{ text_opening_balance_debit }}</th>
+    <th>{{ text_opening_balance_credit }}</th>
+    <th>{{ text_period_debit }}</th>
+    <th>{{ text_period_credit }}</th>
+    <th>{{ text_closing_balance_debit }}</th>
+    <th>{{ text_closing_balance_credit }}</th>
+</tr>
+</thead>
+<tbody>
+{% for account in accounts %}
+<tr>
+    <td>{{ account.account_code }}</td>
+    <td>{{ account.name }}</td>
+    <td>{{ account.opening_balance_debit_formatted }}</td>
+    <td>{{ account.opening_balance_credit_formatted }}</td>
+    <td>{{ account.total_debit_formatted }}</td>
+    <td>{{ account.total_credit_formatted }}</td>
+    <td>{{ account.closing_balance_debit_formatted }}</td>
+    <td>{{ account.closing_balance_credit_formatted }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td colspan="2">{{ text_total }}</td>
+    <td>{{ sums.opening_balance_debit_formatted }}</td>
+    <td>{{ sums.opening_balance_credit_formatted }}</td>
+    <td>{{ sums.total_debit_formatted }}</td>
+    <td>{{ sums.total_credit_formatted }}</td>
+    <td>{{ sums.closing_balance_debit_formatted }}</td>
+    <td>{{ sums.closing_balance_credit_formatted }}</td>
+</tr>
+</tbody>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./fixed_assets_report_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+======================
+File: ./account_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-account" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-account" class="form-horizontal">
+                     <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-parent">{{ entry_parent }}</label>
+                <div class="col-sm-4">
+                  <input type="text" name="parent_id" value="{{ parent_id }}" placeholder="{{ entry_parent }}" id="input-parent" class="form-control"  />
+                  {% if error_parent %}
+                  <div class="text-danger">{{ error_parent }}</div>
+                  {% endif %}
+                </div>
+              </div>
+      
+              
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-account-code">{{ entry_account_code }}</label>
+                <div class="col-sm-4">
+                  <input type="text" name="account_code" value="{{ account_code }}" placeholder="{{ entry_account_code }}" id="input-account-code" class="form-control" />
+                  {% if error_parent %}
+                  <div class="text-danger">{{ error_account_code }}</div>
+                  {% endif %}
+                </div>
+              </div>
+			 <div class="form-group">
+			  <label class="col-sm-2 control-label" for="input-account-type">{{ entry_account_type }}</label>
+			  <div class="col-sm-10">
+				<select name="account_type" id="input-account-type" class="form-control">
+				  <option value="debit" {{ account_type == 'debit' ? 'selected' : '' }}>{{ text_debit }}</option>
+				  <option value="credit" {{ account_type == 'credit' ? 'selected' : '' }}>{{ text_credit }}</option>
+				</select>
+			  </div>
+			</div>
+             
+            <div class="tab-pane active">
+              <ul class="nav nav-tabs" id="language">
+                {% for language in languages %}
+                <li><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}" /> {{ language.name }}</a></li>
+                {% endfor %}
+              </ul>
+              <div class="tab-content">
+                {% for language in languages %}
+                <div class="tab-pane" id="language{{ language.language_id }}">
+                  <div class="form-group required">
+                    <label class="col-sm-2 control-label" for="input-name{{ language.language_id }}">{{ entry_name }}</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="account_description[{{ language.language_id }}][name]" value="{{ account_description[language.language_id] ? account_description[language.language_id].name }}" placeholder="{{ entry_name }}" id="input-name{{ language.language_id }}" class="form-control" />
+                      {% if error_name[language.language_id] %}
+                      <div class="text-danger">{{ error_name[language.language_id] }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                </div>
+                {% endfor %}
+
+
+
+              
+              </div>
+
+
+          </div>
+        <input type="hidden" name="status" value="1" id="input-status" class="form-control" />
+
+        </form>
+      </div>
+  </div>
+  <link href="view/javascript/codemirror/lib/codemirror.css" rel="stylesheet" />
+  <link href="view/javascript/codemirror/theme/monokai.css" rel="stylesheet" />
+  <script type="text/javascript" src="view/javascript/codemirror/lib/codemirror.js"></script> 
+  <script type="text/javascript" src="view/javascript/codemirror/lib/xml.js"></script> 
+  <script type="text/javascript" src="view/javascript/codemirror/lib/formatting.js"></script> 
+  
+  <script type="text/javascript" src="view/javascript/summernote/summernote.min.js"></script>
+  <link href="view/javascript/summernote/summernote.min.css" rel="stylesheet" />
+  <script type="text/javascript" src="view/javascript/summernote/summernote-image-attributes.js"></script>
+  <script type="text/javascript" src="view/javascript/summernote/opencart.js"></script>
+  
+  <script type="text/javascript"><!--
+$('input[name=\'path\']').autocomplete({
+	'source': function(request, response) {
+		$.ajax({
+			url: 'index.php?route=accounts/account/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+			dataType: 'json',
+			success: function(json) {
+				json.unshift({
+					account_id: 0,
+					name: '{{ text_none }}'
+				});
+
+				response($.map(json, function(item) {
+					return {
+						label: item['name'],
+						value: item['account_id']
+					}
+				}));
+			}
+		});
+	},
+	'select': function(item) {
+		$('input[name=\'path\']').val(item['label']);
+		$('input[name=\'parent_id\']').val(item['value']);
+	}
+});
+
+
+
+//--></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#input-account-code').change(function() {
+        var accountCode = $(this).val();
+        var parentId = 0; // القيمة الافتراضية للوالد هي 0
+
+        if (accountCode.length > 1) {
+            // إذا كان طول كود الحساب أكثر من رقم واحد، نقوم بأخذ الرقم من جهة اليسار بعد طرح واحد
+            parentId = accountCode.substring(0, accountCode.length - 1);
+        }
+
+        $('#input-parent').val(parentId); // تحديث قيمة parent_id تلقائيًا
+    });
+});
+</script>
+
+  <script type="text/javascript"><!--
+$('#language a:first').tab('show');
+//--></script></div>
+{{ footer }}
+
+
+
+======================
+File: ./cash_flow_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+}
+th {
+    background:#eee;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+}
+.summary {
+    margin-top:20px;
+}
+.summary td {
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_cash_flow }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<div class="section-title">{{ text_operating_activities }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for o in operating %}
+<tr>
+    <td>{{ o.name }} ({{ o.account_code }})</td>
+    <td>{{ o.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_operating }}</strong></td>
+    <td><strong>{{ total_operating }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_investing_activities }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for i in investing %}
+<tr>
+    <td>{{ i.name }} ({{ i.account_code }})</td>
+    <td>{{ i.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_investing }}</strong></td>
+    <td><strong>{{ total_investing }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_financing_activities }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for f in financing %}
+<tr>
+    <td>{{ f.name }} ({{ f.account_code }})</td>
+    <td>{{ f.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_financing }}</strong></td>
+    <td><strong>{{ total_financing }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<table class="summary">
+<tr>
+    <td><strong>{{ text_net_change }}</strong></td>
+    <td><strong>{{ net_change }}</strong></td>
+</tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./journal_list.twig
+======================
+{{ header }}{{ column_left }}
+
+<div id="content">
+<style>
+input[type="checkbox"] {
+  position: relative;
+  top: 2px;
+  box-sizing: content-box;
+  height: 25px;
+  width: 25px;
+  margin: 0 5px 0 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  border-radius: 2px;
+  background-color: #fff;
+  border: 1px solid #115c80;
+}
+
+input[type="checkbox"]:before {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:after {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:checked:before {
+    width: 10px;
+    height: 15px;
+    margin: 2px 7px;
+    border-bottom: 4px solid #115c80;
+    border-right: 4px solid #115c80;
+    transform: rotate(45deg);
+} 
+input[type="checkbox"]:checked::after, .checkbox input[type="checkbox"]:checked::after, .checkbox-inline input[type="checkbox"]:checked::after {
+  content: '';
+}
+.form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.form-group {
+  flex-grow: 1;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .form-group {
+    flex-basis: 50%;
+    max-height: 52px;
+  }
+  .fg1{flex-basis: 28%;}
+  .fg2{flex-basis: 60%;}  
+  .fg3{flex-basis: 10%;}
+    
+}
+table tr[href] {
+    cursor: pointer;
+}
+</style>    
+    <div class="panel panel-default" style="padding-top: 10px;padding-right: 10px;padding-left: 10px;">
+    <div class="panel-header form-inline" style="margin-top: -5px;margin-bottom: 5px;">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+
+<!-- Button for printing multiple journals -->
+<button onclick="printMultipleJournals();" class="btn btn-info"><i class="fa fa-print"></i> {{button_print}}</button>
+
+<script>
+function printMultipleJournals() {
+    var selected = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        selected.push($(this).val());
+    });
+    if (selected.length > 0) {
+        window.open('index.php?route=accounts/journal/print_multiple&user_token={{ user_token }}&journal_ids=' + selected.join(','));
+    } else {
+        alert('Please select at least one journal to print.');
+    }
+}
+
+
+</script>
+        
+        
+        <button type="button" id="cancel_selected" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-warning"><i class="fa fa-ban"></i> {{ button_cancel }}</button>    
+        <button type="button" id="delete_selected" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-journal').submit() : false;"><i class="fa fa-trash-o"></i></button>
+
+<button type="button" data-toggle="tooltip" title="" onclick="$('#filter-j').toggle();" class="btn btn-default" data-original-title="تصفية"><i class="fa fa-filter"></i></button>  
+    
+      </div>
+      
+        <div id="filter-j" class="form-inline" style="padding: 0px;display: flex;width: 100%;padding-top: 8px;padding-bottom:8px">
+      <div class="form-group" style="border-top: #fff;">
+            <label for="filter_date_start">{{text_from}}</label>
+            <input type="date" id="filter_date_start" name="filter_date_start" class="form-control">
+          </div>
+      <div class="form-group" style="border-top: #fff;">
+            <label for="filter_date_end">{{text_to}}</label>
+            <input type="date" id="filter_date_end" name="filter_date_end" class="form-control">
+          </div>
+      <div class="form-group fg1" style="border-top: #fff;">
+            <input type="text" id="filter_journal_id" placeholder="{{journal_entire_id}}"  name="filter_journal_id" class="form-control">
+          </div>
+      <div class="form-group fg2" style="border-top: #fff;">
+            <input type="text" id="filter_description" placeholder="{{column_thedescription}}" name="filter_description" class="form-control">
+          </div>
+      <div class="form-group fg3" style="border-top: #fff;">
+            <input style="height: 25px;width: 25px;" type="checkbox" id="filter_cancelled" name="filter_cancelled" class="form-control">
+            <label for="filter_cancelled">{{ text_show_cancelled }}</label>
+
+        </div>
+          
+        </div>
+    </div>        
+
+    </div>    
+
+  <div class="container-fluid" title="{{heading_title}}">
+    <!-- Start of Filters -->
+    <div class="show-messages" id="show-messages"></div>
+    <!-- End of Filters -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+           <td class="text-center"><input type="checkbox" onclick="selectDeselectAll(this.checked);" /></td>
+            <td class="text-center">{{column_thedate}}</td>
+            <td class="text-center">{{journal_entire_id}}</td>
+            <td class="text-center">{{column_thedescription}}</td>
+            <td class="text-center">{{entry_debit}}</td>
+            <td class="text-center">{{entry_credit}}</td>
+            <td class="text-center">{{balance_status}}</td>
+          </tr>
+        </thead>
+        <tbody id="journal_list">
+          {% if journals %}
+            {% for journal in journals %}
+              <tr href="{{ journal.edit }}"  {% if journal.is_cancelled=='1' %} style="background-color:#ffeaea;" {% endif %}>
+                <td class="select-checkbox text-center"><input type="checkbox" name="selected[]" value="{{ journal.journal_id }}" /></td>                  
+                <td class="text-center">{{ journal.thedate }}</td>
+                <td class="text-center">{{ journal.journal_id }}</td>
+                <td class="text-center">{{ journal.description }}</td>
+                <td class="text-center">{{ journal.total_debit }}</td>
+                <td class="text-center">{{ journal.total_credit }}</td>
+                <td class="text-center">
+                  <i class="fa fa-circle" style="color: {{ journal.is_balanced ? 'green' : 'red' }};"></i>
+                  {{ journal.is_balanced ? text_balanced : text_unbalanced }} {% if journal.is_cancelled=='1' %} <br> (<span style="color:red">{{text_is_cancelled}}</span>) {% endif %}
+                </td>
+              </tr>
+                         
+            {% endfor %}
+          {% else %}
+            <tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+
+
+      
+    </div>
+
+    <nav aria-label="Page navigation example" class="text-center" >
+        <ul class="pagination  text-center" id="pagination">
+            <!-- Pagination links will be dynamically generated here -->
+        </ul>
+    </nav>
+
+  
+    <!-- Journal Details Modal -->
+    <div id="journalDetailsModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Journal Details</h4>
+          </div>
+          <div class="modal-body">
+            <!-- Content will be loaded by JavaScript -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#filter-j').toggle();
+  // Function to view journal details
+  function viewJournalDetails(journalId) {
+    var user_token = '{{ user_token }}';
+    $.ajax({
+      url: 'index.php?route=accounts/journal/getJournalDetails&user_token=' + user_token + '&journal_id=' + journalId,
+      type: 'GET',
+      success: function(data) {
+        $('#journalDetailsModal .modal-body').html(data);
+        $('#journalDetailsModal').modal('show');
+      },
+      error: function(xhr, status, error) {
+        alert('Error: ' + xhr.responseText);
+      }
+    });
+  }
+
+  // Automatically trigger journal filtering when filter values change
+  $('#filter_date_start, #filter_date_end, #filter_journal_id, #filter_description, #filter_cancelled').on('change', function() {
+    filterJournals();
+  });
+
+  // Function to filter journals
+function filterJournals(page = 1) {
+    var user_token = '{{ user_token }}';
+  var url = 'index.php?route=accounts/journal/getJournals&user_token=' + '{{ user_token }}';
+  url += '&page=' + page;
+  
+    // Collect filter values
+    var filters = {
+      filter_date_start: $('#filter_date_start').val(),
+      filter_date_end: $('#filter_date_end').val(),
+      filter_journal_id: $('#filter_journal_id').val(),
+      filter_description: $('#filter_description').val(),
+      include_cancelled: $('#filter_cancelled').is(':checked') ? 1 : 0 
+    };
+
+    // Append filters to the URL
+    Object.keys(filters).forEach(function(key) {
+      if (filters[key]) {
+        url += '&' + key + '=' + encodeURIComponent(filters[key]);
+      }
+    });
+
+    // Perform the AJAX request
+    $.ajax({
+      url: url,
+      type: 'GET',
+      success: function(response) {
+        // If not empty, display the response inside the table
+        $('#journal_list').html(response.html);
+        setupPagination(response.total_pages, page);
+
+      },
+      error: function(xhr, status, error) {
+        alert('Error: ' + xhr.responseText);
+      }
+    });
+  }
+
+
+
+  function selectDeselectAll(isChecked) {
+    var checkboxes = document.querySelectorAll('input[type="checkbox"][name="selected[]"]');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.checked = isChecked;
+    });
+} 
+function displayErrorMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function displaySuccessMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-success"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function clearErrorMessages() {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = '';
+    errorContainer.style.display = 'none';
+}
+
+$('#delete_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+        if (confirm('{{confirm_delete}}')) {
+            $.ajax({
+                url: '{{get_delete_multiple}}',
+                type: 'post',
+                data: { 'journal_ids': journalIds },
+                success: function(response) {
+                    if(response.success){
+                      displaySuccessMessage(response.success);
+                      window.location.href = '{{ cancelled }}';
+                    }else if(response.error){
+                      displayErrorMessage(response.error);
+                    }
+                    
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    
+                    window.location.href = '{{ cancelled }}'; // استبدل برابط الإلغاء الخاص بك
+
+                }
+            });
+        }
+    } else {
+        alert('{{cancelled_please_select}}');
+    }
+});
+
+$('#cancel_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+        if (confirm('{{confirm_cancelled}}')) {
+            $.ajax({
+                url: '{{get_cancel_multiple}}',
+                type: 'post',
+                data: { 'journal_ids': journalIds },
+                success: function(response) {
+                    if(response.success){
+                      displaySuccessMessage(response.success);
+                      window.location.href = '{{ cancelled }}';
+                    }else if(response.error){
+                      displayErrorMessage(response.error);
+                    }
+                    
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    
+                    window.location.href = '{{ cancelled }}'; // استبدل برابط الإلغاء الخاص بك
+
+                }
+            });
+        }
+    } else {
+        alert('{{cancelled_please_select}}');
+    }
+});
+
+$('#print_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+            $.ajax({
+                url: '{{get_print_multiple}}',
+                type: 'post',
+                data: { 'journal_ids': journalIds },
+                success: function(response) {
+                    if(response.success){
+                      displaySuccessMessage(response.success);
+                      window.location.href = '{{ cancelled }}';
+                    }else if(response.error){
+                      displayErrorMessage(response.error);
+                    }
+                    
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    
+                    window.location.href = '{{ cancelled }}'; // استبدل برابط الإلغاء الخاص بك
+
+                }
+            });
+        }
+});
+
+
+
+
+
+
+$('#journal_list').on('click', 'tr', function(event) {
+    // تحقق إذا كان العنصر المنقور هو الـ <td> الأول أو عنصر داخله
+    if (!$(event.target).closest('td:first-child, td:first-child *').length) {
+        // إذا لم يكن النقر داخل الـ <td> الأول، قم بالانتقال
+        window.location = $(this).attr('href');
+    }
+});
+
+
+
+function setupPagination(totalPages, currentPage) {
+    console.log('Total Pages:', totalPages, 'Current Page:', currentPage);
+    const paginationContainer = $('#pagination');
+    paginationContainer.empty(); // Clear previous links
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageItem = $('<li>').addClass('page-item');
+        if (i === currentPage) {
+            pageItem.addClass('active');
+        }
+        const pageLink = $('<a>').addClass('page-link').attr('href', '#').text(i).on('click', function(e) {
+            e.preventDefault();
+            filterJournals(i);
+        });
+
+        pageItem.append(pageLink);
+        paginationContainer.append(pageItem);
+    }
+}
+
+// Initial call to load the default page
+$(document).ready(function() {
+    filterJournals();
+});
+
+$('#print_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+        $('#journal_ids_input').val(journalIds.join(','));
+        $('#form-order').submit(); // تحفيز إرسال النموذج
+    } else {
+        alert('Please select at least one journal to print.');
+        return false; // منع الإرسال إذا لم يتم تحديد أي قيود
+    }
+});
+
+
+
+</script>
+
+{{ footer }}
+
+
+
+======================
+File: ./balance_sheet_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+}
+th {
+    background:#eee;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+}
+.summary {
+    margin-top:20px;
+}
+.summary td {
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_balance_sheet }}</h2>
+<p>{{ text_as_of }}: {{ end_date }}</p>
+
+<div class="section-title">{{ text_assets }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for a in assets %}
+<tr>
+    <td>{{ a.name }} ({{ a.account_code }})</td>
+    <td>{{ a.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_assets }}</strong></td>
+    <td><strong>{{ total_assets }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_liabilities }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for l in liabilities %}
+<tr>
+    <td>{{ l.name }} ({{ l.account_code }})</td>
+    <td>{{ l.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_liabilities }}</strong></td>
+    <td><strong>{{ total_liabilities }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_equity }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for e in equity %}
+<tr>
+    <td>{{ e.name }} ({{ e.account_code }})</td>
+    <td>{{ e.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_equity }}</strong></td>
+    <td><strong>{{ total_equity }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<table class="summary">
+<tr>
+    <td><strong>{{ text_total_liabilities_equity }}</strong></td>
+    <td><strong>{{ total_liabilities_equity }}</strong></td>
+</tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./sales_analysis_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+======================
+File: ./changes_in_equity_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+}
+th {
+    background:#eee;
+    text-align:center;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+.summary {
+    margin-top:20px;
+}
+.summary td {
+    text-align:right;
+    border:1px solid #000;
+    padding:5px;
+}
+.summary th {
+    background:#eee;
+    border:1px solid #000;
+    padding:5px;
+    text-align:center;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_changes_in_equity }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_account_name }}</th>
+    <th>{{ text_opening_balance }}</th>
+    <th>{{ text_movement }}</th>
+    <th>{{ text_closing_balance }}</th>
+</tr>
+</thead>
+<tbody>
+{% for acc in accounts %}
+<tr>
+    <td>{{ acc.name }} ({{ acc.account_code }})</td>
+    <td>{{ acc.opening_formatted }}</td>
+    <td>{{ acc.movement_formatted }}</td>
+    <td>{{ acc.closing_formatted }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total }}</strong></td>
+    <td><strong>{{ total_opening }}</strong></td>
+    <td><strong>{{ total_movement }}</strong></td>
+    <td><strong>{{ total_closing }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./purchase_analysis_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+
+    <form action="{{ action }}" method="post" id="form-filter">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_start" id="input-date-start" class="form-control" />
+            </div>
+            <label class="col-sm-2 col-form-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-4">
+                <input type="date" name="date_end" id="input-date-end" class="form-control" />
+            </div>
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+        </div>
+    </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./annual_tax_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body { margin:10px; font-family: sans-serif; font-size:14px; }
+table { border-collapse: collapse; width:50%; margin-bottom:20px; }
+th, td { border:1px solid #000; padding:5px; font-size:14px; }
+th { background:#eee; text-align:left; }
+.value-right { text-align:right; }
+</style>
+</head>
+<body>
+<h2>{{ text_annual_tax_report }}</h2>
+<p>{{ text_year }}: {{ year }}</p>
+
+<table>
+<tr><th>{{ text_total_taxes }}</th><td class="value-right">{{ total_taxes }}</td></tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+
+======================
+File: ./annual_tax_form.twig
+======================
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+    </div>
+  </div>
+  {% if error_warning %}
+  <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+  {% endif %}
+  <form action="{{ action }}" method="post">
+    <div class="form-group row">
+      <label class="col-sm-2 control-label" for="input-year">{{ entry_year }}</label>
+      <div class="col-sm-4">
+        <input type="text" name="year" id="input-year" class="form-control" placeholder="{{ entry_year }}" />
+      </div>
+    </div>
+    <div class="text-right">
+      <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+    </div>
+  </form>
+</div>
+{{ footer }}
+
+
+
+======================
+File: ./fixed_assets_list.twig
+======================
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8">
+<title>{{ title }}</title>
+<style>
+body { margin:10px; font-family:sans-serif; font-size:14px; }
+table { border-collapse: collapse; width:50%; margin-bottom:20px; }
+th, td { border:1px solid #000; padding:5px; font-size:14px; }
+th { background:#eee; text-align:left; }
+.value-right { text-align:right; }
+</style>
+</head>
+<body>
+<h2>{{ text_fixed_assets_report }}</h2>
+<p>{{ text_end_date }}: {{ end_date }}</p>
+
+<table>
+<tr><th>{{ text_assets }}</th><td class="value-right">{{ assets }}</td></tr>
+<tr><th>{{ text_accum_depr }}</th><td class="value-right">{{ accum_depr }}</td></tr>
+<tr><th>{{ text_net_value }}</th><td class="value-right">{{ net_value }}</td></tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>
+
+
+

@@ -1,0 +1,335 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        <li><a href="{{ home }}">{{ text_home }}</a></li>
+        <li><a href="{{ list }}">{{ text_list }}</a></li>
+      </ul>
+      <div class="pull-right">
+        <button type="submit" form="form-stock-count" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i>
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger">
+        <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible">
+        <i class="fa fa-check-circle"></i> {{ success }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" id="form-stock-count" class="form-horizontal">
+
+          <!-- Reference Code -->
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-reference">{{ entry_reference_code }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="reference_code" value="{{ reference_code }}" placeholder="{{ entry_reference_code }}" 
+                     id="input-reference" class="form-control" />
+              {% if error_reference_code %}
+                <div class="text-danger">{{ error_reference_code }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Branch -->
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-branch">{{ entry_branch }}</label>
+            <div class="col-sm-10">
+              <select name="branch_id" id="input-branch" class="form-control">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == branch_id %} selected {% endif %}>
+                    {{ branch.name }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% if error_branch %}
+                <div class="text-danger">{{ error_branch }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Count Date -->
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-count-date">{{ entry_count_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="count_date" value="{{ count_date }}" id="input-count-date" class="form-control" />
+              {% if error_count_date %}
+                <div class="text-danger">{{ error_count_date }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="3" id="input-notes" class="form-control">{{ notes }}</textarea>
+            </div>
+          </div>
+
+          <hr/>
+          <!-- Items Section -->
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ text_select_products }}</label>
+            <div class="col-sm-10">
+              <button type="button" id="button-add-item" class="btn btn-primary">
+                <i class="fa fa-plus"></i> {{ button_add_item }}
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table id="count-items" class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>{{ entry_product }}</th>
+                  <th>{{ entry_unit }}</th>
+                  <th style="width: 10%;">{{ entry_system_qty }}</th>
+                  <th style="width: 10%;">{{ entry_counted_qty }}</th>
+                  <th style="width: 10%;">{{ entry_difference }}</th>
+                  <th>{{ entry_barcode }}</th>
+                  <th>{{ entry_notes }}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                <tr>
+                  <td>
+                    <input type="hidden" name="items[{{ loop.index0 }}][count_item_id]" value="{{ item.count_item_id }}"/>
+                    <select class="form-control product-select" name="items[{{ loop.index0 }}][product_id]">
+                      <option value="{{ item.product_id }}" selected>{{ item.product_name }}</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select class="form-control unit-select" name="items[{{ loop.index0 }}][unit_id]">
+                      {% for u in item.units %}
+                        <option value="{{ u.unit_id }}"
+                                data-factor="{{ u.conversion_factor|default(1) }}"
+                                {% if u.unit_id == item.unit_id %} selected {% endif %}
+                        >{{ u.desc_en }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td>
+                    <!-- نخزن قيمة النظام بالوحدة الأساسية في حقل مخفي (base_qty) إن أردنا -->
+                    <input type="hidden" class="base-qty" value="{{ item.system_qty|default('0.0000') }}"/>
+                    <input type="text" class="form-control text-right system-qty" 
+                           name="items[{{ loop.index0 }}][system_qty]" 
+                           value="{{ item.system_qty }}" readonly/>
+                  </td>
+                  <td>
+                    <input type="text" class="form-control text-right counted-qty" 
+                           name="items[{{ loop.index0 }}][counted_qty]" 
+                           value="{{ item.counted_qty }}"/>
+                  </td>
+                  <td>
+                    <input type="text" class="form-control text-right difference" 
+                           name="items[{{ loop.index0 }}][difference]" 
+                           value="{{ item.difference }}" readonly/>
+                  </td>
+                  <td>
+                    <input type="text" class="form-control" name="items[{{ loop.index0 }}][barcode]" value="{{ item.barcode }}"/>
+                  </td>
+                  <td>
+                    <input type="text" class="form-control" name="items[{{ loop.index0 }}][notes]" value="{{ item.notes }}"/>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-danger btn-remove-item">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        </form>
+
+        <div class="text-right">
+          {% if stock_count_id and status != 'completed' and status != 'cancelled' %}
+            <button type="button" id="button-complete" class="btn btn-success">
+              <i class="fa fa-check"></i> {{ button_complete_count }}
+            </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Template Row (hidden) -->
+<table style="display: none;">
+  <tbody id="template-item-row">
+    <tr>
+      <td>
+        <input type="hidden" name="items[INDEX][count_item_id]" value="0"/>
+        <select class="form-control product-select" name="items[INDEX][product_id]"></select>
+      </td>
+      <td>
+        <select class="form-control unit-select" name="items[INDEX][unit_id]"></select>
+      </td>
+      <td>
+        <input type="hidden" class="base-qty" value="0.0000"/>
+        <input type="text" class="form-control text-right system-qty" name="items[INDEX][system_qty]" value="0.0000" readonly/>
+      </td>
+      <td>
+        <input type="text" class="form-control text-right counted-qty" name="items[INDEX][counted_qty]" value="0.0000"/>
+      </td>
+      <td>
+        <input type="text" class="form-control text-right difference" name="items[INDEX][difference]" value="0.0000" readonly/>
+      </td>
+      <td>
+        <input type="text" class="form-control" name="items[INDEX][barcode]" value=""/>
+      </td>
+      <td>
+        <input type="text" class="form-control" name="items[INDEX][notes]" value=""/>
+      </td>
+      <td>
+        <button type="button" class="btn btn-danger btn-remove-item">
+          <i class="fa fa-trash"></i>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<script type="text/javascript"><!--
+var item_index = {{ items|length ? items|length : 0 }};
+
+// دالة تهيئة Select2 للمنتج
+function initSelect2Product($elem) {
+  $elem.select2({
+    placeholder: "{{ text_select }}",
+    allowClear: true,
+    minimumInputLength: 1,
+    ajax: {
+      url: 'index.php?route=inventory/stock_count/select2Products&user_token={{ user_token }}&branch_id={{ branch_id }}',
+      dataType: 'json',
+      delay: 250,
+      data: function(params) {
+        return { q: params.term };
+      },
+      processResults: function(data) {
+        return { results: data };
+      },
+      cache: true
+    }
+  }).on('select2:select', function(e){
+    var data = e.params.data; // {id, text, base_qty, units}
+    var $row = $(this).closest('tr');
+
+    // 1) تحديث الـ base-qty
+    $row.find('.base-qty').val(data.base_qty.toFixed(4));
+
+    // 2) ملء قائمة الوحدات
+    var $unitSelect = $row.find('.unit-select');
+    $unitSelect.empty();
+    if (data.units) {
+      $.each(data.units, function(i, u){
+        // u.conversion_factor يخبرنا كم تساوي هذه الوحدة من الوحدة الأساسية
+        var opt = new Option(u.desc_en, u.unit_id, false, false);
+        $(opt).attr('data-factor', u.conversion_factor || 1);
+        $unitSelect.append(opt);
+      });
+    }
+
+    // اختياري: اختار أوّل وحدة مباشرة
+    if (data.units && data.units.length > 0) {
+      $unitSelect.val(data.units[0].unit_id).trigger('change');
+    } else {
+      // لو لا توجد وحدات
+      $row.find('.system-qty').val(data.base_qty.toFixed(4));
+    }
+  });
+}
+
+// عند تغيير الوحدة، احسب الكمية بالنظام = base_qty / factor
+$('#count-items').on('change', '.unit-select', function(){
+  var $row   = $(this).closest('tr');
+  var factor = parseFloat($(this).find(':selected').attr('data-factor')) || 1;
+  var baseQty= parseFloat($row.find('.base-qty').val()) || 0;
+  var systemQty = baseQty / factor;
+  $row.find('.system-qty').val(systemQty.toFixed(4));
+
+  // أعد حساب الفرق لو كانت الكمية الفعلية مدخلة
+  var counted = parseFloat($row.find('.counted-qty').val()) || 0;
+  var diff = counted - systemQty;
+  $row.find('.difference').val(diff.toFixed(4));
+});
+
+// عند إدخال counted_qty، حدِّث الـ difference
+$('#count-items').on('input', '.counted-qty', function(){
+  var $row = $(this).closest('tr');
+  var sys  = parseFloat($row.find('.system-qty').val()) || 0;
+  var cQty = parseFloat($(this).val()) || 0;
+  var diff = cQty - sys;
+  $row.find('.difference').val(diff.toFixed(4));
+});
+
+// زر إضافة بند جديد
+$('#button-add-item').on('click', function() {
+  var html = $('#template-item-row').html().replace(/INDEX/g, item_index);
+  $('#count-items tbody').append(html);
+  var $newRow = $('#count-items tbody tr:last');
+
+  // تهيئة الـ Select2 للمنتج
+  initSelect2Product($newRow.find('.product-select'));
+  
+  item_index++;
+});
+
+// زر حذف البند
+$('#count-items').on('click', '.btn-remove-item', function(){
+  $(this).closest('tr').remove();
+});
+
+// زر الإتمام (إنهاء الجرد)
+$('#button-complete').on('click', function(){
+  if (confirm('{{ text_confirm }}')) {
+    $.ajax({
+      url: 'index.php?route=inventory/stock_count/complete&user_token={{ user_token }}&stock_count_id={{ stock_count_id }}',
+      type: 'post',
+      dataType: 'json',
+      success: function(json) {
+        if (json.success) {
+          alert(json.success);
+          location.reload();
+        } else if (json.error) {
+          alert(json.error);
+        }
+      }
+    });
+  }
+});
+
+// تهيئة الـ select2 للصفوف الموجودة مسبقًا
+$('#count-items tbody tr').each(function(){
+  initSelect2Product($(this).find('.product-select'));
+});
+
+--></script>
+{{ footer }}

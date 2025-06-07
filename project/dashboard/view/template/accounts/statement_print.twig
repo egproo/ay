@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ direction == 'rtl' ? 'طباعة كشف حساب /  ' ~ accountname : 'Print Account Statement ' ~ accountname }}</title>
+    <base href="https://store.codaym.com/dashboard/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="view/javascript/jquery/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Styles -->
+    <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    {% if direction == 'rtl' %}
+    <link href="view/stylesheet/bootstrap-a.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet-a.css" rel="stylesheet" />
+    {% else %}
+    <link href="view/stylesheet/bootstrap.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet.css" rel="stylesheet" />
+    {% endif %}
+
+    <!-- Favicon -->
+    <link href="https://store.codaym.com/image/catalog/dlogo.png" rel="icon" />
+
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #FFF;
+                font-size: 12px;
+            }
+            .container {
+                width: 100%;
+                padding: 20mm;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .logo {
+                max-height: 50mm;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #000;
+                padding: 5px;
+                text-align:center;
+            }
+            th {
+                background-color: #eeeeee;
+            }
+        }
+    @media print { a[href]::after { content: '' !important } }    
+    </style>
+</head>
+<body>
+    <div class="row">
+{% for account in accounts %}
+<div class="container-fluid" style="page-break-after: always;position: relative;">
+
+              <div class="row" >
+                <div class="col-md-12 text-center" style="padding-top: 20px;">
+                    <div class="col-md-2 col-sm-2" style="padding:10px">
+                    <img src="https://store.codaym.com/image/catalog/dlogo.png" alt="Company Logo" style="max-height: 80px;margin-top: -20px;">
+                   </div> 
+                   
+                    <div class="col-md-7 col-sm-7">
+                        {{text_account_statement}}  / {{account.accountname}}
+                        <br>
+                        {% if start_date and start_date != '00-00-00' and start_date != '' %}
+                        {{text_period_from_to}} {{text_from}} {{account.start_date}} {{text_to}} {{account.end_date}}         
+                        {% endif %}
+                    </div>
+ 
+                  <div class="col-md-3  col-sm-3" style="float: inline-end;text-align: center;"> <span style="white-space: nowrap;">{{ column_whoprint }} : {{ whoprint }}</span> <br> <span style="white-space: nowrap;">{{ printdate }}</span></div>
+
+ 
+                    
+                </div>
+              </div>     
+
+                        <span style="text-align: end;display: block;">{{text_bbalance}} / {{account.opening_balance_formatted}}</span>
+    <table class="table text-center">
+        <thead>
+            <tr>
+                <th  class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_date}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_account_number}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_statement}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_debit}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_credit}}</th>
+                <th class="text-center"  style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{text_balance}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set balance = 0 %}
+            {% for transaction in account.transactions %}
+            {% set balance = balance + (transaction.is_debit ? transaction.amount : -transaction.amount) %}
+            <tr>
+                <td class="text-center">{{ transaction.thedate }}</td>
+                <td class="text-center">{{ transaction.account_code }}</td>
+<td class="text-center">{{ text_entry_j }} (<a href="{{ transaction.journal_url_edit }}" target="_blank">{{ transaction.journal_id }}</a>) / {{ transaction.description }}</td>
+
+                <td class="text-center">{{ transaction.is_debit ? transaction.amount_formatted : '' }}</td>
+                <td class="text-center">{{ transaction.is_debit ? '' : transaction.amount_formatted }}</td>
+                <td class="text-center">{{ transaction.balance_formatted }} {{ balance > 0 ? ' (' ~ text_debit ~ ')' : ' (' ~ text_credit ~ ')' }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th colspan="5">{{text_total}}</th>
+                <th class="text-center">{{text_ebalance}} / {{ account.closing_balance_formatted }} {{ account.closing_balance > 0 ? ' (' ~ text_debit ~ ')' : ' (' ~ text_credit ~ ')' }}</th>
+            </tr>
+        </tbody>
+
+    </table>
+    
+    
+</div>    
+{% endfor %}
+    
+
+</div>
+</body>
+</html>

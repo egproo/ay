@@ -1,0 +1,191 @@
+{{ header }}{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-save" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-workflow" class="form-horizontal">
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+              {% if error_name %}
+              <div class="text-danger">{{ error_name }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-description">{{ entry_description }}</label>
+            <div class="col-sm-10">
+              <textarea name="description" rows="5" placeholder="{{ entry_description }}" id="input-description" class="form-control">{{ description }}</textarea>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-control">
+                {% if status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ text_workflow_designer }}</label>
+            <div class="col-sm-10">
+              <div id="workflow-designer">
+                <div class="workflow-toolbar">
+                  <button type="button" id="button-zoom-in" class="toolbar-button" title="{{ text_zoom_in }}"><i class="fa fa-search-plus"></i></button>
+                  <button type="button" id="button-zoom-out" class="toolbar-button" title="{{ text_zoom_out }}"><i class="fa fa-search-minus"></i></button>
+                  <div class="toolbar-spacer"></div>
+                  <button type="button" id="button-clear" class="toolbar-button" title="{{ text_clear }}"><i class="fa fa-trash"></i></button>
+                </div>
+                
+                <div id="node-palette">
+                  <div class="node-item" draggable="true" data-type="start">
+                    <div class="node-icon" style="background-color: #5cb85c">
+                      <i class="fa fa-play-circle"></i>
+                    </div>
+                    <div class="node-label">{{ text_start }}</div>
+                  </div>
+                  
+                  <div class="node-item" draggable="true" data-type="task">
+                    <div class="node-icon" style="background-color: #5bc0de">
+                      <i class="fa fa-tasks"></i>
+                    </div>
+                    <div class="node-label">{{ text_task }}</div>
+                  </div>
+                  
+                  <div class="node-item" draggable="true" data-type="decision">
+                    <div class="node-icon" style="background-color: #f0ad4e">
+                      <i class="fa fa-random"></i>
+                    </div>
+                    <div class="node-label">{{ text_decision }}</div>
+                  </div>
+                  
+                  <div class="node-item" draggable="true" data-type="email">
+                    <div class="node-icon" style="background-color: #337ab7">
+                      <i class="fa fa-envelope"></i>
+                    </div>
+                    <div class="node-label">{{ text_email }}</div>
+                  </div>
+                  
+                  <div class="node-item" draggable="true" data-type="delay">
+                    <div class="node-icon" style="background-color: #777777">
+                      <i class="fa fa-clock-o"></i>
+                    </div>
+                    <div class="node-label">{{ text_delay }}</div>
+                  </div>
+                  
+                  <div class="node-item" draggable="true" data-type="end">
+                    <div class="node-icon" style="background-color: #d9534f">
+                      <i class="fa fa-stop-circle"></i>
+                    </div>
+                    <div class="node-label">{{ text_end }}</div>
+                  </div>
+                </div>
+                
+                <div id="workflow-canvas">
+                  <div class="canvas-content"></div>
+                </div>
+                
+                <div id="property-panel"></div>
+              </div>
+              
+              <input type="hidden" name="workflow_data" id="workflow-data" value="{{ workflow_data }}" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Override for bootstrap styles */
+#workflow-designer .btn {
+  margin-top: 5px;
+}
+
+#workflow-designer .form-control {
+  height: auto;
+}
+</style>
+
+<script type="text/javascript">
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize workflow designer
+  const designer = new WorkflowDesigner({
+    container: '#workflow-designer',
+    nodePalette: '#node-palette',
+    canvas: '#workflow-canvas',
+    propertyPanel: '#property-panel',
+    saveButton: '#button-save',
+    clearButton: '#button-clear',
+    zoomInButton: '#button-zoom-in',
+    zoomOutButton: '#button-zoom-out'
+  });
+  
+  // Get workflow data from hidden input
+  const workflowData = document.getElementById('workflow-data').value;
+  if (workflowData) {
+    try {
+      const data = JSON.parse(workflowData);
+      
+      if (data.nodes) {
+        designer.nodes = data.nodes;
+      }
+      
+      if (data.connections) {
+        designer.connections = data.connections;
+      }
+      
+      designer.renderWorkflow();
+    } catch (error) {
+      console.error('Error loading workflow data:', error);
+    }
+  }
+  
+  // Save button event handler
+  document.getElementById('button-save').addEventListener('click', function() {
+    // Get workflow data
+    const data = designer.handleSave();
+    
+    // Submit the form
+    document.getElementById('form-workflow').submit();
+  });
+});
+</script>
+
+{{ footer }} 

@@ -1,0 +1,112 @@
+<!-- Receipt View Modal -->
+<div class="modal-dialog modal-lg">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+      <h4 class="modal-title"><i class="fa fa-truck"></i> {{ heading_title }}</h4>
+    </div>
+    <div class="modal-body">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_receipt_details }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-sm-6">
+              <table class="table table-bordered table-details">
+                <tr>
+                  <th>{{ text_receipt_number }}</th>
+                  <td><strong>{{ receipt.receipt_number }}</strong></td>
+                </tr>
+                <tr>
+                  <th>{{ text_po_number }}</th>
+                  <td>{{ order.po_number }}</td>
+                </tr>
+                <tr>
+                  <th>{{ text_supplier }}</th>
+                  <td>{{ order.supplier_name }}</td>
+                </tr>
+                <tr>
+                  <th>{{ text_receipt_date }}</th>
+                  <td>{{ receipt.receipt_date }}</td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-sm-6">
+              <table class="table table-bordered table-details">
+                <tr>
+                  <th>{{ text_reference }}</th>
+                  <td>{{ receipt.reference }}</td>
+                </tr>
+                <tr>
+                  <th>{{ text_received_by }}</th>
+                  <td>{{ receipt.created_by_name }}</td>
+                </tr>
+                {% if receipt.notes %}
+                <tr>
+                  <th>{{ text_notes }}</th>
+                  <td>{{ receipt.notes }}</td>
+                </tr>
+                {% endif %}
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-shopping-cart"></i> {{ text_receipt_items }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>{{ column_product }}</th>
+                  <th class="text-center">{{ column_quantity }}</th>
+                  <th>{{ column_unit }}</th>
+                  <th class="text-right">{{ column_unit_cost }}</th>
+                  <th class="text-right">{{ column_total_cost }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if items %}
+                  {% for item in items %}
+                  <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td class="text-center">{{ item.quantity_received }}</td>
+                    <td>{{ item.unit_name }}</td>
+                    <td class="text-right">{{ item.unit_price }}</td>
+                    <td class="text-right">{{ (item.quantity_received * item.unit_price)|number_format(2) }}</td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center">{{ text_no_items }}</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+              <tfoot>
+                {% set total = 0 %}
+                {% for item in items %}
+                  {% set total = total + (item.quantity_received * item.unit_price) %}
+                {% endfor %}
+                <tr>
+                  <td colspan="4" class="text-right"><strong>{{ text_total }}</strong></td>
+                  <td class="text-right"><strong>{{ total|number_format(2) }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      <button type="button" class="btn btn-primary" onclick="OrderManager.printReceipt({{ receipt.goods_receipt_id }});">
+        <i class="fa fa-print"></i> {{ button_print }}
+      </button>
+    </div>
+  </div>
+</div> 

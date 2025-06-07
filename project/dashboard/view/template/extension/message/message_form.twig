@@ -1,0 +1,343 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-message" data-toggle="tooltip" title="{{ button_send }}" class="btn btn-primary"><i class="fa fa-paper-plane"></i></button>
+        <button type="submit" form="form-message" id="button-save" formaction="{{ save_draft }}" data-toggle="tooltip" title="{{ button_save_draft }}" class="btn btn-default"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-message" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-message-type">{{ entry_message_type }}</label>
+            <div class="col-sm-10">
+              <select name="message_type" id="input-message-type" class="form-control">
+                <option value="private" {% if message_type == 'private' %}selected="selected"{% endif %}>{{ text_private }}</option>
+                <option value="announcement" {% if message_type == 'announcement' %}selected="selected"{% endif %}>{{ text_announcement }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group required" id="recipients-group">
+            <label class="col-sm-2 control-label" for="input-to">{{ entry_to }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="to" value="{{ to }}" placeholder="{{ entry_to }}" id="input-to" class="form-control" />
+              <div id="recipient-list" class="well well-sm" style="height: 150px; overflow: auto;">
+                {% for recipient in recipients %}
+                <div id="recipient-{{ recipient.user_id }}"><i class="fa fa-minus-circle"></i> {{ recipient.name }}
+                  <input type="hidden" name="recipients[]" value="{{ recipient.user_id }}" />
+                </div>
+                {% endfor %}
+              </div>
+              {% if error_to %}
+              <div class="text-danger">{{ error_to }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="form-group" id="cc-group">
+            <label class="col-sm-2 control-label" for="input-cc">{{ entry_cc }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="cc" value="{{ cc }}" placeholder="{{ entry_cc }}" id="input-cc" class="form-control" />
+              <div id="cc-list" class="well well-sm" style="height: 150px; overflow: auto;">
+                {% for cc_item in cc_items %}
+                <div id="cc-{{ cc_item.user_id }}"><i class="fa fa-minus-circle"></i> {{ cc_item.name }}
+                  <input type="hidden" name="cc_items[]" value="{{ cc_item.user_id }}" />
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group" id="recipient-group-container">
+            <label class="col-sm-2 control-label" for="input-group">{{ entry_recipient_groups }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="group" value="" placeholder="{{ entry_recipient_groups }}" id="input-group" class="form-control" />
+              <div id="recipient-group" class="well well-sm" style="height: 150px; overflow: auto;">
+                {% for group in recipient_groups %}
+                <div id="recipient-group-{{ group.user_group_id }}"><i class="fa fa-minus-circle"></i> {{ group.name }}
+                  <input type="hidden" name="recipient_groups[]" value="{{ group.user_group_id }}" />
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-subject">{{ entry_subject }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="subject" value="{{ subject }}" placeholder="{{ entry_subject }}" id="input-subject" class="form-control" />
+              {% if error_subject %}
+              <div class="text-danger">{{ error_subject }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-priority">{{ entry_priority }}</label>
+            <div class="col-sm-10">
+              <select name="priority" id="input-priority" class="form-control">
+                <option value="normal" {% if priority == 'normal' %}selected="selected"{% endif %}>{{ text_normal }}</option>
+                <option value="high" {% if priority == 'high' %}selected="selected"{% endif %}>{{ text_high }}</option>
+                <option value="urgent" {% if priority == 'urgent' %}selected="selected"{% endif %}>{{ text_urgent }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-message">{{ entry_message }}</label>
+            <div class="col-sm-10">
+              <textarea name="message" placeholder="{{ entry_message }}" id="input-message" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control">{{ message }}</textarea>
+              {% if error_message %}
+              <div class="text-danger">{{ error_message }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_attachments }}</label>
+            <div class="col-sm-10">
+              <button type="button" id="button-add-attachment" class="btn btn-default"><i class="fa fa-paperclip"></i> {{ button_add_attachment }}</button>
+              <div id="attachments">
+                {% if attachments %}
+                {% for attachment in attachments %}
+                <div class="attachment-item">
+                  <input type="hidden" name="attachment[]" value="{{ attachment.filename }},{{ attachment.mask }},{{ attachment.size }},{{ attachment.type }}" />
+                  <div class="attachment-info">
+                    <i class="fa fa-file"></i> {{ attachment.mask }} ({{ attachment.size_formatted }})
+                    <button type="button" class="btn btn-danger btn-xs remove-attachment"><i class="fa fa-times"></i></button>
+                  </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// Initialize summernote editor
+$('#input-message').summernote({
+  height: 300,
+  toolbar: [
+    ['style', ['style']],
+    ['font', ['bold', 'underline', 'clear']],
+    ['color', ['color']],
+    ['para', ['ul', 'ol', 'paragraph']],
+    ['table', ['table']],
+    ['insert', ['link']],
+    ['view', ['fullscreen', 'codeview', 'help']]
+  ]
+});
+
+// Toggle recipient fields based on message type
+$('#input-message-type').on('change', function() {
+  if ($(this).val() == 'announcement') {
+    $('#recipients-group').hide();
+    $('#cc-group').hide();
+    $('#recipient-group-container').show();
+  } else {
+    $('#recipients-group').show();
+    $('#cc-group').show();
+    $('#recipient-group-container').hide();
+  }
+});
+
+// Trigger the change event to set initial visibility
+$('#input-message-type').trigger('change');
+
+// Autocomplete for individual recipients
+$('input[name=\'to\']').autocomplete({
+  'source': function(request, response) {
+    $.ajax({
+      url: 'index.php?route=extension/message/autocomplete&token={{ token }}&filter_name=' + encodeURIComponent(request),
+      dataType: 'json',
+      success: function(json) {
+        response($.map(json, function(item) {
+          return {
+            label: item['name'],
+            value: item['user_id']
+          }
+        }));
+      }
+    });
+  },
+  'select': function(item) {
+    $('input[name=\'to\']').val('');
+    
+    $('#recipient-' + item['value']).remove();
+    
+    $('#recipient-list').append('<div id="recipient-' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="recipients[]" value="' + item['value'] + '" /></div>');
+  }
+});
+
+// Remove recipient
+$('#recipient-list').on('click', '.fa-minus-circle', function() {
+  $(this).parent().remove();
+});
+
+// Autocomplete for CC recipients
+$('input[name=\'cc\']').autocomplete({
+  'source': function(request, response) {
+    $.ajax({
+      url: 'index.php?route=extension/message/autocomplete&token={{ token }}&filter_name=' + encodeURIComponent(request),
+      dataType: 'json',
+      success: function(json) {
+        response($.map(json, function(item) {
+          return {
+            label: item['name'],
+            value: item['user_id']
+          }
+        }));
+      }
+    });
+  },
+  'select': function(item) {
+    $('input[name=\'cc\']').val('');
+    
+    $('#cc-' + item['value']).remove();
+    
+    $('#cc-list').append('<div id="cc-' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="cc_items[]" value="' + item['value'] + '" /></div>');
+  }
+});
+
+// Remove CC recipient
+$('#cc-list').on('click', '.fa-minus-circle', function() {
+  $(this).parent().remove();
+});
+
+// Autocomplete for recipient groups
+$('input[name=\'group\']').autocomplete({
+  'source': function(request, response) {
+    $.ajax({
+      url: 'index.php?route=extension/message/autocompleteGroup&token={{ token }}&filter_name=' + encodeURIComponent(request),
+      dataType: 'json',
+      success: function(json) {
+        response($.map(json, function(item) {
+          return {
+            label: item['name'],
+            value: item['user_group_id']
+          }
+        }));
+      }
+    });
+  },
+  'select': function(item) {
+    $('input[name=\'group\']').val('');
+    
+    $('#recipient-group-' + item['value']).remove();
+    
+    $('#recipient-group').append('<div id="recipient-group-' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="recipient_groups[]" value="' + item['value'] + '" /></div>');
+  }
+});
+
+// Remove recipient group
+$('#recipient-group').on('click', '.fa-minus-circle', function() {
+  $(this).parent().remove();
+});
+
+// File upload handling
+$('#button-add-attachment').on('click', function() {
+  var node = this;
+  
+  $('#form-upload').remove();
+  
+  $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" /></form>');
+  
+  $('#form-upload input[name=\'file\']').trigger('click');
+  
+  $('#form-upload input[name=\'file\']').on('change', function() {
+    $.ajax({
+      url: 'index.php?route=extension/message/upload&token={{ token }}',
+      type: 'post',
+      dataType: 'json',
+      data: new FormData($(this).parent()[0]),
+      cache: false,
+      contentType: false,
+      processData: false,
+      beforeSend: function() {
+        $(node).button('loading');
+      },
+      complete: function() {
+        $(node).button('reset');
+      },
+      success: function(json) {
+        if (json['error']) {
+          alert(json['error']);
+        }
+        
+        if (json['success']) {
+          alert(json['success']);
+          
+          if (json['file']) {
+            var fileHtml = '<div class="attachment-item">' +
+                '<input type="hidden" name="attachment[]" value="' + json['file']['filename'] + ',' + json['file']['mask'] + ',' + json['file']['size'] + ',' + json['file']['type'] + '" />' +
+                '<div class="attachment-info">' +
+                '<i class="fa fa-file"></i> ' + json['file']['mask'] + ' (' + json['file']['size_formatted'] + ')' +
+                ' <button type="button" class="btn btn-danger btn-xs remove-attachment"><i class="fa fa-times"></i></button>' +
+                '</div>' +
+                '</div>';
+            
+            $('#attachments').append(fileHtml);
+          }
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  });
+});
+
+// Remove attachment
+$(document).on('click', '.remove-attachment', function() {
+  $(this).closest('.attachment-item').remove();
+});
+</script>
+
+<style type="text/css">
+#recipient-list > div, 
+#cc-list > div,
+#recipient-group > div {
+  margin-bottom: 5px;
+}
+#recipient-list > div > i, 
+#cc-list > div > i,
+#recipient-group > div > i {
+  cursor: pointer;
+  margin-right: 5px;
+  color: #f56b6b;
+}
+.attachment-item {
+  margin-top: 10px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 3px;
+}
+</style>
+
+{{ footer }} 

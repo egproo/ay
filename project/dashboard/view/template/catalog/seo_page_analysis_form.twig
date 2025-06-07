@@ -1,0 +1,405 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-analyze-now" data-toggle="tooltip" title="{{ button_analyze }}" class="btn btn-warning"><i class="fa fa-search"></i></button>
+        <button type="submit" form="form-page-analysis" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-page-analysis" class="form-horizontal">
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-page-url">{{ entry_page_url }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="page_url" value="{{ page_url }}" placeholder="{{ entry_page_url }}" id="input-page-url" class="form-control" />
+              {% if error_page_url %}
+              <div class="text-danger">{{ error_page_url }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-target-keyword">{{ entry_target_keyword }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="target_keyword" value="{{ target_keyword }}" placeholder="{{ entry_target_keyword }}" id="input-target-keyword" class="form-control" />
+              {% if error_target_keyword %}
+              <div class="text-danger">{{ error_target_keyword }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div id="analysis-results" style="display: none;">
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-title-score">{{ entry_title_score }}</label>
+              <div class="col-sm-10">
+                <div class="progress">
+                  <div class="progress-bar" id="title-score-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                    <span id="title-score-text">0%</span>
+                  </div>
+                </div>
+                <input type="hidden" name="title_score" id="input-title-score" value="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-meta-score">{{ entry_meta_score }}</label>
+              <div class="col-sm-10">
+                <div class="progress">
+                  <div class="progress-bar" id="meta-score-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                    <span id="meta-score-text">0%</span>
+                  </div>
+                </div>
+                <input type="hidden" name="meta_score" id="input-meta-score" value="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-content-score">{{ entry_content_score }}</label>
+              <div class="col-sm-10">
+                <div class="progress">
+                  <div class="progress-bar" id="content-score-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                    <span id="content-score-text">0%</span>
+                  </div>
+                </div>
+                <input type="hidden" name="content_score" id="input-content-score" value="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-technical-score">{{ entry_technical_score }}</label>
+              <div class="col-sm-10">
+                <div class="progress">
+                  <div class="progress-bar" id="technical-score-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                    <span id="technical-score-text">0%</span>
+                  </div>
+                </div>
+                <input type="hidden" name="technical_score" id="input-technical-score" value="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-overall-score">{{ entry_overall_score }}</label>
+              <div class="col-sm-10">
+                <div class="progress">
+                  <div class="progress-bar" id="overall-score-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                    <span id="overall-score-text">0%</span>
+                  </div>
+                </div>
+                <input type="hidden" name="overall_score" id="input-overall-score" value="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-suggestions">{{ entry_suggestions }}</label>
+              <div class="col-sm-10">
+                <textarea name="suggestions" rows="5" placeholder="{{ entry_suggestions }}" id="input-suggestions" class="form-control"></textarea>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// Autocomplete para URL de página
+$('input[name=\'page_url\']').autocomplete({
+    'source': function(request, response) {
+        $.ajax({
+            url: 'index.php?route=catalog/seo/autocompletePages&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+            dataType: 'json',
+            success: function(json) {
+                response($.map(json, function(item) {
+                    return {
+                        label: item.name,
+                        value: item.url
+                    }
+                }));
+            }
+        });
+    },
+    'select': function(item) {
+        $('input[name=\'page_url\']').val(item.value);
+    }
+});
+
+// Analizar ahora
+$('#button-analyze-now').on('click', function() {
+    var pageUrl = $('input[name=\'page_url\']').val();
+    var targetKeyword = $('input[name=\'target_keyword\']').val();
+    
+    if (!pageUrl) {
+        alert('{{ error_page_url }}');
+        return;
+    }
+    
+    if (!targetKeyword) {
+        alert('{{ error_target_keyword }}');
+        return;
+    }
+    
+    var $btn = $(this);
+    $btn.button('loading');
+    
+    $.ajax({
+        url: 'index.php?route=catalog/seo/analyzeUrl&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            page_url: pageUrl,
+            target_keyword: targetKeyword
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $btn.button('loading');
+        },
+        complete: function() {
+            $btn.button('reset');
+        },
+        success: function(json) {
+            if (json.success) {
+                var analysis = json.analysis;
+                
+                // Actualizar puntuaciones y barras de progreso
+                updateScore('title', analysis.title_score);
+                updateScore('meta', analysis.meta_score);
+                updateScore('content', analysis.content_score);
+                updateScore('technical', analysis.technical_score);
+                updateScore('overall', analysis.overall_score);
+                
+                // Actualizar sugerencias
+                $('#input-suggestions').val(analysis.suggestions);
+                
+                // Mostrar resultados
+                $('#analysis-results').show();
+            } else if (json.error) {
+                alert(json.error);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            $btn.button('reset');
+        }
+    });
+});
+
+// Función para actualizar puntuación y barra de progreso
+function updateScore(type, score) {
+    var bar = $('#' + type + '-score-bar');
+    var text = $('#' + type + '-score-text');
+    var input = $('#input-' + type + '-score');
+    
+    // Establecer clase según la puntuación
+    bar.removeClass('progress-bar-success progress-bar-warning progress-bar-danger');
+    if (score >= 80) {
+        bar.addClass('progress-bar-success');
+    } else if (score >= 60) {
+        bar.addClass('progress-bar-warning');
+    } else {
+        bar.addClass('progress-bar-danger');
+    }
+    
+    // Actualizar valores
+    bar.attr('aria-valuenow', score);
+    bar.css('width', score + '%');
+    text.text(score + '%');
+    input.val(score);
+}
+</script>
+<style>
+/* Estilos generales para el módulo SEO */
+.seo-navigation {
+    margin-bottom: 30px;
+}
+
+.seo-navigation .panel-body {
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.seo-navigation .panel-body:hover {
+    background-color: #f8f8f8;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.seo-navigation .btn-link {
+    color: #333;
+    text-decoration: none;
+    padding: 15px 0;
+}
+
+.seo-navigation i.fa {
+    margin-bottom: 10px;
+    color: #23a1d1;
+}
+
+/* Tarjetas de estadísticas */
+.panel-primary, .panel-green, .panel-red, .panel-yellow {
+    border-color: #ddd;
+}
+
+.panel-primary .panel-heading {
+    background-color: #337ab7;
+    border-color: #337ab7;
+    color: #fff;
+}
+
+.panel-green .panel-heading {
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+    color: #fff;
+}
+
+.panel-red .panel-heading {
+    background-color: #d9534f;
+    border-color: #d9534f;
+    color: #fff;
+}
+
+.panel-yellow .panel-heading {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+    color: #fff;
+}
+
+.panel-footer {
+    color: #333;
+}
+
+.panel .huge {
+    font-size: 40px;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+/* Barras de progreso */
+.progress {
+    margin-bottom: 10px;
+    height: 20px;
+}
+
+.progress-bar {
+    line-height: 20px;
+    font-size: 12px;
+}
+
+.progress-bar-success {
+    background-color: #5cb85c;
+}
+
+.progress-bar-warning {
+    background-color: #f0ad4e;
+}
+
+.progress-bar-danger {
+    background-color: #d9534f;
+}
+
+/* Lista de sugerencias */
+.seo-suggestions-list {
+    padding-left: 15px;
+    list-style-type: none;
+}
+
+.seo-suggestions-list li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #eee;
+}
+
+.seo-suggestions-list i {
+    margin-right: 8px;
+}
+
+/* Estilos para estados */
+.label-improved {
+    background-color: #5cb85c;
+}
+
+.label-declined {
+    background-color: #d9534f;
+}
+
+.label-unchanged {
+    background-color: #5bc0de;
+}
+
+.label-new {
+    background-color: #f0ad4e;
+}
+
+/* Indicadores de cambio en posiciones */
+.text-success .fa, 
+.text-danger .fa {
+    margin-right: 3px;
+}
+
+/* Formularios de análisis */
+.analysis-results-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .panel .huge {
+        font-size: 30px;
+    }
+    
+    .form-group [class*='col-xs-'] {
+        margin-bottom: 15px;
+    }
+}
+
+/* Animaciones */
+.fade-in {
+    animation: fadeIn ease 0.5s;
+    -webkit-animation: fadeIn ease 0.5s;
+    -moz-animation: fadeIn ease 0.5s;
+    -o-animation: fadeIn ease 0.5s;
+    -ms-animation: fadeIn ease 0.5s;
+}
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-moz-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}    
+</style>
+{{ footer }}

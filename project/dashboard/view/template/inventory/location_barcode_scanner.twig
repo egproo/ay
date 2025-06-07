@@ -1,0 +1,902 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="إعدادات الماسح" class="btn btn-info" data-toggle="modal" data-target="#scanner-settings-modal">
+          <i class="fa fa-cogs"></i>
+        </button>
+        <button type="button" data-toggle="tooltip" title="سجل المسح" class="btn btn-warning" data-toggle="modal" data-target="#scan-history-modal">
+          <i class="fa fa-history"></i>
+        </button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - {{ text_barcode_scanner }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- منطقة المسح -->
+      <div class="col-md-8">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-camera"></i> ماسح الباركود والـ QR Code
+              <div class="pull-right">
+                <span id="scanner-status" class="label label-default">غير نشط</span>
+              </div>
+            </h3>
+          </div>
+          <div class="panel-body text-center">
+            <!-- منطقة الكاميرا -->
+            <div id="camera-container" style="position: relative; display: inline-block;">
+              <video id="scanner-video" width="640" height="480" style="border: 2px solid #ddd; border-radius: 8px; display: none;"></video>
+              <canvas id="scanner-canvas" width="640" height="480" style="border: 2px solid #ddd; border-radius: 8px; display: none;"></canvas>
+
+              <!-- شاشة البداية -->
+              <div id="scanner-placeholder" style="width: 640px; height: 480px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f9f9f9;">
+                <div class="text-center">
+                  <i class="fa fa-camera fa-5x text-muted" style="margin-bottom: 20px;"></i>
+                  <h3 class="text-muted">ماسح الباركود المتقدم</h3>
+                  <p class="text-muted">انقر على "تشغيل الكاميرا" لبدء المسح</p>
+                  <div style="margin-top: 20px;">
+                    <span class="label label-primary" style="margin: 5px;">EAN-13</span>
+                    <span class="label label-success" style="margin: 5px;">UPC-A</span>
+                    <span class="label label-warning" style="margin: 5px;">CODE128</span>
+                    <span class="label label-info" style="margin: 5px;">QR Code</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- إطار المسح -->
+              <div id="scan-frame" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 200px; border: 3px solid #ff0000; border-radius: 8px; display: none;">
+                <div style="position: absolute; top: -10px; left: -10px; width: 30px; height: 30px; border-top: 5px solid #ff0000; border-left: 5px solid #ff0000;"></div>
+                <div style="position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; border-top: 5px solid #ff0000; border-right: 5px solid #ff0000;"></div>
+                <div style="position: absolute; bottom: -10px; left: -10px; width: 30px; height: 30px; border-bottom: 5px solid #ff0000; border-left: 5px solid #ff0000;"></div>
+                <div style="position: absolute; bottom: -10px; right: -10px; width: 30px; height: 30px; border-bottom: 5px solid #ff0000; border-right: 5px solid #ff0000;"></div>
+              </div>
+            </div>
+
+            <!-- أزرار التحكم -->
+            <div style="margin-top: 20px;">
+              <button type="button" id="start-scanner-btn" class="btn btn-success btn-lg" onclick="startScanner()">
+                <i class="fa fa-camera"></i> تشغيل الكاميرا
+              </button>
+              <button type="button" id="stop-scanner-btn" class="btn btn-danger btn-lg" onclick="stopScanner()" style="display: none;">
+                <i class="fa fa-stop"></i> إيقاف الكاميرا
+              </button>
+              <button type="button" id="capture-btn" class="btn btn-warning btn-lg" onclick="captureImage()" style="display: none;">
+                <i class="fa fa-camera"></i> التقاط صورة
+              </button>
+              <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#manual-input-modal">
+                <i class="fa fa-keyboard-o"></i> إدخال يدوي
+              </button>
+            </div>
+
+            <!-- معلومات المسح -->
+            <div id="scan-info" style="margin-top: 15px; display: none;">
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i>
+                <strong>نصائح للمسح الأمثل:</strong>
+                <ul style="text-align: right; margin: 10px 0 0 0;">
+                  <li>تأكد من وجود إضاءة جيدة</li>
+                  <li>امسك الجهاز بثبات</li>
+                  <li>ضع الباركود داخل الإطار الأحمر</li>
+                  <li>حافظ على مسافة 10-30 سم</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- الشريط الجانبي -->
+      <div class="col-md-4">
+        <!-- نتائج المسح -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-check-circle"></i> نتائج المسح
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div id="scan-results">
+              <div class="text-center text-muted">
+                <i class="fa fa-qrcode fa-3x"></i>
+                <p>لا توجد نتائج مسح بعد</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- معلومات الموقع المكتشف -->
+        <div class="panel panel-info" id="location-info-panel" style="display: none;">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-map-marker"></i> معلومات الموقع
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div id="location-details">
+              <!-- سيتم ملء المحتوى ديناميكياً -->
+            </div>
+            <div class="text-center" style="margin-top: 15px;">
+              <a href="#" id="view-location-link" class="btn btn-primary btn-sm">
+                <i class="fa fa-eye"></i> عرض التفاصيل
+              </a>
+              <a href="#" id="edit-location-link" class="btn btn-warning btn-sm">
+                <i class="fa fa-edit"></i> تعديل
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- إحصائيات المسح -->
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bar-chart"></i> إحصائيات الجلسة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="total-scans">0</h4>
+                  <small>إجمالي المسح</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="successful-scans">0</h4>
+                  <small>مسح ناجح</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top: 10px;">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="failed-scans">0</h4>
+                  <small>مسح فاشل</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="scan-rate">0%</h4>
+                  <small>معدل النجاح</small>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <button type="button" class="btn btn-default btn-block btn-sm" onclick="resetStats()">
+                <i class="fa fa-refresh"></i> إعادة تعيين الإحصائيات
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- أنواع الباركود المدعومة -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-list"></i> أنواع الباركود المدعومة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="supported-formats">
+              <div class="format-item">
+                <span class="label label-primary">EAN-13</span>
+                <small class="text-muted">الباركود الأوروبي</small>
+              </div>
+              <div class="format-item">
+                <span class="label label-success">UPC-A</span>
+                <small class="text-muted">الباركود الأمريكي</small>
+              </div>
+              <div class="format-item">
+                <span class="label label-warning">CODE128</span>
+                <small class="text-muted">باركود متعدد الأغراض</small>
+              </div>
+              <div class="format-item">
+                <span class="label label-info">QR Code</span>
+                <small class="text-muted">رمز الاستجابة السريعة</small>
+              </div>
+              <div class="format-item">
+                <span class="label label-danger">CODE39</span>
+                <small class="text-muted">باركود صناعي</small>
+              </div>
+              <div class="format-item">
+                <span class="label label-default">ISBN</span>
+                <small class="text-muted">باركود الكتب</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة الإدخال اليدوي -->
+<div class="modal fade" id="manual-input-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-keyboard-o"></i> إدخال الباركود يدوياً</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="manual-barcode">الباركود أو QR Code:</label>
+          <input type="text" id="manual-barcode" class="form-control" placeholder="أدخل الباركود هنا..." />
+        </div>
+
+        <div class="form-group">
+          <label for="barcode-type">نوع الباركود:</label>
+          <select id="barcode-type" class="form-control">
+            <option value="auto">تحديد تلقائي</option>
+            <option value="ean13">EAN-13</option>
+            <option value="upca">UPC-A</option>
+            <option value="code128">CODE128</option>
+            <option value="qr">QR Code</option>
+            <option value="code39">CODE39</option>
+            <option value="isbn">ISBN</option>
+          </select>
+        </div>
+
+        <div class="alert alert-info">
+          <i class="fa fa-info-circle"></i>
+          <strong>نصيحة:</strong> يمكنك نسخ ولصق الباركود من مصدر آخر
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="processManualBarcode()">
+          <i class="fa fa-search"></i> بحث
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة إعدادات الماسح -->
+<div class="modal fade" id="scanner-settings-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-cogs"></i> إعدادات الماسح</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="camera-select">اختيار الكاميرا:</label>
+          <select id="camera-select" class="form-control">
+            <option value="default">الكاميرا الافتراضية</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="scan-frequency">تردد المسح (مللي ثانية):</label>
+          <input type="range" id="scan-frequency" class="form-control" min="100" max="1000" value="500" />
+          <small class="text-muted">القيمة الحالية: <span id="frequency-value">500</span> مللي ثانية</small>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" id="auto-focus" checked />
+              التركيز التلقائي
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" id="sound-enabled" checked />
+              تشغيل الصوت عند المسح
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" id="vibration-enabled" checked />
+              الاهتزاز عند المسح (الأجهزة المحمولة)
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="saveSettings()">
+          <i class="fa fa-save"></i> حفظ الإعدادات
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة سجل المسح -->
+<div class="modal fade" id="scan-history-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-history"></i> سجل المسح</h4>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>الوقت</th>
+                <th>الباركود</th>
+                <th>النوع</th>
+                <th>النتيجة</th>
+                <th>الموقع</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="scan-history-table">
+              <tr>
+                <td colspan="6" class="text-center text-muted">لا يوجد سجل مسح</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-warning" onclick="clearHistory()">
+          <i class="fa fa-trash"></i> مسح السجل
+        </button>
+        <button type="button" class="btn btn-success" onclick="exportHistory()">
+          <i class="fa fa-download"></i> تصدير السجل
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.format-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.format-item:last-child {
+  border-bottom: none;
+}
+
+#camera-container {
+  position: relative;
+}
+
+.scan-result-item {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f9f9f9;
+}
+
+.scan-result-success {
+  border-color: #5cb85c;
+  background: #dff0d8;
+}
+
+.scan-result-error {
+  border-color: #d9534f;
+  background: #f2dede;
+}
+
+.location-info-card {
+  border: 1px solid #5bc0de;
+  border-radius: 4px;
+  padding: 15px;
+  background: #d9edf7;
+}
+
+#scan-frame {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+</style>
+
+<script type="text/javascript">
+var scannerStream;
+var scannerVideo;
+var scannerCanvas;
+var scannerContext;
+var scanInterval;
+var scanStats = {
+    total: 0,
+    successful: 0,
+    failed: 0
+};
+var scanHistory = [];
+
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+
+    scannerVideo = document.getElementById('scanner-video');
+    scannerCanvas = document.getElementById('scanner-canvas');
+    scannerContext = scannerCanvas.getContext('2d');
+
+    // تحديث قيمة تردد المسح
+    $('#scan-frequency').on('input', function() {
+        $('#frequency-value').text($(this).val());
+    });
+
+    // تحميل الكاميرات المتاحة
+    loadAvailableCameras();
+
+    // تحميل الإعدادات المحفوظة
+    loadSettings();
+});
+
+function loadAvailableCameras() {
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices()
+            .then(function(devices) {
+                var cameraSelect = $('#camera-select');
+                cameraSelect.empty();
+
+                devices.forEach(function(device, index) {
+                    if (device.kind === 'videoinput') {
+                        cameraSelect.append('<option value="' + device.deviceId + '">' + (device.label || 'كاميرا ' + (index + 1)) + '</option>');
+                    }
+                });
+
+                if (cameraSelect.find('option').length === 0) {
+                    cameraSelect.append('<option value="">لا توجد كاميرات متاحة</option>');
+                }
+            })
+            .catch(function(error) {
+                console.error('خطأ في تحميل الكاميرات:', error);
+            });
+    }
+}
+
+function startScanner() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        var constraints = {
+            video: {
+                width: { ideal: 640 },
+                height: { ideal: 480 },
+                facingMode: 'environment' // الكاميرا الخلفية للأجهزة المحمولة
+            }
+        };
+
+        // إذا تم اختيار كاميرا محددة
+        var selectedCamera = $('#camera-select').val();
+        if (selectedCamera && selectedCamera !== 'default') {
+            constraints.video.deviceId = { exact: selectedCamera };
+        }
+
+        navigator.mediaDevices.getUserMedia(constraints)
+            .then(function(stream) {
+                scannerStream = stream;
+                scannerVideo.srcObject = stream;
+                scannerVideo.play();
+
+                // إخفاء شاشة البداية وإظهار الكاميرا
+                $('#scanner-placeholder').hide();
+                $('#scanner-video').show();
+                $('#scan-frame').show();
+                $('#scan-info').show();
+
+                // تبديل الأزرار
+                $('#start-scanner-btn').hide();
+                $('#stop-scanner-btn, #capture-btn').show();
+
+                // تحديث الحالة
+                $('#scanner-status').removeClass('label-default').addClass('label-success').text('نشط');
+
+                // بدء المسح التلقائي
+                startAutoScan();
+
+                showNotification('تم تشغيل الماسح بنجاح', 'success');
+            })
+            .catch(function(error) {
+                console.error('خطأ في الوصول للكاميرا:', error);
+                showNotification('خطأ في الوصول للكاميرا: ' + error.message, 'error');
+            });
+    } else {
+        showNotification('المتصفح لا يدعم الكاميرا', 'error');
+    }
+}
+
+function stopScanner() {
+    if (scannerStream) {
+        scannerStream.getTracks().forEach(track => track.stop());
+        scannerStream = null;
+    }
+
+    if (scanInterval) {
+        clearInterval(scanInterval);
+        scanInterval = null;
+    }
+
+    // إخفاء الكاميرا وإظهار شاشة البداية
+    $('#scanner-video').hide();
+    $('#scan-frame').hide();
+    $('#scan-info').hide();
+    $('#scanner-placeholder').show();
+
+    // تبديل الأزرار
+    $('#stop-scanner-btn, #capture-btn').hide();
+    $('#start-scanner-btn').show();
+
+    // تحديث الحالة
+    $('#scanner-status').removeClass('label-success').addClass('label-default').text('غير نشط');
+
+    showNotification('تم إيقاف الماسح', 'info');
+}
+
+function startAutoScan() {
+    var frequency = parseInt($('#scan-frequency').val()) || 500;
+
+    scanInterval = setInterval(function() {
+        if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
+            scanFrame();
+        }
+    }, frequency);
+}
+
+function scanFrame() {
+    // رسم الإطار الحالي على الكانفاس
+    scannerContext.drawImage(scannerVideo, 0, 0, 640, 480);
+
+    // محاكاة مسح الباركود
+    var imageData = scannerContext.getImageData(0, 0, 640, 480);
+
+    // هنا يمكن إضافة مكتبة مسح الباركود الحقيقية مثل QuaggaJS أو ZXing
+    // محاكاة اكتشاف باركود عشوائي
+    if (Math.random() < 0.1) { // 10% احتمال اكتشاف باركود
+        var mockBarcode = generateMockBarcode();
+        processScanResult(mockBarcode);
+    }
+}
+
+function generateMockBarcode() {
+    var types = ['LOC', 'PRD', 'QR'];
+    var type = types[Math.floor(Math.random() * types.length)];
+    var number = Math.floor(Math.random() * 900000 + 100000);
+
+    return {
+        code: type + number,
+        type: type === 'QR' ? 'qr' : 'code128',
+        format: type === 'QR' ? 'QR Code' : 'CODE128'
+    };
+}
+
+function processScanResult(result) {
+    scanStats.total++;
+
+    // البحث عن الموقع في قاعدة البيانات
+    searchLocationByBarcode(result.code, function(location) {
+        if (location) {
+            scanStats.successful++;
+            displayScanSuccess(result, location);
+            addToHistory(result, 'success', location.name);
+
+            // تشغيل الصوت والاهتزاز
+            if ($('#sound-enabled').is(':checked')) {
+                playSuccessSound();
+            }
+            if ($('#vibration-enabled').is(':checked')) {
+                vibrate();
+            }
+        } else {
+            scanStats.failed++;
+            displayScanError(result);
+            addToHistory(result, 'failed', null);
+
+            if ($('#sound-enabled').is(':checked')) {
+                playErrorSound();
+            }
+        }
+
+        updateStats();
+    });
+}
+
+function searchLocationByBarcode(barcode, callback) {
+    $.ajax({
+        url: 'index.php?route=inventory/location_management/searchByBarcode&user_token={{ user_token }}',
+        type: 'GET',
+        data: { barcode: barcode },
+        dataType: 'json',
+        success: function(data) {
+            callback(data.location || null);
+        },
+        error: function() {
+            callback(null);
+        }
+    });
+}
+
+function displayScanSuccess(result, location) {
+    var html = '<div class="scan-result-item scan-result-success">';
+    html += '<div class="row">';
+    html += '<div class="col-md-8">';
+    html += '<h5><i class="fa fa-check-circle text-success"></i> تم العثور على الموقع</h5>';
+    html += '<p><strong>الباركود:</strong> ' + result.code + '</p>';
+    html += '<p><strong>النوع:</strong> ' + result.format + '</p>';
+    html += '<p><strong>الوقت:</strong> ' + new Date().toLocaleString('ar-EG') + '</p>';
+    html += '</div>';
+    html += '<div class="col-md-4 text-center">';
+    html += '<i class="fa fa-qrcode fa-3x text-success"></i>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    $('#scan-results').html(html);
+
+    // عرض معلومات الموقع
+    displayLocationInfo(location);
+}
+
+function displayScanError(result) {
+    var html = '<div class="scan-result-item scan-result-error">';
+    html += '<div class="row">';
+    html += '<div class="col-md-8">';
+    html += '<h5><i class="fa fa-times-circle text-danger"></i> لم يتم العثور على الموقع</h5>';
+    html += '<p><strong>الباركود:</strong> ' + result.code + '</p>';
+    html += '<p><strong>النوع:</strong> ' + result.format + '</p>';
+    html += '<p><strong>الوقت:</strong> ' + new Date().toLocaleString('ar-EG') + '</p>';
+    html += '</div>';
+    html += '<div class="col-md-4 text-center">';
+    html += '<i class="fa fa-exclamation-triangle fa-3x text-danger"></i>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="text-center" style="margin-top: 10px;">';
+    html += '<button type="button" class="btn btn-primary btn-sm" onclick="createNewLocation(\'' + result.code + '\')">إنشاء موقع جديد</button>';
+    html += '</div>';
+    html += '</div>';
+
+    $('#scan-results').html(html);
+
+    // إخفاء معلومات الموقع
+    $('#location-info-panel').hide();
+}
+
+function displayLocationInfo(location) {
+    var html = '<div class="location-info-card">';
+    html += '<h5><i class="fa fa-map-marker"></i> ' + location.name + '</h5>';
+    html += '<p><strong>الكود:</strong> <span class="label label-info">' + location.location_code + '</span></p>';
+    html += '<p><strong>النوع:</strong> <span class="label label-primary">' + location.location_type + '</span></p>';
+    html += '<p><strong>الفرع:</strong> ' + (location.branch_name || 'غير محدد') + '</p>';
+    html += '<p><strong>السعة:</strong> ' + (location.current_units || 0) + ' / ' + (location.capacity_units || 0) + ' وحدة</p>';
+    html += '</div>';
+
+    $('#location-details').html(html);
+    $('#view-location-link').attr('href', 'index.php?route=inventory/location_management/view&location_id=' + location.location_id + '&user_token={{ user_token }}');
+    $('#edit-location-link').attr('href', 'index.php?route=inventory/location_management/edit&location_id=' + location.location_id + '&user_token={{ user_token }}');
+    $('#location-info-panel').show();
+}
+
+function captureImage() {
+    if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
+        scannerContext.drawImage(scannerVideo, 0, 0, 640, 480);
+
+        // تحويل الصورة إلى base64
+        var imageData = scannerCanvas.toDataURL('image/png');
+
+        // محاولة مسح الباركود من الصورة الملتقطة
+        showNotification('تم التقاط الصورة - جاري المسح...', 'info');
+
+        // محاكاة مسح الصورة
+        setTimeout(function() {
+            var mockResult = generateMockBarcode();
+            processScanResult(mockResult);
+        }, 1000);
+    }
+}
+
+function processManualBarcode() {
+    var barcode = $('#manual-barcode').val().trim();
+    var type = $('#barcode-type').val();
+
+    if (!barcode) {
+        alert('يرجى إدخال الباركود');
+        return;
+    }
+
+    var result = {
+        code: barcode,
+        type: type === 'auto' ? 'unknown' : type,
+        format: type === 'auto' ? 'يدوي' : type.toUpperCase()
+    };
+
+    processScanResult(result);
+    $('#manual-input-modal').modal('hide');
+    $('#manual-barcode').val('');
+}
+
+function createNewLocation(barcode) {
+    var url = 'index.php?route=inventory/location_management/add&user_token={{ user_token }}&barcode=' + encodeURIComponent(barcode);
+    window.open(url, '_blank');
+}
+
+function addToHistory(result, status, locationName) {
+    var historyItem = {
+        time: new Date().toLocaleString('ar-EG'),
+        barcode: result.code,
+        type: result.format,
+        status: status,
+        location: locationName || 'غير موجود'
+    };
+
+    scanHistory.unshift(historyItem);
+
+    // الاحتفاظ بآخر 100 عملية مسح فقط
+    if (scanHistory.length > 100) {
+        scanHistory = scanHistory.slice(0, 100);
+    }
+
+    updateHistoryTable();
+}
+
+function updateHistoryTable() {
+    var tbody = $('#scan-history-table');
+    tbody.empty();
+
+    if (scanHistory.length === 0) {
+        tbody.append('<tr><td colspan="6" class="text-center text-muted">لا يوجد سجل مسح</td></tr>');
+        return;
+    }
+
+    scanHistory.forEach(function(item) {
+        var statusClass = item.status === 'success' ? 'success' : 'danger';
+        var statusIcon = item.status === 'success' ? 'check-circle' : 'times-circle';
+        var statusText = item.status === 'success' ? 'نجح' : 'فشل';
+
+        var row = '<tr>';
+        row += '<td>' + item.time + '</td>';
+        row += '<td><code>' + item.barcode + '</code></td>';
+        row += '<td><span class="label label-info">' + item.type + '</span></td>';
+        row += '<td><span class="label label-' + statusClass + '"><i class="fa fa-' + statusIcon + '"></i> ' + statusText + '</span></td>';
+        row += '<td>' + item.location + '</td>';
+        row += '<td><button type="button" class="btn btn-xs btn-primary" onclick="rescanBarcode(\'' + item.barcode + '\')"><i class="fa fa-refresh"></i></button></td>';
+        row += '</tr>';
+
+        tbody.append(row);
+    });
+}
+
+function rescanBarcode(barcode) {
+    $('#manual-barcode').val(barcode);
+    $('#scan-history-modal').modal('hide');
+    $('#manual-input-modal').modal('show');
+}
+
+function updateStats() {
+    $('#total-scans').text(scanStats.total);
+    $('#successful-scans').text(scanStats.successful);
+    $('#failed-scans').text(scanStats.failed);
+
+    var rate = scanStats.total > 0 ? Math.round((scanStats.successful / scanStats.total) * 100) : 0;
+    $('#scan-rate').text(rate + '%');
+}
+
+function resetStats() {
+    scanStats = { total: 0, successful: 0, failed: 0 };
+    updateStats();
+    showNotification('تم إعادة تعيين الإحصائيات', 'success');
+}
+
+function clearHistory() {
+    if (confirm('هل أنت متأكد من مسح سجل المسح؟')) {
+        scanHistory = [];
+        updateHistoryTable();
+        showNotification('تم مسح سجل المسح', 'success');
+    }
+}
+
+function exportHistory() {
+    if (scanHistory.length === 0) {
+        alert('لا يوجد سجل للتصدير');
+        return;
+    }
+
+    var csv = 'الوقت,الباركود,النوع,النتيجة,الموقع\n';
+    scanHistory.forEach(function(item) {
+        csv += item.time + ',' + item.barcode + ',' + item.type + ',' + item.status + ',' + item.location + '\n';
+    });
+
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'scan_history_' + new Date().toISOString().slice(0, 10) + '.csv';
+    link.click();
+
+    showNotification('تم تصدير سجل المسح', 'success');
+}
+
+function saveSettings() {
+    var settings = {
+        camera: $('#camera-select').val(),
+        frequency: $('#scan-frequency').val(),
+        autoFocus: $('#auto-focus').is(':checked'),
+        sound: $('#sound-enabled').is(':checked'),
+        vibration: $('#vibration-enabled').is(':checked')
+    };
+
+    localStorage.setItem('scannerSettings', JSON.stringify(settings));
+    showNotification('تم حفظ الإعدادات', 'success');
+    $('#scanner-settings-modal').modal('hide');
+}
+
+function loadSettings() {
+    var settings = localStorage.getItem('scannerSettings');
+    if (settings) {
+        settings = JSON.parse(settings);
+
+        $('#camera-select').val(settings.camera || 'default');
+        $('#scan-frequency').val(settings.frequency || 500);
+        $('#frequency-value').text(settings.frequency || 500);
+        $('#auto-focus').prop('checked', settings.autoFocus !== false);
+        $('#sound-enabled').prop('checked', settings.sound !== false);
+        $('#vibration-enabled').prop('checked', settings.vibration !== false);
+    }
+}
+
+function playSuccessSound() {
+    // محاكاة تشغيل صوت النجاح
+    console.log('Playing success sound');
+}
+
+function playErrorSound() {
+    // محاكاة تشغيل صوت الخطأ
+    console.log('Playing error sound');
+}
+
+function vibrate() {
+    if (navigator.vibrate) {
+        navigator.vibrate(200);
+    }
+}
+
+function showNotification(message, type) {
+    var alertClass = type === 'success' ? 'alert-success' : type === 'info' ? 'alert-info' : 'alert-danger';
+    var icon = type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle';
+
+    var notification = $('<div class="alert ' + alertClass + ' alert-dismissible" style="position: fixed; top: 70px; right: 20px; z-index: 9999; min-width: 300px;"><i class="fa ' + icon + '"></i> ' + message + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+
+    $('body').append(notification);
+
+    setTimeout(function() {
+        notification.fadeOut(function() { notification.remove(); });
+    }, 4000);
+}
+
+// إغلاق الماسح عند إغلاق الصفحة
+$(window).on('beforeunload', function() {
+    if (scannerStream) {
+        stopScanner();
+    }
+});
+</script>
+
+{{ footer }}

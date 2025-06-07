@@ -1,0 +1,874 @@
+{% extends "common/header.twig" %}
+
+<style type="text/css">
+  /* أنماط لتحسين مظهر مركز السجلات */
+  .sorting-asc:after {
+    content: "\f0de";
+    font-family: FontAwesome;
+    margin-left: 5px;
+    color: #23a1d1;
+  }
+  .sorting-desc:after {
+    content: "\f0dd";
+    font-family: FontAwesome;
+    margin-left: 5px;
+    color: #23a1d1;
+  }
+  .export-options {
+    margin-bottom: 15px;
+  }
+  .tab-pane table tbody tr:hover {
+    background-color: #f5f5f5;
+  }
+  .copy-log {
+    margin-right: 10px;
+  }
+  .modal-body pre {
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  .table-search {
+    margin-bottom: 10px;
+  }
+  #system-log, #error-log {
+    font-family: monospace;
+    font-size: 12px;
+  }
+  .nav-tabs {
+    margin-bottom: 15px;
+  }
+  .dropdown-menu > li > a {
+    padding: 8px 20px;
+  }
+  .dropdown-menu > li > a > i {
+    margin-right: 5px;
+  }
+</style>
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-clear" data-toggle="tooltip" title="{{ button_clear }}" class="btn btn-danger"><i class="fa fa-eraser"></i></button>
+        <button type="button" id="button-export" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-success"><i class="fa fa-download"></i></button>
+      </div>
+      <h1><i class="fa fa-history"></i> {{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-date-from">{{ entry_date_from }}</label>
+            <div class="col-sm-4">
+              <div class="input-group date">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+            <label class="col-sm-2 control-label" for="input-date-to">{{ entry_date_to }}</label>
+            <div class="col-sm-4">
+              <div class="input-group date">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-user">{{ entry_user }}</label>
+            <div class="col-sm-4">
+              <select name="filter_user_id" id="input-user" class="form-control">
+                <option value="">{{ text_all_users }}</option>
+                {% for user in users %}
+                {% if user.user_id == filter_user_id %}
+                <option value="{{ user.user_id }}" selected="selected">{{ user.username }} ({{ user.firstname }} {{ user.lastname }})</option>
+                {% else %}
+                <option value="{{ user.user_id }}">{{ user.username }} ({{ user.firstname }} {{ user.lastname }})</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <label class="col-sm-2 control-label" for="input-action-type">{{ entry_action_type }}</label>
+            <div class="col-sm-4">
+              <select name="filter_action_type" id="input-action-type" class="form-control">
+                <option value="">{{ text_all_actions }}</option>
+                {% for action_type in action_types %}
+                {% if action_type.value == filter_action_type %}
+                <option value="{{ action_type.value }}" selected="selected">{{ action_type.text }}</option>
+                {% else %}
+                <option value="{{ action_type.value }}">{{ action_type.text }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-module">{{ entry_module }}</label>
+            <div class="col-sm-4">
+              <select name="filter_module" id="input-module" class="form-control">
+                <option value="">{{ text_all_modules }}</option>
+                {% for module in modules %}
+                {% if module.value == filter_module %}
+                <option value="{{ module.value }}" selected="selected">{{ module.text }}</option>
+                {% else %}
+                <option value="{{ module.value }}">{{ module.text }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <label class="col-sm-2 control-label" for="input-ip">{{ entry_ip }}</label>
+            <div class="col-sm-4">
+              <input type="text" name="filter_ip" value="{{ filter_ip }}" placeholder="{{ entry_ip }}" id="input-ip" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-keyword">{{ entry_keyword }}</label>
+            <div class="col-sm-4">
+              <input type="text" name="filter_keyword" value="{{ filter_keyword }}" placeholder="{{ entry_keyword }}" id="input-keyword" class="form-control" />
+            </div>
+            <div class="col-sm-6 text-right">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+              <button type="button" id="button-reset" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_reset }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row mb-3">
+          <div class="col-sm-12 text-right">
+            <div class="btn-group export-options" role="group">
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-download"></i> {{ text_export_options }} <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="#" class="export-format" data-format="csv"><i class="fa fa-file-text-o"></i> {{ text_export_csv }}</a></li>
+                <li><a href="#" class="export-format" data-format="json"><i class="fa fa-file-code-o"></i> {{ text_export_json }}</a></li>
+                <li><a href="#" class="export-format" data-format="xml"><i class="fa fa-file-code-o"></i> {{ text_export_xml }}</a></li>
+                <li><a href="#" class="export-format" data-format="pdf"><i class="fa fa-file-pdf-o"></i> {{ text_export_pdf }}</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#tab-activity" data-toggle="tab">{{ tab_activity }}</a></li>
+          <li><a href="#tab-system" data-toggle="tab">{{ tab_system }}</a></li>
+          <li><a href="#tab-error" data-toggle="tab">{{ tab_error }}</a></li>
+          <li><a href="#tab-audit" data-toggle="tab">{{ tab_audit }}</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="tab-activity">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-left">{{ column_date }}</td>
+                    <td class="text-left">{{ column_user }}</td>
+                    <td class="text-left">{{ column_action }}</td>
+                    <td class="text-left">{{ column_module }}</td>
+                    <td class="text-left">{{ column_description }}</td>
+                    <td class="text-left">{{ column_ip }}</td>
+                    <td class="text-right">{{ column_action }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if activities %}
+                  {% for activity in activities %}
+                  <tr>
+                    <td class="text-left">{{ activity.date_added }}</td>
+                    <td class="text-left">{{ activity.username }}</td>
+                    <td class="text-left">{{ activity.action_type }}</td>
+                    <td class="text-left">{{ activity.module }}</td>
+                    <td class="text-left">{{ activity.description }}</td>
+                    <td class="text-left">{{ activity.ip_address }}</td>
+                    <td class="text-right">
+                      <button type="button" data-toggle="modal" data-target="#modal-details-{{ activity.activity_id }}" class="btn btn-info btn-xs"><i class="fa fa-eye"></i></button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-left">{{ pagination }}</div>
+              <div class="col-sm-6 text-right">{{ results }}</div>
+            </div>
+          </div>
+          <div class="tab-pane" id="tab-system">
+            <div class="well">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="control-label" for="input-system-filter">{{ entry_filter }}</label>
+                    <input type="text" name="filter_system" value="" placeholder="{{ entry_filter }}" id="input-system-filter" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="control-label" for="input-system-lines">{{ entry_lines }}</label>
+                    <select name="system_lines" id="input-system-lines" class="form-control">
+                      <option value="100">100</option>
+                      <option value="200">200</option>
+                      <option value="500">500</option>
+                      <option value="1000">1000</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <button type="button" id="button-system-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                </div>
+              </div>
+            </div>
+            <textarea wrap="off" rows="15" readonly class="form-control" id="system-log">{{ system_log }}</textarea>
+          </div>
+          <div class="tab-pane" id="tab-error">
+            <div class="well">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="control-label" for="input-error-filter">{{ entry_filter }}</label>
+                    <input type="text" name="filter_error" value="" placeholder="{{ entry_filter }}" id="input-error-filter" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="control-label" for="input-error-lines">{{ entry_lines }}</label>
+                    <select name="error_lines" id="input-error-lines" class="form-control">
+                      <option value="100">100</option>
+                      <option value="200">200</option>
+                      <option value="500">500</option>
+                      <option value="1000">1000</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <button type="button" id="button-error-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                </div>
+              </div>
+            </div>
+            <textarea wrap="off" rows="15" readonly class="form-control" id="error-log">{{ error_log }}</textarea>
+          </div>
+          <div class="tab-pane" id="tab-audit">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-left">{{ column_date }}</td>
+                    <td class="text-left">{{ column_user }}</td>
+                    <td class="text-left">{{ column_action }}</td>
+                    <td class="text-left">{{ column_reference_type }}</td>
+                    <td class="text-left">{{ column_reference_id }}</td>
+                    <td class="text-left">{{ column_details }}</td>
+                    <td class="text-left">{{ column_ip }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if audit_logs %}
+                  {% for audit in audit_logs %}
+                  <tr>
+                    <td class="text-left">{{ audit.timestamp }}</td>
+                    <td class="text-left">{{ audit.username }}</td>
+                    <td class="text-left">{{ audit.action }}</td>
+                    <td class="text-left">{{ audit.reference_type }}</td>
+                    <td class="text-left">{{ audit.reference_id }}</td>
+                    <td class="text-left">
+                      <button type="button" data-toggle="modal" data-target="#modal-audit-{{ audit.log_id }}" class="btn btn-info btn-xs"><i class="fa fa-eye"></i></button>
+                    </td>
+                    <td class="text-left">{{ audit.ip_address }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-left">{{ audit_pagination }}</div>
+              <div class="col-sm-6 text-right">{{ audit_results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if activities %}
+{% for activity in activities %}
+<div class="modal fade" id="modal-details-{{ activity.activity_id }}" tabindex="-1" role="dialog" aria-labelledby="modal-details-title-{{ activity.activity_id }}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{ button_close }}"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modal-details-title-{{ activity.activity_id }}">{{ text_activity_details }}</h4>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tr>
+            <td><strong>{{ column_date }}</strong></td>
+            <td>{{ activity.date_added }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{ column_user }}</strong></td>
+            <td>{{ activity.username }} ({{ activity.firstname }} {{ activity.lastname }})</td>
+          </tr>
+          <tr>
+            <td><strong>{{ column_action }}</strong></td>
+            <td>{{ activity.action_type }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{ column_module }}</strong></td>
+            <td>{{ activity.module }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{ column_description }}</strong></td>
+            <td>{{ activity.description }}</td>
+          </tr>
+          {% if activity.reference_type %}
+          <tr>
+            <td><strong>{{ column_reference_type }}</strong></td>
+            <td>{{ activity.reference_type }}</td>
+          </tr>
+          {% endif %}
+          {% if activity.reference_id %}
+          <tr>
+            <td><strong>{{ column_reference_id }}</strong></td>
+            <td>{{ activity.reference_id }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td><strong>{{ column_ip }}</strong></td>
+            <td>{{ activity.ip_address }}</td>
+          </tr>
+          <tr>
+            <td><strong>{{ column_user_agent }}</strong></td>
+            <td>{{ activity.user_agent }}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if audit_logs %}
+{% for audit in audit_logs %}
+<div class="modal fade" id="modal-audit-{{ audit.log_id }}" tabindex="-1" role="dialog" aria-labelledby="modal-audit-title-{{ audit.log_id }}">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{ button_close }}"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modal-audit-title-{{ audit.log_id }}">{{ text_audit_details }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-sm-6">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ column_date }}</strong></td>
+                <td>{{ audit.timestamp }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_user }}</strong></td>
+                <td>{{ audit.username }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_action }}</strong></td>
+                <td>{{ audit.action }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_reference_type }}</strong></td>
+                <td>{{ audit.reference_type }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_reference_id }}</strong></td>
+                <td>{{ audit.reference_id }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_ip }}</strong></td>
+                <td>{{ audit.ip_address }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-sm-6">
+            <h4>{{ text_data_changes }}</h4>
+            <div class="well well-sm" style="max-height: 300px; overflow-y: auto;">
+              <div class="btn-group btn-group-sm format-options" style="margin-bottom: 10px;">
+                <button type="button" class="btn btn-default format-json active" data-log-id="{{ audit.log_id }}"><i class="fa fa-code"></i> JSON</button>
+                <button type="button" class="btn btn-default format-table" data-log-id="{{ audit.log_id }}"><i class="fa fa-table"></i> {{ text_table_view }}</button>
+                <button type="button" class="btn btn-default format-raw" data-log-id="{{ audit.log_id }}"><i class="fa fa-file-text-o"></i> {{ text_raw_view }}</button>
+              </div>
+              <pre id="data-json-{{ audit.log_id }}" class="data-format">{{ audit.data_changes }}</pre>
+              <div id="data-table-{{ audit.log_id }}" class="data-format" style="display: none;"></div>
+              <pre id="data-raw-{{ audit.log_id }}" class="data-format" style="display: none;">{{ audit.data_changes|raw }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+<script type="text/javascript"><!--
+$('#button-filter').on('click', function() {
+  var url = 'index.php?route=common/log_center&user_token={{ user_token }}';
+
+  var filter_date_from = $('input[name=\'filter_date_from\']').val();
+  if (filter_date_from) {
+    url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+  }
+
+  var filter_date_to = $('input[name=\'filter_date_to\']').val();
+  if (filter_date_to) {
+    url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+  }
+
+  var filter_user_id = $('select[name=\'filter_user_id\']').val();
+  if (filter_user_id) {
+    url += '&filter_user_id=' + encodeURIComponent(filter_user_id);
+  }
+
+  var filter_action_type = $('select[name=\'filter_action_type\']').val();
+  if (filter_action_type) {
+    url += '&filter_action_type=' + encodeURIComponent(filter_action_type);
+  }
+
+  var filter_module = $('select[name=\'filter_module\']').val();
+  if (filter_module) {
+    url += '&filter_module=' + encodeURIComponent(filter_module);
+  }
+
+  var filter_ip = $('input[name=\'filter_ip\']').val();
+  if (filter_ip) {
+    url += '&filter_ip=' + encodeURIComponent(filter_ip);
+  }
+
+  var filter_keyword = $('input[name=\'filter_keyword\']').val();
+  if (filter_keyword) {
+    url += '&filter_keyword=' + encodeURIComponent(filter_keyword);
+  }
+
+  location = url;
+});
+
+$('#button-reset').on('click', function() {
+  location = 'index.php?route=common/log_center&user_token={{ user_token }}';
+});
+
+$('#button-clear').on('click', function() {
+  if (confirm('{{ text_confirm_clear }}')) {
+    $.ajax({
+      url: 'index.php?route=common/log_center/clear&user_token={{ user_token }}',
+      dataType: 'json',
+      beforeSend: function() {
+        $('#button-clear').button('loading');
+      },
+      complete: function() {
+        $('#button-clear').button('reset');
+      },
+      success: function(json) {
+        if (json['success']) {
+          location = 'index.php?route=common/log_center&user_token={{ user_token }}';
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+});
+
+// وظيفة مساعدة لإنشاء عنوان URL للتصدير
+function createExportUrl(format) {
+  var url = 'index.php?route=common/log_center/export&user_token={{ user_token }}&format=' + format;
+  
+  // إضافة معايير التصفية الحالية إلى عنوان URL للتصدير
+  var filter_date_from = $('input[name=\'filter_date_from\']').val();
+  if (filter_date_from) {
+    url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+  }
+  
+  var filter_date_to = $('input[name=\'filter_date_to\']').val();
+  if (filter_date_to) {
+    url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+  }
+  
+  var filter_user_id = $('select[name=\'filter_user_id\']').val();
+  if (filter_user_id) {
+    url += '&filter_user_id=' + encodeURIComponent(filter_user_id);
+  }
+  
+  var filter_action_type = $('select[name=\'filter_action_type\']').val();
+  if (filter_action_type) {
+    url += '&filter_action_type=' + encodeURIComponent(filter_action_type);
+  }
+  
+  var filter_module = $('select[name=\'filter_module\']').val();
+  if (filter_module) {
+    url += '&filter_module=' + encodeURIComponent(filter_module);
+  }
+  
+  var filter_ip = $('input[name=\'filter_ip\']').val();
+  if (filter_ip) {
+    url += '&filter_ip=' + encodeURIComponent(filter_ip);
+  }
+  
+  var filter_keyword = $('input[name=\'filter_keyword\']').val();
+  if (filter_keyword) {
+    url += '&filter_keyword=' + encodeURIComponent(filter_keyword);
+  }
+  
+  // تحديد نوع السجل المراد تصديره بناءً على التبويب النشط
+  var activeTab = $('.nav-tabs .active a').attr('href');
+  url += '&log_type=' + activeTab.replace('#tab-', '');
+  
+  return url;
+}
+
+// معالج الحدث لزر التصدير القديم
+$('#button-export').on('click', function() {
+  var exportFormat = prompt('{{ text_select_export_format }}', 'csv');
+  if (exportFormat) {
+    exportFormat = exportFormat.toLowerCase();
+    if (['csv', 'json', 'xml', 'pdf'].indexOf(exportFormat) !== -1) {
+      location = createExportUrl(exportFormat);
+    } else {
+      alert('{{ text_invalid_format }}');
+    }
+  }
+});
+
+// معالج الحدث للقائمة المنسدلة الجديدة لخيارات التصدير
+$('.export-format').on('click', function(e) {
+  e.preventDefault();
+  var format = $(this).data('format');
+  location = createExportUrl(format);
+});
+
+$('#button-system-filter').on('click', function() {
+  var filter = $('#input-system-filter').val();
+  var lines = $('#input-system-lines').val();
+  
+  $.ajax({
+    url: 'index.php?route=common/log_center/getSystemLog&user_token={{ user_token }}',
+    type: 'post',
+    data: { filter: filter, lines: lines },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#button-system-filter').button('loading');
+    },
+    complete: function() {
+      $('#button-system-filter').button('reset');
+    },
+    success: function(json) {
+      if (json['log']) {
+        $('#system-log').val(json['log']);
+      } else {
+        $('#system-log').val('{{ text_no_results }}');
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-error-filter').on('click', function() {
+  var filter = $('#input-error-filter').val();
+  var lines = $('#input-error-lines').val();
+  
+  $.ajax({
+    url: 'index.php?route=common/log_center/getErrorLog&user_token={{ user_token }}',
+    type: 'post',
+    data: { filter: filter, lines: lines },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#button-error-filter').button('loading');
+    },
+    complete: function() {
+      $('#button-error-filter').button('reset');
+    },
+    success: function(json) {
+      if (json['log']) {
+        $('#error-log').val(json['log']);
+      } else {
+        $('#error-log').val('{{ text_no_results }}');
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('.date').datetimepicker({
+  pickTime: false
+});
+
+// تحديث آلية عرض تفاصيل السجلات في النوافذ المنبثقة
+$('.btn-info').on('click', function() {
+  var modalId = $(this).data('target');
+  $(modalId).modal('show');
+});
+
+// تحسين وظيفة تصفية السجلات في التبويبات المختلفة
+$('#input-system-filter, #input-error-filter').on('keyup', function(e) {
+  if (e.keyCode == 13) {
+    if ($(this).attr('id') == 'input-system-filter') {
+      $('#button-system-filter').trigger('click');
+    } else {
+      $('#button-error-filter').trigger('click');
+    }
+  }
+});
+
+// إضافة وظيفة نسخ محتوى السجل إلى الحافظة
+$('#system-log, #error-log').after('<button type="button" class="btn btn-default btn-xs copy-log" style="margin-top: 5px;"><i class="fa fa-copy"></i> {{ text_copy_to_clipboard }}</button>');
+
+$('.copy-log').on('click', function() {
+  var logElement = $(this).prev('textarea');
+  logElement.select();
+  document.execCommand('copy');
+  
+  // إظهار رسالة نجاح مؤقتة
+  var successMessage = $('<div class="alert alert-success copy-success" style="margin-top: 5px; padding: 5px;"><i class="fa fa-check-circle"></i> {{ text_copied }}</div>');
+  $(this).after(successMessage);
+  
+  setTimeout(function() {
+    $('.copy-success').fadeOut(function() {
+      $(this).remove();
+    });
+  }, 2000);
+});
+
+// تحسين عرض تفاصيل السجلات
+$('.tab-pane table tbody tr').hover(function() {
+  $(this).css('background-color', '#f5f5f5');
+}, function() {
+  $(this).css('background-color', '');
+});
+
+// إضافة وظيفة البحث السريع في جداول السجلات
+$('<div class="form-group"><label class="control-label">{{ text_quick_search }}</label><input type="text" class="form-control table-search" placeholder="{{ text_search_placeholder }}"></div>').insertBefore('#tab-activity .table-responsive, #tab-audit .table-responsive');
+
+$('.table-search').on('keyup', function() {
+  var searchText = $(this).val().toLowerCase();
+  var tableBody = $(this).closest('.tab-pane').find('table tbody');
+  
+  tableBody.find('tr').each(function() {
+    var rowText = $(this).text().toLowerCase();
+    var showRow = rowText.indexOf(searchText) > -1;
+    $(this).toggle(showRow);
+  });
+  
+  // عرض رسالة عندما لا توجد نتائج
+  var visibleRows = tableBody.find('tr:visible').length;
+  var noResultsMsg = tableBody.siblings('.no-results-message');
+  
+  if (visibleRows === 0 && searchText !== '') {
+    if (noResultsMsg.length === 0) {
+      tableBody.after('<div class="alert alert-info no-results-message">{{ text_no_search_results }}</div>');
+    }
+  } else {
+    noResultsMsg.remove();
+  }
+});
+
+// إضافة وظيفة فرز الجداول
+$('.tab-pane table thead th').css('cursor', 'pointer').on('click', function() {
+  var table = $(this).parents('table').eq(0);
+  var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+  this.asc = !this.asc;
+  if (!this.asc) {
+    rows = rows.reverse();
+  }
+  for (var i = 0; i < rows.length; i++) {
+    table.append(rows[i]);
+  }
+  
+  // إضافة مؤشر الفرز
+  table.find('th').removeClass('sorting-asc sorting-desc');
+  $(this).addClass(this.asc ? 'sorting-asc' : 'sorting-desc');
+});
+
+// وظيفة مساعدة للفرز
+function comparer(index) {
+  return function(a, b) {
+    var valA = getCellValue(a, index);
+    var valB = getCellValue(b, index);
+    return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.localeCompare(valB);
+  };
+}
+
+function getCellValue(row, index) {
+  return $(row).children('td').eq(index).text();
+}
+
+// تحديث آلي للسجلات كل 30 ثانية إذا تم تفعيل الخيار
+var autoRefresh = false;
+var refreshInterval;
+
+$('<div class="form-group"><div class="col-sm-12"><div class="checkbox"><label><input type="checkbox" id="auto-refresh"> {{ text_auto_refresh }}</label></div></div></div>').insertAfter('#button-filter').parent();
+
+$('#auto-refresh').on('change', function() {
+  autoRefresh = $(this).prop('checked');
+  
+  if (autoRefresh) {
+    refreshInterval = setInterval(function() {
+      var activeTab = $('.nav-tabs .active a').attr('href');
+      
+      if (activeTab == '#tab-activity' || activeTab == '#tab-audit') {
+        $('#button-filter').trigger('click');
+      } else if (activeTab == '#tab-system') {
+        $('#button-system-filter').trigger('click');
+      } else if (activeTab == '#tab-error') {
+        $('#button-error-filter').trigger('click');
+      }
+    }, 30000); // تحديث كل 30 ثانية
+  } else {
+    clearInterval(refreshInterval);
+  }
+});
+
+// تحسين تجربة المستخدم عند تغيير التبويبات
+$('.nav-tabs a').on('shown.bs.tab', function() {
+  var tabId = $(this).attr('href');
+  localStorage.setItem('activeLogTab', tabId);
+});
+
+// استعادة التبويب النشط من التخزين المحلي
+var activeTab = localStorage.getItem('activeLogTab');
+if (activeTab) {
+  $('.nav-tabs a[href="' + activeTab + '"]').tab('show');
+}
+
+// معالجة خيارات تنسيق البيانات في النوافذ المنبثقة لسجلات التدقيق
+$('.format-json').on('click', function() {
+  var logId = $(this).data('log-id');
+  $('.data-format').hide();
+  $('#data-json-' + logId).show();
+  $(this).parent().find('button').removeClass('active');
+  $(this).addClass('active');
+});
+
+$('.format-table').on('click', function() {
+  var logId = $(this).data('log-id');
+  var tableContainer = $('#data-table-' + logId);
+  var jsonData = $('#data-json-' + logId).text();
+  
+  // إذا كان العنصر فارغًا، قم بإنشاء الجدول
+  if (tableContainer.is(':empty')) {
+    try {
+      var data = JSON.parse(jsonData);
+      var table = '<table class="table table-bordered table-striped">';
+      table += '<thead><tr><th>{{ text_property }}</th><th>{{ text_old_value }}</th><th>{{ text_new_value }}</th></tr></thead><tbody>';
+      
+      // التحقق من نوع البيانات وعرضها بالشكل المناسب
+      if (data.changes && Array.isArray(data.changes)) {
+        // تنسيق مصفوفة التغييرات
+        $.each(data.changes, function(index, change) {
+          table += '<tr>';
+          table += '<td>' + (change.field || '') + '</td>';
+          table += '<td>' + (change.old_value !== undefined ? change.old_value : '') + '</td>';
+          table += '<td>' + (change.new_value !== undefined ? change.new_value : '') + '</td>';
+          table += '</tr>';
+        });
+      } else if (typeof data === 'object') {
+        // تنسيق كائن عام
+        $.each(data, function(key, value) {
+          if (typeof value === 'object' && value !== null) {
+            var oldValue = value.old !== undefined ? value.old : '';
+            var newValue = value.new !== undefined ? value.new : '';
+            table += '<tr><td>' + key + '</td><td>' + oldValue + '</td><td>' + newValue + '</td></tr>';
+          } else {
+            table += '<tr><td>' + key + '</td><td colspan="2">' + value + '</td></tr>';
+          }
+        });
+      }
+      
+      table += '</tbody></table>';
+      tableContainer.html(table);
+    } catch (e) {
+      tableContainer.html('<div class="alert alert-danger">{{ text_invalid_json }}</div>');
+    }
+  }
+  
+  $('.data-format').hide();
+  tableContainer.show();
+  $(this).parent().find('button').removeClass('active');
+  $(this).addClass('active');
+});
+
+$('.format-raw').on('click', function() {
+  var logId = $(this).data('log-id');
+  $('.data-format').hide();
+  $('#data-raw-' + logId).show();
+  $(this).parent().find('button').removeClass('active');
+  $(this).addClass('active');
+});
+
+// تنسيق JSON في عناصر pre عند تحميل الصفحة
+$('pre').each(function() {
+  try {
+    var jsonText = $(this).text();
+    if (jsonText && jsonText.trim().startsWith('{')) {
+      var jsonObj = JSON.parse(jsonText);
+      var formattedJson = JSON.stringify(jsonObj, null, 2);
+      $(this).text(formattedJson);
+    }
+  } catch (e) {
+    // ليس JSON صالح، تجاهل
+  }
+});
+//--></script>
+
+{% include 'common/footer.twig' %}

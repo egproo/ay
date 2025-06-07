@@ -1,0 +1,381 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        {% if transfer_info.status == 'draft' %}
+        <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary">
+          <i class="fa fa-pencil"></i>
+        </a>
+        {% endif %}
+        <button type="button" data-toggle="tooltip" title="{{ button_print }}" class="btn btn-default" onclick="window.print();">
+          <i class="fa fa-print"></i>
+        </button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- معلومات النقل -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-info-circle"></i> معلومات النقل
+              <span class="label label-{{ transfer_info.status == 'draft' ? 'default' : (transfer_info.status == 'pending_approval' ? 'warning' : (transfer_info.status == 'approved' ? 'info' : (transfer_info.status == 'shipped' ? 'primary' : (transfer_info.status == 'completed' ? 'success' : 'danger')))) }} pull-right">
+                {% if transfer_info.status == 'draft' %}مسودة
+                {% elseif transfer_info.status == 'pending_approval' %}في انتظار الموافقة
+                {% elseif transfer_info.status == 'approved' %}معتمد
+                {% elseif transfer_info.status == 'shipped' %}تم الشحن
+                {% elseif transfer_info.status == 'in_transit' %}في الطريق
+                {% elseif transfer_info.status == 'delivered' %}تم التسليم
+                {% elseif transfer_info.status == 'received' %}تم الاستلام
+                {% elseif transfer_info.status == 'completed' %}مكتمل
+                {% elseif transfer_info.status == 'cancelled' %}ملغي
+                {% else %}مرفوض{% endif %}
+              </span>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <table class="table table-condensed">
+                  <tr>
+                    <td><strong>رقم النقل:</strong></td>
+                    <td>{{ transfer_info.transfer_number }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>اسم النقل:</strong></td>
+                    <td>{{ transfer_info.transfer_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>نوع النقل:</strong></td>
+                    <td>
+                      {% if transfer_info.transfer_type == 'regular' %}نقل عادي
+                      {% elseif transfer_info.transfer_type == 'emergency' %}نقل طارئ
+                      {% elseif transfer_info.transfer_type == 'restock' %}إعادة تخزين
+                      {% elseif transfer_info.transfer_type == 'redistribution' %}إعادة توزيع
+                      {% else %}إرجاع{% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>الأولوية:</strong></td>
+                    <td>
+                      <span class="label label-{{ transfer_info.priority == 'low' ? 'success' : (transfer_info.priority == 'normal' ? 'info' : (transfer_info.priority == 'high' ? 'warning' : 'danger')) }}">
+                        {% if transfer_info.priority == 'low' %}منخفضة
+                        {% elseif transfer_info.priority == 'normal' %}عادية
+                        {% elseif transfer_info.priority == 'high' %}عالية
+                        {% else %}عاجلة{% endif %}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>من الفرع:</strong></td>
+                    <td>{{ transfer_info.from_branch_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>إلى الفرع:</strong></td>
+                    <td>{{ transfer_info.to_branch_name }}</td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-condensed">
+                  <tr>
+                    <td><strong>تاريخ الطلب:</strong></td>
+                    <td>{{ transfer_info.request_date }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>المستخدم:</strong></td>
+                    <td>{{ transfer_info.user_name }}</td>
+                  </tr>
+                  {% if transfer_info.approved_by_name %}
+                  <tr>
+                    <td><strong>معتمد بواسطة:</strong></td>
+                    <td>{{ transfer_info.approved_by_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>تاريخ الاعتماد:</strong></td>
+                    <td>{{ transfer_info.approval_date }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if transfer_info.shipped_by_name %}
+                  <tr>
+                    <td><strong>مشحون بواسطة:</strong></td>
+                    <td>{{ transfer_info.shipped_by_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>تاريخ الشحن:</strong></td>
+                    <td>{{ transfer_info.ship_date }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if transfer_info.received_by_name %}
+                  <tr>
+                    <td><strong>مستلم بواسطة:</strong></td>
+                    <td>{{ transfer_info.received_by_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>تاريخ الاستلام:</strong></td>
+                    <td>{{ transfer_info.actual_delivery_date }}</td>
+                  </tr>
+                  {% endif %}
+                </table>
+              </div>
+            </div>
+            
+            {% if transfer_info.notes %}
+            <div class="row">
+              <div class="col-md-12">
+                <div class="well">
+                  <strong>ملاحظات:</strong><br>
+                  {{ transfer_info.notes }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- ملخص سريع -->
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-calculator"></i> ملخص النقل</h3>
+          </div>
+          <div class="panel-body">
+            {% set total_items = 0 %}
+            {% set total_quantity = 0 %}
+            {% set total_value = 0 %}
+            
+            {% for item in transfer_items %}
+              {% set total_items = total_items + 1 %}
+              {% set total_quantity = total_quantity + item.quantity %}
+              {% set total_value = total_value + (item.quantity * item.unit_cost) %}
+            {% endfor %}
+            
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 class="text-primary">{{ total_items }}</h4>
+                  <small>إجمالي العناصر</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 class="text-info">{{ total_quantity|number_format(2) }}</h4>
+                  <small>إجمالي الكمية</small>
+                </div>
+              </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+              <div class="col-xs-12">
+                <div class="text-center">
+                  <h3 class="text-success">{{ total_value|number_format(2) }}</h3>
+                  <small>إجمالي القيمة</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- عناصر النقل -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> عناصر النقل</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>المنتج</th>
+                <th class="text-center">الكمية</th>
+                <th class="text-right">تكلفة الوحدة</th>
+                <th class="text-right">إجمالي التكلفة</th>
+                <th class="text-center">رقم الدفعة</th>
+                <th class="text-center">تاريخ انتهاء الصلاحية</th>
+                <th>ملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if transfer_items %}
+              {% for item in transfer_items %}
+              <tr>
+                <td>
+                  <strong>{{ item.product_name }}</strong>
+                  {% if item.model %}
+                  <br><small class="text-muted">{{ item.model }}</small>
+                  {% endif %}
+                  {% if item.sku %}
+                  <br><small class="text-muted">{{ item.sku }}</small>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-primary">{{ item.quantity }}</span>
+                  {% if item.unit_symbol %}
+                  <br><small class="text-muted">{{ item.unit_symbol }}</small>
+                  {% endif %}
+                </td>
+                <td class="text-right">{{ item.unit_cost|number_format(2) }}</td>
+                <td class="text-right">
+                  <strong>{{ (item.quantity * item.unit_cost)|number_format(2) }}</strong>
+                </td>
+                <td class="text-center">{{ item.lot_number ? item.lot_number : '-' }}</td>
+                <td class="text-center">{{ item.expiry_date ? item.expiry_date : '-' }}</td>
+                <td>{{ item.notes ? item.notes : '-' }}</td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="7">لا توجد عناصر</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- تاريخ النقل -->
+    {% if transfer_history %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-history"></i> تاريخ النقل</h3>
+      </div>
+      <div class="panel-body">
+        <div class="timeline">
+          {% for history in transfer_history %}
+          <div class="timeline-item">
+            <div class="timeline-marker timeline-marker-{{ history.status == 'approved' ? 'success' : (history.status == 'rejected' ? 'danger' : 'info') }}">
+              <i class="fa fa-{{ history.status == 'approved' ? 'check' : (history.status == 'rejected' ? 'times' : 'clock-o') }}"></i>
+            </div>
+            <div class="timeline-content">
+              <h4 class="timeline-title">{{ history.status_text }}</h4>
+              <p class="timeline-description">
+                <strong>المستخدم:</strong> {{ history.user_name }}<br>
+                <strong>التاريخ:</strong> {{ history.date_added }}<br>
+                {% if history.notes %}
+                <strong>ملاحظات:</strong> {{ history.notes }}
+                {% endif %}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+@media print {
+    .page-header, .breadcrumb, .btn, .timeline {
+        display: none !important;
+    }
+    
+    .panel {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ddd;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+
+.timeline-marker-success {
+    background-color: #5cb85c;
+}
+
+.timeline-marker-danger {
+    background-color: #d9534f;
+}
+
+.timeline-marker-info {
+    background-color: #5bc0de;
+}
+
+.timeline-content {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #ddd;
+}
+
+.timeline-title {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.timeline-description {
+    margin: 0;
+    color: #666;
+}
+
+.badge-primary {
+    background-color: #337ab7;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    window.addEventListener('beforeprint', function() {
+        $('.table-responsive').removeClass('table-responsive');
+    });
+    
+    window.addEventListener('afterprint', function() {
+        $('.table').parent().addClass('table-responsive');
+    });
+});
+</script>
+
+{{ footer }}

@@ -1,0 +1,37 @@
+{{ header }}
+
+<div id="ticket-add" class="tab-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <h2>{{ heading_title }}</h2>
+                <form action="{{ action }}" method="post" enctype="multipart/form-data" class="form-horizontal">
+                    <div class="form-group required">
+                        <label class="col-sm-2 control-label" for="input-subject">{{ entry_subject }}</label>
+                        <div class="col-sm-10">
+                            <input type="text" name="subject" value="{{ subject }}" placeholder="{{ entry_subject }}" id="input-subject" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group required">
+                        <label class="col-sm-2 control-label" for="input-message">{{ entry_message }}</label>
+                        <div class="col-sm-10">
+                            <textarea name="message" rows="10" placeholder="{{ entry_message }}" id="input-message" class="form-control" required>{{ message }}</textarea>
+                        </div>
+                    </div>
+                    <!-- Add more fields if needed -->
+                    <div class="buttons">
+                        <div class="pull-right">
+                            <button type="submit" class="btn btn-primary">{{ button_submit }}</button>
+                            <a href="{{ cancel }}" class="btn btn-default">{{ button_cancel }}</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ footer }}
+
+</div>
+</div>

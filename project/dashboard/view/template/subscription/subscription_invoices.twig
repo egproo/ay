@@ -1,0 +1,323 @@
+{# صفحة عرض الفواتير #}
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-file-text-o"></i> {{ text_invoice_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div x-data="invoiceManager">
+          {% if invoices %}
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>{{ text_invoice_id }}</th>
+                    <th>{{ text_date }}</th>
+                    <th>{{ text_description }}</th>
+                    <th>{{ text_amount }}</th>
+                    <th>{{ text_status }}</th>
+                    <th class="text-right">{{ text_action }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for invoice in invoices %}
+                    <tr>
+                      <td>{{ invoice.invoice_number }}</td>
+                      <td>{{ invoice.date_formatted }}</td>
+                      <td>{{ invoice.description }}</td>
+                      <td>{{ invoice.amount_formatted }}</td>
+                      <td>
+                        {% if invoice.status == 'paid' %}
+                          <span class="label label-success">{{ text_paid }}</span>
+                        {% elseif invoice.status == 'unpaid' %}
+                          <span class="label label-danger">{{ text_unpaid }}</span>
+                        {% elseif invoice.status == 'cancelled' %}
+                          <span class="label label-default">{{ text_cancelled }}</span>
+                        {% else %}
+                          <span class="label label-warning">{{ invoice.status_formatted }}</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-right">
+                        <button type="button" class="btn btn-info btn-xs" @click="viewInvoice({{ invoice.invoice_id }})" data-toggle="tooltip" title="{{ button_view }}">
+                          <i class="fa fa-eye"></i>
+                        </button>
+                        <a href="{{ download_invoice_url }}&invoice_id={{ invoice.invoice_id }}" class="btn btn-default btn-xs" data-toggle="tooltip" title="{{ button_download }}">
+                          <i class="fa fa-download"></i>
+                        </a>
+                        {% if invoice.status == 'unpaid' %}
+                          <button type="button" class="btn btn-success btn-xs" @click="payInvoice({{ invoice.invoice_id }})" data-toggle="tooltip" title="{{ button_pay }}">
+                            <i class="fa fa-credit-card"></i>
+                          </button>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="alert alert-info">{{ text_no_invoices }}</div>
+          {% endif %}
+          
+          <div class="row">
+            <div class="col-sm-6 text-left">
+              <a href="{{ back_url }}" class="btn btn-default">{{ button_back }}</a>
+            </div>
+          </div>
+          
+          <!-- Modal for Invoice Details -->
+          <div class="modal fade" id="invoice-modal" tabindex="-1" role="dialog" aria-labelledby="invoice-modal-label">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="invoice-modal-label">{{ text_invoice_details }}</h4>
+                </div>
+                <div class="modal-body">
+                  <div x-show="loading" class="text-center">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                    <p>{{ text_loading }}</p>
+                  </div>
+                  
+                  <div x-show="!loading && invoiceDetails">
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <h4>{{ text_invoice_from }}</h4>
+                        <p x-text="invoiceDetails.company_name"></p>
+                        <p x-text="invoiceDetails.company_address"></p>
+                        <p x-text="invoiceDetails.company_email"></p>
+                        <p x-text="invoiceDetails.company_phone"></p>
+                      </div>
+                      <div class="col-sm-6 text-right">
+                        <h4>{{ text_invoice_to }}</h4>
+                        <p x-text="invoiceDetails.customer_name"></p>
+                        <p x-text="invoiceDetails.customer_address"></p>
+                        <p x-text="invoiceDetails.customer_email"></p>
+                      </div>
+                    </div>
+                    
+                    <div class="row margin-top-20">
+                      <div class="col-sm-6">
+                        <p><strong>{{ text_invoice_number }}:</strong> <span x-text="invoiceDetails.invoice_number"></span></p>
+                        <p><strong>{{ text_date }}:</strong> <span x-text="invoiceDetails.date_formatted"></span></p>
+                      </div>
+                      <div class="col-sm-6 text-right">
+                        <p>
+                          <strong>{{ text_status }}:</strong> 
+                          <span class="label" 
+                                :class="{
+                                  'label-success': invoiceDetails.status === 'paid',
+                                  'label-danger': invoiceDetails.status === 'unpaid',
+                                  'label-default': invoiceDetails.status === 'cancelled',
+                                  'label-warning': !['paid', 'unpaid', 'cancelled'].includes(invoiceDetails.status)
+                                }" 
+                                x-text="invoiceDetails.status_formatted">
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div class="table-responsive margin-top-20">
+                      <table class="table table-bordered table-hover">
+                        <thead>
+                          <tr>
+                            <th>{{ text_description }}</th>
+                            <th class="text-right">{{ text_price }}</th>
+                            <th class="text-right">{{ text_quantity }}</th>
+                            <th class="text-right">{{ text_total }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <template x-for="(item, index) in invoiceDetails.items" :key="index">
+                            <tr>
+                              <td x-text="item.description"></td>
+                              <td class="text-right" x-text="item.price_formatted"></td>
+                              <td class="text-right" x-text="item.quantity"></td>
+                              <td class="text-right" x-text="item.total_formatted"></td>
+                            </tr>
+                          </template>
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="3" class="text-right"><strong>{{ text_subtotal }}:</strong></td>
+                            <td class="text-right" x-text="invoiceDetails.subtotal_formatted"></td>
+                          </tr>
+                          <template x-if="invoiceDetails.tax_amount">
+                            <tr>
+                              <td colspan="3" class="text-right"><strong>{{ text_tax }}:</strong></td>
+                              <td class="text-right" x-text="invoiceDetails.tax_formatted"></td>
+                            </tr>
+                          </template>
+                          <template x-if="invoiceDetails.discount_amount">
+                            <tr>
+                              <td colspan="3" class="text-right"><strong>{{ text_discount }}:</strong></td>
+                              <td class="text-right" x-text="invoiceDetails.discount_formatted"></td>
+                            </tr>
+                          </template>
+                          <tr>
+                            <td colspan="3" class="text-right"><strong>{{ text_total }}:</strong></td>
+                            <td class="text-right" x-text="invoiceDetails.amount_formatted"></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                    
+                    <div class="row margin-top-20">
+                      <div class="col-sm-12">
+                        <h4>{{ text_payment_info }}</h4>
+                        <p x-text="invoiceDetails.payment_info"></p>
+                      </div>
+                    </div>
+                    
+                    <div class="row margin-top-20">
+                      <div class="col-sm-12">
+                        <h4>{{ text_notes }}</h4>
+                        <p x-text="invoiceDetails.notes"></p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div x-show="!loading && error" class="alert alert-danger" x-text="error"></div>
+                </div>
+                <div class="modal-footer">
+                  <template x-if="invoiceDetails && invoiceDetails.status === 'unpaid'">
+                    <button type="button" class="btn btn-success" @click="payInvoice(invoiceDetails.invoice_id)">
+                      <i class="fa fa-credit-card"></i> {{ button_pay }}
+                    </button>
+                  </template>
+                  <a :href="'{{ download_invoice_url }}&invoice_id=' + (invoiceDetails ? invoiceDetails.invoice_id : '')" class="btn btn-default" x-show="invoiceDetails">
+                    <i class="fa fa-download"></i> {{ button_download }}
+                  </a>
+                  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+function invoiceManager() {
+  return {
+    loading: false,
+    error: null,
+    invoiceDetails: null,
+    
+    viewInvoice(invoiceId) {
+      this.loading = true;
+      this.error = null;
+      this.invoiceDetails = null;
+      
+      // فتح النافذة المنبثقة
+      $('#invoice-modal').modal('show');
+      
+      // إرسال طلب للحصول على تفاصيل الفاتورة
+      fetch('{{ view_invoice_url }}&invoice_id=' + invoiceId)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            this.error = data.error;
+          } else {
+            this.invoiceDetails = data;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          this.error = '{{ error_loading_invoice }}';
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    
+    payInvoice(invoiceId) {
+      this.loading = true;
+      
+      // إرسال طلب لدفع الفاتورة
+      fetch('{{ pay_invoice_url }}&invoice_id=' + invoiceId)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // إذا كان هناك عنوان URL للتحويل، انتقل إليه
+            if (data.redirect) {
+              window.location.href = data.redirect;
+            } else {
+              // تحديث الصفحة
+              window.location.reload();
+            }
+          } else {
+            alert(data.error || '{{ error_payment_failed }}');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('{{ error_payment_failed }}');
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    }
+  };
+}
+</script>
+
+<style type="text/css">
+.margin-top-10 {
+  margin-top: 10px;
+}
+
+.margin-top-20 {
+  margin-top: 20px;
+}
+
+@media print {
+  .modal-footer, .modal-header button.close {
+    display: none;
+  }
+  
+  body * {
+    visibility: hidden;
+  }
+  
+  .modal, .modal-content, .modal-body {
+    visibility: visible;
+  }
+  
+  .modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}
+</style>
+
+{{ footer }}

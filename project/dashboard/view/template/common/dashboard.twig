@@ -1,0 +1,964 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="refresh-dashboard" class="btn btn-primary" data-toggle="tooltip" title="{{ help_refresh }}">
+          <i class="fa fa-refresh"></i> {{ text_refresh }}
+        </button>
+        <button type="button" id="export-dashboard" class="btn btn-success" data-toggle="tooltip" title="{{ help_export }}">
+          <i class="fa fa-download"></i> {{ text_export }}
+        </button>
+        <button type="button" id="print-dashboard" class="btn btn-info" data-toggle="tooltip" title="{{ help_print }}">
+          <i class="fa fa-print"></i> {{ text_print }}
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- Executive Summary Section -->
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-dashboard"></i> {{ text_executive_summary }}</h3>
+      </div>
+      <div class="panel-body">
+        <!-- Today's Performance -->
+        <div class="row">
+          <div class="col-lg-3 col-md-6">
+            <div class="panel panel-success">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3">
+                    <i class="fa fa-money fa-5x"></i>
+                  </div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge">{{ executive_summary.today.total_revenue.total_revenue|number_format(2) }}</div>
+                    <div>{{ text_total_revenue }} - {{ text_today }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-footer">
+                <span class="pull-left">{{ text_revenue_trend }}</span>
+                <span class="pull-right">
+                  {% if executive_summary.today.revenue_trend > 0 %}
+                    <i class="fa fa-arrow-up text-success"></i> {{ executive_summary.today.revenue_trend }}%
+                  {% else %}
+                    <i class="fa fa-arrow-down text-danger"></i> {{ executive_summary.today.revenue_trend }}%
+                  {% endif %}
+                </span>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3">
+                    <i class="fa fa-shopping-cart fa-5x"></i>
+                  </div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge">{{ executive_summary.today.total_orders.total_orders }}</div>
+                    <div>{{ text_total_orders }} - {{ text_today }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-footer">
+                <span class="pull-left">{{ text_order_trend }}</span>
+                <span class="pull-right">
+                  {% if executive_summary.today.order_trend > 0 %}
+                    <i class="fa fa-arrow-up text-success"></i> {{ executive_summary.today.order_trend }}%
+                  {% else %}
+                    <i class="fa fa-arrow-down text-danger"></i> {{ executive_summary.today.order_trend }}%
+                  {% endif %}
+                </span>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <div class="panel panel-warning">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3">
+                    <i class="fa fa-users fa-5x"></i>
+                  </div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge">{{ executive_summary.today.new_customers }}</div>
+                    <div>{{ text_new_customers }} - {{ text_today }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-footer">
+                <span class="pull-left">{{ text_conversion_rate }}</span>
+                <span class="pull-right">{{ executive_summary.today.conversion_rate }}%</span>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <div class="row">
+                  <div class="col-xs-3">
+                    <i class="fa fa-calculator fa-5x"></i>
+                  </div>
+                  <div class="col-xs-9 text-right">
+                    <div class="huge">{{ executive_summary.today.avg_order_value|number_format(2) }}</div>
+                    <div>{{ text_avg_order_value }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-footer">
+                <span class="pull-left">{{ text_profit_margin }}</span>
+                <span class="pull-right">{{ executive_summary.month.profit_margin }}%</span>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly & Yearly Performance -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_monthly_performance }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ executive_summary.month.total_revenue.total_revenue|number_format(2) }}</h3>
+                      <p>{{ text_total_revenue }}</p>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ executive_summary.month.total_orders }}</h3>
+                      <p>{{ text_total_orders }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar progress-bar-success" style="width: {{ executive_summary.month.growth_rate > 0 ? executive_summary.month.growth_rate : 0 }}%">
+                    {{ text_growth_rate }}: {{ executive_summary.month.growth_rate }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_yearly_performance }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ executive_summary.year.total_revenue|number_format(2) }}</h3>
+                      <p>{{ text_total_revenue }}</p>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ executive_summary.year.growth_rate }}%</h3>
+                      <p>{{ text_growth_rate }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar progress-bar-info" style="width: {{ executive_summary.year.customer_growth > 0 ? executive_summary.year.customer_growth : 0 }}%">
+                    {{ text_customer_growth }}: {{ executive_summary.year.customer_growth }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E-commerce Engine Section -->
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-shopping-cart"></i> {{ text_ecommerce_engine }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- Top Products -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_top_products }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>{{ text_product }}</th>
+                        <th>{{ text_sold }}</th>
+                        <th>{{ text_revenue }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for product in ecommerce_metrics.top_products %}
+                      <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.total_sold }}</td>
+                        <td>{{ product.total_revenue|number_format(2) }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Status Distribution -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_order_status }}</h4>
+              </div>
+              <div class="panel-body">
+                <canvas id="orderStatusChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="row">
+          <div class="col-md-3">
+            <div class="metric-box">
+              <h4>{{ ecommerce_metrics.avg_processing_time }}</h4>
+              <p>{{ text_processing_time }} ({{ text_hours }})</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <h4>{{ ecommerce_metrics.fulfillment_rate }}%</h4>
+              <p>{{ text_fulfillment_rate }}</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <h4>{{ ecommerce_metrics.cancellation_rate }}%</h4>
+              <p>{{ text_cancellation_rate }}</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <h4>{{ ecommerce_metrics.return_rate }}%</h4>
+              <p>{{ text_return_rate }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERP Modules Overview -->
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-cogs"></i> {{ text_erp_modules }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- Sales & CRM -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title"><i class="fa fa-handshake-o"></i> {{ text_sales_crm }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ erp_modules.sales_crm.active_leads.total_leads }}</h3>
+                  <p>{{ text_active_leads }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.sales_crm.conversion_rate }}%</h3>
+                  <p>{{ text_conversion_rate }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.sales_crm.customer_satisfaction.avg_rating }}/5</h3>
+                  <p>{{ text_customer_satisfaction }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Purchasing -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title"><i class="fa fa-truck"></i> {{ text_purchasing }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ erp_modules.purchasing.pending_pos.total_pending }}</h3>
+                  <p>{{ text_pending_pos }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.purchasing.purchase_cycle_time }}</h3>
+                  <p>{{ text_purchase_cycle_time }} ({{ text_days }})</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.purchasing.cost_savings.total_savings|number_format(2) }}</h3>
+                  <p>{{ text_cost_savings }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inventory -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title"><i class="fa fa-cubes"></i> {{ text_inventory }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ erp_modules.inventory.stock_levels.total_products }}</h3>
+                  <p>{{ text_total_products }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.inventory.turnover_rate }}</h3>
+                  <p>{{ text_turnover_rate }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.inventory.inventory_value.total_value|number_format(2) }}</h3>
+                  <p>{{ text_inventory_value }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Finance -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title"><i class="fa fa-calculator"></i> {{ text_finance }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ erp_modules.finance.cash_position.total_cash|number_format(2) }}</h3>
+                  <p>{{ text_cash_position }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.finance.accounts_receivable.total_receivable|number_format(2) }}</h3>
+                  <p>{{ text_accounts_receivable }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.finance.accounts_payable.total_payable|number_format(2) }}</h3>
+                  <p>{{ text_accounts_payable }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Human Resources -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title"><i class="fa fa-users"></i> {{ text_hr }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ erp_modules.hr.total_employees.total_employees }}</h3>
+                  <p>{{ text_total_employees }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.hr.attendance_rate }}%</h3>
+                  <p>{{ text_attendance_rate }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.hr.productivity.avg_productivity|number_format(2) }}</h3>
+                  <p>{{ text_productivity }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Projects -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title"><i class="fa fa-tasks"></i> {{ text_projects }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ erp_modules.projects.active_projects.active_projects }}</h3>
+                  <p>{{ text_active_projects }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.projects.completion_rate }}%</h3>
+                  <p>{{ text_completion_rate }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ erp_modules.projects.budget_utilization.utilization_rate }}%</h3>
+                  <p>{{ text_budget_utilization }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Intelligence Section -->
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-line-chart"></i> {{ text_financial_intelligence }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- Revenue Forecast -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_revenue_forecast }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ financial_intelligence.revenue_forecast.current_month|number_format(2) }}</h3>
+                  <p>{{ text_current_month }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ financial_intelligence.revenue_forecast.forecast_next_month|number_format(2) }}</h3>
+                  <p>{{ text_forecast_next_month }}</p>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar progress-bar-success" style="width: {{ financial_intelligence.revenue_forecast.growth_rate > 0 ? financial_intelligence.revenue_forecast.growth_rate : 0 }}%">
+                    {{ financial_intelligence.revenue_forecast.growth_rate }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profit Analysis -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_profit_analysis }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ financial_intelligence.profit_analysis.gross_profit.gross_profit|number_format(2) }}</h3>
+                  <p>{{ text_gross_profit }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ financial_intelligence.profit_analysis.net_profit.net_profit|number_format(2) }}</h3>
+                  <p>{{ text_net_profit }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ financial_intelligence.profit_analysis.gross_profit.margin_percentage }}%</h3>
+                  <p>{{ text_profit_margin }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cash Flow -->
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_cash_flow }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="metric">
+                  <h3>{{ financial_intelligence.cash_flow.current_position.total_cash|number_format(2) }}</h3>
+                  <p>{{ text_current_position }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ financial_intelligence.cash_flow.receivables.total_receivable|number_format(2) }}</h3>
+                  <p>{{ text_receivables }}</p>
+                </div>
+                <div class="metric">
+                  <h3>{{ financial_intelligence.cash_flow.payables.total_payable|number_format(2) }}</h3>
+                  <p>{{ text_payables }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Excellence Section -->
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-cog"></i> {{ text_operational_excellence }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- POS Operations -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_pos_operations }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ operational_metrics.pos_operations.daily_transactions.transaction_count }}</h3>
+                      <p>{{ text_daily_transactions }}</p>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ operational_metrics.pos_operations.avg_transaction_time }}</h3>
+                      <p>{{ text_avg_transaction_time }} ({{ text_seconds }})</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="metric">
+                  <h3>{{ operational_metrics.pos_operations.uptime }}%</h3>
+                  <p>{{ text_uptime }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quality Metrics -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_quality_metrics }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ operational_metrics.quality_metrics.defect_rate }}%</h3>
+                      <p>{{ text_defect_rate }}</p>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="metric">
+                      <h3>{{ operational_metrics.quality_metrics.customer_complaints.total_complaints }}</h3>
+                      <p>{{ text_customer_complaints }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="metric">
+                  <h3>{{ operational_metrics.quality_metrics.resolution_time }}</h3>
+                  <p>{{ text_resolution_time }} ({{ text_hours }})</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real-time Alerts Section -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-bell"></i> {{ text_real_time_alerts }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- Critical Alerts -->
+          <div class="col-md-4">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_critical_alerts }}</h4>
+              </div>
+              <div class="panel-body">
+                {% if real_time_alerts.critical %}
+                  {% for alert in real_time_alerts.critical %}
+                  <div class="alert alert-danger">
+                    <strong>{{ alert.title }}</strong><br>
+                    {{ alert.message }}
+                    <span class="badge">{{ alert.count }}</span>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="alert alert-success">{{ text_no_critical_alerts }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning Alerts -->
+          <div class="col-md-4">
+            <div class="panel panel-warning">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_warning_alerts }}</h4>
+              </div>
+              <div class="panel-body">
+                {% if real_time_alerts.warnings %}
+                  {% for alert in real_time_alerts.warnings %}
+                  <div class="alert alert-warning">
+                    <strong>{{ alert.title }}</strong><br>
+                    {{ alert.message }}
+                    <span class="badge">{{ alert.count }}</span>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="alert alert-success">{{ text_no_warning_alerts }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Info Alerts -->
+          <div class="col-md-4">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_info_alerts }}</h4>
+              </div>
+              <div class="panel-body">
+                {% if real_time_alerts.info %}
+                  {% for alert in real_time_alerts.info %}
+                  <div class="alert alert-info">
+                    <strong>{{ alert.title }}</strong><br>
+                    {{ alert.message }}
+                    <span class="badge">{{ alert.count }}</span>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="alert alert-success">{{ text_no_info_alerts }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activities Section -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-history"></i> {{ text_recent_activities }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- Recent Orders -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_recent_orders }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table table-striped table-condensed">
+                    <thead>
+                      <tr>
+                        <th>{{ text_order_id }}</th>
+                        <th>{{ text_customer }}</th>
+                        <th>{{ text_total }}</th>
+                        <th>{{ text_date }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for order in recent_activities.recent_orders %}
+                      <tr>
+                        <td>#{{ order.order_id }}</td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>{{ order.total|number_format(2) }}</td>
+                        <td>{{ order.date_added|date('Y-m-d H:i') }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Customers -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_recent_customers }}</h4>
+              </div>
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table table-striped table-condensed">
+                    <thead>
+                      <tr>
+                        <th>{{ text_name }}</th>
+                        <th>{{ text_email }}</th>
+                        <th>{{ text_date_added }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for customer in recent_activities.recent_customers %}
+                      <tr>
+                        <td>{{ customer.name }}</td>
+                        <td>{{ customer.email }}</td>
+                        <td>{{ customer.date_added|date('Y-m-d H:i') }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_charts }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- Sales Trend Chart -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_sales_trend }}</h4>
+              </div>
+              <div class="panel-body">
+                <canvas id="salesTrendChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue by Category Chart -->
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">{{ text_category_revenue }}</h4>
+              </div>
+              <div class="panel-body">
+                <canvas id="categoryRevenueChart" width="400" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.metric {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.metric h3 {
+  color: #337ab7;
+  margin-bottom: 5px;
+}
+
+.metric-box {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.huge {
+  font-size: 40px;
+}
+
+.panel-footer {
+  background-color: #f5f5f5;
+}
+
+.progress {
+  margin-bottom: 0;
+}
+
+.alert {
+  margin-bottom: 10px;
+}
+
+.badge {
+  float: right;
+}
+
+.table-condensed > thead > tr > th,
+.table-condensed > tbody > tr > th,
+.table-condensed > tfoot > tr > th,
+.table-condensed > thead > tr > td,
+.table-condensed > tbody > tr > td,
+.table-condensed > tfoot > tr > td {
+  padding: 5px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Refresh dashboard
+    $('#refresh-dashboard').click(function() {
+        location.reload();
+    });
+
+    // Export dashboard
+    $('#export-dashboard').click(function() {
+        window.open('index.php?route=common/dashboard/export&user_token={{ user_token }}', '_blank');
+    });
+
+    // Print dashboard
+    $('#print-dashboard').click(function() {
+        window.print();
+    });
+
+    // Initialize charts
+    initializeCharts();
+
+    // Auto-refresh every 5 minutes
+    setInterval(function() {
+        refreshDashboardData();
+    }, 300000);
+});
+
+function initializeCharts() {
+    // Order Status Chart
+    var ctx1 = document.getElementById('orderStatusChart').getContext('2d');
+    var orderStatusChart = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for status in ecommerce_metrics.order_status_distribution %}
+                '{{ status.status_name }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for status in ecommerce_metrics.order_status_distribution %}
+                    {{ status.order_count }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Sales Trend Chart
+    var ctx2 = document.getElementById('salesTrendChart').getContext('2d');
+    var salesTrendChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for trend in chart_data.sales_trend %}
+                '{{ trend.date }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: '{{ text_revenue }}',
+                data: [
+                    {% for trend in chart_data.sales_trend %}
+                    {{ trend.revenue }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                borderColor: '#36A2EB',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Category Revenue Chart
+    var ctx3 = document.getElementById('categoryRevenueChart').getContext('2d');
+    var categoryRevenueChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for category in chart_data.category_revenue %}
+                '{{ category.category }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: '{{ text_revenue }}',
+                data: [
+                    {% for category in chart_data.category_revenue %}
+                    {{ category.revenue }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40',
+                    '#FF6384',
+                    '#C9CBCF',
+                    '#4BC0C0',
+                    '#FF6384'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function refreshDashboardData() {
+    $.ajax({
+        url: 'index.php?route=common/dashboard/refresh&user_token={{ user_token }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                // Update dashboard data without full page reload
+                console.log('Dashboard data refreshed');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log('Error refreshing dashboard data');
+        }
+    });
+}
+</script>
+
+{{ footer }}

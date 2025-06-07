@@ -1,0 +1,467 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+
+<!-- استبدال روابط CSS المحلية بروابط CDN -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+
+    <style>
+    .select2-container--default .select2-selection--single {
+        height: 36px;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top:0;left:0;right:0;bottom:0;
+        background: rgba(255,255,255,0.7);
+        z-index:9999;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:24px;
+        font-weight:bold;
+        color:#333;
+        display:none;
+    }
+
+    .modal-lg {
+        width: 90% !important;
+        max-width: 1200px;
+    }
+
+    .barcode-item {
+        margin:5px;
+    }
+
+    .table thead th {
+        vertical-align: middle !important;
+    }
+
+    .form-inline .form-group {
+        margin-right: 10px;
+    }
+
+    /* Adjusting DataTables default style */
+    .dataTables_wrapper .dataTables_filter {
+        float: right;
+        text-align: right;
+    }
+
+    .dataTables_wrapper .dataTables_length {
+        float: left;
+    }
+
+    /* Filters section */
+    .filter-container {
+        margin-bottom:20px;
+    }
+
+    .tab-content {
+        margin-top:20px;
+    }
+
+    /* Toast position */
+    #toast-container {
+        z-index:99999;
+    }
+
+    </style>
+
+    
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- Filters -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <form id="filter-form" class="form-inline">
+          <div class="form-group">
+            <label for="filter_name">{{ text_employee_name }}</label>
+            <input type="text" name="filter_name" id="filter_name" class="form-control" style="width:200px;" placeholder="{{ text_enter_employee_name }}" />
+          </div>
+          <div class="form-group">
+            <label for="filter_status">{{ text_status }}</label>
+            <select name="filter_status" id="filter_status" class="form-control select2" style="width:200px;">
+              <option value="">{{ text_all_statuses }}</option>
+              <option value="active">{{ text_active }}</option>
+              <option value="inactive">{{ text_inactive }}</option>
+              <option value="terminated">{{ text_terminated }}</option>
+            </select>
+          </div>
+          <button type="button" id="btn-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+          <button type="button" id="btn-reset" class="btn btn-default"><i class="fa fa-eraser"></i> {{ button_reset }}</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="text-right">
+      <button type="button" class="btn btn-success" id="btn-add"><i class="fa fa-plus"></i> {{ button_add_employee }}</button>
+    </div>
+
+    <div class="panel panel-default" style="margin-top:10px;">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-users"></i> {{ text_employee_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <table id="employee-table" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_employee_name }}</th>
+              <th>{{ column_job_title }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_salary }}</th>
+              <th>{{ column_hiring_date }}</th>
+              <th>{{ column_actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- DataTables AJAX -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Add/Edit Employee -->
+<div class="modal fade" id="modal-employee" tabindex="-1" role="dialog" aria-labelledby="modalEmployeeLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="employee-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+          <h4 class="modal-title" id="modalEmployeeLabel">{{ text_add_employee }}</h4>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="employee_id" value="" />
+          <div class="form-group">
+            <label>{{ text_user_id }}</label>
+            <select name="user_id" class="form-control select2" style="width:100%;">
+              <option value="">{{ text_select_user }}</option>
+              {% for user in users %}
+              <option value="{{ user.user_id }}">{{ user.firstname }} {{ user.lastname }} ({{ user.email }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ text_job_title }}</label>
+            <input type="text" name="job_title" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label>{{ text_hiring_date }}</label>
+            <div class='input-group date' id='hiring_date_picker'>
+              <input type='text' name="hiring_date" class="form-control" required />
+              <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_salary }}</label>
+            <input type="number" step="0.0001" name="salary" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label>{{ text_status }}</label>
+            <select name="status" class="form-control">
+              <option value="active">{{ text_active }}</option>
+              <option value="inactive">{{ text_inactive }}</option>
+              <option value="terminated">{{ text_terminated }}</option>
+            </select>
+          </div>
+
+          <hr />
+          <h4>{{ text_documents }}</h4>
+          <button type="button" class="btn btn-info" id="btn-add-document"><i class="fa fa-file"></i> {{ button_add_document }}</button>
+          <table id="documents-table" class="table table-bordered table-striped" style="margin-top:10px;">
+            <thead>
+              <tr>
+                <th>{{ column_document_name }}</th>
+                <th>{{ column_document_description }}</th>
+                <th>{{ column_document_actions }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- سيتم تعبئة المستندات AJAX -->
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Add Document -->
+<div class="modal fade" id="modal-document" tabindex="-1" role="dialog" aria-labelledby="modalDocumentLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="document-form" enctype="multipart/form-data">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+          <h4 class="modal-title" id="modalDocumentLabel">{{ text_add_document }}</h4>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="document_id" value="" />
+          <div class="form-group">
+            <label>{{ text_document_name }}</label>
+            <input type="text" name="document_name" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label>{{ text_document_description }}</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>{{ text_file }}</label>
+            <input type="file" name="file" class="form-control" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- استبدال روابط JavaScript المحلية بروابط CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/dataTables.bootstrap.min.js"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#filter_status').select2({ placeholder: "{{ text_all_statuses }}" });
+    $('select[name="user_id"]').select2({ placeholder: "{{ text_select_user }}" });
+
+    $('#hiring_date_picker').datetimepicker({ format: 'YYYY-MM-DD' });
+
+    var table = $('#employee-table').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "{{ ajax_list_url }}",
+            "type": "POST",
+            "data": function (d) {
+                d.user_token = "{{ user_token }}";
+                d.filter_name = $('#filter_name').val();
+                d.filter_status = $('#filter_status').val();
+            }
+        },
+        "columns": [
+            { "data": "employee_name" },
+            { "data": "job_title" },
+            { "data": "status" },
+            { "data": "salary" },
+            { "data": "hiring_date" },
+            { "data": "actions", "orderable": false, "searchable": false }
+        ]
+    });
+
+    $('#btn-filter').on('click', function() {
+        table.ajax.reload();
+    });
+    $('#btn-reset').on('click', function() {
+        $('#filter_name').val('');
+        $('#filter_status').val('').trigger('change');
+        table.ajax.reload();
+    });
+
+    $('#btn-add').on('click', function() {
+        $('#employee-form')[0].reset();
+        $('select[name="user_id"]').val('').trigger('change');
+        $('select[name="status"]').val('active');
+        $('#modalEmployeeLabel').text("{{ text_add_employee }}");
+        loadDocuments(0); // no documents for new employee
+        $('#modal-employee').modal('show');
+    });
+
+    $('#employee-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{{ ajax_save_url }}",
+            type: "POST",
+            data: $(this).serialize()+'&user_token={{ user_token }}',
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success) {
+                    toastr.success(json.success);
+                    $('#modal-employee').modal('hide');
+                    table.ajax.reload();
+                }
+            },
+            error: function(xhr) {
+                toastr.error("{{ text_ajax_error }}");
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-edit', function() {
+        var id = $(this).data('id');
+        $.ajax({
+            url: "{{ ajax_get_url }}",
+            type: "POST",
+            data: {employee_id:id,user_token:"{{ user_token }}"},
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else {
+                    var data = json.data;
+                    $('input[name="employee_id"]').val(data.employee_id);
+                    $('select[name="user_id"]').val(data.user_id).trigger('change');
+                    $('input[name="job_title"]').val(data.job_title);
+                    $('input[name="hiring_date"]').val(data.hiring_date);
+                    $('input[name="salary"]').val(data.salary);
+                    $('select[name="status"]').val(data.status);
+                    $('#modalEmployeeLabel').text("{{ text_edit_employee }}");
+                    loadDocuments(data.employee_id);
+                    $('#modal-employee').modal('show');
+                }
+            },
+            error: function() {
+                toastr.error("{{ text_ajax_error }}");
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-delete', function() {
+        var id = $(this).data('id');
+        if (confirm("{{ text_confirm_delete }}")) {
+            $.ajax({
+                url: "{{ ajax_delete_url }}",
+                type: "POST",
+                data: {employee_id:id,user_token:"{{ user_token }}"},
+                dataType: "json",
+                success: function(json) {
+                    if (json.error) {
+                        toastr.error(json.error);
+                    } else {
+                        toastr.success(json.success);
+                        table.ajax.reload();
+                    }
+                },
+                error: function() {
+                    toastr.error("{{ text_ajax_error }}");
+                }
+            });
+        }
+    });
+
+    // Documents
+    function loadDocuments(employee_id) {
+        $('#documents-table tbody').html('');
+        if (employee_id > 0) {
+            $.ajax({
+                url: "{{ ajax_documents_list_url }}",
+                type: "POST",
+                data: {employee_id:employee_id,user_token:"{{ user_token }}"},
+                dataType: "json",
+                success: function(json) {
+                    if (json.data) {
+                        $.each(json.data, function(i, doc) {
+                            var row = '<tr>'+
+                                      '<td>'+doc.document_name+'</td>'+
+                                      '<td>'+doc.description+'</td>'+
+                                      '<td><button class="btn btn-danger btn-sm btn-doc-delete" data-id="'+doc.document_id+'"><i class="fa fa-trash"></i></button> '+
+                                      '<a href="'+doc.file_url+'" target="_blank" class="btn btn-info btn-sm"><i class="fa fa-download"></i></a></td>'+
+                                      '</tr>';
+                            $('#documents-table tbody').append(row);
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    $('#btn-add-document').on('click', function() {
+        var employee_id = $('input[name="employee_id"]').val();
+        if (employee_id == '') {
+            toastr.warning("{{ text_save_employee_first }}");
+            return;
+        }
+        $('#document-form')[0].reset();
+        $('input[name="document_id"]').val('');
+        $('#modalDocumentLabel').text("{{ text_add_document }}");
+        $('#modal-document').modal('show');
+    });
+
+    $('#document-form').on('submit', function(e) {
+        e.preventDefault();
+        var employee_id = $('input[name="employee_id"]').val();
+        var formData = new FormData(this);
+        formData.append('user_token', "{{ user_token }}");
+        formData.append('employee_id', employee_id);
+
+        $.ajax({
+            url: "{{ ajax_document_upload_url }}",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType:"json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success) {
+                    toastr.success(json.success);
+                    $('#modal-document').modal('hide');
+                    loadDocuments(employee_id);
+                }
+            },
+            error: function() {
+                toastr.error("{{ text_ajax_error }}");
+            }
+        });
+    });
+
+    $(document).on('click','.btn-doc-delete',function() {
+        var doc_id = $(this).data('id');
+        if (confirm("{{ text_confirm_delete }}")) {
+            $.ajax({
+                url: "{{ ajax_document_delete_url }}",
+                type:"POST",
+                data:{document_id:doc_id,user_token:"{{ user_token }}"},
+                dataType:"json",
+                success:function(json) {
+                    if (json.error) {
+                        toastr.error(json.error);
+                    } else {
+                        toastr.success(json.success);
+                        var employee_id = $('input[name="employee_id"]').val();
+                        loadDocuments(employee_id);
+                    }
+                },
+                error:function(){
+                    toastr.error("{{ text_ajax_error }}");
+                }
+            });
+        }
+    });
+});
+</script>
+{{ footer }}

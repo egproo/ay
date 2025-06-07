@@ -1,0 +1,299 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-blog" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-blog" class="form-horizontal">
+          <ul class="nav nav-tabs" id="blog-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab"><i class="fa fa-file-text-o"></i> {{ tab_general }}</a></li>
+            <li><a href="#tab-data" data-toggle="tab"><i class="fa fa-cogs"></i> {{ tab_data }}</a></li>
+            <li><a href="#tab-links" data-toggle="tab"><i class="fa fa-link"></i> {{ tab_links }}</a></li>
+            <li><a href="#tab-seo" data-toggle="tab"><i class="fa fa-search"></i> {{ tab_seo }}</a></li>
+            <li><a href="#tab-image" data-toggle="tab"><i class="fa fa-image"></i> {{ tab_image }}</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab-general">
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-title">{{ entry_title }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="title" value="{{ title }}" placeholder="{{ entry_title }}" id="input-title" class="form-control" />
+                  {% if error_title %}
+                  <div class="text-danger">{{ error_title }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-content">{{ entry_content }}</label>
+                <div class="col-sm-10">
+                  <textarea name="content" placeholder="{{ entry_content }}" id="input-content" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control">{{ content }}</textarea>
+                  {% if error_content %}
+                  <div class="text-danger">{{ error_content }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-short-description">{{ entry_short_description }}</label>
+                <div class="col-sm-10">
+                  <textarea name="short_description" placeholder="{{ entry_short_description }}" id="input-short-description" class="form-control" rows="5">{{ short_description }}</textarea>
+                  <p class="help-block">{{ help_short_description }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-data">
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-slug">{{ entry_slug }}</label>
+                <div class="col-sm-10">
+                  <div class="input-group">
+                    <input type="text" name="slug" value="{{ slug }}" placeholder="{{ entry_slug }}" id="input-slug" class="form-control" />
+                    <span class="input-group-btn">
+                      <button type="button" id="button-generate-slug" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_generate }}</button>
+                    </span>
+                  </div>
+                  {% if error_slug %}
+                  <div class="text-danger">{{ error_slug }}</div>
+                  {% endif %}
+                  <p class="help-block">{{ help_slug }}</p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+                <div class="col-sm-10">
+                  <select name="status" id="input-status" class="form-control">
+                    {% if status %}
+                    <option value="1" selected="selected">{{ text_enabled }}</option>
+                    <option value="0">{{ text_disabled }}</option>
+                    {% else %}
+                    <option value="1">{{ text_enabled }}</option>
+                    <option value="0" selected="selected">{{ text_disabled }}</option>
+                    {% endif %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-comment-status">{{ entry_comment_status }}</label>
+                <div class="col-sm-10">
+                  <select name="comment_status" id="input-comment-status" class="form-control">
+                    {% if comment_status %}
+                    <option value="1" selected="selected">{{ text_enabled }}</option>
+                    <option value="0">{{ text_disabled }}</option>
+                    {% else %}
+                    <option value="1">{{ text_enabled }}</option>
+                    <option value="0" selected="selected">{{ text_disabled }}</option>
+                    {% endif %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-sort-order">{{ entry_sort_order }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="sort_order" value="{{ sort_order }}" placeholder="{{ entry_sort_order }}" id="input-sort-order" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-date-published">{{ entry_date_published }}</label>
+                <div class="col-sm-10">
+                  <div class="input-group date">
+                    <input type="text" name="date_published" value="{{ date_published }}" placeholder="{{ entry_date_published }}" data-date-format="YYYY-MM-DD" id="input-date-published" class="form-control" />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-links">
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-category">{{ entry_category }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="category" value="" placeholder="{{ entry_category }}" id="input-category" class="form-control" />
+                  <div id="post-category" class="well well-sm" style="height: 150px; overflow: auto;">
+                    {% for category in categories %}
+                    <div id="post-category{{ category.category_id }}">
+                      <i class="fa fa-minus-circle"></i> {{ category.name }}
+                      <input type="hidden" name="post_category[]" value="{{ category.category_id }}" />
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tag">{{ entry_tag }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="tag" value="" placeholder="{{ entry_tag }}" id="input-tag" class="form-control" />
+                  <div id="post-tag" class="well well-sm" style="height: 150px; overflow: auto;">
+                    {% for tag in post_tag %}
+                    <div id="post-tag{{ tag.tag_id }}">
+                      <i class="fa fa-minus-circle"></i> {{ tag.name }}
+                      <input type="hidden" name="post_tag[]" value="{{ tag.tag_id }}" />
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-seo">
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-meta-title">{{ entry_meta_title }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="meta_title" value="{{ meta_title }}" placeholder="{{ entry_meta_title }}" id="input-meta-title" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-meta-description">{{ entry_meta_description }}</label>
+                <div class="col-sm-10">
+                  <textarea name="meta_description" rows="5" placeholder="{{ entry_meta_description }}" id="input-meta-description" class="form-control">{{ meta_description }}</textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-meta-keywords">{{ entry_meta_keywords }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="meta_keywords" value="{{ meta_keywords }}" placeholder="{{ entry_meta_keywords }}" id="input-meta-keywords" class="form-control" />
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-image">
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-image">{{ entry_featured_image }}</label>
+                <div class="col-sm-10">
+                  <a href="" id="thumb-image" data-toggle="image" class="img-thumbnail"><img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}" /></a>
+                  <input type="hidden" name="featured_image" value="{{ featured_image }}" id="input-image" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link href="view/javascript/codemirror/lib/codemirror.css" rel="stylesheet" />
+<link href="view/javascript/codemirror/theme/monokai.css" rel="stylesheet" />
+<script type="text/javascript" src="view/javascript/codemirror/lib/codemirror.js"></script>
+<script type="text/javascript" src="view/javascript/codemirror/lib/xml.js"></script>
+<script type="text/javascript" src="view/javascript/codemirror/lib/formatting.js"></script>
+<script type="text/javascript" src="view/javascript/summernote/summernote.js"></script>
+<link href="view/javascript/summernote/summernote.css" rel="stylesheet" />
+<script type="text/javascript" src="view/javascript/summernote/summernote-image-attributes.js"></script>
+<script type="text/javascript" src="view/javascript/summernote/opencart.js"></script>
+
+<script type="text/javascript"><!--
+// Categorías
+$('input[name=\'category\']').autocomplete({
+  'source': function(request, response) {
+    $.ajax({
+      url: 'index.php?route=catalog/blog_category/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+      dataType: 'json',
+      success: function(json) {
+        response($.map(json, function(item) {
+          return {
+            label: item['name'],
+            value: item['category_id']
+          }
+        }));
+      }
+    });
+  },
+  'select': function(item) {
+    $('input[name=\'category\']').val('');
+    
+    $('#post-category' + item['value']).remove();
+    
+    $('#post-category').append('<div id="post-category' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="post_category[]" value="' + item['value'] + '" /></div>');
+  }
+});
+
+$('#post-category').on('click', '.fa-minus-circle', function() {
+  $(this).parent().remove();
+});
+
+// Etiquetas
+$('input[name=\'tag\']').autocomplete({
+  'source': function(request, response) {
+    $.ajax({
+      url: 'index.php?route=catalog/blog_tag/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+      dataType: 'json',
+      success: function(json) {
+        response($.map(json, function(item) {
+          return {
+            label: item['name'],
+            value: item['tag_id']
+          }
+        }));
+      }
+    });
+  },
+  'select': function(item) {
+    $('input[name=\'tag\']').val('');
+    
+    $('#post-tag' + item['value']).remove();
+    
+    $('#post-tag').append('<div id="post-tag' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="post_tag[]" value="' + item['value'] + '" /></div>');
+  }
+});
+
+$('#post-tag').on('click', '.fa-minus-circle', function() {
+  $(this).parent().remove();
+});
+
+// Datepicker
+$('.date').datetimepicker({
+  pickTime: false
+});
+
+// Generador automático de slug
+$('#button-generate-slug').on('click', function() {
+  var title = $('#input-title').val();
+  if (title) {
+    $.ajax({
+      url: 'index.php?route=catalog/blog/generateSlug&user_token={{ user_token }}',
+      type: 'POST',
+      data: { title: title },
+      dataType: 'json',
+      success: function(json) {
+        if (json.success) {
+          $('#input-slug').val(json.slug);
+        }
+      }
+    });
+  }
+});
+
+// Generación automática de metadatos si están vacíos
+$('#input-title').on('blur', function() {
+  if ($('#input-meta-title').val() == '') {
+    $('#input-meta-title').val($(this).val());
+  }
+});
+
+$('#input-short-description').on('blur', function() {
+  if ($('#input-meta-description').val() == '') {
+    $('#input-meta-description').val($(this).val());
+  }
+});
+//--></script>
+
+{{ footer }}

@@ -1,0 +1,941 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+
+<!-- استبدال روابط CSS المحلية بروابط CDN -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+
+    <style>
+    .select2-container--default .select2-selection--single {
+        height: 36px;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top:0;left:0;right:0;bottom:0;
+        background: rgba(255,255,255,0.7);
+        z-index:9999;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:24px;
+        font-weight:bold;
+        color:#333;
+        display:none;
+    }
+
+    .modal-lg {
+        width: 90% !important;
+        max-width: 1200px;
+    }
+
+    .barcode-item {
+        margin:5px;
+    }
+
+    .table thead th {
+        vertical-align: middle !important;
+    }
+
+    .form-inline .form-group {
+        margin-right: 10px;
+    }
+
+    /* Adjusting DataTables default style */
+    .dataTables_wrapper .dataTables_filter {
+        float: right;
+        text-align: right;
+    }
+
+    .dataTables_wrapper .dataTables_length {
+        float: left;
+    }
+
+    /* Filters section */
+    .filter-container {
+        margin-bottom:20px;
+    }
+
+    .tab-content {
+        margin-top:20px;
+    }
+
+    /* Toast position */
+    #toast-container {
+        z-index:99999;
+    }
+
+    </style>
+
+
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- فلاتر متقدمة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <form id="filter-form" class="form-inline">
+          <div class="form-group">
+            <label for="filter_name">{{ text_period_name }}</label>
+            <input type="text" name="filter_name" id="filter_name" class="form-control" placeholder="{{ text_enter_period_name }}" style="width:200px;" />
+          </div>
+          <div class="form-group">
+            <label for="filter_date_start">{{ text_start_date }}</label>
+            <div class='input-group date' id='filter_date_start'>
+              <input type='text' class="form-control" name="filter_date_start" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filter_date_end">{{ text_end_date }}</label>
+            <div class='input-group date' id='filter_date_end'>
+              <input type='text' class="form-control" name="filter_date_end" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filter_status">{{ text_status }}</label>
+            <select name="filter_status" id="filter_status" class="form-control select2" style="width:200px;">
+              <option value="">{{ text_all_statuses }}</option>
+              <option value="open">{{ text_status_open }}</option>
+              <option value="closed">{{ text_status_closed }}</option>
+            </select>
+          </div>
+          <button type="button" id="btn-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+          <button type="button" id="btn-reset" class="btn btn-default"><i class="fa fa-eraser"></i> {{ button_reset }}</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- أزرار الإجراءات المتقدمة -->
+    <div class="row" style="margin-bottom: 15px;">
+      <div class="col-md-6">
+        <div class="btn-group" role="group">
+          <button type="button" class="btn btn-success" id="btn-generate-payroll" title="{{ tooltip_generate }}">
+            <i class="fa fa-cogs"></i> {{ button_generate }}
+          </button>
+          <button type="button" class="btn btn-info" id="btn-view-statistics" title="{{ tooltip_statistics }}">
+            <i class="fa fa-chart-bar"></i> {{ button_view_statistics }}
+          </button>
+          <button type="button" class="btn btn-warning" id="btn-advanced-search" title="{{ button_advanced_search }}">
+            <i class="fa fa-search"></i> {{ button_advanced_search }}
+          </button>
+        </div>
+      </div>
+      <div class="col-md-6 text-right">
+        <div class="btn-group" role="group">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-download"></i> {{ text_export_data }}
+            </button>
+            <div class="dropdown-menu">
+              <a class="dropdown-item export-btn" href="#" data-format="csv">
+                <i class="fa fa-file-csv"></i> {{ button_export_csv }}
+              </a>
+              <a class="dropdown-item export-btn" href="#" data-format="excel">
+                <i class="fa fa-file-excel"></i> {{ button_export_excel }}
+              </a>
+            </div>
+          </div>
+          <button type="button" class="btn btn-dark" id="btn-tax-settings" title="{{ tooltip_settings }}">
+            <i class="fa fa-cog"></i> {{ button_settings }}
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-add">
+            <i class="fa fa-plus"></i> {{ button_add_period }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول فترات الرواتب -->
+    <div class="panel panel-default" style="margin-top:10px;">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-calendar"></i> {{ text_payroll_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <table id="payroll-table" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_period_name }}</th>
+              <th>{{ column_start_date }}</th>
+              <th>{{ column_end_date }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- سيتم تعبئة المحتوى عبر DataTables Ajax -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إضافة/تعديل فترة الراتب -->
+<div class="modal fade" id="modal-period" tabindex="-1" role="dialog" aria-labelledby="modalPeriodLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="period-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+          <h4 class="modal-title" id="modalPeriodLabel">{{ text_add_period }}</h4>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="payroll_period_id" value="" />
+          <div class="form-group">
+            <label>{{ text_period_name }}</label>
+            <input type="text" name="period_name" class="form-control" placeholder="{{ text_enter_period_name }}" required />
+          </div>
+          <div class="form-group">
+            <label>{{ text_start_date }}</label>
+            <div class='input-group date' id='period_start_picker'>
+              <input type='text' name="start_date" class="form-control" required />
+              <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_end_date }}</label>
+            <div class='input-group date' id='period_end_picker'>
+              <input type='text' name="end_date" class="form-control" required />
+              <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_status }}</label>
+            <select name="status" class="form-control">
+              <option value="open">{{ text_status_open }}</option>
+              <option value="closed">{{ text_status_closed }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- مودال عرض تفاصيل الرواتب للموظفين في الفترة -->
+<div class="modal fade" id="modal-entries" tabindex="-1" role="dialog" aria-labelledby="modalEntriesLabel">
+  <div class="modal-dialog modal-lg" role="document"> <!-- modal-lg لتوسيع النافذة -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title" id="modalEntriesLabel">{{ text_view_entries }}</h4>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="entries_payroll_period_id" value="" />
+        <table id="entries-table" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_employee }}</th>
+              <th>{{ column_base_salary }}</th>
+              <th>{{ column_allowances }}</th>
+              <th>{{ column_deductions }}</th>
+              <th>{{ column_net_salary }}</th>
+              <th>{{ column_payment_status }}</th>
+              <th>{{ column_actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- سيتم تعبئة المحتوى عبر DataTables Ajax -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إحصائيات الرواتب -->
+<div class="modal fade" id="modal-statistics" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">{{ text_payroll_statistics }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>{{ text_period_name }}</label>
+              <select id="statistics-period" class="form-control">
+                <option value="">{{ placeholder_select_period }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <button type="button" class="btn btn-primary" id="btn-load-statistics">
+              <i class="fa fa-chart-bar"></i> {{ button_view_statistics }}
+            </button>
+          </div>
+        </div>
+        <div id="statistics-content" style="display: none;">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="info-box bg-aqua">
+                <span class="info-box-icon"><i class="fa fa-users"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_total_employees }}</span>
+                  <span class="info-box-number" id="stat-total-employees">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-box bg-green">
+                <span class="info-box-icon"><i class="fa fa-money"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_total_net_salary }}</span>
+                  <span class="info-box-number" id="stat-total-net">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-box bg-yellow">
+                <span class="info-box-icon"><i class="fa fa-calculator"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_average_net_salary }}</span>
+                  <span class="info-box-number" id="stat-average-net">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-box bg-red">
+                <span class="info-box-icon"><i class="fa fa-check"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_paid_count }}</span>
+                  <span class="info-box-number" id="stat-paid-count">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <canvas id="salary-chart" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال البحث المتقدم -->
+<div class="modal fade" id="modal-advanced-search" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">{{ text_advanced_search }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="advanced-search-form">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>{{ text_employee_name }}</label>
+                <input type="text" name="employee_name" class="form-control" placeholder="{{ placeholder_search_employee }}">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>{{ text_period_name }}</label>
+                <select name="period_id" class="form-control">
+                  <option value="">{{ placeholder_select_period }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>{{ text_payment_status }}</label>
+                <select name="payment_status" class="form-control">
+                  <option value="">{{ placeholder_select_status }}</option>
+                  <option value="pending">{{ text_status_pending }}</option>
+                  <option value="paid">{{ text_status_paid }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>{{ text_min_salary }}</label>
+                <input type="number" name="min_salary" class="form-control" placeholder="{{ placeholder_min_salary }}">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>{{ text_max_salary }}</label>
+                <input type="number" name="max_salary" class="form-control" placeholder="{{ placeholder_max_salary }}">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="fa fa-search"></i> {{ button_advanced_search }}
+              </button>
+              <button type="button" class="btn btn-default" id="btn-clear-search">
+                <i class="fa fa-eraser"></i> {{ button_reset }}
+              </button>
+            </div>
+          </div>
+        </form>
+        <div id="search-results" style="margin-top: 20px; display: none;">
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th>{{ column_employee }}</th>
+                <th>{{ column_job_title }}</th>
+                <th>{{ column_period_name }}</th>
+                <th>{{ column_net_salary }}</th>
+                <th>{{ column_payment_status }}</th>
+              </tr>
+            </thead>
+            <tbody id="search-results-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إعدادات الضرائب -->
+<div class="modal fade" id="modal-tax-settings" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">{{ text_tax_settings }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="tax-settings-form">
+          <div class="form-group">
+            <label>{{ text_tax_rate }}</label>
+            <div class="input-group">
+              <input type="number" name="tax_rate" class="form-control" step="0.01" min="0" max="100" value="14">
+              <span class="input-group-addon">%</span>
+            </div>
+            <small class="help-block">{{ help_tax_settings }}</small>
+          </div>
+          <div class="form-group">
+            <label>{{ text_social_insurance_rate }}</label>
+            <div class="input-group">
+              <input type="number" name="social_insurance_rate" class="form-control" step="0.01" min="0" max="100" value="11">
+              <span class="input-group-addon">%</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_medical_insurance_rate }}</label>
+            <div class="input-group">
+              <input type="number" name="medical_insurance_rate" class="form-control" step="0.01" min="0" max="100" value="3">
+              <span class="input-group-addon">%</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+        <button type="button" class="btn btn-primary" id="btn-save-tax-settings">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إنشاء كشوف الرواتب -->
+<div class="modal fade" id="modal-generate-payroll" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">{{ text_generate_payroll }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>{{ text_period_name }}</label>
+          <select id="generate-period" class="form-control">
+            <option value="">{{ placeholder_select_period }}</option>
+          </select>
+        </div>
+        <div class="alert alert-info">
+          <i class="fa fa-info-circle"></i> {{ help_generate_payroll }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+        <button type="button" class="btn btn-success" id="btn-confirm-generate">
+          <i class="fa fa-cogs"></i> {{ button_generate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- استبدال روابط JavaScript المحلية بروابط CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/dataTables.bootstrap.min.js"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#filter_status').select2({ placeholder: "{{ text_all_statuses }}" });
+
+    $('#filter_date_start').datetimepicker({ format: 'YYYY-MM-DD' });
+    $('#filter_date_end').datetimepicker({ format: 'YYYY-MM-DD', useCurrent: false });
+    $("#filter_date_start").on("dp.change", function (e) {
+        $('#filter_date_end').data("DateTimePicker").minDate(e.date);
+    });
+    $("#filter_date_end").on("dp.change", function (e) {
+        $('#filter_date_start').data("DateTimePicker").maxDate(e.date);
+    });
+
+    $('#period_start_picker').datetimepicker({ format: 'YYYY-MM-DD' });
+    $('#period_end_picker').datetimepicker({ format: 'YYYY-MM-DD', useCurrent: false });
+
+    $("#period_start_picker").on("dp.change", function (e) {
+        $('#period_end_picker').data("DateTimePicker").minDate(e.date);
+    });
+    $("#period_end_picker").on("dp.change", function (e) {
+        $('#period_start_picker').data("DateTimePicker").maxDate(e.date);
+    });
+
+    var table = $('#payroll-table').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "{{ ajax_list_url }}",
+            "type": "POST",
+            "data": function (d) {
+                d.user_token = "{{ user_token }}";
+                d.filter_name = $('#filter_name').val();
+                d.filter_date_start = $('input[name="filter_date_start"]').val();
+                d.filter_date_end = $('input[name="filter_date_end"]').val();
+                d.filter_status = $('#filter_status').val();
+            }
+        },
+        "columns": [
+            { "data": "period_name" },
+            { "data": "start_date" },
+            { "data": "end_date" },
+            { "data": "status" },
+            { "data": "actions", "orderable": false, "searchable": false }
+        ]
+    });
+
+    $('#btn-filter').on('click', function() {
+        table.ajax.reload();
+    });
+
+    $('#btn-reset').on('click', function() {
+        $('#filter_name').val('');
+        $('input[name="filter_date_start"]').val('');
+        $('input[name="filter_date_end"]').val('');
+        $('#filter_status').val('').trigger('change');
+        table.ajax.reload();
+    });
+
+    // إضافة فترة راتب جديدة
+    $('#btn-add').on('click', function() {
+        $('#period-form')[0].reset();
+        $('input[name="payroll_period_id"]').val('');
+        $('select[name="status"]').val('open');
+        $('#modalPeriodLabel').text("{{ text_add_period }}");
+        $('#modal-period').modal('show');
+    });
+
+    // حفظ فترة الراتب
+    $('#period-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{{ ajax_save_url }}",
+            type: "POST",
+            data: $(this).serialize() + '&user_token={{ user_token }}',
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success) {
+                    toastr.success(json.success);
+                    $('#modal-period').modal('hide');
+                    table.ajax.reload();
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // تعديل فترة راتب
+    $(document).on('click', '.btn-edit', function() {
+        var id = $(this).data('id');
+        $.ajax({
+            url: "{{ ajax_get_url }}",
+            type: "POST",
+            data: {payroll_period_id: id, user_token: "{{ user_token }}"},
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else {
+                    var data = json.data;
+                    $('input[name="payroll_period_id"]').val(data.payroll_period_id);
+                    $('input[name="period_name"]').val(data.period_name);
+                    $('input[name="start_date"]').val(data.start_date);
+                    $('input[name="end_date"]').val(data.end_date);
+                    $('select[name="status"]').val(data.status);
+                    $('#modalPeriodLabel').text("{{ text_edit_period }}");
+                    $('#modal-period').modal('show');
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // حذف فترة راتب
+    $(document).on('click', '.btn-delete', function() {
+        var id = $(this).data('id');
+        if (confirm("{{ text_confirm_delete }}")) {
+            $.ajax({
+                url: "{{ ajax_delete_url }}",
+                type: "POST",
+                data: {payroll_period_id: id, user_token: "{{ user_token }}"},
+                dataType: "json",
+                success: function(json) {
+                    if (json.error) {
+                        toastr.error(json.error);
+                    } else {
+                        toastr.success(json.success);
+                        table.ajax.reload();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    toastr.error("{{ text_ajax_error }}: " + error);
+                }
+            });
+        }
+    });
+
+    // عرض تفاصيل الرواتب
+    var entriesTable;
+    $(document).on('click', '.btn-view-entries', function() {
+        var id = $(this).data('id');
+        $('input[name="entries_payroll_period_id"]').val(id);
+        $('#modalEntriesLabel').text("{{ text_view_entries_for_period }}".replace('%s', $(this).data('periodname')));
+
+        // تهيئة DataTable لسجلات الفترة إن لم يكن مهيأ مسبقاً
+        if (!entriesTable) {
+            entriesTable = $('#entries-table').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "{{ ajax_entries_url }}",
+                    "type": "POST",
+                    "data": function (d) {
+                        d.user_token = "{{ user_token }}";
+                        d.payroll_period_id = $('input[name="entries_payroll_period_id"]').val();
+                    }
+                },
+                "columns": [
+                    { "data": "employee_name" },
+                    { "data": "base_salary" },
+                    { "data": "allowances" },
+                    { "data": "deductions" },
+                    { "data": "net_salary" },
+                    { "data": "payment_status" },
+                    { "data": "actions", "orderable": false, "searchable": false }
+                ]
+            });
+        } else {
+            entriesTable.ajax.reload();
+        }
+
+        $('#modal-entries').modal('show');
+    });
+
+    // مثال لتعديل سجل موظف في فترة الراتب أو تنفيذ إجراءات أخرى:
+    $(document).on('click', '.btn-mark-paid', function() {
+        var entry_id = $(this).data('id');
+        $.ajax({
+            url: "{{ ajax_mark_paid_url }}",
+            type: "POST",
+            data: {payment_invoice_id: entry_id, user_token: "{{ user_token }}"},
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else {
+                    toastr.success(json.success);
+                    entriesTable.ajax.reload();
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // الميزات المتقدمة الجديدة
+
+    // إنشاء كشوف الرواتب تلقائياً
+    $('#btn-generate-payroll').on('click', function() {
+        loadPeriodsForSelect('#generate-period');
+        $('#modal-generate-payroll').modal('show');
+    });
+
+    $('#btn-confirm-generate').on('click', function() {
+        var period_id = $('#generate-period').val();
+        if (!period_id) {
+            toastr.error('{{ error_required }}');
+            return;
+        }
+
+        if (confirm('{{ confirm_generate_payroll }}')) {
+            $.ajax({
+                url: "{{ ajax_generate_url }}",
+                type: "POST",
+                data: {payroll_period_id: period_id, user_token: "{{ user_token }}"},
+                dataType: "json",
+                beforeSend: function() {
+                    $('#btn-confirm-generate').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ info_generating }}');
+                },
+                success: function(json) {
+                    $('#btn-confirm-generate').prop('disabled', false).html('<i class="fa fa-cogs"></i> {{ button_generate }}');
+                    if (json.error) {
+                        toastr.error(json.error);
+                    } else if (json.success) {
+                        toastr.success(json.success);
+                        $('#modal-generate-payroll').modal('hide');
+                        table.ajax.reload();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#btn-confirm-generate').prop('disabled', false).html('<i class="fa fa-cogs"></i> {{ button_generate }}');
+                    toastr.error("{{ text_ajax_error }}: " + error);
+                }
+            });
+        }
+    });
+
+    // عرض الإحصائيات
+    $('#btn-view-statistics').on('click', function() {
+        loadPeriodsForSelect('#statistics-period');
+        $('#modal-statistics').modal('show');
+    });
+
+    $('#btn-load-statistics').on('click', function() {
+        var period_id = $('#statistics-period').val();
+        if (!period_id) {
+            toastr.error('{{ error_required }}');
+            return;
+        }
+
+        $.ajax({
+            url: "{{ ajax_statistics_url }}",
+            type: "POST",
+            data: {payroll_period_id: period_id, user_token: "{{ user_token }}"},
+            dataType: "json",
+            beforeSend: function() {
+                $('#btn-load-statistics').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ info_loading }}');
+            },
+            success: function(json) {
+                $('#btn-load-statistics').prop('disabled', false).html('<i class="fa fa-chart-bar"></i> {{ button_view_statistics }}');
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.data) {
+                    displayStatistics(json.data);
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#btn-load-statistics').prop('disabled', false).html('<i class="fa fa-chart-bar"></i> {{ button_view_statistics }}');
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // البحث المتقدم
+    $('#btn-advanced-search').on('click', function() {
+        loadPeriodsForSelect('#modal-advanced-search select[name="period_id"]');
+        $('#modal-advanced-search').modal('show');
+    });
+
+    $('#advanced-search-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{{ ajax_search_url }}",
+            type: "POST",
+            data: $(this).serialize() + '&user_token={{ user_token }}',
+            dataType: "json",
+            beforeSend: function() {
+                $('#search-results').hide();
+            },
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.data) {
+                    displaySearchResults(json.data);
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    $('#btn-clear-search').on('click', function() {
+        $('#advanced-search-form')[0].reset();
+        $('#search-results').hide();
+    });
+
+    // إعدادات الضرائب
+    $('#btn-tax-settings').on('click', function() {
+        $('#modal-tax-settings').modal('show');
+    });
+
+    $('#btn-save-tax-settings').on('click', function() {
+        $.ajax({
+            url: "{{ ajax_tax_settings_url }}",
+            type: "POST",
+            data: $('#tax-settings-form').serialize() + '&user_token={{ user_token }}',
+            dataType: "json",
+            beforeSend: function() {
+                $('#btn-save-tax-settings').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ info_loading }}');
+            },
+            success: function(json) {
+                $('#btn-save-tax-settings').prop('disabled', false).html('{{ button_save }}');
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success) {
+                    toastr.success(json.success);
+                    $('#modal-tax-settings').modal('hide');
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#btn-save-tax-settings').prop('disabled', false).html('{{ button_save }}');
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // تصدير البيانات
+    $('.export-btn').on('click', function(e) {
+        e.preventDefault();
+        var format = $(this).data('format');
+        var period_id = $('#statistics-period').val() || $('#generate-period').val();
+
+        if (!period_id) {
+            toastr.error('{{ error_required }}');
+            return;
+        }
+
+        window.open("{{ ajax_export_url }}&period_id=" + period_id + "&format=" + format, '_blank');
+    });
+
+    // وظائف مساعدة
+    function loadPeriodsForSelect(selector) {
+        $.ajax({
+            url: "{{ ajax_list_url }}",
+            type: "POST",
+            data: {user_token: "{{ user_token }}", length: -1},
+            dataType: "json",
+            success: function(json) {
+                if (json.data) {
+                    var options = '<option value="">{{ placeholder_select_period }}</option>';
+                    $.each(json.data, function(index, period) {
+                        options += '<option value="' + period.payroll_period_id + '">' + period.period_name + '</option>';
+                    });
+                    $(selector).html(options);
+                }
+            }
+        });
+    }
+
+    function displayStatistics(data) {
+        $('#stat-total-employees').text(data.total_employees || 0);
+        $('#stat-total-net').text(parseFloat(data.total_net_salary || 0).toLocaleString());
+        $('#stat-average-net').text(parseFloat(data.average_net_salary || 0).toLocaleString());
+        $('#stat-paid-count').text(data.paid_count || 0);
+
+        $('#statistics-content').show();
+
+        // رسم بياني بسيط
+        var ctx = document.getElementById('salary-chart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['{{ text_status_paid }}', '{{ text_status_pending }}'],
+                datasets: [{
+                    data: [data.paid_count || 0, data.pending_count || 0],
+                    backgroundColor: ['#28a745', '#ffc107']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+
+    function displaySearchResults(data) {
+        var html = '';
+        $.each(data, function(index, row) {
+            html += '<tr>';
+            html += '<td>' + row.employee_name + '</td>';
+            html += '<td>' + row.job_title + '</td>';
+            html += '<td>' + row.period_name + '</td>';
+            html += '<td>' + row.net_salary + '</td>';
+            html += '<td><span class="label label-' + (row.payment_status == 'paid' ? 'success' : 'warning') + '">' + row.payment_status + '</span></td>';
+            html += '</tr>';
+        });
+        $('#search-results-body').html(html);
+        $('#search-results').show();
+    }
+
+});
+</script>
+
+{{  footer }}

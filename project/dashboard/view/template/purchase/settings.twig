@@ -1,0 +1,944 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" id="button-save" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa-solid fa-save"></i>
+        </button>
+        <button type="button" id="button-reset" data-bs-toggle="tooltip" title="{{ button_reset }}" class="btn btn-warning">
+          <i class="fa-solid fa-refresh"></i>
+        </button>
+        <button type="button" id="button-export" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-info">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button type="button" id="button-import" data-bs-toggle="tooltip" title="{{ button_import }}" class="btn btn-success">
+          <i class="fa-solid fa-upload"></i>
+        </button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-secondary">
+          <i class="fa-solid fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header">
+        <i class="fa-solid fa-cog"></i> {{ text_edit }}
+      </div>
+      <div class="card-body">
+        <form id="form-settings">
+          <ul class="nav nav-tabs" id="language">
+            <li class="nav-item">
+              <a class="nav-link active" href="#tab-general" data-bs-toggle="tab">{{ tab_general }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-numbering" data-bs-toggle="tab">{{ tab_numbering }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-notifications" data-bs-toggle="tab">{{ tab_notifications }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-inventory" data-bs-toggle="tab">{{ tab_inventory }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-integration" data-bs-toggle="tab">{{ tab_integration }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-approval" data-bs-toggle="tab">{{ tab_approval }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-reports" data-bs-toggle="tab">{{ tab_reports }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-advanced" data-bs-toggle="tab">{{ tab_advanced }}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tab-maintenance" data-bs-toggle="tab">{{ tab_maintenance }}</a>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <!-- التبويب العام -->
+            <div class="tab-pane fade show active" id="tab-general">
+              <div class="row mb-3">
+                <label for="input-default-currency" class="col-sm-2 col-form-label">{{ entry_default_currency }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_default_currency" id="input-default-currency" class="form-select">
+                    <option value="">{{ text_select }}</option>
+                    {% for currency in currencies %}
+                      <option value="{{ currency.currency_id }}"{% if currency.currency_id == purchase_default_currency %} selected{% endif %}>{{ currency.title }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">{{ help_default_currency }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-default-payment-term" class="col-sm-2 col-form-label">{{ entry_default_payment_term }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="purchase_default_payment_term" value="{{ purchase_default_payment_term }}" placeholder="{{ entry_default_payment_term }}" id="input-default-payment-term" class="form-control"/>
+                  <div class="form-text">{{ help_default_payment_term }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-default-supplier" class="col-sm-2 col-form-label">{{ entry_default_supplier }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_default_supplier" id="input-default-supplier" class="form-select">
+                    <option value="">{{ text_select }}</option>
+                    {% for supplier in suppliers %}
+                      <option value="{{ supplier.supplier_id }}"{% if supplier.supplier_id == purchase_default_supplier %} selected{% endif %}>{{ supplier.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">{{ help_default_supplier }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-auto-approval-limit" class="col-sm-2 col-form-label">{{ entry_auto_approval_limit }}</label>
+                <div class="col-sm-10">
+                  <input type="number" step="0.01" name="purchase_auto_approval_limit" value="{{ purchase_auto_approval_limit }}" placeholder="{{ entry_auto_approval_limit }}" id="input-auto-approval-limit" class="form-control"/>
+                  <div class="form-text">{{ help_auto_approval_limit }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_require_approval }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_require_approval" value="1" id="input-require-approval"{% if purchase_require_approval %} checked{% endif %}>
+                    <label class="form-check-label" for="input-require-approval">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_require_approval }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_allow_partial_receipt }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_allow_partial_receipt" value="1" id="input-allow-partial-receipt"{% if purchase_allow_partial_receipt %} checked{% endif %}>
+                    <label class="form-check-label" for="input-allow-partial-receipt">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_allow_partial_receipt }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_auto_create_journal }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_auto_create_journal" value="1" id="input-auto-create-journal"{% if purchase_auto_create_journal %} checked{% endif %}>
+                    <label class="form-check-label" for="input-auto-create-journal">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_auto_create_journal }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-default-warehouse" class="col-sm-2 col-form-label">{{ entry_default_warehouse }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_default_warehouse" id="input-default-warehouse" class="form-select">
+                    <option value="">{{ text_select }}</option>
+                    {% for warehouse in warehouses %}
+                      <option value="{{ warehouse.location_id }}"{% if warehouse.location_id == purchase_default_warehouse %} selected{% endif %}>{{ warehouse.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">{{ help_default_warehouse }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب الترقيم -->
+            <div class="tab-pane fade" id="tab-numbering">
+              <div class="row mb-3">
+                <label for="input-order-prefix" class="col-sm-2 col-form-label">{{ entry_order_prefix }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="purchase_order_prefix" value="{{ purchase_order_prefix }}" placeholder="{{ entry_order_prefix }}" id="input-order-prefix" class="form-control"/>
+                  <div class="form-text">{{ help_order_prefix }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-order-suffix" class="col-sm-2 col-form-label">{{ entry_order_suffix }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="purchase_order_suffix" value="{{ purchase_order_suffix }}" placeholder="{{ entry_order_suffix }}" id="input-order-suffix" class="form-control"/>
+                  <div class="form-text">{{ help_order_suffix }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-order-next-number" class="col-sm-2 col-form-label">{{ entry_order_next_number }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="purchase_order_next_number" value="{{ purchase_order_next_number }}" placeholder="{{ entry_order_next_number }}" id="input-order-next-number" class="form-control"/>
+                  <div class="form-text">{{ help_order_next_number }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-quotation-prefix" class="col-sm-2 col-form-label">{{ entry_quotation_prefix }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="purchase_quotation_prefix" value="{{ purchase_quotation_prefix }}" placeholder="{{ entry_quotation_prefix }}" id="input-quotation-prefix" class="form-control"/>
+                  <div class="form-text">{{ help_quotation_prefix }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-quotation-suffix" class="col-sm-2 col-form-label">{{ entry_quotation_suffix }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="purchase_quotation_suffix" value="{{ purchase_quotation_suffix }}" placeholder="{{ entry_quotation_suffix }}" id="input-quotation-suffix" class="form-control"/>
+                  <div class="form-text">{{ help_quotation_suffix }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-quotation-next-number" class="col-sm-2 col-form-label">{{ entry_quotation_next_number }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="purchase_quotation_next_number" value="{{ purchase_quotation_next_number }}" placeholder="{{ entry_quotation_next_number }}" id="input-quotation-next-number" class="form-control"/>
+                  <div class="form-text">{{ help_quotation_next_number }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-receipt-prefix" class="col-sm-2 col-form-label">{{ entry_receipt_prefix }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="purchase_receipt_prefix" value="{{ purchase_receipt_prefix }}" placeholder="{{ entry_receipt_prefix }}" id="input-receipt-prefix" class="form-control"/>
+                  <div class="form-text">{{ help_receipt_prefix }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-receipt-suffix" class="col-sm-2 col-form-label">{{ entry_receipt_suffix }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="purchase_receipt_suffix" value="{{ purchase_receipt_suffix }}" placeholder="{{ entry_receipt_suffix }}" id="input-receipt-suffix" class="form-control"/>
+                  <div class="form-text">{{ help_receipt_suffix }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-receipt-next-number" class="col-sm-2 col-form-label">{{ entry_receipt_next_number }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="purchase_receipt_next_number" value="{{ purchase_receipt_next_number }}" placeholder="{{ entry_receipt_next_number }}" id="input-receipt-next-number" class="form-control"/>
+                  <div class="form-text">{{ help_receipt_next_number }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب الإشعارات -->
+            <div class="tab-pane fade" id="tab-notifications">
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_email_notifications }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_email_notifications" value="1" id="input-email-notifications"{% if purchase_email_notifications %} checked{% endif %}>
+                    <label class="form-check-label" for="input-email-notifications">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_email_notifications }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_sms_notifications }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_sms_notifications" value="1" id="input-sms-notifications"{% if purchase_sms_notifications %} checked{% endif %}>
+                    <label class="form-check-label" for="input-sms-notifications">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_sms_notifications }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_approval_notifications }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_approval_notifications" value="1" id="input-approval-notifications"{% if purchase_approval_notifications %} checked{% endif %}>
+                    <label class="form-check-label" for="input-approval-notifications">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_approval_notifications }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_receipt_notifications }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_receipt_notifications" value="1" id="input-receipt-notifications"{% if purchase_receipt_notifications %} checked{% endif %}>
+                    <label class="form-check-label" for="input-receipt-notifications">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_receipt_notifications }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_overdue_notifications }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_overdue_notifications" value="1" id="input-overdue-notifications"{% if purchase_overdue_notifications %} checked{% endif %}>
+                    <label class="form-check-label" for="input-overdue-notifications">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_overdue_notifications }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب المخزون -->
+            <div class="tab-pane fade" id="tab-inventory">
+              <div class="row mb-3">
+                <label for="input-inventory-method" class="col-sm-2 col-form-label">{{ entry_inventory_method }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_inventory_method" id="input-inventory-method" class="form-select">
+                    <option value="fifo"{% if purchase_inventory_method == 'fifo' %} selected{% endif %}>{{ text_fifo }}</option>
+                    <option value="lifo"{% if purchase_inventory_method == 'lifo' %} selected{% endif %}>{{ text_lifo }}</option>
+                    <option value="weighted_average"{% if purchase_inventory_method == 'weighted_average' %} selected{% endif %}>{{ text_weighted_average }}</option>
+                  </select>
+                  <div class="form-text">{{ help_inventory_method }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-cost-calculation" class="col-sm-2 col-form-label">{{ entry_cost_calculation }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_cost_calculation" id="input-cost-calculation" class="form-select">
+                    <option value="standard"{% if purchase_cost_calculation == 'standard' %} selected{% endif %}>{{ text_standard_cost }}</option>
+                    <option value="weighted_average"{% if purchase_cost_calculation == 'weighted_average' %} selected{% endif %}>{{ text_weighted_average }}</option>
+                    <option value="moving_average"{% if purchase_cost_calculation == 'moving_average' %} selected{% endif %}>{{ text_moving_average }}</option>
+                  </select>
+                  <div class="form-text">{{ help_cost_calculation }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_auto_update_cost }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_auto_update_cost" value="1" id="input-auto-update-cost"{% if purchase_auto_update_cost %} checked{% endif %}>
+                    <label class="form-check-label" for="input-auto-update-cost">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_auto_update_cost }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_allow_negative_stock }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_allow_negative_stock" value="1" id="input-allow-negative-stock"{% if purchase_allow_negative_stock %} checked{% endif %}>
+                    <label class="form-check-label" for="input-allow-negative-stock">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_allow_negative_stock }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_track_serial_numbers }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_track_serial_numbers" value="1" id="input-track-serial-numbers"{% if purchase_track_serial_numbers %} checked{% endif %}>
+                    <label class="form-check-label" for="input-track-serial-numbers">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_track_serial_numbers }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_track_batch_numbers }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_track_batch_numbers" value="1" id="input-track-batch-numbers"{% if purchase_track_batch_numbers %} checked{% endif %}>
+                    <label class="form-check-label" for="input-track-batch-numbers">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_track_batch_numbers }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب التكامل -->
+            <div class="tab-pane fade" id="tab-integration">
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_accounting_integration }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_accounting_integration" value="1" id="input-accounting-integration"{% if purchase_accounting_integration %} checked{% endif %}>
+                    <label class="form-check-label" for="input-accounting-integration">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_accounting_integration }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-default-expense-account" class="col-sm-2 col-form-label">{{ entry_default_expense_account }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_default_expense_account" id="input-default-expense-account" class="form-select">
+                    <option value="">{{ text_select }}</option>
+                    {% for account in accounts %}
+                      <option value="{{ account.account_id }}"{% if account.account_id == purchase_default_expense_account %} selected{% endif %}>{{ account.account_code }} - {{ account.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">{{ help_default_expense_account }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-default-payable-account" class="col-sm-2 col-form-label">{{ entry_default_payable_account }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_default_payable_account" id="input-default-payable-account" class="form-select">
+                    <option value="">{{ text_select }}</option>
+                    {% for account in accounts %}
+                      <option value="{{ account.account_id }}"{% if account.account_id == purchase_default_payable_account %} selected{% endif %}>{{ account.account_code }} - {{ account.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">{{ help_default_payable_account }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-default-tax-account" class="col-sm-2 col-form-label">{{ entry_default_tax_account }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_default_tax_account" id="input-default-tax-account" class="form-select">
+                    <option value="">{{ text_select }}</option>
+                    {% for account in accounts %}
+                      <option value="{{ account.account_id }}"{% if account.account_id == purchase_default_tax_account %} selected{% endif %}>{{ account.account_code }} - {{ account.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">{{ help_default_tax_account }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_auto_post_journals }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_auto_post_journals" value="1" id="input-auto-post-journals"{% if purchase_auto_post_journals %} checked{% endif %}>
+                    <label class="form-check-label" for="input-auto-post-journals">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_auto_post_journals }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب الموافقة -->
+            <div class="tab-pane fade" id="tab-approval">
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_approval_workflow }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_approval_workflow" value="1" id="input-approval-workflow"{% if purchase_approval_workflow %} checked{% endif %}>
+                    <label class="form-check-label" for="input-approval-workflow">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_approval_workflow }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-approval-levels" class="col-sm-2 col-form-label">{{ entry_approval_levels }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_approval_levels" id="input-approval-levels" class="form-select">
+                    <option value="1"{% if purchase_approval_levels == '1' %} selected{% endif %}>{{ text_one_level }}</option>
+                    <option value="2"{% if purchase_approval_levels == '2' %} selected{% endif %}>{{ text_two_levels }}</option>
+                    <option value="3"{% if purchase_approval_levels == '3' %} selected{% endif %}>{{ text_three_levels }}</option>
+                  </select>
+                  <div class="form-text">{{ help_approval_levels }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب التقارير -->
+            <div class="tab-pane fade" id="tab-reports">
+              <div class="row mb-3">
+                <label for="input-report-period" class="col-sm-2 col-form-label">{{ entry_report_period }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_report_period" id="input-report-period" class="form-select">
+                    <option value="daily"{% if purchase_report_period == 'daily' %} selected{% endif %}>{{ text_daily }}</option>
+                    <option value="weekly"{% if purchase_report_period == 'weekly' %} selected{% endif %}>{{ text_weekly }}</option>
+                    <option value="monthly"{% if purchase_report_period == 'monthly' %} selected{% endif %}>{{ text_monthly }}</option>
+                    <option value="quarterly"{% if purchase_report_period == 'quarterly' %} selected{% endif %}>{{ text_quarterly }}</option>
+                    <option value="yearly"{% if purchase_report_period == 'yearly' %} selected{% endif %}>{{ text_yearly }}</option>
+                  </select>
+                  <div class="form-text">{{ help_report_period }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-report-currency" class="col-sm-2 col-form-label">{{ entry_report_currency }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_report_currency" id="input-report-currency" class="form-select">
+                    {% for currency in currencies %}
+                      <option value="{{ currency.code }}"{% if currency.code == purchase_report_currency %} selected{% endif %}>{{ currency.title }}</option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">{{ help_report_currency }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-report-grouping" class="col-sm-2 col-form-label">{{ entry_report_grouping }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_report_grouping" id="input-report-grouping" class="form-select">
+                    <option value="supplier"{% if purchase_report_grouping == 'supplier' %} selected{% endif %}>{{ text_by_supplier }}</option>
+                    <option value="category"{% if purchase_report_grouping == 'category' %} selected{% endif %}>{{ text_by_category }}</option>
+                    <option value="product"{% if purchase_report_grouping == 'product' %} selected{% endif %}>{{ text_by_product }}</option>
+                    <option value="warehouse"{% if purchase_report_grouping == 'warehouse' %} selected{% endif %}>{{ text_by_warehouse }}</option>
+                  </select>
+                  <div class="form-text">{{ help_report_grouping }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-report-format" class="col-sm-2 col-form-label">{{ entry_report_format }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_report_format" id="input-report-format" class="form-select">
+                    <option value="pdf"{% if purchase_report_format == 'pdf' %} selected{% endif %}>PDF</option>
+                    <option value="excel"{% if purchase_report_format == 'excel' %} selected{% endif %}>Excel</option>
+                    <option value="csv"{% if purchase_report_format == 'csv' %} selected{% endif %}>CSV</option>
+                  </select>
+                  <div class="form-text">{{ help_report_format }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب الإعدادات المتقدمة -->
+            <div class="tab-pane fade" id="tab-advanced">
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_debug_mode }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_debug_mode" value="1" id="input-debug-mode"{% if purchase_debug_mode %} checked{% endif %}>
+                    <label class="form-check-label" for="input-debug-mode">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_debug_mode }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-log-level" class="col-sm-2 col-form-label">{{ entry_log_level }}</label>
+                <div class="col-sm-10">
+                  <select name="purchase_log_level" id="input-log-level" class="form-select">
+                    <option value="error"{% if purchase_log_level == 'error' %} selected{% endif %}>{{ text_error }}</option>
+                    <option value="warning"{% if purchase_log_level == 'warning' %} selected{% endif %}>{{ text_warning }}</option>
+                    <option value="info"{% if purchase_log_level == 'info' %} selected{% endif %}>{{ text_info }}</option>
+                    <option value="debug"{% if purchase_log_level == 'debug' %} selected{% endif %}>{{ text_debug }}</option>
+                  </select>
+                  <div class="form-text">{{ help_log_level }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_cache_enabled }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_cache_enabled" value="1" id="input-cache-enabled"{% if purchase_cache_enabled %} checked{% endif %}>
+                    <label class="form-check-label" for="input-cache-enabled">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_cache_enabled }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">{{ entry_api_enabled }}</label>
+                <div class="col-sm-10">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="purchase_api_enabled" value="1" id="input-api-enabled"{% if purchase_api_enabled %} checked{% endif %}>
+                    <label class="form-check-label" for="input-api-enabled">{{ text_enabled }}</label>
+                  </div>
+                  <div class="form-text">{{ help_api_enabled }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-webhook-url" class="col-sm-2 col-form-label">{{ entry_webhook_url }}</label>
+                <div class="col-sm-10">
+                  <input type="url" name="purchase_webhook_url" value="{{ purchase_webhook_url }}" placeholder="{{ entry_webhook_url }}" id="input-webhook-url" class="form-control"/>
+                  <div class="form-text">{{ help_webhook_url }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-page-size" class="col-sm-2 col-form-label">{{ entry_page_size }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="purchase_page_size" value="{{ purchase_page_size }}" placeholder="{{ entry_page_size }}" id="input-page-size" class="form-control" min="10" max="1000"/>
+                  <div class="form-text">{{ help_page_size }}</div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-query-timeout" class="col-sm-2 col-form-label">{{ entry_query_timeout }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="purchase_query_timeout" value="{{ purchase_query_timeout }}" placeholder="{{ entry_query_timeout }}" id="input-query-timeout" class="form-control" min="1" max="300"/>
+                  <div class="form-text">{{ help_query_timeout }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- تبويب الصيانة -->
+            <div class="tab-pane fade" id="tab-maintenance">
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header">
+                      <h5 class="card-title">{{ text_system_statistics }}</h5>
+                    </div>
+                    <div class="card-body">
+                      <div id="system-statistics">
+                        <div class="text-center">
+                          <div class="spinner-border" role="status">
+                            <span class="visually-hidden">{{ text_loading }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button type="button" class="btn btn-info btn-sm" id="btn-refresh-stats">
+                        <i class="fa fa-refresh"></i> {{ button_refresh }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header">
+                      <h5 class="card-title">{{ text_maintenance_actions }}</h5>
+                    </div>
+                    <div class="card-body">
+                      <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-warning" id="btn-clear-cache">
+                          <i class="fa fa-trash"></i> {{ text_clear_cache }}
+                        </button>
+                        <button type="button" class="btn btn-success" id="btn-optimize-db">
+                          <i class="fa fa-cogs"></i> {{ text_optimize_database }}
+                        </button>
+                        <button type="button" class="btn btn-primary" id="btn-create-backup">
+                          <i class="fa fa-download"></i> {{ text_create_backup }}
+                        </button>
+                        <button type="button" class="btn btn-info" id="btn-test-email">
+                          <i class="fa fa-envelope"></i> {{ text_test_email }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- قسم النسخ الاحتياطية -->
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="card-title">{{ text_backup_management }}</h5>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>{{ column_filename }}</th>
+                          <th>{{ column_size }}</th>
+                          <th>{{ column_date }}</th>
+                          <th>{{ column_action }}</th>
+                        </tr>
+                      </thead>
+                      <tbody id="backup-list">
+                        <tr>
+                          <td colspan="4" class="text-center">{{ text_loading }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal للاستيراد -->
+<div class="modal fade" id="modal-import" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_import_settings }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-import">
+          <div class="mb-3">
+            <label for="input-import-file" class="form-label">{{ entry_import_file }}</label>
+            <input type="file" class="form-control" id="input-import-file" accept=".json">
+            <div class="form-text">{{ help_import_file }}</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="button-import-confirm">{{ button_import }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$('#button-save').on('click', function() {
+    var formData = $('#form-settings').serialize();
+
+    $.ajax({
+        url: 'index.php?route=purchase/settings&user_token={{ user_token }}',
+        type: 'post',
+        data: formData,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-save').button('loading');
+        },
+        complete: function() {
+            $('#button-save').button('reset');
+        },
+        success: function(json) {
+            $('.alert-dismissible').remove();
+
+            if (json['error']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            }
+
+            if (json['success']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+$('#button-reset').on('click', function() {
+    if (confirm('{{ text_confirm_reset }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/settings/reset&user_token={{ user_token }}',
+            type: 'post',
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-reset').button('loading');
+            },
+            complete: function() {
+                $('#button-reset').button('reset');
+            },
+            success: function(json) {
+                if (json['success']) {
+                    location.reload();
+                }
+            }
+        });
+    }
+});
+
+$('#button-export').on('click', function() {
+    window.open('index.php?route=purchase/settings/export&user_token={{ user_token }}', '_blank');
+});
+
+$('#button-import').on('click', function() {
+    $('#modal-import').modal('show');
+});
+
+$('#button-import-confirm').on('click', function() {
+    var fileInput = document.getElementById('input-import-file');
+    var file = fileInput.files[0];
+
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $.ajax({
+                url: 'index.php?route=purchase/settings/import&user_token={{ user_token }}',
+                type: 'post',
+                data: {json_data: e.target.result},
+                dataType: 'json',
+                success: function(json) {
+                    $('#modal-import').modal('hide');
+
+                    if (json['error']) {
+                        alert(json['error']);
+                    }
+
+                    if (json['success']) {
+                        location.reload();
+                    }
+                }
+            });
+        };
+        reader.readAsText(file);
+    }
+});
+
+// الميزات المتقدمة
+$(document).ready(function() {
+    // تحميل الإحصائيات عند فتح تبويب الصيانة
+    $('a[href="#tab-maintenance"]').on('shown.bs.tab', function() {
+        loadSystemStatistics();
+    });
+
+    // تحديث الإحصائيات
+    $('#btn-refresh-stats').on('click', function() {
+        loadSystemStatistics();
+    });
+
+    // مسح التخزين المؤقت
+    $('#btn-clear-cache').on('click', function() {
+        if (confirm('{{ text_confirm_clear_cache }}')) {
+            $.ajax({
+                url: 'index.php?route=purchase/settings/clearCache&user_token={{ user_token }}',
+                type: 'post',
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#btn-clear-cache').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_processing }}');
+                },
+                success: function(json) {
+                    $('#btn-clear-cache').prop('disabled', false).html('<i class="fa fa-trash"></i> {{ text_clear_cache }}');
+
+                    if (json.error) {
+                        showAlert('danger', json.error);
+                    } else if (json.success) {
+                        showAlert('success', json.success);
+                    }
+                },
+                error: function() {
+                    $('#btn-clear-cache').prop('disabled', false).html('<i class="fa fa-trash"></i> {{ text_clear_cache }}');
+                    showAlert('danger', '{{ text_ajax_error }}');
+                }
+            });
+        }
+    });
+
+    // تحسين قاعدة البيانات
+    $('#btn-optimize-db').on('click', function() {
+        if (confirm('{{ text_confirm_optimize_db }}')) {
+            $.ajax({
+                url: 'index.php?route=purchase/settings/optimizeDatabase&user_token={{ user_token }}',
+                type: 'post',
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#btn-optimize-db').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_processing }}');
+                },
+                success: function(json) {
+                    $('#btn-optimize-db').prop('disabled', false).html('<i class="fa fa-cogs"></i> {{ text_optimize_database }}');
+
+                    if (json.error) {
+                        showAlert('danger', json.error);
+                    } else if (json.success) {
+                        showAlert('success', json.success);
+                    }
+                },
+                error: function() {
+                    $('#btn-optimize-db').prop('disabled', false).html('<i class="fa fa-cogs"></i> {{ text_optimize_database }}');
+                    showAlert('danger', '{{ text_ajax_error }}');
+                }
+            });
+        }
+    });
+
+    // إنشاء نسخة احتياطية
+    $('#btn-create-backup').on('click', function() {
+        $.ajax({
+            url: 'index.php?route=purchase/settings/createBackup&user_token={{ user_token }}',
+            type: 'post',
+            dataType: 'json',
+            beforeSend: function() {
+                $('#btn-create-backup').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_processing }}');
+            },
+            success: function(json) {
+                $('#btn-create-backup').prop('disabled', false).html('<i class="fa fa-download"></i> {{ text_create_backup }}');
+
+                if (json.error) {
+                    showAlert('danger', json.error);
+                } else if (json.success) {
+                    showAlert('success', json.success);
+                    loadBackupList();
+                }
+            },
+            error: function() {
+                $('#btn-create-backup').prop('disabled', false).html('<i class="fa fa-download"></i> {{ text_create_backup }}');
+                showAlert('danger', '{{ text_ajax_error }}');
+            }
+        });
+    });
+
+    // اختبار البريد الإلكتروني
+    $('#btn-test-email').on('click', function() {
+        var email = prompt('{{ text_enter_test_email }}');
+        if (email && validateEmail(email)) {
+            $.ajax({
+                url: 'index.php?route=purchase/settings/testEmail&user_token={{ user_token }}',
+                type: 'post',
+                data: {test_email: email},
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#btn-test-email').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_processing }}');
+                },
+                success: function(json) {
+                    $('#btn-test-email').prop('disabled', false).html('<i class="fa fa-envelope"></i> {{ text_test_email }}');
+
+                    if (json.error) {
+                        showAlert('danger', json.error);
+                    } else if (json.success) {
+                        showAlert('success', json.success);
+                    }
+                },
+                error: function() {
+                    $('#btn-test-email').prop('disabled', false).html('<i class="fa fa-envelope"></i> {{ text_test_email }}');
+                    showAlert('danger', '{{ text_ajax_error }}');
+                }
+            });
+        } else if (email) {
+            showAlert('warning', '{{ text_invalid_email }}');
+        }
+    });
+
+    // تحميل الإحصائيات
+    function loadSystemStatistics() {
+        $.ajax({
+            url: 'index.php?route=purchase/settings/getStatistics&user_token={{ user_token }}',
+            type: 'get',
+            dataType: 'json',
+            success: function(json) {
+                if (json.statistics) {
+                    var html = '<div class="row">';
+                    html += '<div class="col-6"><strong>{{ text_total_orders }}:</strong></div><div class="col-6">' + json.statistics.total_orders + '</div>';
+                    html += '<div class="col-6"><strong>{{ text_pending_orders }}:</strong></div><div class="col-6">' + json.statistics.pending_orders + '</div>';
+                    html += '<div class="col-6"><strong>{{ text_approved_orders }}:</strong></div><div class="col-6">' + json.statistics.approved_orders + '</div>';
+                    html += '<div class="col-6"><strong>{{ text_active_suppliers }}:</strong></div><div class="col-6">' + json.statistics.active_suppliers + '</div>';
+                    html += '<div class="col-6"><strong>{{ text_active_products }}:</strong></div><div class="col-6">' + json.statistics.active_products + '</div>';
+                    html += '<div class="col-6"><strong>{{ text_total_value }}:</strong></div><div class="col-6">' + formatCurrency(json.statistics.total_purchase_value) + '</div>';
+                    html += '</div>';
+                    $('#system-statistics').html(html);
+                }
+            },
+            error: function() {
+                $('#system-statistics').html('<div class="alert alert-danger">{{ text_error_loading_stats }}</div>');
+            }
+        });
+    }
+
+    // تحميل قائمة النسخ الاحتياطية
+    function loadBackupList() {
+        // هذه الوظيفة ستحمل قائمة النسخ الاحتياطية
+        // يمكن تطويرها لاحقاً
+    }
+
+    // عرض التنبيهات
+    function showAlert(type, message) {
+        var alertClass = 'alert-' + type;
+        var iconClass = type === 'success' ? 'fa-check-circle' : (type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle');
+
+        $('.alert-dismissible').remove();
+        $('#content > .container-fluid').prepend(
+            '<div class="alert ' + alertClass + ' alert-dismissible">' +
+            '<i class="fa-solid ' + iconClass + '"></i> ' + message +
+            ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>'
+        );
+    }
+
+    // التحقق من صحة البريد الإلكتروني
+    function validateEmail(email) {
+        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    // تنسيق العملة
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('ar-EG', {
+            style: 'currency',
+            currency: 'EGP'
+        }).format(amount);
+    }
+
+    // حفظ تلقائي للإعدادات
+    var autoSaveTimeout;
+    $('#form-settings input, #form-settings select, #form-settings textarea').on('change', function() {
+        clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(function() {
+            $('#button-save').trigger('click');
+        }, 2000); // حفظ تلقائي بعد ثانيتين من التغيير
+    });
+
+    // تفعيل التلميحات
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+//--></script>
+
+{{ footer }}

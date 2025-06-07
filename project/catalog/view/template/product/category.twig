@@ -1,0 +1,446 @@
+{{ header }}
+
+<!-- إضافة مكتبة noUiSlider CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" rel="stylesheet">
+
+<div id="product-category" class="container" style="margin-top:10px">
+  <div class="row">{{ column_left }}
+    <div id="content" class="col">
+      {{ content_top }}
+      <h2>{{ heading_title }}</h2>
+      {% if products %}
+        <div id="display-control" class="row mb-3">
+          <!-- زر الفلترة -->
+          <div class="col-lg-1 col-1">
+            <div class="btn-group">
+              <button id="toggle-filters" class="btn btn-dark"><i class="fa-solid fa-filter"></i></button>
+            </div>
+          </div>
+          
+          <!-- قائمة الفرز -->
+          <div class="col-lg-4 col-5">
+            <div class="input-group">
+              <select id="input-sort" class="form-select">
+                  <option value="">-- {{text_sort}} --</option>
+                  {% for sorts in sorts %}
+                      <option value="{{ sorts.value }}" {% if sorts.value == '%s-%s'|format(sort, order) %} selected{% endif %}>{{ sorts.text }}</option>
+                  {% endfor %}
+              </select>  
+            </div>
+          </div>
+          
+          <!-- قائمة تحديد الحد الأقصى للمنتجات -->
+          <div class="col-lg-3 col-4">
+            <div class="input-group">
+              <select id="input-limit" class="form-select">
+                  <option value="">-- {{text_limit}} --</option>
+                  {% for limits in limits %}
+                      <option value="{{ limits.value }}" {% if limits.value == limit %} selected{% endif %}>{{ limits.text }}</option>
+                  {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- قائمة المنتجات -->
+        <div id="product-list" class="row"></div>
+
+        <!-- لوحة الفلاتر (Offcanvas) -->
+        <div id="filters-panel" class="offcanvas offcanvas-start" tabindex="-1">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">{{ text_filter }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+          </div>
+          <div class="offcanvas-body">
+            {% for filter_group in filter_groups %}
+              <div class="filter-group mb-3">
+                <h4 class="filter-group-title">{{ filter_group.name }}</h4>
+                {% for filter in filter_group.filter %}
+                  <div class="form-check">
+                    <input type="checkbox" name="filter[]" value="{{ filter.filter_id }}" id="input-filter-{{ filter.filter_id }}" class="form-check-input"{% if filter.filter_id in filter_category %} checked{% endif %}/>
+                    <label for="input-filter-{{ filter.filter_id }}" class="form-check-label">{{ filter.name }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+            
+            <!-- فلتر الوحدة -->
+            <div class="filter-group mb-3">
+              <h4 class="filter-group-title">{{ text_unit }}</h4>
+              <select id="filter-unit" class="form-select">
+                <option value="">-- {{ text_select_unit }} --</option>
+                <!-- سيتم تعبئة الخيارات بواسطة JavaScript -->
+              </select>
+            </div>
+            
+            <!-- فلتر السعر باستخدام شريط تمرير noUiSlider -->
+            <div class="filter-group mb-3">
+                <h4 class="filter-group-title">{{ text_price_range }}</h4>
+                <div id="price-slider"></div>
+                <div class="d-flex justify-content-between mt-2">
+                    <span id="price-min"></span>
+                    <span id="price-max"></span>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- زر تحميل المزيد من المنتجات -->
+        <div class="d-flex justify-content-center">
+          <button id="load-more" class="btn btn-warning bold-btn" style="margin: 20px auto; background-color: orange !important; color:#000 !important; width: 80%; height: 40px; font-size: 18px;" onclick="loadMoreProducts(false)">{{ text_load_more }}</button>
+        </div>
+
+        <!-- سكريبتات جافاسكريبت -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+        <script>
+let currentPage = 1;
+let category_id = {{ category_id }};
+let currentSort = getParameterByName('sort', 'p.sort_order-ASC');
+let currentLimit = getParameterByName('limit', '{{ config_product_limit }}');
+let currentFilters = getParameterByName('filter', '');
+let currentUnit = getParameterByName('unit', '');
+let currentPriceMin = '';
+let currentPriceMax = '';
+let loading = false;
+let hasMoreData = true;
+let priceSlider;
+let isRTL = document.documentElement.dir === 'rtl';
+let currencySymbol = '{{ currency_symbol }}';
+let totalProducts = 0;
+let loadedProducts = 0;
+let totalFilteredProducts = 0;
+
+
+function getParameterByName(name, defaultValue = '', url = window.location.href) {
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+    if (!results) return defaultValue;
+    if (!results[2]) return defaultValue;
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSortAndLimit();
+    initializeFilterButton();
+    initializeFilterEvents();
+    loadMoreProducts(true);
+});
+
+function initializeSortAndLimit() {
+    document.getElementById('input-sort').addEventListener('change', function() {
+        currentSort = this.value;
+        updateProducts();
+    });
+
+    document.getElementById('input-limit').addEventListener('change', function() {
+        currentLimit = this.value;
+        updateProducts();
+    });
+}
+
+function initializeFilterButton() {
+    document.getElementById('toggle-filters').addEventListener('click', function() {
+        let filtersPanel = new bootstrap.Offcanvas(document.getElementById('filters-panel'));
+        filtersPanel.show();
+    });
+}
+
+function initializeFilterEvents() {
+    document.querySelectorAll('input[name="filter[]"]').forEach(filter => {
+        filter.addEventListener('change', function() {
+            currentFilters = Array.from(document.querySelectorAll('input[name="filter[]"]:checked'))
+                .map(el => el.value)
+                .join(',');
+            updateProducts();
+            toggleActiveFilter(this);
+        });
+    });
+
+    document.getElementById('filter-unit').addEventListener('change', function() {
+        currentUnit = this.value;
+        updateProducts();
+    });
+
+    const resetButton = document.createElement('button');
+    resetButton.id = 'reset-filters';
+    resetButton.className = 'btn btn-outline-secondary mb-3';
+    resetButton.innerHTML = '<i class="fas fa-undo-alt"></i> ' + (isRTL ? 'إعادة تعيين الفلاتر' : 'Reset Filters');
+    resetButton.addEventListener('click', resetFilters);
+    document.querySelector('.offcanvas-body').prepend(resetButton);
+}
+
+function initializePriceSlider(minPrice, maxPrice) {
+    const priceSliderElement = document.getElementById('price-slider');
+    const priceMin = document.getElementById('price-min');
+    const priceMax = document.getElementById('price-max');
+
+    minPrice = parseFloat(minPrice);
+    maxPrice = parseFloat(maxPrice);
+
+    if (isNaN(minPrice) || isNaN(maxPrice) || minPrice >= maxPrice) {
+        console.error('Invalid price range:', minPrice, maxPrice);
+        return;
+    }
+
+    if (priceSlider) {
+        priceSlider.destroy();
+    }
+
+    let startValues = [minPrice, maxPrice];
+    if (currentPriceMin && currentPriceMax) {
+        startValues = [
+            Math.max(minPrice, parseFloat(currentPriceMin)),
+            Math.min(maxPrice, parseFloat(currentPriceMax))
+        ];
+    }
+
+    noUiSlider.create(priceSliderElement, {
+        start: startValues,
+        connect: true,
+        direction: isRTL ? 'rtl' : 'ltr',
+        range: {
+            'min': minPrice,
+            'max': maxPrice
+        },
+        format: {
+            to: function(value) {
+                return Math.round(value);
+            },
+            from: function(value) {
+                return Number(value);
+            }
+        }
+    });
+
+    priceSliderElement.noUiSlider.on('update', function (values, handle) {
+        if (handle === 0) {
+            priceMin.textContent = formatCurrency(values[0]);
+            currentPriceMin = values[0];
+        } else {
+            priceMax.textContent = formatCurrency(values[1]);
+            currentPriceMax = values[1];
+        }
+    });
+
+    priceSliderElement.noUiSlider.on('change', function(values) {
+        currentPriceMin = values[0];
+        currentPriceMax = values[1];
+        updateProducts();
+    });
+
+    priceSlider = priceSliderElement.noUiSlider;
+
+    // Update display
+    priceMin.textContent = formatCurrency(startValues[0]);
+    priceMax.textContent = formatCurrency(startValues[1]);
+}
+
+function formatCurrency(value) {
+    return isRTL ? value + ' ' + currencySymbol : currencySymbol + ' ' + value;
+}
+
+function updateProducts() {
+    currentPage = 1;
+    document.getElementById('product-list').innerHTML = '';
+    hasMoreData = true;
+    loadMoreProducts(true);
+}
+
+function loadMoreProducts(initialLoad = false) {
+    if (!initialLoad && (!hasMoreData || loading)) return;
+    loading = true;
+    document.getElementById('load-more').disabled = true;
+
+    let url = `index.php?route=product/category&path=${category_id}&ajax=1&page=${currentPage}`;
+    
+    if (currentSort) {
+        let [sort, order] = currentSort.split('-');
+        url += `&sort=${sort}&order=${order}`;
+    }
+    if (currentLimit) url += `&limit=${currentLimit}`;
+    if (currentFilters) url += `&filter=${currentFilters}`;
+    if (currentUnit) url += `&unit=${currentUnit}`;
+    if (currentPriceMin) url += `&price_min=${currentPriceMin}`;
+    if (currentPriceMax) url += `&price_max=${currentPriceMax}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => handleData(data, initialLoad))
+        .catch(error => {
+            console.error('Error:', error);
+            finalizeLoading();
+        });
+}
+
+
+function handleData(data, initialLoad) {
+    if (data.products && data.products.length > 0) {
+        if (initialLoad) {
+            document.getElementById('product-list').innerHTML = '';
+            loadedProducts = 0;
+        }
+        data.products.forEach(productHtml => {
+            document.getElementById('product-list').insertAdjacentHTML('beforeend', '<div class="col-6 col-sm-6 col-md-3 col-xl-2">' + productHtml + '</div>');
+        });
+    if (data.units) {
+        updateUnitFilter(data.units);
+    }
+    if (data.price_range) {
+        initializePriceSlider(data.price_range.min, data.price_range.max);
+    }    
+        currentPage++;
+        initializeProductOptions();
+        
+        totalFilteredProducts = data.totalFilteredProducts;
+        loadedProducts += data.products.length;
+        
+        hasMoreData = !data.endOfData;
+    } else if (initialLoad) {
+        hasMoreData = false;
+        totalFilteredProducts = 0;
+        loadedProducts = 0;
+        document.getElementById('product-list').innerHTML = '<p>' + (isRTL ? 'لا توجد نتائج' : 'No results found') + '</p>';
+    }
+
+    finalizeLoading();
+}
+
+function finalizeLoading() {
+    loading = false;
+    const loadMoreButton = document.getElementById('load-more');
+    loadMoreButton.innerHTML = isRTL ? 'تحميل المزيد من المنتجات' : 'Load More Products';
+    loadMoreButton.disabled = false;
+    
+    loadMoreButton.style.display = hasMoreData ? 'block' : 'none';
+    
+    const productCountElement = document.getElementById('product-count');
+    if (productCountElement) {
+        productCountElement.textContent = `${loadedProducts} / ${totalFilteredProducts}`;
+    }
+}
+
+function updateUnitFilter(units) {
+    let filterUnitSelect = document.getElementById('filter-unit');
+    filterUnitSelect.innerHTML = '<option value="">' + (isRTL ? '-- اختر الوحدة --' : '-- Select Unit --') + '</option>';
+    
+    units.forEach(unit => {
+        let option = document.createElement('option');
+        option.value = unit.unit_id;
+        option.textContent = unit.unit_name;
+        if (unit.unit_id == currentUnit) {
+            option.selected = true;
+        }
+        filterUnitSelect.appendChild(option);
+    });
+}
+
+function initializeProductOptions() {
+    document.querySelectorAll('.show-options-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const optionsDiv = document.getElementById(targetId);
+            if (optionsDiv) {
+                optionsDiv.classList.toggle('d-none');
+            }
+        });
+    });
+}
+
+function toggleActiveFilter(checkbox) {
+    checkbox.closest('.filter-group').classList.toggle('active-filter', checkbox.checked);
+}
+
+function resetFilters() {
+    document.querySelectorAll('input[name="filter[]"]').forEach(checkbox => {
+        checkbox.checked = false;
+        checkbox.closest('.filter-group').classList.remove('active-filter');
+    });
+    document.getElementById('filter-unit').value = '';
+    if (priceSlider) {
+        priceSlider.reset();
+    }
+    currentFilters = '';
+    currentUnit = '';
+    currentPriceMin = '';
+    currentPriceMax = '';
+    updateProducts();
+}
+
+document.getElementById('load-more').addEventListener('click', function() {
+    loadMoreProducts(false);
+});
+        </script>
+      {% endif %}        
+
+      {% if not products %}
+        <p>{{ text_empty }}</p>
+        <div class="buttons">
+          <div class="pull-right"><a href="{{ continue }}" class="btn btn-primary">{{ button_continue }}</a></div>
+        </div>
+      {% endif %}
+      {{ content_bottom }}</div>
+    {{ column_right }}</div>
+</div>
+
+<style>
+#filters-panel {
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.offcanvas-body {
+    opacity: 1 !important;
+}
+
+.filter-group-title {
+    font-size: 16px;
+    color: #000;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+
+.card {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.product-optionsx {
+    transition: max-height 0.3s ease-out;
+}
+
+.product-optionsx.d-none {
+    transition: max-height 0.5s ease-in;
+}
+
+#price-slider {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.noUi-connect {
+    background: #007bff;
+}
+
+.noUi-handle {
+    border: 1px solid #007bff;
+    background: #fff;
+    cursor: pointer;
+}
+
+#reset-filters {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.active-filter {
+    background-color: #e9ecef;
+}
+</style>
+
+{{ footer }}

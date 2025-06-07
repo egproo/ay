@@ -1,0 +1,287 @@
+<?php
+// Heading
+$_['heading_title'] = 'Purchase and Inventory Management';
+
+// Dashboard / Overviews
+$_['text_purchase_dashboard'] = 'Purchase Dashboard';
+$_['text_purchase_overview']  = 'Purchase Overview';
+$_['text_top_suppliers']      = 'Top Suppliers';
+$_['text_total_requisitions'] = 'Total Purchase Requisitions';
+$_['text_total_quotations']   = 'Total Quotations';
+$_['text_total_pos']          = 'Total Purchase Orders';
+$_['text_pending_approvals']  = 'Pending Approvals';
+
+// Common Filter Text
+$_['text_filter_branch']  = 'Branch';
+$_['text_filter_period']  = 'Period';
+$_['text_all_branches']   = 'All Branches';
+$_['text_today']          = 'Today';
+$_['text_this_week']      = 'This Week';
+$_['text_this_month']     = 'This Month';
+$_['text_this_quarter']   = 'This Quarter';
+$_['text_this_year']      = 'This Year';
+$_['text_all_years']      = 'All Years';
+$_['button_filter']       = 'Filter';
+
+// General Labels / Buttons
+$_['text_select']   = 'Select';
+$_['text_all']      = 'All';
+$_['text_loading']  = 'Loading...';
+$_['text_error']    = 'Error!';
+$_['text_no_results'] = 'No results found.';
+$_['button_edit']   = 'Edit';
+$_['button_view']   = 'View';
+$_['button_delete'] = 'Delete';
+$_['button_cancel'] = 'Cancel';
+$_['button_save']   = 'Save';
+$_['button_close']  = 'Close';
+$_['button_approve'] = 'Approve';
+$_['button_reject']  = 'Reject';
+$_['button_create_quotation'] = 'Create Quotation';
+$_['button_confirm'] = 'Confirm';
+$_['button_receive'] = 'Receive';
+$_['button_create_invoice']  = 'Create Invoice';
+$_['button_receive_goods']   = 'Receive Goods';
+
+// Main Navigation Tabs
+$_['tab_dashboard']            = 'Dashboard';
+$_['tab_purchase_requisition'] = 'Purchase Requisitions';
+$_['tab_quotation']            = 'Quotations';
+$_['tab_purchase_order']       = 'Purchase Orders';
+$_['tab_goods_receipt']        = 'Goods Receipts';
+$_['tab_supplier_invoice']     = 'Supplier Invoices';
+$_['tab_vendor_payment']       = 'Vendor Payments';
+$_['tab_inventory']            = 'Inventory';
+$_['tab_purchase_return']      = 'Purchase Returns';
+$_['tab_stock_adjustment']     = 'Stock Adjustments';
+$_['tab_stock_transfer']       = 'Stock Transfers';
+$_['tab_quality_inspection']   = 'Quality Inspections';
+
+// Heading Buttons
+$_['text_add_requisition']     = 'Add Purchase Requisition';
+$_['text_add_quotation']       = 'Add Quotation';
+$_['text_add_po']              = 'Add Purchase Order';
+$_['text_add_goods_receipt']   = 'Add Goods Receipt';
+$_['text_add_invoice']         = 'Add Invoice';
+$_['text_add_payment']         = 'Add Payment';
+$_['text_add_purchase_return'] = 'Add Purchase Return';
+$_['text_add_stock_adjustment'] = 'Add Stock Adjustment';
+$_['text_add_stock_transfer']   = 'Add Stock Transfer';
+$_['text_add_quality_inspection'] = 'Add Quality Inspection';
+$_['text_open_ledger']         = 'Open Ledger';
+$_['text_print_report']        = 'Print Report';
+
+// Columns (Table Headers)
+$_['column_requisition_id']  = 'Purchase Requisition Number';
+$_['column_department']          = 'Department';
+$_['column_status']              = 'Status';
+$_['column_date_added']          = 'Date Added';
+$_['column_action']              = 'Action';
+$_['column_vendor']              = 'Vendor';
+$_['column_total_amount']        = 'Total Amount';
+$_['column_po_number']           = 'Purchase Order Number';
+$_['column_gr_number']           = 'Goods Receipt Number';
+$_['column_invoice_number']      = 'Invoice Number';
+$_['column_payment_number']      = 'Payment Number';
+$_['column_payment_method']      = 'Payment Method';
+$_['column_payment_date']        = 'Payment Date';
+$_['column_reference']           = 'Reference';
+$_['column_branch']              = 'Branch';
+$_['column_quantity_to_receive'] = 'Quantity to Receive';
+$_['column_batch_number']        = 'Batch Number';
+$_['column_expiry_date']         = 'Expiry Date';
+$_['column_unit_price']          = 'Unit Price';
+$_['column_tax_rate']            = 'Tax Rate';
+$_['column_discount_rate']       = 'Discount Rate';
+$_['column_total']               = 'Total';
+$_['column_product']             = 'Product';
+$_['column_quantity']            = 'Quantity';
+$_['column_unit']                = 'Unit';
+$_['column_description']         = 'Description';
+$_['column_type']                = 'Type';
+$_['column_actions']             = 'Actions';
+$_['column_is_consignment']      = 'Is Consignment?';
+$_['column_consignment_supplier']= 'Consignment Supplier';
+$_['column_goods_receipt_id']    = 'Goods Receipt ID';
+$_['column_inspection_number']   = 'Inspection Number';
+$_['column_inspector']           = 'Inspector';
+$_['column_quality_result']      = 'Quality Result';
+$_['column_remarks']             = 'Remarks';
+
+// Entries (Form Fields)
+$_['entry_requisition_id'] = 'Purchase Requisition Number';
+$_['entry_quotation_number']   = 'Quotation Number';
+$_['entry_po_number']          = 'Purchase Order Number';
+$_['entry_gr_number']          = 'Goods Receipt Number';
+$_['entry_invoice_number']     = 'Invoice Number';
+$_['entry_payment_number']     = 'Payment Number';
+$_['entry_transfer_number']    = 'Transfer Number';
+$_['entry_return_number']      = 'Purchase Return Number';
+$_['entry_branch']             = 'Branch';
+$_['entry_department']         = 'Department';
+$_['entry_status']             = 'Status';
+$_['entry_date_start']         = 'Start Date';
+$_['entry_date_end']           = 'End Date';
+$_['entry_user']               = 'User';
+$_['entry_vendor']             = 'Vendor';
+$_['entry_product']            = 'Product';
+$_['entry_stock_movement']     = 'Stock Movement';
+$_['entry_adjustment_number']  = 'Adjustment Number';
+$_['entry_adjustment_type']    = 'Adjustment Type';
+$_['entry_from_branch']        = 'From Branch';
+$_['entry_to_branch']          = 'To Branch';
+$_['entry_inspection_number']  = 'Inspection Number';
+$_['entry_inspection_date']    = 'Inspection Date';
+$_['entry_comment']            = 'Comment';
+$_['entry_reject_reason']      = 'Rejection Reason';
+$_['entry_approval_comment']   = 'Approval Comment';
+$_['entry_priority']           = 'Priority';
+$_['text_low']                 = 'Low';
+$_['text_medium']              = 'Medium';
+$_['text_high']                = 'High';
+$_['text_urgent']              = 'Urgent';
+$_['entry_required_date']      = 'Required Date';
+$_['entry_notes']              = 'Notes';
+$_['text_items']               = 'Items';
+$_['entry_due_date']           = 'Due Date';
+$_['entry_expected_date']      = 'Expected Delivery Date';
+$_['entry_terms_conditions']   = 'Terms and Conditions';
+$_['entry_quality_check']      = 'Quality Check';
+$_['entry_invoice_date']       = 'Invoice Date';
+$_['entry_invoice_type']       = 'Invoice Type';
+$_['text_full_invoice']        = 'Full Invoice';
+$_['text_partial_invoice']     = 'Partial Invoice';
+$_['entry_validity_date']      = 'Validity Date';
+$_['entry_delivery_terms']     = 'Delivery Terms';
+$_['entry_payment_terms']      = 'Payment Terms';
+$_['entry_inspector']          = 'Inspector';
+$_['entry_quality_inspection'] = 'Quality Inspection';
+
+// Additional Buttons
+$_['button_add_requisition']   = 'Add Purchase Requisition';
+$_['button_add_quotation']     = 'Add Quotation';
+$_['button_add_po']            = 'Add Purchase Order';
+$_['button_add_goods_receipt'] = 'Add Goods Receipt';
+$_['button_add_invoice']       = 'Add Invoice';
+$_['button_add_payment']       = 'Add Payment';
+
+// Various Text
+$_['text_view_details']            = 'View Details';
+$_['text_print_preview']           = 'Print Preview';
+$_['text_view_requisition']        = 'View Purchase Requisition';
+$_['text_edit_requisition']        = 'Edit Purchase Requisition';
+$_['text_approve_requisition']     = 'Approve Purchase Requisition';
+$_['text_reject_requisition']      = 'Reject Purchase Requisition';
+$_['text_create_quotation']        = 'Create Quotation';
+$_['text_edit_quotation']          = 'Edit Quotation';
+$_['text_view_quotation']          = 'View Quotation';
+$_['text_edit_po']                 = 'Edit Purchase Order';
+$_['text_view_po']                 = 'View Purchase Order';
+$_['text_receive_po']              = 'Receive Purchase Order';
+$_['text_create_invoice']          = 'Create Invoice';
+$_['text_edit_gr']                 = 'Edit Goods Receipt';
+$_['text_view_gr']                 = 'View Goods Receipt';
+$_['text_edit_invoice']            = 'Edit Invoice';
+$_['text_view_invoice']            = 'View Invoice';
+$_['text_edit_payment']            = 'Edit Payment';
+$_['text_view_payment']            = 'View Payment';
+$_['text_approve_payment']         = 'Approve Payment';
+$_['text_view_inventory']          = 'View Inventory Movements';
+$_['text_purchase_order']          = 'Purchase Order';
+$_['text_quotation']               = 'Quotation';
+$_['text_requisition']             = 'Purchase Requisition';
+$_['text_goods_receipt']           = 'Goods Receipt';
+$_['text_supplier_invoice']        = 'Supplier Invoice';
+$_['text_vendor_payment']          = 'Vendor Payment';
+$_['text_purchase_return']         = 'Purchase Return';
+$_['text_stock_adjustment']        = 'Stock Adjustment';
+$_['text_stock_transfer']          = 'Stock Transfer';
+$_['text_inventory']               = 'Inventory';
+$_['text_cash']                    = 'Cash';
+$_['text_bank_transfer']           = 'Bank Transfer';
+$_['text_cheque']                  = 'Cheque';
+$_['text_credit_card']             = 'Credit Card';
+$_['text_pending']                 = 'Pending';
+$_['text_approved']                = 'Approved';
+$_['text_rejected']                = 'Rejected';
+$_['text_cancelled']               = 'Cancelled';
+$_['text_processing']              = 'Processing';
+$_['text_completed']               = 'Completed';
+$_['text_converted']               = 'Converted';
+$_['text_pending_review']          = 'Pending Review';
+$_['text_received']                = 'Received';
+$_['text_partially_received']      = 'Partially Received';
+$_['text_paid']                    = 'Paid';
+$_['text_movement_history']        = 'Movement History';
+
+// Pagination
+$_['text_pagination'] = 'Showing {start} to {end} of {total} ({pages} Pages)';
+
+// Alerts / Warnings / Errors
+$_['error_warning']     = 'Warning: Please check the form carefully for errors!';
+$_['error_permission']  = 'Warning: You do not have permission to modify!';
+$_['error_branch']      = 'Branch is required!';
+$_['error_department']  = 'Department is required!';
+$_['error_required_date']   = 'Required date is required!';
+$_['error_item']            = 'At least one item must be added!';
+$_['error_po_id']           = 'Invalid Purchase Order ID!';
+$_['error_po_not_approved'] = 'Purchase Order has not been approved yet!';
+$_['error_save_requisition_failed'] = 'Failed to save purchase requisition!';
+$_['error_save_po_failed']          = 'Failed to save purchase order!';
+$_['error_create_invoice_failed']   = 'Failed to create invoice!';
+$_['error_receive_goods_failed']    = 'Failed to receive goods!';
+$_['error_quality_inspection']      = 'Invalid quality inspection!';
+$_['error_purchase_order']          = 'Invalid Purchase Order!';
+$_['error_purchase_return']         = 'Invalid Purchase Return!';
+$_['error_stock_adjustment']        = 'Invalid Stock Adjustment!';
+$_['error_payment']                 = 'Invalid Payment!';
+$_['error_invoice']                 = 'Invalid Invoice!';
+$_['error_same_branch']             = 'From and To branches cannot be the same!';
+$_['error_transfer_date']           = 'Transfer date is required!';
+$_['error_po_id_invalid']           = 'Invalid Purchase Order ID!';
+$_['error_quantity_invalid']        = 'Invalid quantity!';
+$_['error_received_items_invalid']  = 'Invalid received items!';
+$_['error_product_id_invalid']      = 'Invalid Product ID!';
+$_['error_inspection_number']       = 'Inspection number is required!';
+$_['error_gr']                      = 'Goods Receipt ID is required!';
+$_['error_receive_quantity']        = 'Invalid receive quantity!';
+$_['error_inspector']              = 'Inspector is required!';
+$_['error_inspection_date']         = 'Inspection date is required!';
+$_['error_vendor']                 = 'Vendor is required!';
+$_['error_amount']                 = 'Amount is required!';
+$_['error_payment_method']          = 'Payment method is required!';
+$_['error_payment_date']            = 'Payment date is required!';
+$_['error_reference']               = 'Reference is required!';
+$_['text_confirm_delete_requisition'] = 'Are you sure you want to delete this purchase requisition?';
+
+// Success Messages
+$_['text_save_requisition_success']        = 'Purchase requisition saved successfully!';
+$_['text_add_requisition_success']         = 'Purchase requisition added successfully!';
+$_['text_approve_requisition_success']     = 'Purchase requisition approved successfully!';
+$_['text_reject_requisition_success']      = 'Purchase requisition rejected successfully!';
+$_['text_create_quotation_success']        = 'Quotation created successfully!';
+$_['text_save_po_success']                 = 'Purchase order saved successfully!';
+$_['text_add_po_success']                  = 'Purchase order added successfully!';
+$_['text_save_gr_success']                 = 'Goods receipt saved successfully!';
+$_['text_delete_gr_success']               = 'Goods receipt deleted successfully!';
+$_['text_create_invoice_success']          = 'Invoice created successfully!';
+$_['text_receive_goods_success']           = 'Goods received successfully!';
+$_['text_save_quality_inspection_success'] = 'Quality inspection saved successfully!';
+$_['text_add_quality_inspection_success']  = 'Quality inspection added successfully!';
+$_['text_delete_quality_inspection_success'] = 'Quality inspection deleted successfully!';
+$_['text_save_purchase_return_success']    = 'Purchase return saved successfully!';
+$_['text_add_purchase_return_success']     = 'Purchase return added successfully!';
+$_['text_delete_purchase_return_success']  = 'Purchase return deleted successfully!';
+$_['text_save_stock_adjustment_success']   = 'Stock adjustment saved successfully!';
+$_['text_add_stock_adjustment_success']    = 'Stock adjustment added successfully!';
+$_['text_delete_stock_adjustment_success'] = 'Stock adjustment deleted successfully!';
+$_['text_save_invoice_success']            = 'Invoice saved successfully!';
+$_['text_add_invoice_success']             = 'Invoice added successfully!';
+$_['text_delete_invoice_success']          = 'Invoice deleted successfully!';
+$_['text_save_payment_success']            = 'Payment saved successfully!';
+$_['text_add_payment_success']             = 'Payment added successfully!';
+$_['text_delete_payment_success']          = 'Payment deleted successfully!';
+$_['text_save_stock_transfer_success']     = 'Stock transfer saved successfully!';
+$_['text_add_stock_transfer_success']      = 'Stock transfer added successfully!';
+$_['text_delete_stock_transfer_success']   = 'Stock transfer deleted successfully!';
+

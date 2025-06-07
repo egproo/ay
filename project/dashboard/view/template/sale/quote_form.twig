@@ -1,0 +1,864 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+  <h4 class="modal-title">{{ heading_title }}</h4>
+</div>
+<div class="modal-body">
+  <form id="form-quote" class="form-horizontal">
+    {% if quote_id %}
+    <input type="hidden" name="quote_id" value="{{ quote_id }}" />
+    {% endif %}
+    
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#tab-general" data-toggle="tab">{{ text_general }}</a></li>
+      <li><a href="#tab-items" data-toggle="tab">{{ text_items }}</a></li>
+      <li><a href="#tab-notes" data-toggle="tab">{{ text_notes }}</a></li>
+    </ul>
+    
+    <div class="tab-content">
+      <!-- General Tab -->
+      <div class="tab-pane active" id="tab-general">
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="input-quotation-number">{{ entry_quotation_number }}</label>
+          <div class="col-sm-9">
+            <input type="text" name="quotation_number" value="{{ quotation_number }}" id="input-quotation-number" class="form-control" readonly />
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="input-customer">{{ entry_customer }}</label>
+          <div class="col-sm-9">
+            <select name="customer_id" id="input-customer" class="form-control select2">
+              {% if customer_id %}
+              <option value="{{ customer_id }}" selected="selected">{{ customer }}</option>
+              {% endif %}
+            </select>
+            {% if error_customer %}
+            <div class="text-danger">{{ error_customer }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="input-branch">{{ entry_branch }}</label>
+          <div class="col-sm-9">
+            <select name="branch_id" id="input-branch" class="form-control">
+              {% for branch in branches %}
+              <option value="{{ branch.branch_id }}" {% if branch.branch_id == branch_id %}selected="selected"{% endif %}>{{ branch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="input-quotation-date">{{ entry_quotation_date }}</label>
+          <div class="col-sm-9">
+            <div class="input-group date">
+              <input type="text" name="quotation_date" value="{{ quotation_date }}" id="input-quotation-date" class="form-control" data-date-format="YYYY-MM-DD" />
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+              </span>
+            </div>
+            {% if error_quotation_date %}
+            <div class="text-danger">{{ error_quotation_date }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="input-valid-until">{{ entry_valid_until }}</label>
+          <div class="col-sm-9">
+            <div class="input-group date">
+              <input type="text" name="valid_until" value="{{ valid_until }}" id="input-valid-until" class="form-control" data-date-format="YYYY-MM-DD" />
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+              </span>
+            </div>
+            {% if error_valid_until %}
+            <div class="text-danger">{{ error_valid_until }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="input-status">{{ entry_status }}</label>
+          <div class="col-sm-9">
+            <select name="status" id="input-status" class="form-control">
+              {% for key, text in statuses %}
+              <option value="{{ key }}" {% if key == status %}selected="selected"{% endif %}>{{ text }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Items Tab -->
+      <div class="tab-pane" id="tab-items">
+        <div class="table-responsive">
+          <table id="items" class="table table-striped table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="text-left">{{ column_product }}</th>
+                <th class="text-left">{{ column_unit }}</th>
+                <th class="text-right" style="min-width: 80px;">{{ column_quantity }}</th>
+                <th class="text-right" style="min-width: 100px;">{{ column_price }}</th>
+                <th class="text-right" style="min-width: 80px;">{{ column_discount }}</th>
+                <th class="text-right" style="min-width: 80px;">{{ column_tax }}</th>
+                <th class="text-right" style="min-width: 100px;">{{ column_subtotal }}</th>
+                <th width="1"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set item_row = 0 %}
+              {% if quote_items %}
+                {% for item in quote_items %}
+                  <tr id="item-row{{ item_row }}">
+                    <td class="text-left">
+                      <input type="hidden" name="quote_item[{{ item_row }}][item_id]" value="{{ item.item_id }}" />
+                      <div class="input-group">
+                        <input type="text" name="quote_item[{{ item_row }}][product_name]" value="{{ item.product_name }}" placeholder="{{ entry_product }}" id="input-product{{ item_row }}" class="form-control" />
+                        <input type="hidden" name="quote_item[{{ item_row }}][product_id]" value="{{ item.product_id }}" id="input-product-id{{ item_row }}" />
+                        <span class="input-group-btn">
+                          <button type="button" id="button-product{{ item_row }}" data-toggle="tooltip" title="{{ button_select_product }}" class="btn btn-primary btn-product-select"><i class="fa fa-search"></i></button>
+                        </span>
+                      </div>
+                      <div id="product-details{{ item_row }}" class="product-details mt-2"></div>
+                    </td>
+                    <td class="text-left">
+                      <select name="quote_item[{{ item_row }}][unit_id]" id="input-unit{{ item_row }}" class="form-control unit-select">
+                        {% if item.unit_id %}
+                          <option value="{{ item.unit_id }}" selected="selected">{{ item.unit_name }}</option>
+                        {% endif %}
+                      </select>
+                      <input type="hidden" name="quote_item[{{ item_row }}][unit_name]" value="{{ item.unit_name }}" id="input-unit-name{{ item_row }}" />
+                    </td>
+                    <td class="text-right">
+                      <input type="number" name="quote_item[{{ item_row }}][quantity]" value="{{ item.quantity }}" id="input-quantity{{ item_row }}" class="form-control calc-trigger" min="0.01" step="0.01" />
+                    </td>
+                    <td class="text-right">
+                      <input type="number" name="quote_item[{{ item_row }}][price]" value="{{ item.price }}" placeholder="{{ entry_price }}" id="input-price{{ item_row }}" class="form-control calc-trigger" min="0" step="0.01" />
+                      <div class="price-history mt-1" id="price-history{{ item_row }}"></div>
+                    </td>
+                    <td class="text-right">
+                      <div class="input-group">
+                        <input type="number" name="quote_item[{{ item_row }}][discount_rate]" value="{{ item.discount_rate }}" id="input-discount{{ item_row }}" class="form-control calc-trigger" min="0" max="100" step="0.01" />
+                        <span class="input-group-addon">%</span>
+                      </div>
+                    </td>
+                    <td class="text-right">
+                      <div class="input-group">
+                        <input type="number" name="quote_item[{{ item_row }}][tax_rate]" value="{{ item.tax_rate }}" id="input-tax{{ item_row }}" class="form-control calc-trigger" min="0" max="100" step="0.01" />
+                        <span class="input-group-addon">%</span>
+                      </div>
+                    </td>
+                    <td class="text-right">
+                      <input type="text" name="quote_item[{{ item_row }}][total]" value="{{ item.total }}" id="input-total{{ item_row }}" class="form-control text-right" readonly />
+                    </td>
+                    <td class="text-center">
+                      <button type="button" onclick="$('#item-row{{ item_row }}').remove(); QuoteForm.calculateTotals();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button>
+                    </td>
+                  </tr>
+                  {% set item_row = item_row + 1 %}
+                {% endfor %}
+              {% endif %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="7"></td>
+                <td class="text-center">
+                  <button type="button" onclick="QuoteForm.addItem();" data-toggle="tooltip" title="{{ button_add_product }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        
+        <!-- Totals -->
+        <div class="row">
+          <div class="col-sm-6 col-sm-offset-6">
+            <table class="table table-bordered">
+              <tr>
+                <td class="text-right"><strong>{{ text_subtotal }}:</strong></td>
+                <td class="text-right" id="quote-subtotal">{{ subtotal|number_format(2, '.', ',') }}</td>
+              </tr>
+              <tr>
+                <td class="text-right">
+                  <div class="input-group">
+                    <span class="input-group-addon"><strong>{{ text_discount }}:</strong></span>
+                    <input type="number" name="discount_amount" value="{{ discount_amount }}" id="input-discount-amount" class="form-control text-right calc-trigger" min="0" step="0.01" />
+                  </div>
+                </td>
+                <td class="text-right" id="quote-discount">{{ discount_amount|number_format(2, '.', ',') }}</td>
+              </tr>
+              <tr>
+                <td class="text-right"><strong>{{ text_tax }}:</strong></td>
+                <td class="text-right" id="quote-tax">{{ tax_amount|number_format(2, '.', ',') }}</td>
+              </tr>
+              <tr>
+                <td class="text-right"><strong>{{ text_total }}:</strong></td>
+                <td class="text-right" id="quote-total">{{ total_amount|number_format(2, '.', ',') }}</td>
+              </tr>
+            </table>
+            
+            <input type="hidden" name="subtotal_amount" id="subtotal-amount" value="{{ subtotal }}" />
+            <input type="hidden" name="tax_amount" id="tax-amount" value="{{ tax_amount }}" />
+            <input type="hidden" name="total_amount" id="total-amount" value="{{ total_amount }}" />
+          </div>
+        </div>
+      </div>
+      
+      <!-- Notes Tab -->
+      <div class="tab-pane" id="tab-notes">
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+          <div class="col-sm-10">
+            <textarea name="notes" id="input-notes" class="form-control" rows="10">{{ notes }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+  <button type="button" class="btn btn-primary" id="button-save">{{ button_save }}</button>
+</div>
+
+<!-- نافذة منبثقة لاختيار المنتج -->
+<div class="modal fade" id="modal-product" tabindex="-1" role="dialog" aria-labelledby="modal-product-title">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modal-product-title">{{ entry_select_product }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <div class="input-group">
+            <input type="text" id="filter-product-name" class="form-control" placeholder="{{ text_search_product }}">
+            <span class="input-group-btn">
+              <button class="btn btn-primary" type="button" id="button-search-product"><i class="fa fa-search"></i></button>
+            </span>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-striped table-bordered table-hover" id="product-list">
+            <thead>
+              <tr>
+                <th>{{ column_image }}</th>
+                <th>{{ column_product }}</th>
+                <th>{{ column_model }}</th>
+                <th>{{ column_price }}</th>
+                <th>{{ column_stock }}</th>
+                <th class="text-right">{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Products will be populated here via AJAX -->
+            </tbody>
+          </table>
+        </div>
+        <div id="product-pagination"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var item_row = {{ item_row }};
+
+// Object to manage quote form functionality
+var QuoteForm = {
+    init: function() {
+        // Initialize date pickers
+        $('.date').datetimepicker({
+            pickTime: false,
+            format: 'YYYY-MM-DD'
+        });
+        
+        // Initialize select2 for customer dropdown
+        $('#input-customer').select2({
+            placeholder: '{{ entry_customer }}',
+            minimumInputLength: 1,
+            ajax: {
+                url: 'index.php?route=sale/quote/ajaxGetCustomers&user_token={{ user_token }}',
+                dataType: 'json',
+                delay: 300,
+                data: function(params) {
+                    return {
+                        q: params.term
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data
+                    };
+                },
+                cache: true
+            }
+        });
+        
+        // Initialize existing product rows
+        $('#items tbody tr').each(function(index) {
+            var row_id = $(this).attr('id').replace('item-row', '');
+            QuoteForm.initProductRow(row_id);
+        });
+        
+        // Calculate totals on change of any input with calc-trigger class
+        $(document).on('change keyup', '.calc-trigger', function() {
+            QuoteForm.calculateTotals();
+        });
+        
+        // Product selection buttons
+        $(document).on('click', '.btn-product-select', function() {
+            var row_id = $(this).attr('id').replace('button-product', '');
+            QuoteForm.openProductModal(row_id);
+        });
+        
+        // Unit selection change - update pricing
+        $(document).on('change', '.unit-select', function() {
+            var row_id = $(this).closest('tr').attr('id').replace('item-row', '');
+            var product_id = $('#input-product-id' + row_id).val();
+            var unit_id = $(this).val();
+            
+            if (product_id && unit_id) {
+                QuoteForm.loadProductPricing(product_id, unit_id, row_id);
+            }
+            
+            // Update unit name hidden field
+            var unit_text = $(this).find('option:selected').text();
+            $('#input-unit-name' + row_id).val(unit_text);
+        });
+        
+        // Product modal search button
+        $('#button-search-product').on('click', function() {
+            QuoteForm.searchProducts();
+        });
+        
+        // Filter product on press enter
+        $('#filter-product-name').keypress(function(e) {
+            if (e.which == 13) {
+                QuoteForm.searchProducts();
+                return false;
+            }
+        });
+        
+        // Save quote button
+        $('#button-save').on('click', function() {
+            QuoteForm.saveQuote();
+        });
+        
+        // Calculate totals on form init
+        this.calculateTotals();
+    },
+    
+    // Add a new item row
+    addItem: function() {
+        var html = '<tr id="item-row' + item_row + '">';
+        html += '  <td class="text-left">';
+        html += '    <input type="hidden" name="quote_item[' + item_row + '][item_id]" value="0" />';
+        html += '    <div class="input-group">';
+        html += '      <input type="text" name="quote_item[' + item_row + '][product_name]" value="" placeholder="{{ entry_product }}" id="input-product' + item_row + '" class="form-control" readonly />';
+        html += '      <input type="hidden" name="quote_item[' + item_row + '][product_id]" value="" id="input-product-id' + item_row + '" />';
+        html += '      <span class="input-group-btn">';
+        html += '        <button type="button" id="button-product' + item_row + '" data-toggle="tooltip" title="{{ button_select_product }}" class="btn btn-primary btn-product-select"><i class="fa fa-search"></i></button>';
+        html += '      </span>';
+        html += '    </div>';
+        html += '    <div id="product-details' + item_row + '" class="product-details mt-2"></div>';
+        html += '  </td>';
+        html += '  <td class="text-left">';
+        html += '    <select name="quote_item[' + item_row + '][unit_id]" id="input-unit' + item_row + '" class="form-control unit-select">';
+        html += '    </select>';
+        html += '    <input type="hidden" name="quote_item[' + item_row + '][unit_name]" value="" id="input-unit-name' + item_row + '" />';
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '    <input type="number" name="quote_item[' + item_row + '][quantity]" value="1" id="input-quantity' + item_row + '" class="form-control calc-trigger" min="0.01" step="0.01" />';
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '    <input type="number" name="quote_item[' + item_row + '][price]" value="0" placeholder="{{ entry_price }}" id="input-price' + item_row + '" class="form-control calc-trigger" min="0" step="0.01" />';
+        html += '    <div class="price-history mt-1" id="price-history' + item_row + '"></div>';
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '    <div class="input-group">';
+        html += '      <input type="number" name="quote_item[' + item_row + '][discount_rate]" value="0" id="input-discount' + item_row + '" class="form-control calc-trigger" min="0" max="100" step="0.01" />';
+        html += '      <span class="input-group-addon">%</span>';
+        html += '    </div>';
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '    <div class="input-group">';
+        html += '      <input type="number" name="quote_item[' + item_row + '][tax_rate]" value="0" id="input-tax' + item_row + '" class="form-control calc-trigger" min="0" max="100" step="0.01" />';
+        html += '      <span class="input-group-addon">%</span>';
+        html += '    </div>';
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '    <input type="text" name="quote_item[' + item_row + '][total]" value="0" id="input-total' + item_row + '" class="form-control text-right" readonly />';
+        html += '  </td>';
+        html += '  <td class="text-center">';
+        html += '    <button type="button" onclick="$(\'#item-row' + item_row + '\').remove(); QuoteForm.calculateTotals();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button>';
+        html += '  </td>';
+        html += '</tr>';
+        
+        $('#items tbody').append(html);
+        
+        // Initialize the new row
+        QuoteForm.initProductRow(item_row);
+        
+        item_row++;
+    },
+    
+    // Initialize a product row
+    initProductRow: function(row_id) {
+        // If the product ID exists, load product details
+        var product_id = $('#input-product-id' + row_id).val();
+        if (product_id) {
+            this.loadProductDetails(product_id, row_id);
+        }
+    },
+    
+    // Open product selection modal
+    openProductModal: function(row_id) {
+        // Store the current row being edited
+        $('#modal-product').data('row_id', row_id);
+        
+        // Clear previous search
+        $('#filter-product-name').val('');
+        $('#product-list tbody').empty();
+        
+        // Show the modal
+        $('#modal-product').modal('show');
+        
+        // Initial product search
+        this.searchProducts();
+    },
+    
+    // Search products
+    searchProducts: function(page) {
+        page = page || 1;
+        var search = $('#filter-product-name').val();
+        
+        $.ajax({
+            url: 'index.php?route=sale/quote/ajaxSearchProducts&user_token={{ user_token }}',
+            type: 'POST',
+            data: {
+                filter_name: search,
+                page: page
+            },
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-search-product').html('<i class="fa fa-circle-o-notch fa-spin"></i>');
+            },
+            complete: function() {
+                $('#button-search-product').html('<i class="fa fa-search"></i>');
+            },
+            success: function(json) {
+                var html = '';
+                
+                if (json.products && json.products.length) {
+                    for (var i = 0; i < json.products.length; i++) {
+                        var product = json.products[i];
+                        
+                        html += '<tr>';
+                        html += '  <td class="text-center">';
+                        if (product.image) {
+                            html += '    <img src="' + product.image + '" alt="' + product.name + '" class="img-thumbnail" width="40" height="40" />';
+                        } else {
+                            html += '    <span class="img-thumbnail"><i class="fa fa-camera fa-2x"></i></span>';
+                        }
+                        html += '  </td>';
+                        html += '  <td>' + product.name + '</td>';
+                        html += '  <td>' + product.model + '</td>';
+                        html += '  <td>' + product.price + '</td>';
+                        
+                        // Stock status with color coding
+                        var stock_class = 'text-success';
+                        if (product.quantity <= 0) {
+                            stock_class = 'text-danger';
+                        } else if (product.quantity <= 5) {
+                            stock_class = 'text-warning';
+                        }
+                        
+                        html += '  <td class="' + stock_class + '">' + product.quantity + '</td>';
+                        
+                        html += '  <td class="text-right">';
+                        html += '    <button type="button" class="btn btn-primary btn-sm" onclick="QuoteForm.selectProduct(' + product.product_id + ', \'' + product.name.replace(/"/g, '&quot;') + '\')"><i class="fa fa-plus-circle"></i> {{ button_select }}</button>';
+                        html += '  </td>';
+                        html += '</tr>';
+                    }
+                } else {
+                    html += '<tr>';
+                    html += '  <td colspan="6" class="text-center">{{ text_no_results }}</td>';
+                    html += '</tr>';
+                }
+                
+                $('#product-list tbody').html(html);
+                
+                // Pagination
+                if (json.pagination) {
+                    $('#product-pagination').html(json.pagination);
+                    
+                    // Add pagination event handlers
+                    $('#product-pagination a').on('click', function(e) {
+                        e.preventDefault();
+                        var page = $(this).attr('href').split('page=')[1];
+                        QuoteForm.searchProducts(page);
+                    });
+                } else {
+                    $('#product-pagination').html('');
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    },
+    
+    // Select a product from the modal
+    selectProduct: function(product_id, product_name) {
+        var row_id = $('#modal-product').data('row_id');
+        
+        // Set the product ID and name
+        $('#input-product-id' + row_id).val(product_id);
+        $('#input-product' + row_id).val(product_name);
+        
+        // Load product details
+        this.loadProductDetails(product_id, row_id);
+        
+        // Close the modal
+        $('#modal-product').modal('hide');
+    },
+    
+    // Load product details
+    loadProductDetails: function(product_id, row_id) {
+        $.ajax({
+            url: 'index.php?route=sale/quote/ajaxGetProductDetails&user_token={{ user_token }}',
+            type: 'GET',
+            data: {
+                product_id: product_id,
+                customer_id: $('#input-customer').val()
+            },
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-product' + row_id).html('<i class="fa fa-circle-o-notch fa-spin"></i>');
+            },
+            complete: function() {
+                $('#button-product' + row_id).html('<i class="fa fa-search"></i>');
+            },
+            success: function(json) {
+                if (json.success) {
+                    // Clear and populate units dropdown
+                    var $unitSelect = $('#input-unit' + row_id);
+                    $unitSelect.empty();
+                    
+                    if (json.units && json.units.length > 0) {
+                        for (var i = 0; i < json.units.length; i++) {
+                            var unit = json.units[i];
+                            var selected = (i === 0) ? ' selected="selected"' : '';
+                            $unitSelect.append('<option value="' + unit.unit_id + '"' + selected + '>' + unit.name + '</option>');
+                        }
+                        
+                        // Update unit name hidden field
+                        $('#input-unit-name' + row_id).val(json.units[0].name);
+                        
+                        // Load pricing for the first unit
+                        QuoteForm.loadProductPricing(product_id, json.units[0].unit_id, row_id);
+                    }
+                    
+                    // Show product details
+                    var detailsHtml = '<div class="product-info small">';
+                    
+                    // Show inventory information
+                    if (json.inventory && Object.keys(json.inventory).length > 0) {
+                        detailsHtml += '<table class="table table-bordered table-sm mt-2 mb-0">';
+                        detailsHtml += '<thead><tr><th>{{ text_branch }}</th><th>{{ text_unit }}</th><th>{{ text_available }}</th><th>{{ text_avg_cost }}</th></tr></thead>';
+                        detailsHtml += '<tbody>';
+                        
+                        for (var branch_id in json.inventory) {
+                            var branch = json.inventory[branch_id];
+                            var rowspan = Object.keys(branch.units).length;
+                            var firstRow = true;
+                            
+                            for (var unit_id in branch.units) {
+                                var unitData = branch.units[unit_id];
+                                
+                                detailsHtml += '<tr>';
+                                if (firstRow) {
+                                    detailsHtml += '<td rowspan="' + rowspan + '">' + branch.branch_name + '</td>';
+                                    firstRow = false;
+                                }
+                                detailsHtml += '<td>' + unitData.unit_name + '</td>';
+                                
+                                // Quantity with color coding
+                                var qtyClass = 'text-success';
+                                if (unitData.quantity_available <= 0) {
+                                    qtyClass = 'text-danger';
+                                } else if (unitData.quantity_available <= 5) {
+                                    qtyClass = 'text-warning';
+                                }
+                                
+                                detailsHtml += '<td class="' + qtyClass + '">' + unitData.quantity_available + '</td>';
+                                detailsHtml += '<td>' + unitData.average_cost + '</td>';
+                                detailsHtml += '</tr>';
+                            }
+                        }
+                        
+                        detailsHtml += '</tbody></table>';
+                    } else {
+                        detailsHtml += '<div class="alert alert-warning mt-2 mb-0 p-1">{{ text_no_inventory_data }}</div>';
+                    }
+                    
+                    detailsHtml += '</div>';
+                    
+                    // Update product details container
+                    $('#product-details' + row_id).html(detailsHtml);
+                    
+                    // Set default tax rate if available
+                    if (json.product && json.product.tax_class_id) {
+                        $('#input-tax' + row_id).val(json.product.tax_rate || 0);
+                    }
+                    
+                    // Recalculate totals
+                    QuoteForm.calculateTotals();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    },
+    
+    // Load product pricing for specific unit
+    loadProductPricing: function(product_id, unit_id, row_id) {
+        $.ajax({
+            url: 'index.php?route=sale/quote/ajaxGetUnitsPricing&user_token={{ user_token }}',
+            type: 'GET',
+            data: {
+                product_id: product_id,
+                unit_id: unit_id,
+                customer_id: $('#input-customer').val()
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    // Set default price based on pricing data
+                    var price = 0;
+                    
+                    if (json.pricing && json.pricing[unit_id]) {
+                        var pricing = json.pricing[unit_id];
+                        
+                        // Use special price if available, otherwise use base price
+                        price = pricing.special_price !== null ? pricing.special_price : pricing.base_price;
+                        
+                        // Update price input
+                        $('#input-price' + row_id).val(price);
+                        
+                        // Show price history
+                        var priceHistoryHtml = '<small class="text-muted">';
+                        priceHistoryHtml += '{{ text_base_price }}: ' + pricing.base_price + '<br>';
+                        
+                        if (pricing.special_price !== null) {
+                            priceHistoryHtml += '{{ text_special_price }}: ' + pricing.special_price + '<br>';
+                        }
+                        
+                        if (pricing.wholesale_price) {
+                            priceHistoryHtml += '{{ text_wholesale_price }}: ' + pricing.wholesale_price + '<br>';
+                        }
+                        
+                        priceHistoryHtml += '</small>';
+                        
+                        // Update price history container
+                        $('#price-history' + row_id).html(priceHistoryHtml);
+                        
+                        // Set tax rate
+                        if (pricing.tax_rate) {
+                            $('#input-tax' + row_id).val(pricing.tax_rate);
+                        }
+                        
+                        // Recalculate totals
+                        QuoteForm.calculateTotals();
+                    }
+                }
+            }
+        });
+    },
+    
+    // Calculate line totals and overall totals
+    calculateTotals: function() {
+        var subtotal = 0;
+        var totalTax = 0;
+        
+        // Calculate line totals
+        $('#items tbody tr').each(function() {
+            var row_id = $(this).attr('id').replace('item-row', '');
+            var quantity = parseFloat($('#input-quantity' + row_id).val()) || 0;
+            var price = parseFloat($('#input-price' + row_id).val()) || 0;
+            var discount_rate = parseFloat($('#input-discount' + row_id).val()) || 0;
+            var tax_rate = parseFloat($('#input-tax' + row_id).val()) || 0;
+            
+            // Calculate line values
+            var line_subtotal = quantity * price;
+            var line_discount = (line_subtotal * discount_rate) / 100;
+            var line_net = line_subtotal - line_discount;
+            var line_tax = (line_net * tax_rate) / 100;
+            var line_total = line_net + line_tax;
+            
+            // Update line total
+            $('#input-total' + row_id).val(line_total.toFixed(2));
+            
+            // Add to overall totals
+            subtotal += line_net;
+            totalTax += line_tax;
+        });
+        
+        // Get global discount
+        var discountAmount = parseFloat($('#input-discount-amount').val()) || 0;
+        
+        // Calculate final total
+        var totalAmount = subtotal + totalTax - discountAmount;
+        
+        // Ensure total doesn't go negative
+        if (totalAmount < 0) {
+            totalAmount = 0;
+        }
+        
+        // Update summary fields
+        $('#quote-subtotal').text(subtotal.toFixed(2));
+        $('#quote-discount').text(discountAmount.toFixed(2));
+        $('#quote-tax').text(totalTax.toFixed(2));
+        $('#quote-total').text(totalAmount.toFixed(2));
+        
+        // Update hidden fields
+        $('#subtotal-amount').val(subtotal.toFixed(2));
+        $('#tax-amount').val(totalTax.toFixed(2));
+        $('#total-amount').val(totalAmount.toFixed(2));
+    },
+    
+    // Save the quote
+    saveQuote: function() {
+        // Validate form
+        var isValid = this.validateForm();
+        
+        if (!isValid) {
+            return false;
+        }
+        
+        // Serialize form data
+        var formData = $('#form-quote').serialize();
+        
+        $.ajax({
+            url: 'index.php?route=sale/quote/ajaxSave&user_token={{ user_token }}{% if quote_id %}&quote_id={{ quote_id }}{% endif %}',
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-save').html('<i class="fa fa-circle-o-notch fa-spin"></i> {{ button_save }}');
+                $('#button-save').prop('disabled', true);
+            },
+            complete: function() {
+                $('#button-save').html('{{ button_save }}');
+                $('#button-save').prop('disabled', false);
+            },
+            success: function(json) {
+                $('.text-danger').remove();
+                $('.form-group').removeClass('has-error');
+                
+                if (json.error) {
+                    // Display validation errors
+                    if (json.error.customer) {
+                        $('#input-customer').after('<div class="text-danger">' + json.error.customer + '</div>');
+                        $('#input-customer').closest('.form-group').addClass('has-error');
+                    }
+                    
+                    if (json.error.quotation_date) {
+                        $('#input-quotation-date').after('<div class="text-danger">' + json.error.quotation_date + '</div>');
+                        $('#input-quotation-date').closest('.form-group').addClass('has-error');
+                    }
+                    
+                    if (json.error.valid_until) {
+                        $('#input-valid-until').after('<div class="text-danger">' + json.error.valid_until + '</div>');
+                        $('#input-valid-until').closest('.form-group').addClass('has-error');
+                    }
+                    
+                    if (json.error.warning) {
+                        alert(json.error.warning);
+                    }
+                } else if (json.success) {
+                    // Success message and close modal
+                    alert(json.success);
+                    
+                    // Close modal and refresh list
+                    $('#modal-quote-form').modal('hide');
+                    QuoteManager.loadQuotes();
+                    
+                    // Redirect if needed
+                    if (json.redirect) {
+                        window.location.href = json.redirect;
+                    }
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    },
+    
+    // Validate form before submission
+    validateForm: function() {
+        var isValid = true;
+        $('.text-danger').remove();
+        $('.form-group').removeClass('has-error');
+        
+        // Check required fields
+        if (!$('#input-customer').val()) {
+            $('#input-customer').after('<div class="text-danger">{{ error_customer }}</div>');
+            $('#input-customer').closest('.form-group').addClass('has-error');
+            isValid = false;
+        }
+        
+        if (!$('#input-quotation-date').val()) {
+            $('#input-quotation-date').after('<div class="text-danger">{{ error_quotation_date }}</div>');
+            $('#input-quotation-date').closest('.form-group').addClass('has-error');
+            isValid = false;
+        }
+        
+        if (!$('#input-valid-until').val()) {
+            $('#input-valid-until').after('<div class="text-danger">{{ error_valid_until }}</div>');
+            $('#input-valid-until').closest('.form-group').addClass('has-error');
+            isValid = false;
+        }
+        
+        // Check if at least one product is added
+        if ($('#items tbody tr').length === 0) {
+            alert('{{ error_product_required }}');
+            isValid = false;
+        } else {
+            // Check each product
+            var hasValidProduct = false;
+            
+            $('#items tbody tr').each(function() {
+                var row_id = $(this).attr('id').replace('item-row', '');
+                var product_id = $('#input-product-id' + row_id).val();
+                var quantity = parseFloat($('#input-quantity' + row_id).val()) || 0;
+                
+                if (product_id && quantity > 0) {
+                    hasValidProduct = true;
+                    return false; // Break loop
+                }
+            });
+            
+            if (!hasValidProduct) {
+                alert('{{ error_product_required }}');
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+};
+
+$(document).ready(function() {
+    QuoteForm.init();
+});
+</script>

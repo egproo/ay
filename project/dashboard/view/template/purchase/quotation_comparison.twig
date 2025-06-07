@@ -1,0 +1,592 @@
+<!-- تعديل في quotation_comparison.twig - ميزة مقارنة عروض الأسعار المنافسة -->
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">{{ text_quotation_comparison }}</h5>
+    <div class="float-end">
+        <div class="btn-group">
+            <a href="{{ link_export_excel }}" class="btn btn-sm btn-light" title="{{ text_export_excel }}" target="_blank">
+                <i class="fas fa-file-excel"></i>
+            </a>
+            <a href="{{ link_export_pdf }}" class="btn btn-sm btn-light" title="{{ text_export_pdf }}" target="_blank">
+                <i class="fas fa-file-pdf"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-light export-comparison" title="{{ text_export_comparison }}">
+                <i class="fas fa-file-export"></i>
+            </button>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+</div>
+<div class="modal-body">
+    {% if quotations %}
+        <!-- معلومات طلب الشراء والملخص -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ text_requisition_info }}</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>{{ text_requisition_number }}:</th>
+                                <td>{{ requisition.requisition_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ text_date_required }}:</th>
+                                <td>{{ requisition.date_required }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ text_branch }}:</th>
+                                <td>{{ requisition.branch_name }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ text_comparison_summary }}</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <th>{{ text_total_quotations }}:</th>
+                                <td>{{ quotations|length }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ text_best_price_supplier }}:</th>
+                                <td>{{ best_price_quotation.supplier_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ text_price_difference }}:</th>
+                                <td>{{ price_difference_percentage }}%</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- أزرار الموافقة على العرض الأفضل -->
+        {% if best_price_quotation and best_value_quotation %}
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card bg-light">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">{{ text_analysis_recommendations }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {% if best_price_quotation.quotation_id == best_value_quotation.quotation_id %}
+                                    <div class="alert alert-success">
+                                        <strong>{{ text_best_value_recommendation }}:</strong> 
+                                        {{ best_price_quotation.supplier_name }} {{ text_best_overall_value_explanation }}
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success approve-quotation" data-quotation-id="{{ best_price_quotation.quotation_id }}" data-approval-type="best_value">
+                                            <i class="fas fa-check-circle"></i> {{ text_approve_best_value }}
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <strong>{{ text_best_price_recommendation }}:</strong> 
+                                        {{ best_price_quotation.supplier_name }} ({{ best_price_quotation.total_amount }} {{ best_price_quotation.currency_code }})
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-primary approve-quotation" data-quotation-id="{{ best_price_quotation.quotation_id }}" data-approval-type="best_price">
+                                            <i class="fas fa-check-circle"></i> {{ text_approve_best_price }}
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {% if best_price_quotation.quotation_id != best_value_quotation.quotation_id %}
+                                    <div class="alert alert-info">
+                                        <strong>{{ text_best_value_recommendation }}:</strong> 
+                                        {{ best_value_quotation.supplier_name }} {{ text_best_value_explanation }}
+                                    </div>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-success approve-quotation" data-quotation-id="{{ best_value_quotation.quotation_id }}" data-approval-type="best_value">
+                                            <i class="fas fa-check-circle"></i> {{ text_approve_best_value }}
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="table-responsive">
+            <table class="table table-bordered comparison-table" id="quotationComparisonTable">
+                <thead>
+                    <tr>
+                        <th>{{ column_attribute }}</th>
+                        {% for quotation in quotations %}
+                            <th>{{ quotation.quotation_number }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- General Information -->
+                    <tr class="table-info">
+                        <td colspan="{{ quotations|length + 1 }}">
+                            <strong>{{ text_general_info }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ text_supplier }}</td>
+                        {% for quotation in quotations %}
+                            <td>{{ quotation.supplier_name }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_date }}</td>
+                        {% for quotation in quotations %}
+                            <td>{{ quotation.created_at }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_validity }}</td>
+                        {% for quotation in quotations %}
+                            <td>
+                                {{ quotation.validity_date }}
+                                {% if quotation.is_expired %}
+                                    <span class="badge bg-danger">{{ text_expired }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ text_valid }}</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_currency }}</td>
+                        {% for quotation in quotations %}
+                            <td>{{ quotation.currency_code }} ({{ quotation.exchange_rate }})</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Items Comparison -->
+                    <tr class="table-info">
+                        <td colspan="{{ quotations|length + 1 }}">
+                            <strong>{{ text_items_comparison }}</strong>
+                        </td>
+                    </tr>
+                    {% for item in items %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.product_name }}</strong><br>
+                                <small>{{ item.product_code }}</small>
+                            </td>
+                            {% for quotation in quotations %}
+                                {% set quote_item = quotation.items[item.product_id] %}
+                                <td {% if quote_item and quote_item.is_best_price %}class="table-success"{% endif %}>
+                                    {% if quote_item %}
+                                        {{ quote_item.quantity }} {{ quote_item.unit_name }}<br>
+                                        {{ quote_item.unit_price|number_format(4) }} / {{ quote_item.unit_name }}<br>
+                                        {% if quote_item.discount_amount > 0 %}
+                                            {{ text_discount }}: {{ quote_item.discount_amount|number_format(4) }}<br>
+                                        {% endif %}
+                                        <strong>{{ text_total }}: {{ quote_item.line_total|number_format(4) }}</strong>
+                                    {% else %}
+                                        <span class="text-muted">{{ text_not_quoted }}</span>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+
+                    <!-- Totals -->
+                    <tr class="table-info">
+                        <td colspan="{{ quotations|length + 1 }}">
+                            <strong>{{ text_totals }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ text_subtotal }}</td>
+                        {% for quotation in quotations %}
+                            <td>{{ quotation.subtotal|number_format(4) }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_discount }}</td>
+                        {% for quotation in quotations %}
+                            <td>{{ quotation.discount_amount|number_format(4) }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_tax }}</td>
+                        {% for quotation in quotations %}
+                            <td>
+                                {{ quotation.tax_amount|number_format(4) }}
+                                {% if quotation.tax_included %}
+                                    <br><small>({{ text_included }})</small>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="table-primary">
+                        <td><strong>{{ text_total }}</strong></td>
+                        {% for quotation in quotations %}
+                            <td>
+                                <strong>{{ quotation.total_amount|number_format(4) }}</strong>
+                                {% if quotation.is_best_total %}
+                                    <br><span class="badge bg-success">{{ text_best_price }}</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Terms -->
+                    <tr class="table-info">
+                        <td colspan="{{ quotations|length + 1 }}">
+                            <strong>{{ text_terms }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ text_payment_terms }}</td>
+                        {% for quotation in quotations %}
+                            <td>{{ quotation.payment_terms }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_delivery_terms }}</td>
+                        {% for quotation in quotations %}
+                            <td>{{ quotation.delivery_terms }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Supplier Performance -->
+                    <tr class="table-info">
+                        <td colspan="{{ quotations|length + 1 }}">
+                            <strong>{{ text_supplier_performance }}</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ text_on_time_delivery }}</td>
+                        {% for quotation in quotations %}
+                            <td>
+                                {% if quotation.supplier_stats.on_time_delivery >= 90 %}
+                                    <span class="text-success">
+                                {% elseif quotation.supplier_stats.on_time_delivery >= 75 %}
+                                    <span class="text-warning">
+                                {% else %}
+                                    <span class="text-danger">
+                                {% endif %}
+                                {{ quotation.supplier_stats.on_time_delivery }}%
+                                </span>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_quality_rating }}</td>
+                        {% for quotation in quotations %}
+                            <td>
+                                {% if quotation.supplier_stats.quality_rating >= 4 %}
+                                    <span class="text-success">
+                                {% elseif quotation.supplier_stats.quality_rating >= 3 %}
+                                    <span class="text-warning">
+                                {% else %}
+                                    <span class="text-danger">
+                                {% endif %}
+                                {{ quotation.supplier_stats.quality_rating }}/5
+                                </span>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>{{ text_response_time }}</td>
+                        {% for quotation in quotations %}
+                            <td>
+                                {% if quotation.supplier_stats.avg_response_days <= 1 %}
+                                    <span class="text-success">
+                                {% elseif quotation.supplier_stats.avg_response_days <= 3 %}
+                                    <span class="text-warning">
+                                {% else %}
+                                    <span class="text-danger">
+                                {% endif %}
+                                {{ quotation.supplier_stats.avg_response_days }} {{ text_days }}
+                                </span>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="card mt-3 recommendation">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">{{ text_recommendation }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ recommendation }}</p>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><i class="fas fa-info-circle"></i> {{ text_comparison_title }}</small>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-primary print-comparison">
+                            <i class="fas fa-print"></i> {{ button_print }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+        // طباعة المقارنة
+        $('.print-comparison').on('click', function() {
+            window.print();
+        });
+        </script>
+    {% else %}
+        <div class="alert alert-warning">
+            {{ text_no_quotations_selected }}
+        </div>
+    {% endif %}
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+    {% if can_export %}
+        <button type="button" class="btn btn-success" onclick="exportComparison();">
+            <i class="fas fa-download"></i> {{ button_export }}
+        </button>
+    {% endif %}
+</div>
+
+<script type="text/javascript">
+// دالة لتصدير المقارنة
+function exportComparison() {
+    var quotationIds = {{ quotation_ids|json_encode() }};
+    window.location.href = 'index.php?route=purchase/quotation/exportComparison&user_token={{ user_token }}&quotation_ids=' + quotationIds.join(',');
+}
+
+// دالة لتصدير المقارنة بتنسيقات مختلفة
+$('.export-comparison').on('click', function() {
+    var exportMenu = $('<div class="dropdown-menu export-dropdown" style="display:block; position:absolute; right:50px; top:40px;">');
+    exportMenu.append('<a class="dropdown-item" href="{{ link_export_excel }}"><i class="fas fa-file-excel me-2"></i> {{ text_export_excel }}</a>');
+    exportMenu.append('<a class="dropdown-item" href="{{ link_export_pdf }}"><i class="fas fa-file-pdf me-2"></i> {{ text_export_pdf }}</a>');
+    exportMenu.append('<a class="dropdown-item" href="#" onclick="exportComparison(); return false;"><i class="fas fa-file-export me-2"></i> {{ text_export_comparison }}</a>');
+    
+    // إضافة القائمة إلى الصفحة
+    if ($('.export-dropdown').length) {
+        $('.export-dropdown').remove();
+    } else {
+        $('body').append(exportMenu);
+        
+        // إغلاق القائمة عند النقر في أي مكان آخر
+        $(document).on('click', function(e) {
+            if (!$(e.target).hasClass('export-comparison') && !$(e.target).closest('.export-dropdown').length) {
+                $('.export-dropdown').remove();
+            }
+        });
+    }
+});
+
+// دالة للتعامل مع الموافقة على عرض الأسعار
+$('.approve-quotation').on('click', function() {
+    var quotationId = $(this).data('quotation-id');
+    var approvalType = $(this).data('approval-type');
+    var buttonText = $(this).text().trim();
+    var buttonElement = $(this);
+    
+    // عرض تأكيد قبل المتابعة
+    if (confirm('{{ text_confirm_approve_quotation }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/approveQuotation&user_token={{ user_token }}',
+            type: 'POST',
+            data: {
+                quotation_id: quotationId,
+                approval_type: approvalType
+            },
+            dataType: 'json',
+            beforeSend: function() {
+                $('.approve-quotation').prop('disabled', true);
+                buttonElement.html('<i class="fas fa-spinner fa-spin"></i> {{ text_processing }}');
+            },
+            complete: function() {
+                $('.approve-quotation').not(buttonElement).prop('disabled', false);
+                buttonElement.html('<i class="fas fa-check-circle"></i> ' + buttonText);
+            },
+            success: function(json) {
+                if (json.success) {
+                    // عرض رسالة نجاح
+                    $('.modal-body').prepend('<div class="alert alert-success alert-dismissible fade show"><i class="fas fa-check-circle"></i> ' + json.success + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                    
+                    // تعطيل جميع أزرار الموافقة
+                    $('.approve-quotation').removeClass('btn-primary btn-success').addClass('btn-secondary').prop('disabled', true);
+                    
+                    // تمييز العرض المعتمد
+                    $('table tr').each(function() {
+                        var index = $(this).find('td, th').index($(this).find('td:contains("' + json.quotation_number + '"), th:contains("' + json.quotation_number + '")'));
+                        if (index > 0) {
+                            $(this).find('td:eq(' + index + '), th:eq(' + index + ')').addClass('table-success');
+                        }
+                    });
+                    
+                    // إظهار زر إنشاء أمر الشراء إذا كان متاحًا
+                    if (json.purchase_order_url) {
+                        $('.modal-footer').prepend('<a href="' + json.purchase_order_url + '" class="btn btn-primary"><i class="fas fa-file-invoice"></i> {{ text_create_purchase_order }}</a>');
+                    }
+                    
+                    // تحديث حالة العرض في الجدول الرئيسي إذا كان متاحًا
+                    if (typeof updateQuotationStatus === 'function') {
+                        updateQuotationStatus(quotationId, 'approved');
+                    }
+                    
+                    // إضافة شارة معتمد للعرض
+                    var approvalBadge = '<div class="mt-3 text-center"><span class="badge bg-success p-2"><i class="fas fa-check-circle"></i> {{ text_approved_quotation }}</span></div>';
+                    $('.recommendation').before(approvalBadge);
+                }
+                
+                if (json.error) {
+                    // عرض رسالة خطأ
+                    $('.modal-body').prepend('<div class="alert alert-danger alert-dismissible fade show"><i class="fas fa-exclamation-circle"></i> ' + json.error + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+});
+
+// إضافة تأثيرات بصرية عند تحريك المؤشر فوق الصفوف
+$('table tbody tr').hover(
+    function() {
+        $(this).addClass('table-hover');
+    },
+    function() {
+        $(this).removeClass('table-hover');
+    }
+);
+
+// تمييز الخلايا التي تحتوي على أفضل قيمة
+$('table tbody tr').each(function() {
+    var $row = $(this);
+    var $cells = $row.find('td:not(:first-child)');
+    
+    // تجاهل صفوف العناوين
+    if ($row.hasClass('table-info')) {
+        return;
+    }
+    
+    // البحث عن أفضل قيمة في الصف (أقل سعر أو أعلى جودة)
+    if ($cells.length > 0 && !isNaN(parseFloat($cells.first().text()))) {
+        var bestValue = null;
+        var bestIndex = -1;
+        
+        $cells.each(function(index) {
+            var value = parseFloat($(this).text());
+            if (!isNaN(value)) {
+                // للأسعار، نبحث عن الأقل
+                if (bestValue === null || value < bestValue) {
+                    bestValue = value;
+                    bestIndex = index;
+                }
+            }
+        });
+        
+        // تمييز الخلية ذات أفضل قيمة
+        if (bestIndex >= 0) {
+            $cells.eq(bestIndex).addClass('best-value');
+        }
+    }
+});
+</script>
+
+<style>
+/* تنسيق الخلايا ذات القيمة الأفضل */
+.best-value {
+    position: relative;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.best-value:after {
+    content: '★';
+    position: absolute;
+    top: 0;
+    right: 5px;
+    color: gold;
+    font-size: 16px;
+}
+
+/* تأثير التحويم على الصفوف */
+.table-hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transition: background-color 0.3s;
+}
+
+/* تنسيق جدول المقارنة */
+.comparison-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #dee2e6;
+}
+
+.comparison-table th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-table th:first-child,
+.comparison-table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #f8f9fa;
+    z-index: 5;
+    box-shadow: 2px 0 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.comparison-table th:first-child {
+    z-index: 15;
+}
+
+/* تنسيق أزرار الموافقة */
+.approve-quotation {
+    transition: all 0.3s;
+}
+
+.approve-quotation:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* تنسيق للطباعة */
+@media print {
+    .modal-header,
+    .modal-footer,
+    .btn,
+    .card-footer {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        break-inside: avoid;
+    }
+    
+    .card-header {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+    
+    .table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+    
+    .table td, .table th {
+        background-color: #fff !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    .best-value:after {
+        color: #000 !important;
+    }
+}
+</style>

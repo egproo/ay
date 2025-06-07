@@ -1,0 +1,224 @@
+{{ header }} {{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-goods-receipt" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid" title="{{heading_title}}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <style>
+      .select2-container--default .select2-selection--single {
+        height: 36px;
+      }
+
+      .attachment-item, .preview-item {
+        display: inline-block;
+        margin-right: 10px;
+        border: 1px dashed #ddd;
+        padding: 5px;
+      }
+    </style>
+
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-goods-receipt" class="form-horizontal">
+        <!-- إضافة اختيار لأمر الشراء -->
+        <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-purchase-order">{{ entry_purchase_order }}</label>
+            <div class="col-sm-10">
+                <select name="purchase_order_id" id="input-purchase-order" class="form-control">
+                    <option value="">{{ text_no_purchase_order }}</option>
+                    {% for purchase_order in purchase_orders %}
+                    <option value="{{ purchase_order.po_id }}" {% if purchase_order.po_id == purchase_order_id %}selected{% endif %}>{{ purchase_order.order_number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-receipt-number">{{ entry_receipt_number }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="receipt_number" value="{{ receipt_number }}" placeholder="{{ entry_receipt_number }}" id="input-receipt-number" class="form-control" />
+              {% if error_receipt_number %}
+              <div class="text-danger">{{ error_receipt_number }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-receipt-date">{{ entry_receipt_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="receipt_date" value="{{ receipt_date }}" id="input-receipt-date" class="form-control" />
+              {% if error_receipt_date %}
+              <div class="text-danger">{{ error_receipt_date }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-control">
+                <option value="draft" {% if status == 'draft' %}selected{% endif %}>{{ text_status_draft }}</option>
+                <option value="completed" {% if status == 'completed' %}selected{% endif %}>{{ text_status_completed }}</option>
+                <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>{{ text_status_cancelled }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="5" id="input-notes" class="form-control">{{ notes }}</textarea>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="receipt-items">
+              <thead>
+                <tr>
+                  <th>{{ column_product }}</th>
+                  <th>{{ column_quantity_ordered }}</th>
+                  <th>{{ column_quantity_received }}</th>
+                  <th>{{ column_unit }}</th>
+                  <th>{{ column_batch_number }}</th>
+                  <th>{{ column_expiry_date }}</th>
+                  <th>{{ column_quality_status }}</th>
+                  <th>{{ column_inspection_grade }}</th>
+                  <th>{{ column_inspection_notes }}</th>
+                  <th>{{ column_notes }}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in receipt_items %}
+                <tr id="row{{ loop.index0 }}">
+                  <td>
+                    <select name="receipt_items[{{ loop.index0 }}][product_id]" class="form-control">
+                      {% for product in products %}
+                      <option value="{{ product.product_id }}" {% if product.product_id == item.product_id %}selected{% endif %}>{{ product.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td><input type="text" name="receipt_items[{{ loop.index0 }}][quantity_ordered]" value="{{ item.quantity_ordered }}" class="form-control" /></td>
+                  <td><input type="text" name="receipt_items[{{ loop.index0 }}][quantity_received]" value="{{ item.quantity_received }}" class="form-control" /></td>
+                  <td>
+                    <select name="receipt_items[{{ loop.index0 }}][unit_id]" class="form-control">
+                      {% for unit in units %}
+                      <option value="{{ unit.unit_id }}" {% if unit.unit_id == item.unit_id %}selected{% endif %}>{{ unit.desc_en }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td><input type="text" name="receipt_items[{{ loop.index0 }}][batch_number]" value="{{ item.batch_number }}" class="form-control" /></td>
+                  <td><input type="date" name="receipt_items[{{ loop.index0 }}][expiry_date]" value="{{ item.expiry_date }}" class="form-control" /></td>
+                  <td>
+                    <select name="receipt_items[{{ loop.index0 }}][quality_status]" class="form-control">
+                      <option value="pass" {% if item.quality_status == 'pass' %}selected{% endif %}>{{ text_quality_pass }}</option>
+                      <option value="fail" {% if item.quality_status == 'fail' %}selected{% endif %}>{{ text_quality_fail }}</option>
+                    </select>
+                  </td>
+                  <td><input type="text" name="receipt_items[{{ loop.index0 }}][inspection_grade]" value="{{ item.inspection_grade }}" class="form-control" /></td>
+                  <td><input type="text" name="receipt_items[{{ loop.index0 }}][inspection_notes]" value="{{ item.inspection_notes }}" class="form-control" /></td>
+                  <td><input type="text" name="receipt_items[{{ loop.index0 }}][notes]" value="{{ item.notes }}" class="form-control" /></td>
+                  <td><button type="button" class="btn btn-danger" onclick="removeRow('{{ loop.index0 }}')"><i class="fa fa-minus-circle"></i></button></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="10"></td>
+                  <td><button type="button" class="btn btn-primary" onclick="addRow();"><i class="fa fa-plus-circle"></i></button></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var row = 0;
+var products = []; // متغير لتخزين قائمة المنتجات
+
+// جلب قائمة المنتجات عند تحميل الصفحة
+$(document).ready(function () {
+    $.ajax({
+        url: 'index.php?route=catalog/product/getProducts&user_token={{ user_token }}',
+        dataType: 'json',
+        success: function (data) {
+            products = data; // تخزين المنتجات في المتغير
+        }
+    });
+});
+
+function addRow() {
+    var html = '<tr id="row' + row + '">';
+    html += '<td><select name="receipt_items[' + row + '][product_id]" class="form-control" onchange="updateUnits(' + row + ', this.value)">';
+    html += '<option value=""></option>';
+    for (var i = 0; i < products.length; i++) {
+        html += '<option value="' + products[i].product_id + '">' + products[i].name + '</option>';
+    }
+    html += '</select></td>';
+    html += '<td><input type="text" name="receipt_items[' + row + '][quantity_ordered]" value="" class="form-control" /></td>';
+    html += '<td><input type="text" name="receipt_items[' + row + '][quantity_received]" value="" class="form-control" /></td>';
+    html += '<td><select name="receipt_items[' + row + '][unit_id]" id="unit-select-' + row + '" class="form-control"></select></td>';
+    html += '<td><input type="text" name="receipt_items[' + row + '][batch_number]" value="" class="form-control" /></td>';
+    html += '<td><input type="date" name="receipt_items[' + row + '][expiry_date]" value="" class="form-control" /></td>';
+    html += '<td><select name="receipt_items[' + row + '][quality_status]" class="form-control">';
+    html += '<option value="pass">Pass</option>';
+    html += '<option value="fail">Fail</option>';
+    html += '</select></td>';
+    html += '<td><input type="text" name="receipt_items[' + row + '][inspection_grade]" value="" class="form-control" /></td>';
+    html += '<td><input type="text" name="receipt_items[' + row + '][inspection_notes]" value="" class="form-control" /></td>';
+    html += '<td><input type="text" name="receipt_items[' + row + '][notes]" value="" class="form-control" /></td>';
+    html += '<td><button type="button" class="btn btn-danger" onclick="removeRow(' + row + ');"><i class="fa fa-minus-circle"></i></button></td>';
+    html += '</tr>';
+    $('#receipt-items tbody').append(html);
+    row++;
+}
+
+function updateUnits(row, product_id) {
+    $.ajax({
+        url: 'index.php?route=catalog/product/getProductUnits&user_token={{ user_token }}',
+        type: 'get',
+        data: { product_id: product_id },
+        dataType: 'json',
+        success: function (data) {
+            var unitSelect = $('#unit-select-' + row);
+            unitSelect.empty(); // تفريغ القائمة السابقة
+            for (var i = 0; i < data.length; i++) {
+                unitSelect.append('<option value="' + data[i].unit_id + '">' + data[i].unit_name + '</option>');
+            }
+        }
+    });
+}
+
+function removeRow(row) {
+    $('#row' + row).remove();
+}
+</script>
+
+{{ footer }}

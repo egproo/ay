@@ -1,0 +1,58 @@
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+            <div class="pull-right">
+                <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add_payment }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+                <button type="submit" form="form-payment" formaction="{{ delete }}" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
+            </div>
+        </div>
+    </div>
+    {% if success %}
+    <div class="alert alert-success"><i class="fa fa-check-circle"></i> {{ success }}</div>
+    {% endif %}
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+    <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-payment">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <td class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                        <td class="text-left">{{ column_payment_id }}</td>
+                        <td class="text-left">{{ column_order_id }}</td>
+                        <td class="text-right">{{ column_amount }}</td>
+                        <td class="text-left">{{ column_due_date }}</td>
+                        <td class="text-left">{{ column_status }}</td>
+                        <td class="text-right">{{ column_action }}</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" name="selected[]" value="{{ payment.payment_id }}" />
+                        </td>
+                        <td class="text-left">{{ payment.payment_id }}</td>
+                        <td class="text-left"><a href="{{ url_order_view ~ '&order_id=' ~ payment.order_id }}">{{ payment.order_id }}</a></td>
+                        <td class="text-right">{{ payment.amount }}</td>
+                        <td class="text-left">{{ payment.due_date }}</td>
+                        <td class="text-left">{{ payment.status }}</td>
+                        <td class="text-right">
+                            <a href="{{ payment.edit }}" data-toggle="tooltip" title="Edit" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if payments is empty %}
+                    <tr>
+                        <td class="text-center" colspan="7">No installment payments found!</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+{{ footer }}

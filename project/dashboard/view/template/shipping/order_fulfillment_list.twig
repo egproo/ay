@@ -1,0 +1,364 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ dashboard }}" data-toggle="tooltip" title="لوحة التحكم" class="btn btn-info">
+          <i class="fa fa-dashboard"></i> لوحة التحكم
+        </a>
+        <button type="button" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-default" onclick="location.reload();">
+          <i class="fa fa-refresh"></i> {{ button_refresh }}
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <!-- إحصائيات سريعة -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-boxes fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.ready_orders }}</div>
+                <div>{{ text_ready_orders }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.today_fulfilled }}</div>
+                <div>{{ text_today_fulfilled }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-clock-o fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.avg_fulfillment_time }}</div>
+                <div>{{ text_avg_fulfillment_time }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-percentage fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">95%</div>
+                <div>معدل النجاح</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-list"></i> {{ text_list }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        
+        <!-- مرشحات البحث -->
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-filter-order-id">{{ entry_filter_order_id }}</label>
+                <input type="text" name="filter_order_id" value="{{ filter_order_id }}" placeholder="{{ entry_filter_order_id }}" id="input-filter-order-id" class="form-control" />
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-filter-customer">{{ entry_filter_customer }}</label>
+                <input type="text" name="filter_customer" value="{{ filter_customer }}" placeholder="{{ entry_filter_customer }}" id="input-filter-customer" class="form-control" />
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-filter-date-start">{{ entry_filter_date_start }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_filter_date_start }}" data-date-format="YYYY-MM-DD" id="input-filter-date-start" class="form-control" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label class="control-label" for="input-filter-date-end">{{ entry_filter_date_end }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_filter_date_end }}" data-date-format="YYYY-MM-DD" id="input-filter-date-end" class="form-control" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 text-right">
+              <button type="button" id="button-filter" class="btn btn-primary">
+                <i class="fa fa-search"></i> {{ text_filter }}
+              </button>
+              <button type="button" id="button-clear" class="btn btn-default">
+                <i class="fa fa-times"></i> مسح
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- جدول الطلبات -->
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_order_id }}</th>
+                <th>{{ column_customer }}</th>
+                <th>{{ column_email }}</th>
+                <th>{{ column_telephone }}</th>
+                <th>{{ column_total }}</th>
+                <th>{{ column_product_count }}</th>
+                <th>{{ column_total_quantity }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_date_added }}</th>
+                <th>{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if orders %}
+                {% for order in orders %}
+                <tr>
+                  <td>
+                    <strong>#{{ order.order_id }}</strong>
+                  </td>
+                  <td>{{ order.customer_name }}</td>
+                  <td>{{ order.email }}</td>
+                  <td>{{ order.telephone }}</td>
+                  <td>{{ order.total }}</td>
+                  <td>
+                    <span class="badge badge-info">{{ order.product_count }}</span>
+                  </td>
+                  <td>
+                    <span class="badge badge-primary">{{ order.total_quantity }}</span>
+                  </td>
+                  <td>
+                    <span class="label label-warning">{{ order.order_status }}</span>
+                  </td>
+                  <td>{{ order.date_added }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <a href="{{ order.fulfill }}" data-toggle="tooltip" title="{{ button_fulfill }}" class="btn btn-success btn-sm">
+                        <i class="fa fa-check"></i>
+                      </a>
+                      <a href="{{ order.view }}" data-toggle="tooltip" title="{{ button_view_order }}" class="btn btn-info btn-sm">
+                        <i class="fa fa-eye"></i>
+                      </a>
+                      <a href="{{ order.picking_list }}" target="_blank" data-toggle="tooltip" title="{{ button_print_picking_list }}" class="btn btn-default btn-sm">
+                        <i class="fa fa-print"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td class="text-center" colspan="10">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- صفحات -->
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.huge {
+  font-size: 40px;
+  font-weight: bold;
+}
+
+.panel-heading {
+  color: white;
+}
+
+.panel-primary .panel-heading {
+  background-color: #337ab7;
+  border-color: #337ab7;
+}
+
+.panel-success .panel-heading {
+  background-color: #5cb85c;
+  border-color: #5cb85c;
+}
+
+.panel-warning .panel-heading {
+  background-color: #f0ad4e;
+  border-color: #f0ad4e;
+}
+
+.panel-info .panel-heading {
+  background-color: #5bc0de;
+  border-color: #5bc0de;
+}
+
+.badge {
+  font-size: 11px;
+}
+
+.btn-group .btn {
+  margin-right: 2px;
+}
+
+.table-responsive {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.well {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.control-label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة التواريخ
+    $('.date').datetimepicker({
+        language: 'ar',
+        pickTime: false
+    });
+    
+    // مرشح البحث
+    $('#button-filter').on('click', function() {
+        var url = 'index.php?route=shipping/order_fulfillment&user_token={{ user_token }}';
+        
+        var filter_order_id = $('input[name=\'filter_order_id\']').val();
+        if (filter_order_id) {
+            url += '&filter_order_id=' + encodeURIComponent(filter_order_id);
+        }
+        
+        var filter_customer = $('input[name=\'filter_customer\']').val();
+        if (filter_customer) {
+            url += '&filter_customer=' + encodeURIComponent(filter_customer);
+        }
+        
+        var filter_date_start = $('input[name=\'filter_date_start\']').val();
+        if (filter_date_start) {
+            url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+        }
+        
+        var filter_date_end = $('input[name=\'filter_date_end\']').val();
+        if (filter_date_end) {
+            url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+        }
+        
+        location = url;
+    });
+    
+    // مسح المرشحات
+    $('#button-clear').on('click', function() {
+        location = 'index.php?route=shipping/order_fulfillment&user_token={{ user_token }}';
+    });
+    
+    // تحديث تلقائي كل 30 ثانية
+    setInterval(function() {
+        updateStatistics();
+    }, 30000);
+});
+
+function updateStatistics() {
+    $.ajax({
+        url: 'index.php?route=shipping/order_fulfillment/getStatistics&user_token={{ user_token }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(json) {
+            if (json.statistics) {
+                $('.huge').each(function(index) {
+                    var keys = ['ready_orders', 'today_fulfilled', 'avg_fulfillment_time'];
+                    if (keys[index] && json.statistics[keys[index]]) {
+                        $(this).text(json.statistics[keys[index]]);
+                    }
+                });
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log('Error updating statistics: ' + thrownError);
+        }
+    });
+}
+</script>
+
+{{ footer }}

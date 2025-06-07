@@ -1,0 +1,596 @@
+<div id="ai-assistant" class="ai-assistant">
+  <div class="ai-header">
+    <h3><i class="fa fa-robot"></i> {{ text_ai_assistant }}</h3>
+    <div class="ai-actions">
+      <button type="button" class="btn btn-link" id="clear-conversation"><i class="fa fa-eraser"></i> {{ text_clear_conversation }}</button>
+      <button type="button" class="btn btn-link" id="ai-settings"><i class="fa fa-cog"></i></button>
+    </div>
+  </div>
+  
+  <div class="ai-conversation">
+    <div class="conversation-container" id="conversation-container">
+      <!-- سيتم عرض المحادثة هنا -->
+      <div class="ai-welcome">
+        <div class="ai-message">
+          <div class="ai-avatar">
+            <i class="fa fa-robot"></i>
+          </div>
+          <div class="ai-message-content">
+            <div class="ai-message-text">{{ text_ai_welcome }}</div>
+            <div class="ai-message-time">{{ text_just_now }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="ai-empty text-center" style="display: none;">
+      <i class="fa fa-comments-o fa-4x text-muted"></i>
+      <p>{{ text_no_conversation }}</p>
+    </div>
+  </div>
+  
+  <div class="ai-suggestions">
+    <div class="suggestion-title">{{ text_suggestions }}</div>
+    <div class="suggestion-items">
+      <button type="button" class="btn btn-default btn-sm suggestion-item" data-query="{{ text_suggestion_sales }}">{{ text_suggestion_sales }}</button>
+      <button type="button" class="btn btn-default btn-sm suggestion-item" data-query="{{ text_suggestion_inventory }}">{{ text_suggestion_inventory }}</button>
+      <button type="button" class="btn btn-default btn-sm suggestion-item" data-query="{{ text_suggestion_reports }}">{{ text_suggestion_reports }}</button>
+    </div>
+  </div>
+  
+  <div class="ai-input">
+    <form id="ai-form">
+      <div class="input-group">
+        <input type="text" name="ai_query" id="ai-query" class="form-control" placeholder="{{ text_ask_ai }}" autocomplete="off">
+        <span class="input-group-btn">
+          <button type="submit" class="btn btn-primary" id="send-query"><i class="fa fa-paper-plane"></i></button>
+        </span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- قالب لرسالة المستخدم -->
+<script id="user-message-template" type="text/template">
+  <div class="user-message">
+    <div class="user-message-content">
+      <div class="user-message-text">{message_text}</div>
+      <div class="user-message-time">{message_time}</div>
+    </div>
+    <div class="user-avatar">
+      <i class="fa fa-user"></i>
+    </div>
+  </div>
+</script>
+
+<!-- قالب لرسالة المساعد الذكي -->
+<script id="ai-message-template" type="text/template">
+  <div class="ai-message">
+    <div class="ai-avatar">
+      <i class="fa fa-robot"></i>
+    </div>
+    <div class="ai-message-content">
+      <div class="ai-message-text">{message_text}</div>
+      <div class="ai-message-time">{message_time}</div>
+    </div>
+  </div>
+</script>
+
+<!-- Modal لإعدادات المساعد الذكي -->
+<div class="modal fade" id="modal-ai-settings" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_ai_settings }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-ai-settings">
+          <div class="form-group">
+            <label class="control-label">{{ text_ai_model }}</label>
+            <select name="ai_model" class="form-control">
+              <option value="default">{{ text_default_model }}</option>
+              <option value="advanced">{{ text_advanced_model }}</option>
+            </select>
+            <p class="help-block">{{ text_model_help }}</p>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_ai_preferences }}</label>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ai_save_history" value="1" checked> {{ text_save_conversation }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ai_suggestions" value="1" checked> {{ text_show_suggestions }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ai_auto_complete" value="1"> {{ text_auto_complete }}
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_ai_data_access }}</label>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ai_access_sales" value="1" checked> {{ text_access_sales }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ai_access_inventory" value="1" checked> {{ text_access_inventory }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ai_access_customers" value="1" checked> {{ text_access_customers }}
+              </label>
+            </div>
+            
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="ai_access_reports" value="1" checked> {{ text_access_reports }}
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="save-ai-settings">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style type="text/css">
+.ai-assistant {
+  width: 350px;
+  height: 500px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-header {
+  padding: 15px;
+  background: #2c3e50;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ai-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ai-actions .btn-link {
+  color: #fff;
+  padding: 0 5px;
+}
+
+.ai-conversation {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.conversation-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-message, .user-message {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.user-message {
+  flex-direction: row-reverse;
+}
+
+.ai-avatar, .user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-avatar {
+  background-color: #3498db;
+  color: #fff;
+  margin-right: 10px;
+}
+
+.user-avatar {
+  background-color: #2ecc71;
+  color: #fff;
+  margin-left: 10px;
+}
+
+.ai-message-content, .user-message-content {
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 18px;
+}
+
+.ai-message-content {
+  background-color: #e8f4fd;
+  border-top-left-radius: 4px;
+}
+
+.user-message-content {
+  background-color: #dcf8c6;
+  border-top-right-radius: 4px;
+  text-align: right;
+}
+
+.ai-message-text, .user-message-text {
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.ai-message-time, .user-message-time {
+  font-size: 11px;
+  color: #999;
+  margin-top: 5px;
+}
+
+.ai-welcome {
+  margin-bottom: 20px;
+}
+
+.ai-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #999;
+}
+
+.ai-empty i {
+  margin-bottom: 10px;
+}
+
+.ai-suggestions {
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+}
+
+.suggestion-title {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.suggestion-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.suggestion-item {
+  font-size: 12px;
+  padding: 4px 8px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.suggestion-item:hover {
+  background-color: #f0f0f0;
+}
+
+.ai-input {
+  padding: 10px 15px;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+}
+
+.ai-input .form-control {
+  border-radius: 20px 0 0 20px;
+}
+
+.ai-input .btn {
+  border-radius: 0 20px 20px 0;
+}
+
+/* تحميل المؤشر */
+.ai-typing {
+  display: flex;
+  padding: 10px 15px;
+  align-items: center;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  background-color: #3498db;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+  margin-right: 0;
+}
+
+@keyframes typing {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0); }
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  // تهيئة المساعد الذكي
+  initAIAssistant();
+  
+  // تحميل المحادثة السابقة إذا كانت موجودة
+  loadConversation();
+  
+  // معالجة النقر على زر الإعدادات
+  $('#ai-settings').on('click', function() {
+    $('#modal-ai-settings').modal('show');
+  });
+  
+  // معالجة حفظ إعدادات المساعد الذكي
+  $('#save-ai-settings').on('click', function() {
+    saveAISettings();
+  });
+  
+  // معالجة النقر على زر مسح المحادثة
+  $('#clear-conversation').on('click', function() {
+    clearConversation();
+  });
+  
+  // معالجة النقر على اقتراحات الأسئلة
+  $('.suggestion-item').on('click', function() {
+    var query = $(this).data('query');
+    $('#ai-query').val(query);
+    $('#ai-form').submit();
+  });
+  
+  // معالجة إرسال استعلام للمساعد الذكي
+  $('#ai-form').on('submit', function(e) {
+    e.preventDefault();
+    sendQuery();
+  });
+});
+
+// تهيئة المساعد الذكي
+function initAIAssistant() {
+  // تمرير المتغيرات المترجمة إلى JavaScript
+  window.aiTranslations = {
+    justNow: '{{ text_just_now }}',
+    thinking: '{{ text_ai_thinking }}',
+    errorMessage: '{{ text_ai_error }}'
+  };
+}
+
+// تحميل المحادثة السابقة
+function loadConversation() {
+  $.ajax({
+    url: 'index.php?route=common/ai_assistant/getConversation&user_token=' + getURLVar('user_token'),
+    type: 'GET',
+    dataType: 'json',
+    success: function(json) {
+      if (json.success && json.conversation && json.conversation.length > 0) {
+        // إزالة رسالة الترحيب الافتراضية
+        $('.ai-welcome').remove();
+        
+        // عرض المحادثة السابقة
+        $.each(json.conversation, function(index, message) {
+          if (message.sender === 'user') {
+            addUserMessage(message.text, message.time);
+          } else {
+            addAIMessage(message.text, message.time);
+          }
+        });
+        
+        // التمرير إلى آخر رسالة
+        scrollToBottom();
+      }
+    }
+  });
+}
+
+// إرسال استعلام إلى المساعد الذكي
+function sendQuery() {
+  var query = $('#ai-query').val().trim();
+  
+  if (query !== '') {
+    // إضافة رسالة المستخدم إلى المحادثة
+    addUserMessage(query);
+    
+    // مسح حقل الإدخال
+    $('#ai-query').val('');
+    
+    // إظهار مؤشر الكتابة
+    showTypingIndicator();
+    
+    // إرسال الاستعلام إلى الخادم
+    $.ajax({
+      url: 'index.php?route=common/ai_assistant/query&user_token=' + getURLVar('user_token'),
+      type: 'POST',
+      data: { query: query },
+      dataType: 'json',
+      success: function(json) {
+        // إخفاء مؤشر الكتابة
+        hideTypingIndicator();
+        
+        if (json.success) {
+          // إضافة رد المساعد الذكي
+          addAIMessage(json.response);
+        } else {
+          // إظهار رسالة خطأ
+          addAIMessage(window.aiTranslations.errorMessage);
+        }
+      },
+      error: function() {
+        // إخفاء مؤشر الكتابة
+        hideTypingIndicator();
+        
+        // إظهار رسالة خطأ
+        addAIMessage(window.aiTranslations.errorMessage);
+      }
+    });
+  }
+}
+
+// إضافة رسالة من المستخدم إلى المحادثة
+function addUserMessage(text, time) {
+  var template = $('#user-message-template').html();
+  var currentTime = time || window.aiTranslations.justNow;
+  
+  // استبدال المتغيرات في القالب
+  var html = template
+    .replace('{message_text}', text)
+    .replace('{message_time}', currentTime);
+  
+  // إزالة رسالة "لا توجد محادثة" إذا كانت ظاهرة
+  $('.ai-empty').hide();
+  
+  // إضافة الرسالة إلى المحادثة
+  $('#conversation-container').append(html);
+  
+  // التمرير إلى آخر رسالة
+  scrollToBottom();
+}
+
+// إضافة رسالة من المساعد الذكي إلى المحادثة
+function addAIMessage(text, time) {
+  var template = $('#ai-message-template').html();
+  var currentTime = time || window.aiTranslations.justNow;
+  
+  // استبدال المتغيرات في القالب
+  var html = template
+    .replace('{message_text}', text)
+    .replace('{message_time}', currentTime);
+  
+  // إزالة رسالة "لا توجد محادثة" إذا كانت ظاهرة
+  $('.ai-empty').hide();
+  
+  // إضافة الرسالة إلى المحادثة
+  $('#conversation-container').append(html);
+  
+  // التمرير إلى آخر رسالة
+  scrollToBottom();
+}
+
+// إظهار مؤشر الكتابة
+function showTypingIndicator() {
+  var typingHtml = '<div class="ai-message ai-typing" id="typing-indicator">' +
+                   '<div class="ai-avatar"><i class="fa fa-robot"></i></div>' +
+                   '<div class="typing-indicator"><span></span><span></span><span></span></div>' +
+                   '</div>';
+  
+  // إضافة مؤشر الكتابة إلى المحادثة
+  $('#conversation-container').append(typingHtml);
+  
+  // التمرير إلى آخر رسالة
+  scrollToBottom();
+}
+
+// إخفاء مؤشر الكتابة
+function hideTypingIndicator() {
+  $('#typing-indicator').remove();
+}
+
+// التمرير إلى آخر رسالة في المحادثة
+function scrollToBottom() {
+  var container = $('.ai-conversation');
+  container.scrollTop(container[0].scrollHeight);
+}
+
+// مسح المحادثة
+function clearConversation() {
+  $.ajax({
+    url: 'index.php?route=common/ai_assistant/clearConversation&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        // مسح المحادثة من واجهة المستخدم
+        $('#conversation-container').html('');
+        
+        // إضافة رسالة الترحيب
+        var welcomeHtml = '<div class="ai-welcome">' +
+                         '<div class="ai-message">' +
+                         '<div class="ai-avatar"><i class="fa fa-robot"></i></div>' +
+                         '<div class="ai-message-content">' +
+                         '<div class="ai-message-text">{{ text_ai_welcome }}</div>' +
+                         '<div class="ai-message-time">{{ text_just_now }}</div>' +
+                         '</div></div></div>';
+        
+        $('#conversation-container').html(welcomeHtml);
+      }
+    }
+  });
+}
+
+// حفظ إعدادات المساعد الذكي
+function saveAISettings() {
+  $.ajax({
+    url: 'index.php?route=common/ai_assistant/saveSettings&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    data: $('#form-ai-settings').serialize(),
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        $('#modal-ai-settings').modal('hide');
+        
+        // عرض رسالة نجاح
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        // تحديث واجهة المستخدم بناءً على الإعدادات
+        if ($('input[name="ai_suggestions"]').is(':checked')) {
+          $('.ai-suggestions').show();
+        } else {
+          $('.ai-suggestions').hide();
+        }
+      }
+    }
+  });
+}
+</script>

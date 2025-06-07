@@ -1,0 +1,214 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-batch').toggleClass('d-none');" class="btn btn-light d-md-none d-lg-none"><i class="fas fa-filter"></i></button>
+        <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+        <button type="submit" form="form-batch" formaction="{{ delete }}" data-bs-toggle="tooltip" title="{{ button_delete }}" onclick="return confirm('{{ text_confirm_delete }}');" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+        <a href="{{ export }}" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-success"><i class="fas fa-file-excel"></i></a>
+        <a href="{{ expiry_report }}" data-bs-toggle="tooltip" title="{{ button_expiry_report }}" class="btn btn-warning"><i class="fas fa-exclamation-triangle"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="row">
+      <div id="filter-batch" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ button_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-product" class="form-label">{{ entry_product }}</label>
+              <input type="text" name="filter_product" value="{{ filter_product }}" placeholder="{{ entry_product }}" id="input-product" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-batch-number" class="form-label">{{ entry_batch_number }}</label>
+              <input type="text" name="filter_batch_number" value="{{ filter_batch_number }}" placeholder="{{ entry_batch_number }}" id="input-batch-number" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-branch" class="form-label">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-select">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_branch %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-expiry-from" class="form-label">{{ entry_expiry_from }}</label>
+              <input type="date" name="filter_expiry_from" value="{{ filter_expiry_from }}" id="input-expiry-from" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-expiry-to" class="form-label">{{ entry_expiry_to }}</label>
+              <input type="date" name="filter_expiry_to" value="{{ filter_expiry_to }}" id="input-expiry-to" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-status" class="form-label">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-select">
+                <option value="">{{ text_select }}</option>
+                <option value="active" {% if filter_status == 'active' %}selected{% endif %}>{{ text_status_active }}</option>
+                <option value="quarantine" {% if filter_status == 'quarantine' %}selected{% endif %}>{{ text_status_quarantine }}</option>
+                <option value="consumed" {% if filter_status == 'consumed' %}selected{% endif %}>{{ text_status_consumed }}</option>
+                <option value="expired" {% if filter_status == 'expired' %}selected{% endif %}>{{ text_status_expired }}</option>
+                <option value="damaged" {% if filter_status == 'damaged' %}selected{% endif %}>{{ text_status_damaged }}</option>
+                <option value="returned" {% if filter_status == 'returned' %}selected{% endif %}>{{ text_status_returned }}</option>
+                <option value="reserved" {% if filter_status == 'reserved' %}selected{% endif %}>{{ text_status_reserved }}</option>
+              </select>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-list"></i> {{ text_list }}</div>
+          <div class="card-body">
+            <form id="form-batch" method="post">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', $(this).prop('checked'));" class="form-check-input"/></td>
+                      <td class="text-start"><a href="{{ sort_product }}" {% if sort == 'pd.name' %}class="{{ order|lower }}"{% endif %}>{{ column_product }}</a></td>
+                      <td class="text-start"><a href="{{ sort_batch_number }}" {% if sort == 'b.batch_number' %}class="{{ order|lower }}"{% endif %}>{{ column_batch_number }}</a></td>
+                      <td class="text-start"><a href="{{ sort_branch }}" {% if sort == 'br.name' %}class="{{ order|lower }}"{% endif %}>{{ column_branch }}</a></td>
+                      <td class="text-end"><a href="{{ sort_quantity }}" {% if sort == 'b.quantity' %}class="{{ order|lower }}"{% endif %}>{{ column_quantity }}</a></td>
+                      <td class="text-start"><a href="{{ sort_manufacturing_date }}" {% if sort == 'b.manufacturing_date' %}class="{{ order|lower }}"{% endif %}>{{ column_manufacturing_date }}</a></td>
+                      <td class="text-start"><a href="{{ sort_expiry_date }}" {% if sort == 'b.expiry_date' %}class="{{ order|lower }}"{% endif %}>{{ column_expiry_date }}</a></td>
+                      <td class="text-center">{{ column_expiry_status }}</td>
+                      <td class="text-start"><a href="{{ sort_status }}" {% if sort == 'b.status' %}class="{{ order|lower }}"{% endif %}>{{ column_status }}</a></td>
+                      <td class="text-end">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if batches %}
+                      {% for batch in batches %}
+                        <tr>
+                          <td class="text-center"><input type="checkbox" name="selected[]" value="{{ batch.batch_id }}" class="form-check-input"/></td>
+                          <td class="text-start">{{ batch.product_name }}</td>
+                          <td class="text-start">{{ batch.batch_number }}</td>
+                          <td class="text-start">{{ batch.branch_name }}</td>
+                          <td class="text-end">{{ batch.quantity }} {{ batch.unit_name }}</td>
+                          <td class="text-start">{{ batch.manufacturing_date }}</td>
+                          <td class="text-start">{{ batch.expiry_date }}</td>
+                          <td class="text-center">
+                            {% if batch.expiry_status == 'expired' %}
+                              <span class="badge bg-danger">{{ text_expired }}</span>
+                              {% if batch.days_remaining < 0 %}
+                                <br><small>{{ text_days_expired|format(batch.days_remaining|abs) }}</small>
+                              {% endif %}
+                            {% elseif batch.expiry_status == 'warning' %}
+                              <span class="badge bg-warning text-dark">{{ text_warning }}</span>
+                              {% if batch.days_remaining > 0 %}
+                                <br><small>{{ text_days_to_expiry|format(batch.days_remaining) }}</small>
+                              {% endif %}
+                            {% else %}
+                              <span class="badge bg-success">{{ text_valid }}</span>
+                              {% if batch.days_remaining > 0 %}
+                                <br><small>{{ text_days_to_expiry|format(batch.days_remaining) }}</small>
+                              {% endif %}
+                            {% endif %}
+                          </td>
+                          <td class="text-start">
+                            {% if batch.status == 'active' %}
+                              <span class="badge bg-success">{{ text_status_active }}</span>
+                            {% elseif batch.status == 'quarantine' %}
+                              <span class="badge bg-warning text-dark">{{ text_status_quarantine }}</span>
+                            {% elseif batch.status == 'consumed' %}
+                              <span class="badge bg-info">{{ text_status_consumed }}</span>
+                            {% elseif batch.status == 'expired' %}
+                              <span class="badge bg-danger">{{ text_status_expired }}</span>
+                            {% elseif batch.status == 'damaged' %}
+                              <span class="badge bg-danger">{{ text_status_damaged }}</span>
+                            {% elseif batch.status == 'returned' %}
+                              <span class="badge bg-secondary">{{ text_status_returned }}</span>
+                            {% elseif batch.status == 'reserved' %}
+                              <span class="badge bg-primary">{{ text_status_reserved }}</span>
+                            {% else %}
+                              <span class="badge bg-light text-dark">{{ batch.status }}</span>
+                            {% endif %}
+                          </td>
+                          <td class="text-end">
+                            <div class="btn-group">
+                              <a href="{{ batch.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fas fa-pencil-alt"></i></a>
+                              <a href="{{ batch.history }}" data-bs-toggle="tooltip" title="{{ button_history }}" class="btn btn-info"><i class="fas fa-history"></i></a>
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr>
+                        <td class="text-center" colspan="10">{{ text_no_results }}</td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </form>
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+	var url = 'index.php?route=inventory/batch_tracking&user_token={{ user_token }}';
+
+	var filter_product = $('#input-product').val();
+	if (filter_product) {
+		url += '&filter_product=' + encodeURIComponent(filter_product);
+	}
+
+	var filter_batch_number = $('#input-batch-number').val();
+	if (filter_batch_number) {
+		url += '&filter_batch_number=' + encodeURIComponent(filter_batch_number);
+	}
+
+	var filter_branch = $('#input-branch').val();
+	if (filter_branch) {
+		url += '&filter_branch=' + encodeURIComponent(filter_branch);
+	}
+
+	var filter_expiry_from = $('#input-expiry-from').val();
+	if (filter_expiry_from) {
+		url += '&filter_expiry_from=' + encodeURIComponent(filter_expiry_from);
+	}
+
+	var filter_expiry_to = $('#input-expiry-to').val();
+	if (filter_expiry_to) {
+		url += '&filter_expiry_to=' + encodeURIComponent(filter_expiry_to);
+	}
+
+	var filter_status = $('#input-status').val();
+	if (filter_status) {
+		url += '&filter_status=' + encodeURIComponent(filter_status);
+	}
+
+	location = url;
+});
+</script>
+{{ footer }}

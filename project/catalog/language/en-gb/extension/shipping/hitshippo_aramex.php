@@ -1,0 +1,37 @@
+<?php
+// Text
+$_['text_title']                               = 'Automated aramex Express';
+$_['text_weight']                              = 'Weight:';
+$_['text_eta']                                 = 'Estimated Time:';
+$_['text_aramex_1'] = 'DOMESTIC EXPRESS 12:00';
+$_['text_aramex_2'] = 'B2C';
+$_['text_aramex_3'] = 'B2C';
+$_['text_aramex_4'] = 'JETLINE';
+$_['text_aramex_5'] = 'SPRINTLINE';
+$_['text_aramex_7'] = 'EXPRESS EASY';
+$_['text_aramex_8'] = 'EXPRESS EASY';
+$_['text_aramex_9'] = 'EUROPACK';
+$_['text_aramex_B'] = 'BREAKBULK EXPRESS';
+$_['text_aramex_C'] = 'MEDICAL EXPRESS';
+$_['text_aramex_D'] = 'EXPRESS WORLDWIDE';
+$_['text_aramex_E'] = 'EXPRESS 9:00';
+$_['text_aramex_F'] = 'FREIGHT WORLDWIDE';
+$_['text_aramex_G'] = 'DOMESTIC ECONOMY SELECT';
+$_['text_aramex_H'] = 'ECONOMY SELECT';
+$_['text_aramex_I'] = 'DOMESTIC EXPRESS 9:00';
+$_['text_aramex_J'] = 'JUMBO BOX';
+$_['text_aramex_K'] = 'EXPRESS 9:00';
+$_['text_aramex_L'] = 'EXPRESS 10:30';
+$_['text_aramex_M'] = 'EXPRESS 10:30';
+$_['text_aramex_N'] = 'DOMESTIC EXPRESS';
+$_['text_aramex_O'] = 'DOMESTIC EXPRESS 10:30';
+$_['text_aramex_P'] = 'EXPRESS WORLDWIDE';
+$_['text_aramex_Q'] = 'MEDICAL EXPRESS';
+$_['text_aramex_R'] = 'GLOBALMAIL BUSINESS';
+$_['text_aramex_S'] = 'SAME DAY';
+$_['text_aramex_T'] = 'EXPRESS 12:00';
+$_['text_aramex_U'] = 'EXPRESS WORLDWIDE';
+$_['text_aramex_V'] = 'EUROPACK';
+$_['text_aramex_W'] = 'ECONOMY SELECT';
+$_['text_aramex_X'] = 'EXPRESS ENVELOPE';
+$_['text_aramex_Y'] = 'EXPRESS 12:00';

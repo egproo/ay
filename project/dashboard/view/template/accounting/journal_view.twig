@@ -1,0 +1,180 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_journal_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ column_journal_id }}</strong></td>
+                <td>{{ journal_id }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_date_added }}</strong></td>
+                <td>{{ date_added }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_user }}</strong></td>
+                <td>{{ user_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_status }}</strong></td>
+                <td>{% if status %}
+                  <span class="label label-success">{{ text_active }}</span>
+                  {% else %}
+                  <span class="label label-danger">{{ text_inactive }}</span>
+                  {% endif %}</td>
+              </tr>
+              {% if period_name %}
+              <tr>
+                <td><strong>{{ column_period }}</strong></td>
+                <td>{{ period_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_period_status }}</strong></td>
+                <td>
+                  {% if period_status == text_open %}
+                  <span class="label label-success">{{ period_status }}</span>
+                  {% elseif period_status == text_closed %}
+                  <span class="label label-warning">{{ period_status }}</span>
+                  {% else %}
+                  <span class="label label-danger">{{ period_status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endif %}
+            </table>
+          </div>
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ column_reference_type }}</strong></td>
+                <td>{{ reference_text }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_reference_id }}</strong></td>
+                <td>{% if reference_link %}
+                  <a href="{{ reference_link }}" target="_blank">{{ reference_id }}</a>
+                  {% else %}
+                  {{ reference_id }}
+                  {% endif %}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_description }}</strong></td>
+                <td>{{ description }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <h3>{{ text_journal_entries }}</h3>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th class="text-left">{{ column_account_code }}</th>
+                    <th class="text-left">{{ column_account_name }}</th>
+                    <th class="text-right">{{ column_debit }}</th>
+                    <th class="text-right">{{ column_credit }}</th>
+                    <th class="text-left">{{ column_description }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if entries %}
+                  {% for entry in entries %}
+                  <tr>
+                    <td class="text-left">{{ entry.account_code }}</td>
+                    <td class="text-left">{{ entry.account_name }}</td>
+                    <td class="text-right">{{ entry.debit > 0 ? entry.debit : '' }}</td>
+                    <td class="text-right">{{ entry.credit > 0 ? entry.credit : '' }}</td>
+                    <td class="text-left">{{ entry.description }}</td>
+                  </tr>
+                  {% endfor %}
+                  <tr>
+                    <td colspan="2" class="text-right"><strong>{{ text_totals }}</strong></td>
+                    <td class="text-right"><strong>{{ total_debit }}</strong></td>
+                    <td class="text-right"><strong>{{ total_credit }}</strong></td>
+                    <td></td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td class="text-center" colspan="5">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {% if reference_details %}
+        <div class="row">
+          <div class="col-md-12">
+            <h3>{{ text_reference_details }}</h3>
+            {% if reference_type == 'inventory_movement' %}
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <tr>
+                  <td><strong>{{ column_product }}</strong></td>
+                  <td>{{ reference_details.product_name }}</td>
+                  <td><strong>{{ column_movement_type }}</strong></td>
+                  <td>{{ reference_details.movement_type }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ column_quantity }}</strong></td>
+                  <td>{{ reference_details.quantity }}</td>
+                  <td><strong>{{ column_unit }}</strong></td>
+                  <td>{{ reference_details.unit_name }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ column_warehouse }}</strong></td>
+                  <td>{{ reference_details.warehouse_name }}</td>
+                  <td><strong>{{ column_cost }}</strong></td>
+                  <td>{{ reference_details.cost }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ column_old_quantity }}</strong></td>
+                  <td>{{ reference_details.old_quantity }}</td>
+                  <td><strong>{{ column_new_quantity }}</strong></td>
+                  <td>{{ reference_details.new_quantity }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ column_old_cost }}</strong></td>
+                  <td>{{ reference_details.old_cost }}</td>
+                  <td><strong>{{ column_new_cost }}</strong></td>
+                  <td>{{ reference_details.new_cost }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ column_value_change }}</strong></td>
+                  <td colspan="3">{{ reference_details.value_change }}</td>
+                </tr>
+              </table>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

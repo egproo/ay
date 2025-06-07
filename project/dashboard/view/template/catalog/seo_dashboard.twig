@@ -1,0 +1,500 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="refresh-dashboard" class="btn btn-default" onclick="refreshDashboard();">
+          <i class="fa fa-refresh"></i> {{ text_refresh }}
+        </button>
+      </div>
+      <h1><i class="fa fa-search"></i> {{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible fade in">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %}
+    
+    <!-- Navegación de pestañas -->
+    <div class="seo-navigation">
+      <div class="row">
+        <div class="col-sm-3">
+          <div class="panel panel-default">
+            <div class="panel-body text-center">
+              <a href="{{ keyword_tracking_url }}" class="btn btn-link btn-block">
+                <i class="fa fa-line-chart fa-3x"></i>
+                <h4>{{ text_keyword_tracking }}</h4>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="panel panel-default">
+            <div class="panel-body text-center">
+              <a href="{{ internal_links_url }}" class="btn btn-link btn-block">
+                <i class="fa fa-link fa-3x"></i>
+                <h4>{{ text_internal_links }}</h4>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="panel panel-default">
+            <div class="panel-body text-center">
+              <a href="{{ page_analysis_url }}" class="btn btn-link btn-block">
+                <i class="fa fa-file-text-o fa-3x"></i>
+                <h4>{{ text_page_analysis }}</h4>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="panel panel-default">
+            <div class="panel-body text-center">
+              <a href="{{ settings_url }}" class="btn btn-link btn-block">
+                <i class="fa fa-cog fa-3x"></i>
+                <h4>{{ text_settings }}</h4>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tarjetas de estadísticas -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-key fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.total_keywords }}</div>
+                <div>{{ text_total_keywords }}</div>
+              </div>
+            </div>
+          </div>
+          <a href="{{ keyword_tracking_url }}">
+            <div class="panel-footer">
+              <span class="pull-left">{{ text_view_details }}</span>
+              <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+              <div class="clearfix"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-arrow-up fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.improved_keywords }}</div>
+                <div>{{ text_improved_keywords }}</div>
+              </div>
+            </div>
+          </div>
+          <a href="{{ keyword_tracking_url }}">
+            <div class="panel-footer">
+              <span class="pull-left">{{ text_view_details }}</span>
+              <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+              <div class="clearfix"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-red">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-arrow-down fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.declined_keywords }}</div>
+                <div>{{ text_declined_keywords }}</div>
+              </div>
+            </div>
+          </div>
+          <a href="{{ keyword_tracking_url }}">
+            <div class="panel-footer">
+              <span class="pull-left">{{ text_view_details }}</span>
+              <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+              <div class="clearfix"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-yellow">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-link fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.total_internal_links }}</div>
+                <div>{{ text_total_internal_links }}</div>
+              </div>
+            </div>
+          </div>
+          <a href="{{ internal_links_url }}">
+            <div class="panel-footer">
+              <span class="pull-left">{{ text_view_details }}</span>
+              <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+              <div class="clearfix"></div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <!-- Últimas palabras clave rastreadas -->
+      <div class="col-lg-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-star"></i> {{ text_latest_keywords }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>{{ column_keyword }}</th>
+                    <th>{{ column_position }}</th>
+                    <th>{{ column_status }}</th>
+                    <th>{{ column_last_checked }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if latest_keywords %}
+                  {% for keyword in latest_keywords %}
+                  <tr>
+                    <td>{{ keyword.keyword }}</td>
+                    <td>{{ keyword.position }}</td>
+                    <td><span class="label label-{{ keyword.status_class }}">{{ keyword.status }}</span></td>
+                    <td>{{ keyword.last_checked }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td colspan="4" class="text-center">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="text-right">
+              <a href="{{ keyword_tracking_url }}" class="btn btn-primary">{{ text_view_all }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Páginas con más enlaces internos -->
+      <div class="col-lg-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-link"></i> {{ text_most_linked_pages }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>{{ column_target_page }}</th>
+                    <th>{{ text_link_count }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if most_linked_pages %}
+                  {% for page in most_linked_pages %}
+                  <tr>
+                    <td>{{ page.target_page }}</td>
+                    <td>{{ page.link_count }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td colspan="2" class="text-center">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="text-right">
+              <a href="{{ internal_links_url }}" class="btn btn-primary">{{ text_view_all }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <!-- Últimos análisis de página -->
+      <div class="col-lg-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-file-text-o"></i> {{ text_latest_analyses }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>{{ column_page_url }}</th>
+                    <th>{{ column_target_keyword }}</th>
+                    <th>{{ column_overall_score }}</th>
+                    <th>{{ column_date_analysis }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if latest_analyses %}
+                  {% for analysis in latest_analyses %}
+                  <tr>
+                    <td>{{ analysis.page_url }}</td>
+                    <td>{{ analysis.target_keyword }}</td>
+                    <td>
+                      <div class="progress">
+                        <div class="progress-bar progress-bar-{{ analysis.score_class }}" role="progressbar" aria-valuenow="{{ analysis.overall_score }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ analysis.overall_score }}%;">
+                          {{ analysis.overall_score }}%
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ analysis.date_analysis }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td colspan="4" class="text-center">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="text-right">
+              <a href="{{ page_analysis_url }}" class="btn btn-primary">{{ text_view_all }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+</div>
+<style>
+/* Estilos generales para el módulo SEO */
+.seo-navigation {
+    margin-bottom: 30px;
+}
+
+.seo-navigation .panel-body {
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.seo-navigation .panel-body:hover {
+    background-color: #f8f8f8;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.seo-navigation .btn-link {
+    color: #333;
+    text-decoration: none;
+    padding: 15px 0;
+}
+
+.seo-navigation i.fa {
+    margin-bottom: 10px;
+    color: #23a1d1;
+}
+
+/* Tarjetas de estadísticas */
+.panel-primary, .panel-green, .panel-red, .panel-yellow {
+    border-color: #ddd;
+}
+
+.panel-primary .panel-heading {
+    background-color: #337ab7;
+    border-color: #337ab7;
+    color: #fff;
+}
+
+.panel-green .panel-heading {
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+    color: #fff;
+}
+
+.panel-red .panel-heading {
+    background-color: #d9534f;
+    border-color: #d9534f;
+    color: #fff;
+}
+
+.panel-yellow .panel-heading {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+    color: #fff;
+}
+
+.panel-footer {
+    color: #333;
+}
+
+.panel .huge {
+    font-size: 40px;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+/* Barras de progreso */
+.progress {
+    margin-bottom: 10px;
+    height: 20px;
+}
+
+.progress-bar {
+    line-height: 20px;
+    font-size: 12px;
+}
+
+.progress-bar-success {
+    background-color: #5cb85c;
+}
+
+.progress-bar-warning {
+    background-color: #f0ad4e;
+}
+
+.progress-bar-danger {
+    background-color: #d9534f;
+}
+
+/* Lista de sugerencias */
+.seo-suggestions-list {
+    padding-left: 15px;
+    list-style-type: none;
+}
+
+.seo-suggestions-list li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #eee;
+}
+
+.seo-suggestions-list i {
+    margin-right: 8px;
+}
+
+/* Estilos para estados */
+.label-improved {
+    background-color: #5cb85c;
+}
+
+.label-declined {
+    background-color: #d9534f;
+}
+
+.label-unchanged {
+    background-color: #5bc0de;
+}
+
+.label-new {
+    background-color: #f0ad4e;
+}
+
+/* Indicadores de cambio en posiciones */
+.text-success .fa, 
+.text-danger .fa {
+    margin-right: 3px;
+}
+
+/* Formularios de análisis */
+.analysis-results-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .panel .huge {
+        font-size: 30px;
+    }
+    
+    .form-group [class*='col-xs-'] {
+        margin-bottom: 15px;
+    }
+}
+
+/* Animaciones */
+.fade-in {
+    animation: fadeIn ease 0.5s;
+    -webkit-animation: fadeIn ease 0.5s;
+    -moz-animation: fadeIn ease 0.5s;
+    -o-animation: fadeIn ease 0.5s;
+    -ms-animation: fadeIn ease 0.5s;
+}
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-moz-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}    
+</style>
+<script type="text/javascript">
+// Función para refrescar el dashboard
+function refreshDashboard() {
+  location.reload();
+}
+
+// Inicializa charts y gráficos cuando el documento esté listo
+$(document).ready(function() {
+  // Aquí puedes inicializar gráficos si decides añadirlos posteriormente
+  // Por ejemplo, usando Chart.js para visualizar tendencias SEO
+});
+</script>
+
+{{ footer }}    

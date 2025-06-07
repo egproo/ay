@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+  "http://www.w3.org/TR/1999/REC-html401-19991224/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>{{ title }}</title>
+  <style type="text/css">
+    body, table, td {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      color: #000000;
+      line-height: 1.5;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      width: 680px;
+      margin: 0 auto;
+      border: 1px solid #DDD;
+      padding: 20px;
+      background: #ffffff;
+    }
+    .logo {
+      margin-bottom: 20px;
+    }
+    .content p {
+      margin-top: 0px;
+      margin-bottom: 20px;
+    }
+    /* جداول البيانات */
+    table.data-table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    table.data-table th,
+    table.data-table td {
+      border: 1px solid #DDDDDD;
+      padding: 7px;
+      vertical-align: top;
+    }
+    table.data-table th {
+      background-color: #EFEFEF;
+      font-weight: bold;
+      color: #222;
+    }
+    table.data-table td {
+      font-size: 12px;
+    }
+    .title-cell {
+      text-align: left;
+      background-color: #EFEFEF;
+      font-weight: bold;
+      color: #222;
+    }
+    .right {
+      text-align: right;
+    }
+    .left {
+      text-align: left;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    /* تحسينات عامة */
+    .note-table {
+      margin-bottom: 20px;
+    }
+    .note-table td {
+      border: 1px solid #DDDDDD;
+      padding: 7px;
+    }
+    .footer-text {
+      margin-top: 0px;
+      margin-bottom: 20px;
+      color: #000;
+    }
+  </style>
+</head>
+
+<body style="background: #f4f4f4; margin: 0; padding: 20px;">
+<div class="container">
+  {% if logo %}
+    <div class="logo">
+      <a href="{{ store_url }}" title="{{ store_name }}">
+        <img src="https://cardzona.com/image/logo.png" alt="{{ store_name }}" style="border: none; max-height: 60px;"/>
+      </a>
+    </div>
+  {% else %}
+    <h2 style="margin-bottom: 20px;">
+      <a href="{{ store_url }}" title="{{ store_name }}" style="color: #333; text-decoration: none;">
+        {{ store_name }}
+      </a>
+    </h2>
+  {% endif %}
+
+  <div class="content">
+    <p>{{ text_greeting }}</p>
+
+    {% if customer_id %}
+      <p>{{ text_link }}</p>
+      <p><a href="{{ link }}">{{ link }}</a></p>
+    {% endif %}
+
+    {% if download %}
+      <p>{{ text_download }}</p>
+      <p><a href="{{ download }}">{{ download }}</a></p>
+    {% endif %}
+
+    <!-- جدول تفاصيل الطلب الرئيسية -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th colspan="2" class="title-cell">{{ text_order_detail }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="left" style="border-right: 1px solid #DDDDDD;">
+            <b>{{ text_order_id }}</b> {{ order_id }}<br/>
+            <b>{{ text_date_added }}</b> {{ date_added }}<br/>
+            <b>{{ text_payment_method }}</b> {{ payment_method }}<br/>
+          </td>
+          <td class="left">
+            <b>{{ text_email }}</b> {{ email }}<br/>
+            <b>{{ text_telephone }}</b> {{ telephone }}<br/>
+            <b>{{ text_ip }}</b> {{ ip }}<br/>
+            <b>{{ text_order_status }}</b> {{ order_status }}<br/>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ملاحظات الطلب إن وجدت -->
+    {% if comment %}
+      <table class="data-table note-table">
+        <thead>
+          <tr>
+            <th class="title-cell">{{ text_instruction }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="left">{{ comment }}</td>
+          </tr>
+        </tbody>
+      </table>
+    {% endif %}
+
+    <!-- عنوان الدفع إن وجد -->
+    {% if payment_address %}
+      <table class="data-table note-table">
+        <thead>
+          <tr>
+            <th class="title-cell">{{ text_payment_address }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="left">{{ payment_address }}</td>
+          </tr>
+        </tbody>
+      </table>
+    {% endif %}
+
+    <!-- جدول المنتجات -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="left">{{ text_product }}</th>
+          <th class="right">{{ text_quantity }}</th>
+          <th class="right">{{ text_unit }}</th>
+          <th class="right">{{ text_price }}</th>
+          <th class="right">{{ text_total }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td class="left">
+              {{ product.name }}
+              {% for option in product.option %}
+                <br/>
+                &nbsp;
+                <small>- {{ option.name }}: {{ option.value }}</small>
+              {% endfor %}
+              {% if product.reward %}
+                <br/><small>{{ text_points }}: {{ product.reward }}</small>
+              {% endif %}
+              {% if product.subscription %}
+                <br/><small>{{ text_subscription }}: {{ product.subscription }}</small>
+              {% endif %}
+            </td>
+            <td class="right">{{ product.quantity }}</td>
+            <td class="right">{{ product.unit_name }}</td>
+            <td class="right">{{ product.price }}</td>
+            <td class="right">{{ product.total }}</td>
+          </tr>
+        {% endfor %}
+
+        <!-- لو هناك قسائم هدايا -->
+        {% for voucher in vouchers %}
+          <tr>
+            <td class="left">{{ voucher.description }}</td>
+            <!-- لاحظ أن القالب الأصلي فيه 5 أعمدة، ولكن واحد منها فارغ. نعتمد نفس المنطق قدر الإمكان -->
+            <td class="left"></td>
+            <td class="right">1</td>
+            <td class="right">{{ voucher.amount }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        {% for total in totals %}
+          <tr>
+            <td colspan="3" class="right bold">{{ total.title }}:</td>
+            <td class="right">{{ total.text }}</td>
+          </tr>
+        {% endfor %}
+      </tfoot>
+    </table>
+
+    <!-- خاتمة الرسالة -->
+    <p class="footer-text">{{ text_footer }}</p>
+  </div>
+</div>
+</body>
+</html>

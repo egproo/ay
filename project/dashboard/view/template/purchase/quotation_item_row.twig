@@ -1,0 +1,73 @@
+<tr class="item-row">
+    <td>
+        <select class="form-control product-select" name="item[{{ row }}][product_id]" required>
+            {% if item.product_id %}
+                <option value="{{ item.product_id }}" selected>{{ item.product_name }}</option>
+            {% endif %}
+        </select>
+        <div class="product-details mt-2">
+            {% if item.product_details %}
+                <div class="alert alert-info mb-0">
+                    <small>{{ item.product_details }}</small>
+                </div>
+            {% endif %}
+        </div>
+        <div class="price-history mt-2">
+            {% if item.price_history %}
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <strong>{{ text_price_history }}:</strong><br>
+                        {% for history in item.price_history %}
+                            {{ history.date }}: {{ history.price }}<br>
+                        {% endfor %}
+                    </small>
+                </div>
+            {% endif %}
+        </div>
+    </td>
+    <td>
+        <input type="number" class="form-control" name="item[{{ row }}][quantity]" 
+               value="{{ item.quantity }}" min="0.0001" step="0.0001" required>
+    </td>
+    <td>
+        <select class="form-control unit-select" name="item[{{ row }}][unit_id]" required>
+            {% if item.unit_id %}
+                <option value="{{ item.unit_id }}" selected>{{ item.unit_name }}</option>
+            {% endif %}
+            {% if item.available_units %}
+                {% for unit in item.available_units %}
+                    {% if unit.unit_id != item.unit_id %}
+                        <option value="{{ unit.unit_id }}">{{ unit.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </select>
+    </td>
+    <td>
+        <input type="number" class="form-control" name="item[{{ row }}][unit_price]" 
+               value="{{ item.unit_price }}" min="0" step="0.0001" required>
+    </td>
+    <td>
+        <select class="form-control" name="item[{{ row }}][discount_type]">
+            <option value="fixed" {% if item.discount_type == 'fixed' %}selected{% endif %}>{{ text_fixed }}</option>
+            <option value="percentage" {% if item.discount_type == 'percentage' %}selected{% endif %}>{{ text_percentage }}</option>
+        </select>
+        <input type="number" class="form-control mt-2" name="item[{{ row }}][discount_value]" 
+               value="{{ item.discount_value }}" min="0" step="0.01">
+        <input type="hidden" name="item[{{ row }}][discount_amount]" value="{{ item.discount_amount }}">
+    </td>
+    <td>
+        <input type="number" class="form-control" name="item[{{ row }}][tax_rate]" 
+               value="{{ item.tax_rate ?? default_tax_rate }}" min="0" step="0.01">
+        <input type="hidden" name="item[{{ row }}][tax_amount]" value="{{ item.tax_amount }}">
+    </td>
+    <td class="text-end">
+        <input type="hidden" name="item[{{ row }}][line_total]" value="{{ item.line_total }}">
+        <span class="line-total">{{ item.line_total|number_format(4) }}</span>
+    </td>
+    <td>
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this);">
+            <i class="fas fa-trash"></i>
+        </button>
+    </td>
+</tr>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8" />
+    <base href="https://store.codaym.com/dashboard/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="view/javascript/jquery/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Styles -->
+    <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    {% if direction == 'rtl' %}
+    <link href="view/stylesheet/bootstrap-a.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet-a.css" rel="stylesheet" />
+    {% else %}
+    <link href="view/stylesheet/bootstrap.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet.css" rel="stylesheet" />
+    {% endif %}
+
+    <!-- Favicon -->
+    <link href="https://store.codaym.com/image/catalog/dlogo.png" rel="icon" />
+
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #FFF;
+                font-size: 12px;
+            }
+            .container {
+                width: 100%;
+                padding: 20mm;
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .logo {
+                max-height: 50mm;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #000;
+                padding: 5px;
+                text-align:center;
+            }
+            th {
+                background-color: #eeeeee;
+            }
+        }
+    @media print { a[href]::after { content: '' !important } }    
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>{{ text_trial_balance }}</h2>
+            <p>{{ text_period }}: {{text_from}} {{ start_date }} {{text_to}} {{ end_date }}</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>{{ text_account_code }}</th>
+            <th>{{ text_account_name }}</th>
+            <th>{{ text_opening_balance_debit }}</th>
+            <th>{{ text_opening_balance_credit }}</th>
+            <th>{{ text_period_debit }}</th>
+            <th>{{ text_period_credit }}</th>
+            <th>{{ text_closing_balance_debit }}</th>
+            <th>{{ text_closing_balance_credit }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in accounts.accounts %}
+            {% if account.opening_balance_debit != 0 or account.opening_balance_credit != 0 or account.total_debit != 0 or account.total_credit != 0 or account.closing_balance_debit != 0 or account.closing_balance_credit != 0 %}
+            <tr>
+                <td>{{ account.account_code }}</td>
+                <td>{{ account.name }}</td>
+                <td>{{ account.opening_balance_debit_formatted ? account.opening_balance_debit_formatted : '0.00' }}</td>
+                <td>{{ account.opening_balance_credit_formatted ? account.opening_balance_credit_formatted : '0.00' }}</td>
+                <td>{{ account.total_debit_formatted }}</td>
+                <td>{{ account.total_credit_formatted }}</td>
+                <td>{{ account.closing_balance_debit_formatted ? account.closing_balance_debit_formatted : '0.00' }}</td>
+                <td>{{ account.closing_balance_credit_formatted ? account.closing_balance_credit_formatted : '0.00' }}</td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+        <tr>
+            <td colspan="2">{{ text_total }}</td>
+            <td>{{ accounts.sums.opening_balance_debit_formatted }}</td>
+            <td>{{ accounts.sums.opening_balance_credit_formatted }}</td>
+            <td>{{ accounts.sums.total_debit_formatted }}</td>
+            <td>{{ accounts.sums.total_credit_formatted }}</td>
+            <td>{{ accounts.sums.closing_balance_debit_formatted }}</td>
+            <td>{{ accounts.sums.closing_balance_credit_formatted }}</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

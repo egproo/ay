@@ -1,0 +1,533 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-refresh" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-info">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <button type="button" id="button-print-selected" data-toggle="tooltip" title="{{ button_print_selected }}" class="btn btn-warning" disabled>
+          <i class="fa fa-print"></i> {{ button_print_selected }}
+        </button>
+        <button type="button" id="button-fulfill-selected" data-toggle="tooltip" title="{{ button_fulfill_selected }}" class="btn btn-success" disabled>
+          <i class="fa fa-check"></i> {{ button_fulfill_selected }}
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- إحصائيات سريعة -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-clock-o fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.pending_orders|default(0) }}</div>
+                <div>{{ text_pending_orders }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-cogs fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.in_progress_orders|default(0) }}</div>
+                <div>{{ text_in_progress_orders }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.ready_orders|default(0) }}</div>
+                <div>{{ text_ready_orders }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-truck fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.shipped_today|default(0) }}</div>
+                <div>{{ text_shipped_today }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-order-id">{{ entry_order_id }}</label>
+              <input type="text" name="filter_order_id" value="{{ filter_order_id }}" placeholder="{{ entry_order_id }}" id="input-order-id" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-customer">{{ entry_customer }}</label>
+              <input type="text" name="filter_customer" value="{{ filter_customer }}" placeholder="{{ entry_customer }}" id="input-customer" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-status">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-control">
+                <option value="">{{ text_all_statuses }}</option>
+                {% for status in statuses %}
+                <option value="{{ status.value }}"{% if status.value == filter_status %} selected{% endif %}>{{ status.text }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-priority">{{ entry_priority }}</label>
+              <select name="filter_priority" id="input-priority" class="form-control">
+                <option value="">{{ text_all_priorities }}</option>
+                <option value="high"{% if filter_priority == 'high' %} selected{% endif %}>{{ text_high_priority }}</option>
+                <option value="medium"{% if filter_priority == 'medium' %} selected{% endif %}>{{ text_medium_priority }}</option>
+                <option value="low"{% if filter_priority == 'low' %} selected{% endif %}>{{ text_low_priority }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-date-from">{{ entry_date_from }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-date-to">{{ entry_date_to }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-branch">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-control">
+                <option value="">{{ text_all_branches }}</option>
+                {% for branch in branches %}
+                <option value="{{ branch.branch_id }}"{% if branch.branch_id == filter_branch %} selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label">&nbsp;</label>
+              <div>
+                <button type="button" id="button-filter" class="btn btn-primary pull-right">
+                  <i class="fa fa-search"></i> {{ button_filter }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول الطلبات -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-order">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center">
+                    <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                  </td>
+                  <td class="text-center">{{ column_order_id }}</td>
+                  <td class="text-left">{{ column_customer }}</td>
+                  <td class="text-center">{{ column_status }}</td>
+                  <td class="text-center">{{ column_priority }}</td>
+                  <td class="text-center">{{ column_items }}</td>
+                  <td class="text-right">{{ column_total }}</td>
+                  <td class="text-center">{{ column_date_added }}</td>
+                  <td class="text-center">{{ column_progress }}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if orders %}
+                {% for order in orders %}
+                <tr>
+                  <td class="text-center">
+                    {% if order.can_select %}
+                    <input type="checkbox" name="selected[]" value="{{ order.order_id }}" />
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <strong>#{{ order.order_id }}</strong>
+                    {% if order.priority == 'high' %}
+                    <span class="label label-danger">{{ text_urgent }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-left">
+                    <strong>{{ order.customer_name }}</strong><br>
+                    <small class="text-muted">{{ order.email }}</small>
+                    {% if order.telephone %}
+                    <br><small><i class="fa fa-phone"></i> {{ order.telephone }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <span class="label label-{{ order.status_class }}">{{ order.status_name }}</span>
+                  </td>
+                  <td class="text-center">
+                    {% if order.priority == 'high' %}
+                    <span class="label label-danger"><i class="fa fa-exclamation"></i> {{ text_high }}</span>
+                    {% elseif order.priority == 'medium' %}
+                    <span class="label label-warning"><i class="fa fa-minus"></i> {{ text_medium }}</span>
+                    {% else %}
+                    <span class="label label-info"><i class="fa fa-arrow-down"></i> {{ text_low }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <span class="badge">{{ order.total_items }}</span>
+                    {% if order.has_shortage %}
+                    <br><small class="text-danger"><i class="fa fa-exclamation-triangle"></i> {{ text_shortage }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-right">
+                    <strong>{{ order.total_formatted }}</strong>
+                  </td>
+                  <td class="text-center">
+                    {{ order.date_added }}<br>
+                    <small class="text-muted">{{ order.time_ago }}</small>
+                  </td>
+                  <td class="text-center">
+                    <div class="progress" style="margin-bottom: 0;">
+                      <div class="progress-bar progress-bar-{{ order.progress_class }}" role="progressbar"
+                           style="width: {{ order.progress_percentage }}%">
+                        {{ order.progress_percentage }}%
+                      </div>
+                    </div>
+                    <small class="text-muted">{{ order.progress_text }}</small>
+                  </td>
+                  <td class="text-right">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">
+                        {{ text_action }} <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="{{ order.view_url }}"><i class="fa fa-eye"></i> {{ text_view }}</a></li>
+                        {% if order.can_print_picking %}
+                        <li><a href="javascript:void(0);" onclick="printPickingList({{ order.order_id }})"><i class="fa fa-print"></i> {{ text_print_picking }}</a></li>
+                        {% endif %}
+                        {% if order.can_fulfill %}
+                        <li><a href="javascript:void(0);" onclick="fulfillOrder({{ order.order_id }})"><i class="fa fa-check"></i> {{ text_fulfill }}</a></li>
+                        {% endif %}
+                        {% if order.can_ship %}
+                        <li><a href="{{ order.ship_url }}"><i class="fa fa-truck"></i> {{ text_create_shipment }}</a></li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="10">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+
+        <!-- Pagination -->
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal لتأكيد التجهيز -->
+<div class="modal fade" id="modal-fulfill" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ text_confirm_fulfill }}</h4>
+      </div>
+      <div class="modal-body">
+        <p>{{ text_fulfill_confirmation }}</p>
+        <div id="fulfill-details"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-success" id="button-confirm-fulfill">{{ button_confirm }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// تحديث الصفحة
+$('#button-refresh').on('click', function() {
+    location.reload();
+});
+
+// فلترة النتائج
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=shipping/prepare_orders&user_token={{ user_token }}';
+
+    var filter_order_id = $('input[name=\'filter_order_id\']').val();
+    if (filter_order_id) {
+        url += '&filter_order_id=' + encodeURIComponent(filter_order_id);
+    }
+
+    var filter_customer = $('input[name=\'filter_customer\']').val();
+    if (filter_customer) {
+        url += '&filter_customer=' + encodeURIComponent(filter_customer);
+    }
+
+    var filter_status = $('select[name=\'filter_status\']').val();
+    if (filter_status) {
+        url += '&filter_status=' + encodeURIComponent(filter_status);
+    }
+
+    var filter_priority = $('select[name=\'filter_priority\']').val();
+    if (filter_priority) {
+        url += '&filter_priority=' + encodeURIComponent(filter_priority);
+    }
+
+    var filter_date_from = $('input[name=\'filter_date_from\']').val();
+    if (filter_date_from) {
+        url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+    }
+
+    var filter_date_to = $('input[name=\'filter_date_to\']').val();
+    if (filter_date_to) {
+        url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+    }
+
+    var filter_branch = $('select[name=\'filter_branch\']').val();
+    if (filter_branch) {
+        url += '&filter_branch=' + encodeURIComponent(filter_branch);
+    }
+
+    location = url;
+});
+
+// تفعيل/إلغاء تفعيل الأزرار حسب التحديد
+$('input[name*=\'selected\']').on('change', function() {
+    var selected = $('input[name*=\'selected\']:checked').length;
+
+    if (selected > 0) {
+        $('#button-print-selected, #button-fulfill-selected').prop('disabled', false);
+    } else {
+        $('#button-print-selected, #button-fulfill-selected').prop('disabled', true);
+    }
+});
+
+// طباعة قوائم الانتقاء المحددة
+$('#button-print-selected').on('click', function() {
+    var selected = [];
+    $('input[name*=\'selected\']:checked').each(function() {
+        selected.push($(this).val());
+    });
+
+    if (selected.length > 0) {
+        $.ajax({
+            url: 'index.php?route=shipping/prepare_orders/printMultiple&user_token={{ user_token }}',
+            type: 'post',
+            data: {selected: selected},
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-print-selected').button('loading');
+            },
+            complete: function() {
+                $('#button-print-selected').button('reset');
+            },
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    if (json['pdf_url']) {
+                        window.open(json['pdf_url'], '_blank');
+                    }
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+});
+
+// تجهيز الطلبات المحددة
+$('#button-fulfill-selected').on('click', function() {
+    var selected = [];
+    $('input[name*=\'selected\']:checked').each(function() {
+        selected.push($(this).val());
+    });
+
+    if (selected.length > 0) {
+        $('#fulfill-details').html('<p>{{ text_selected_orders }}: ' + selected.length + '</p>');
+        $('#modal-fulfill').modal('show');
+
+        $('#button-confirm-fulfill').off('click').on('click', function() {
+            $.ajax({
+                url: 'index.php?route=shipping/prepare_orders/fulfillMultiple&user_token={{ user_token }}',
+                type: 'post',
+                data: {selected: selected},
+                dataType: 'json',
+                beforeSend: function() {
+                    $('#button-confirm-fulfill').button('loading');
+                },
+                complete: function() {
+                    $('#button-confirm-fulfill').button('reset');
+                },
+                success: function(json) {
+                    $('#modal-fulfill').modal('hide');
+
+                    if (json['error']) {
+                        alert(json['error']);
+                    }
+
+                    if (json['success']) {
+                        location.reload();
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+            });
+        });
+    }
+});
+
+// طباعة قائمة انتقاء واحدة
+function printPickingList(order_id) {
+    window.open('index.php?route=shipping/prepare_orders/printPicking&user_token={{ user_token }}&order_id=' + order_id, '_blank');
+}
+
+// تجهيز طلب واحد
+function fulfillOrder(order_id) {
+    if (confirm('{{ text_confirm_fulfill_single }}')) {
+        $.ajax({
+            url: 'index.php?route=shipping/prepare_orders/fulfill&user_token={{ user_token }}',
+            type: 'post',
+            data: {order_id: order_id},
+            dataType: 'json',
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    location.reload();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+}
+
+// تفعيل date picker
+$('.date').datetimepicker({
+    language: '{{ datepicker }}',
+    pickTime: false
+});
+
+// تحديث تلقائي كل 30 ثانية
+setInterval(function() {
+    // تحديث الإحصائيات فقط
+    $.ajax({
+        url: 'index.php?route=shipping/prepare_orders/getStats&user_token={{ user_token }}',
+        type: 'get',
+        dataType: 'json',
+        success: function(json) {
+            if (json['stats']) {
+                $('.huge').each(function(index) {
+                    var keys = ['pending_orders', 'in_progress_orders', 'ready_orders', 'shipped_today'];
+                    if (keys[index] && json['stats'][keys[index]]) {
+                        $(this).text(json['stats'][keys[index]]);
+                    }
+                });
+            }
+        }
+    });
+}, 30000);
+</script>
+
+{{ footer }}

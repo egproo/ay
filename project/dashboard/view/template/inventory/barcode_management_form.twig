@@ -1,0 +1,404 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-barcode" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i>
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-barcode" class="form-horizontal">
+          
+          <!-- معلومات أساسية -->
+          <fieldset>
+            <legend>المعلومات الأساسية</legend>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-product">{{ entry_product }}</label>
+              <div class="col-sm-10">
+                <select name="product_id" id="input-product" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  {% for product in products %}
+                  <option value="{{ product.product_id }}"{% if product.product_id == product_id %} selected="selected"{% endif %}>{{ product.name }}</option>
+                  {% endfor %}
+                </select>
+                {% if error_product_id %}
+                <div class="text-danger">{{ error_product_id }}</div>
+                {% endif %}
+                <div class="help-block">{{ help_product }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-barcode-type">{{ entry_barcode_type }}</label>
+              <div class="col-sm-4">
+                <select name="barcode_type" id="input-barcode-type" class="form-control">
+                  {% for type in barcode_types %}
+                  <option value="{{ type.value }}"{% if type.value == barcode_type %} selected="selected"{% endif %} data-description="{{ type.description }}">{{ type.text }}</option>
+                  {% endfor %}
+                </select>
+                {% if error_barcode_type %}
+                <div class="text-danger">{{ error_barcode_type }}</div>
+                {% endif %}
+                <div class="help-block">{{ help_barcode_type }}</div>
+              </div>
+              <div class="col-sm-6">
+                <div id="barcode-type-description" class="alert alert-info" style="margin-bottom: 0;">
+                  <small id="description-text">اختر نوع الباركود لعرض الوصف</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group required">
+              <label class="col-sm-2 control-label" for="input-barcode-value">{{ entry_barcode_value }}</label>
+              <div class="col-sm-6">
+                <div class="input-group">
+                  <input type="text" name="barcode_value" value="{{ barcode_value }}" placeholder="{{ entry_barcode_value }}" id="input-barcode-value" class="form-control" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-success" id="generate-barcode">
+                      <i class="fa fa-magic"></i> {{ button_generate }}
+                    </button>
+                  </span>
+                </div>
+                {% if error_barcode_value %}
+                <div class="text-danger">{{ error_barcode_value }}</div>
+                {% endif %}
+                <div class="help-block">{{ help_barcode_value }}</div>
+              </div>
+              <div class="col-sm-4">
+                <div id="barcode-validation" class="alert" style="margin-bottom: 0; display: none;">
+                  <small id="validation-message"></small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-unit">{{ entry_unit }}</label>
+              <div class="col-sm-4">
+                <select name="unit_id" id="input-unit" class="form-control">
+                  <option value="">{{ text_base_unit }}</option>
+                  {% for unit in units %}
+                  <option value="{{ unit.unit_id }}"{% if unit.unit_id == unit_id %} selected="selected"{% endif %}>{{ unit.name }} ({{ unit.symbol }})</option>
+                  {% endfor %}
+                </select>
+                <div class="help-block">{{ help_unit }}</div>
+              </div>
+              <label class="col-sm-2 control-label" for="input-option">{{ entry_option }}</label>
+              <div class="col-sm-4">
+                <select name="option_id" id="input-option" class="form-control">
+                  <option value="">{{ text_none }}</option>
+                  <!-- سيتم تحميل الخيارات ديناميكياً -->
+                </select>
+                <div class="help-block">{{ help_option }}</div>
+              </div>
+            </div>
+            
+            <div class="form-group" id="option-value-group" style="display: none;">
+              <label class="col-sm-2 control-label" for="input-option-value">{{ entry_option_value }}</label>
+              <div class="col-sm-10">
+                <select name="option_value_id" id="input-option-value" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  <!-- سيتم تحميل قيم الخيارات ديناميكياً -->
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-2 control-label">الإعدادات</label>
+              <div class="col-sm-10">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="is_primary" value="1"{% if is_primary %} checked="checked"{% endif %} />
+                    {{ entry_is_primary }}
+                    <div class="help-block">{{ help_is_primary }}</div>
+                  </label>
+                </div>
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="is_active" value="1"{% if is_active or is_active == '' %} checked="checked"{% endif %} />
+                    {{ entry_is_active }}
+                    <div class="help-block">{{ help_is_active }}</div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+              <div class="col-sm-10">
+                <textarea name="notes" rows="3" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+              </div>
+            </div>
+          </fieldset>
+          
+          <!-- معاينة الباركود -->
+          <fieldset>
+            <legend>معاينة الباركود</legend>
+            
+            <div class="form-group">
+              <div class="col-sm-12">
+                <div class="panel panel-info">
+                  <div class="panel-heading">
+                    <h4 class="panel-title">معاينة الباركود</h4>
+                  </div>
+                  <div class="panel-body text-center">
+                    <div id="barcode-preview">
+                      <p class="text-muted">سيتم عرض معاينة الباركود هنا بعد إدخال القيمة</p>
+                    </div>
+                    <div id="barcode-info" style="margin-top: 15px;">
+                      <div class="row">
+                        <div class="col-md-3">
+                          <strong>النوع:</strong>
+                          <div id="preview-type">-</div>
+                        </div>
+                        <div class="col-md-3">
+                          <strong>القيمة:</strong>
+                          <div id="preview-value">-</div>
+                        </div>
+                        <div class="col-md-3">
+                          <strong>الطول:</strong>
+                          <div id="preview-length">-</div>
+                        </div>
+                        <div class="col-md-3">
+                          <strong>الحالة:</strong>
+                          <div id="preview-status">-</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+          
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تحديث وصف نوع الباركود
+    $('#input-barcode-type').on('change', function() {
+        var selectedOption = $(this).find('option:selected');
+        var description = selectedOption.data('description');
+        $('#description-text').text(description || 'لا يوجد وصف متاح');
+        
+        // تحديث معاينة الباركود
+        updateBarcodePreview();
+    });
+    
+    // توليد باركود تلقائي
+    $('#generate-barcode').on('click', function() {
+        var productId = $('#input-product').val();
+        var barcodeType = $('#input-barcode-type').val();
+        var unitId = $('#input-unit').val();
+        var optionId = $('#input-option').val();
+        var optionValueId = $('#input-option-value').val();
+        
+        if (!productId) {
+            alert('يرجى اختيار المنتج أولاً');
+            return;
+        }
+        
+        if (!barcodeType) {
+            alert('يرجى اختيار نوع الباركود أولاً');
+            return;
+        }
+        
+        var url = '{{ generate_barcode }}';
+        url += '&product_id=' + productId;
+        url += '&barcode_type=' + barcodeType;
+        if (unitId) url += '&unit_id=' + unitId;
+        if (optionId) url += '&option_id=' + optionId;
+        if (optionValueId) url += '&option_value_id=' + optionValueId;
+        
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function() {
+                $('#generate-barcode').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> جاري التوليد...');
+            },
+            success: function(json) {
+                $('#input-barcode-value').val(json.barcode_value);
+                validateBarcode();
+                updateBarcodePreview();
+            },
+            error: function() {
+                alert('حدث خطأ أثناء توليد الباركود');
+            },
+            complete: function() {
+                $('#generate-barcode').prop('disabled', false).html('<i class="fa fa-magic"></i> {{ button_generate }}');
+            }
+        });
+    });
+    
+    // التحقق من صحة الباركود
+    $('#input-barcode-value, #input-barcode-type').on('input change', function() {
+        validateBarcode();
+        updateBarcodePreview();
+    });
+    
+    function validateBarcode() {
+        var barcodeValue = $('#input-barcode-value').val();
+        var barcodeType = $('#input-barcode-type').val();
+        
+        if (!barcodeValue || !barcodeType) {
+            $('#barcode-validation').hide();
+            return;
+        }
+        
+        var url = '{{ validate_barcode }}';
+        url += '&barcode_value=' + encodeURIComponent(barcodeValue);
+        url += '&barcode_type=' + barcodeType;
+        
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                var alertClass = 'alert-success';
+                if (!json.is_valid) {
+                    alertClass = 'alert-danger';
+                } else if (json.exists) {
+                    alertClass = 'alert-warning';
+                }
+                
+                $('#barcode-validation')
+                    .removeClass('alert-success alert-warning alert-danger')
+                    .addClass(alertClass)
+                    .show();
+                
+                $('#validation-message').text(json.message);
+            }
+        });
+    }
+    
+    // تحديث معاينة الباركود
+    function updateBarcodePreview() {
+        var barcodeValue = $('#input-barcode-value').val();
+        var barcodeType = $('#input-barcode-type').val();
+        var barcodeTypeText = $('#input-barcode-type option:selected').text();
+        
+        $('#preview-type').text(barcodeTypeText || '-');
+        $('#preview-value').text(barcodeValue || '-');
+        $('#preview-length').text(barcodeValue ? barcodeValue.length : '-');
+        
+        if (barcodeValue && barcodeType) {
+            // هنا يمكن إضافة مكتبة لعرض الباركود بصرياً
+            $('#barcode-preview').html('<div class="barcode-display"><code>' + barcodeValue + '</code></div>');
+            $('#preview-status').html('<span class="label label-success">جاهز</span>');
+        } else {
+            $('#barcode-preview').html('<p class="text-muted">سيتم عرض معاينة الباركود هنا بعد إدخال القيمة</p>');
+            $('#preview-status').text('-');
+        }
+    }
+    
+    // تحميل خيارات المنتج
+    $('#input-product').on('change', function() {
+        var productId = $(this).val();
+        
+        if (productId) {
+            // تحميل خيارات المنتج
+            loadProductOptions(productId);
+        } else {
+            $('#input-option').html('<option value="">{{ text_none }}</option>');
+            $('#option-value-group').hide();
+        }
+    });
+    
+    // تحميل قيم الخيار
+    $('#input-option').on('change', function() {
+        var optionId = $(this).val();
+        
+        if (optionId) {
+            loadOptionValues(optionId);
+            $('#option-value-group').show();
+        } else {
+            $('#option-value-group').hide();
+        }
+    });
+    
+    function loadProductOptions(productId) {
+        // هنا يمكن إضافة AJAX لتحميل خيارات المنتج
+        // مؤقتاً سنتركها فارغة
+    }
+    
+    function loadOptionValues(optionId) {
+        // هنا يمكن إضافة AJAX لتحميل قيم الخيار
+        // مؤقتاً سنتركها فارغة
+    }
+    
+    // تهيئة أولية
+    if ($('#input-barcode-type').val()) {
+        $('#input-barcode-type').trigger('change');
+    }
+    
+    if ($('#input-barcode-value').val()) {
+        validateBarcode();
+        updateBarcodePreview();
+    }
+});
+</script>
+
+<style>
+.barcode-display {
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 20px;
+    border: 2px dashed #ddd;
+    background-color: #f9f9f9;
+    margin: 10px 0;
+}
+
+.barcode-display code {
+    font-size: 16px;
+    background: none;
+    color: #333;
+}
+
+#barcode-info .row > div {
+    margin-bottom: 10px;
+}
+
+#barcode-info .row > div > div {
+    font-weight: bold;
+    color: #337ab7;
+}
+
+.help-block {
+    font-size: 11px;
+    color: #737373;
+    margin-top: 5px;
+}
+</style>
+
+{{ footer }}

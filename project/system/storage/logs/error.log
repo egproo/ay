@@ -1,0 +1,73 @@
+2024-04-16 12:00:10 - PHP Warning:  mysqli::query(): (23000/1062): Duplicate entry '12' for key 'cod_layout.PRIMARY' in /home/souqdev/store.codaym.com/system/library/db/mysqli.php on line 25
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:53 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:53 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 27
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 28
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 29
+2024-04-16 12:05:58 - PHP Warning:  Undefined array key "USD" in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32
+2024-04-16 12:05:58 - PHP Warning:  Trying to access array offset on value of type null in /home/souqdev/store.codaym.com/system/library/cart/currency.php on line 32

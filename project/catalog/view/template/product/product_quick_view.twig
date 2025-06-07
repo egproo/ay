@@ -1,0 +1,514 @@
+<div id="qv-product-quickview" class="container-fluid py-0 px-0">
+  <div class="row">
+    <div id="qv-quickview-content" class="col-md-12 px-1">
+      <div class="row">
+        <h1 class="qv-product-title mb-3 mt-2">{{ heading_title }} 
+        
+        <!-- Add this somewhere in your quick view template for debugging -->
+<button id="qv-debug-button" type="button" class="btn btn-sm btn-outline-secondary d-none" 
+        onclick="console.log('Selected bundle options:', qvSelectedBundleOptions);">
+  Debug Options
+</button>
+        </h1>
+
+        <!-- قسم صور المنتج -->
+        {% if thumb or images %}
+          <div style="padding:10px" class="col-md-5 col-sm-12">
+            <div style="max-width:480px;margin:0 auto;position: relative;" class="qv-image magnific-popup">
+              <div class="qv-wishlist{{modelname}}{{ product_id }}">
+                <span id="qv-spa{{totalwishlist}}"></span>
+                {% if totalwishlist > 0 %}
+                  <span style="
+                    position: absolute;
+                    top: 8px;
+                    left: 18px;
+                    padding: 3px 6px;
+                    font-weight: 600;
+                    border-radius: 0.25rem;
+                    text-transform: uppercase;
+                    text-decoration: none;
+                    background: transparent;
+                    border: none;
+                    font-size: 25px;
+                    margin-top: 18px;
+                    z-index:99;
+                    color: #e42709;
+                    cursor: pointer;
+                  ">
+                    <i class="qv-addwishlist fa-solid fa-heart"></i>
+                  </span>
+                {% else %}
+                  <span style="
+                    position: absolute;
+                    top: 8px;
+                    left: 18px;
+                    padding: 3px 6px;
+                    font-weight: 600;
+                    border-radius: 0.25rem;
+                    text-transform: uppercase;
+                    text-decoration: none;
+                    background: transparent;
+                    border: none;
+                    font-size: 25px;
+                    margin-top: 18px;
+                    z-index:99;
+                    color: #e42709;
+                    cursor: pointer;
+                  ">
+                    <i class="qv-addwishlist fa-regular fa-heart"></i>
+                  </span>
+                {% endif %}
+                <input type="hidden" name="product_id" value="{{ product_id }}"/>
+              </div>
+
+              <div class="swiper qv-mySwiperx" style="margin-bottom:35px">
+                <div class="swiper-wrapper">
+                  <div class="swiper-slide">
+                    <div style="display: block; width: 100%; padding-top: 90%; position: relative;">
+                      <img loading="lazy" style="max-width: 100%; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" src="{{ thumb }}" title="{{ heading_title }}" alt="{{ heading_title }}" class="img-thumbnail mb-3"/>
+                    </div>
+                  </div>
+                  {% for image in images %}
+                    <div class="swiper-slide">
+                      <div style="display: block; width: 100%; padding-top: 90%; position: relative;">
+                        <img loading="lazy" style="max-width: 100%; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" src="{{ image.thumb }}" title="{{ heading_title }}" alt="{{ heading_title }}" class="img-thumbnail"/>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                <!-- أزرار التحكم بالسلايدر -->
+                <div class="swiper-button-next simplified-arrow"></div>
+                <div class="swiper-button-prev simplified-arrow"></div>
+                <!-- مؤشرات عدد الصور -->
+                <div style="margin-bottom:-30px;width:100%" class="qv-image-count position-absolute bottom-0 end-0 bg-dark text-white px-2 py-1 rounded">
+                  <span class="qv-current-slide">1</span> / <span class="qv-total-slides">{{ images|length + 1 }}</span>
+                </div> 
+              </div>
+              
+              <!-- Description section -->
+              {% if description %}
+              <div class="qv-description-section mb-4">
+                <h4>{{ text_description }}</h4>
+                <div class="qv-description-content">
+                  {{ description|striptags|slice(0, 500) }}{% if description|length > 500 %}...{% endif %}
+                </div>
+              </div>
+              {% endif %}
+
+            </div>
+          </div>
+        {% endif %}
+        
+        <!-- قسم معلومات المنتج -->
+        <div class="col-md-7 col-sm-12 imagepadding">
+          <!-- قسم التنبيهات -->
+          <div id="qv-alert" class="mb-3"></div>
+          
+          <!-- نموذج المنتج -->
+          <form id="qv-form-product">
+
+            <!-- قسم الوحدات -->
+            {% if product_units %}
+              <div class="mb-3">
+                <label for="qv-input-unit" class="form-label">{{ entry_unit }}</label>
+                <select name="unit_id" id="qv-input-unit" class="form-select">
+                  {% for unit in product_units %}
+                    <option value="{{ unit.unit_id }}" data-conversion="{{ unit.conversion_factor }}">
+                      {{ unit.unit_name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <div id="qv-error-unit" class="invalid-feedback"></div>
+              </div>
+            {% endif %}
+            
+            <!-- قسم الخيارات -->
+            {% if options %}
+              <hr>
+              <h3>{{ text_option }}</h3>
+              <div id="qv-options-container">
+                {% for option in options %}
+                  {% if option.type == 'select' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label for="qv-input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label> 
+                      <select name="option[{{ option.product_option_id }}]" id="qv-input-option-{{ option.product_option_id }}" class="form-select">
+                        {% for option_value in option.product_option_value %}
+                          <option value="{{ option_value.product_option_value_id }}">{{ option_value.name }}
+                            {% if option_value.price %}
+                              ({{ option_value.price_prefix }}{{ option_value.price }})
+                            {% endif %}</option>
+                        {% endfor %}
+                      </select>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+
+                  {% if option.type == 'radio' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label class="form-label">{{ option.name }}</label>
+                      <div id="qv-input-option-{{ option.product_option_id }}">
+                        {% for option_value in option.product_option_value %}
+                          <div class="form-check">
+                            <input type="radio" name="option[{{ option.product_option_id }}]" value="{{ option_value.product_option_value_id }}" id="qv-input-option-value-{{ option_value.product_option_value_id }}" class="form-check-input"/> 
+                            <label for="qv-input-option-value-{{ option_value.product_option_value_id }}" class="form-check-label">
+                              {% if option_value.image %}<img src="{{ option_value.image }}" alt="{{ option_value.name }} {% if option_value.price %}{{ option_value.price_prefix }} {{ option_value.price }}{% endif %}" class="img-thumbnail"/>{% endif %}
+                              {{ option_value.name }}
+                              {% if option_value.price %}
+                                ({{ option_value.price_prefix }}{{ option_value.price }})
+                              {% endif %}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+
+                  {% if option.type == 'checkbox' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label class="form-label">{{ option.name }}</label>
+                      <div id="qv-input-option-{{ option.product_option_id }}">
+                        {% for option_value in option.product_option_value %}
+                          <div class="form-check">
+                            <input type="checkbox" name="option[{{ option.product_option_id }}][]" value="{{ option_value.product_option_value_id }}" id="qv-input-option-value-{{ option_value.product_option_value_id }}" class="form-check-input"/> 
+                            <label for="qv-input-option-value-{{ option_value.product_option_value_id }}" class="form-check-label">
+                              {% if option_value.image %}
+                                <img src="{{ option_value.image }}" alt="{{ option_value.name }} {% if option_value.price %}{{ option_value.price_prefix }} {{ option_value.price }}{% endif %}" class="img-thumbnail"/>
+                              {% endif %}
+                              {{ option_value.name }}
+                              {% if option_value.price %}
+                                ({{ option_value.price_prefix }}{{ option_value.price }})
+                              {% endif %}
+                            </label>
+                          </div>
+                        {% endfor %}
+                      </div>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+
+                  {% if option.type == 'text' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label for="qv-input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label> 
+                      <input type="text" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" placeholder="{{ option.name }}" id="qv-input-option-{{ option.product_option_id }}" class="form-control"/>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+
+                  {% if option.type == 'textarea' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label for="qv-input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label> 
+                      <textarea name="option[{{ option.product_option_id }}]" rows="5" placeholder="{{ option.name }}" id="qv-input-option-{{ option.product_option_id }}" class="form-control">{{ option.value }}</textarea>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+
+                  {% if option.type == 'date' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label for="qv-input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label>
+                      <input type="date" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="qv-input-option-{{ option.product_option_id }}" class="form-control"/>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+
+                  {% if option.type == 'time' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label for="qv-input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label>
+                      <input type="time" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="qv-input-option-{{ option.product_option_id }}" class="form-control"/>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+
+                  {% if option.type == 'datetime' %}
+                    <div class="mb-3{% if option.required %} required{% endif %}">
+                      <label for="qv-input-option-{{ option.product_option_id }}" class="form-label">{{ option.name }}</label>
+                      <input type="datetime-local" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="qv-input-option-{{ option.product_option_id }}" class="form-control"/>
+                      <div id="qv-error-option-{{ option.product_option_id }}" class="invalid-feedback"></div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- قسم الأسعار -->
+            <div class="qv-price-section bg-light p-3 rounded mb-4 position-relative">
+              <div class="qv-price-wrapper">
+                <div id="qv-special-box" style="display: none;">
+                  <span id="qv-old-price-value" class="old-price text-muted"></span>
+                  <h2 id="qv-special-price-value" class="current-price"></h2>
+                  <span class="qv-saving-badge position-absolute top-0 end-0 bg-success text-white px-2 py-1 rounded" style="display: none;">
+                    -0%
+                  </span>
+                </div>
+
+                <div id="qv-price-box">
+                  <h2 id="qv-price-value" class="current-price"></h2>
+                </div>
+
+                <!-- معلومات الضريبة -->
+                <div class="qv-tax-info">
+                  {{ text_tax_included }}: <span id="qv-tax_amount_formatted"></span>
+                </div>
+              
+                <!-- التوفير الكلي -->
+                <div id="qv-total-saving-box" class="qv-total-saving" style="display: none;">
+                  {{ text_you_save }}: <span id="qv-formatted_savings"></span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- قسم الكمية -->
+            <div class="qv-quantity-section mb-4">
+              <label for="qv-quantity-slider" class="form-label">{{ entry_qty }}</label>
+              
+              <!-- شريط تحديد الكمية -->
+              <input type="range" 
+                    id="qv-quantity-slider" 
+                    class="form-range mb-3" 
+                    min="{{ quantity_data.minimum }}" 
+                    max="{{ quantity_data.maximum }}" 
+                    value="{{ quantity_data.minimum }}" 
+                    step="1">
+              
+              <!-- حقل النص وأزرار الزيادة/الإنقاص -->
+              <div class="input-group qv-number-spinner">
+                <button type="button" class="btn btn-outline-secondary" data-dir="dwn" aria-label="خفض الكمية">
+                  <i class="fa fa-minus"></i>
+                </button>
+                <input type="number" 
+                      name="quantity" 
+                      value="{{ quantity_data.minimum }}" 
+                      id="qv-input-quantity" 
+                      class="form-control text-center" 
+                      min="{{ quantity_data.minimum }}" 
+                      max="{{ quantity_data.available }}" aria-label="كمية المنتج"/>
+                <button type="button" class="btn btn-outline-secondary" data-dir="up" aria-label="زيادة الكمية">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </div>
+              
+              <!-- زر إضافة إلى السلة -->
+              <div class="qv-cart-section mb-4 mt-4">
+                <button type="submit" 
+                        id="qv-button-cart" 
+                        class="btn btn-primary btn-lg w-100">
+                  <i class="fas fa-shopping-cart me-2"></i>
+                  {{ button_cart }}
+                </button>
+                
+                {% if minimum_quantity > 1 %}
+                  <div class="alert alert-info mt-2 d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2"></i> 
+                    {{ text_minimum }}
+                  </div>
+                {% endif %}
+              </div>                  
+
+              <!-- قسم خصومات الكمية -->
+              {% if product_quantity_discounts %}
+                <div class="qv-discount-container bg-gray-100 p-1 rounded-lg">
+                  <h4 class="text-xl font-bold mb-4">{{ text_quantity_discounts }}</h4>
+                  
+                  <div class="qv-discount-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for discount in product_quantity_discounts %}
+                      <div class="qv-discount-card" 
+                          data-buy-quantity="{{ discount.buy_quantity }}"
+                          data-discount-id="{{ discount.discount_id }}">
+                        <div class="qv-discount-details">
+                          <div class="qv-discount-type flex justify-between items-center">
+                            <span class="text-lg font-semibold 
+                                {% if discount.type == 'buy_x_get_y' %}text-blue-600{% else %}text-purple-600{% endif %}">
+                                {{ discount.type == 'buy_x_get_y' ? 'منتجات مجانية' : 'خصم' }}
+                            </span>
+                            
+                            <div class="qv-discount-badge 
+                                {% if discount.type == 'buy_x_get_y' %}
+                                    bg-blue-100 text-blue-800
+                                {% else %}
+                                    bg-purple-100 text-purple-800
+                                {% endif %}
+                                px-2 py-1 rounded-full text-sm">
+                                {{ discount.display_text }}
+                            </div>
+                          </div>
+                          
+                          <div class="qv-progress-container">
+                            <div class="progress h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
+                              <div class="qv-progress-bar bg-green-500 h-full" 
+                                  style="width: {{ (discount.current_quantity / discount.buy_quantity) * 100 }}%"></div>
+                            </div>
+                            
+                            <div class="flex justify-between text-sm text-gray-600">
+                              <span>الحالي: {{ discount.current_quantity }} / {{ discount.buy_quantity }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  
+                  {% if next_discount %}
+                    <div class="qv-next-discount-alert mt-4 bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded">
+                      <p class="text-yellow-800">
+                        اشتري {{ next_discount.buy_quantity - quantity_data.current }} وحدة إضافية لفتح الخصم التالي!
+                      </p>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- قسم الباقات -->
+            {% if product_bundles is defined and product_bundles|length > 0 %}
+              <div class="qv-bundle-offer-section mb-4 p-1 bg-light rounded position-relative">
+                <h2 class="qv-section-title">{{ text_buy_together }}</h2>
+                
+                {% for bundle in product_bundles %}
+                  {% if bundle.items is defined and bundle.items|length > 0 %}
+                    <!-- باقة واحدة -->
+                    <div class="qv-bundle-offer-item mb-3 p-3 bg-white rounded shadow-sm position-relative"
+                        data-bundle-id="{{ bundle.bundle_id }}">
+                    
+                      <!-- لو هناك توفير بالنسبة المئوية -->
+                      <span class="position-absolute bottom-0 end-0 bg-success text-white px-2 py-1 qv-js-bundle-saving-badge qv-bundle-saving-badge qv-bundlebadgeegproo" style="bottom: 30px !important;z-index:99999; display: inline;">
+                        <span class="qv-js-bundle-saving-percent">0</span><br>%
+                      </span>
+                    
+                      <div class="d-flex align-items-center mb-2">
+                        <input type="checkbox"
+                              class="form-check-input me-2 qv-bundle-select-checkbox"
+                              data-bundle-id="{{ bundle.bundle_id }}"
+                              name="selected_bundles[]"
+                              value="{{ bundle.bundle_id }}">
+                        <h5 class="mb-0">{{ bundle.name }}</h5>
+                      </div>
+                     
+                     <table class="table table-sm table-borderless mb-2">
+                        <tbody>
+                          {% for item in bundle.items %}
+                            <!-- كل منتج داخل الباقة -->
+                            <tr 
+                              data-product-id="{{ item.product_id }}"
+                              data-unit-id="{{ item.unit_id }}"
+                              class="qv-bundle-item-row"
+                            >
+                              <td style="width:50px;">
+                                <img src="{{ item.image }}"
+                                    alt="{{ item.name }}"
+                                    class="img-thumbnail"
+                                    width="50"
+                                    height="50"
+                                    style="object-fit: cover;">
+                              </td>
+
+                              <td>
+                                <!-- اسم المنتج + الكمية -->
+                                <span class="fw-bold">{{ item.name }}</span><br>
+                                <small class="text-muted">{{ item.quantity }} x {{ item.unit_name }}</small>
+                                
+                    
+                    <!-- إن كانت هناك خيارات مختارة مسبقًا -->
+                    {% if item.selected_options and item.selected_options|length > 0 %}
+                      <ul class="qv-bundle-item-chosen-options mt-2">
+                        {% for so in item.selected_options %}
+                          <li>
+                            <strong>{{ so.option_name }}:</strong>
+                            {{ so.option_value }}
+                            {% if so.formatted_price %}
+                              <small class="text-muted">({{ so.formatted_price }})</small>
+                            {% endif %}
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+                    
+                    <!-- عنصر لعرض الخيارات المختارة لهذا المنتج (لتحديثها بالجافاسكربت) -->
+                    <div class="qv-bundle-item-chosen-options mt-2"
+                         data-bundle-id="{{ bundle.bundle_id }}"
+                         data-product-id="{{ item.product_id }}">
+                      <!-- سيتم تعبئته بالجافاسكربت أثناء updatePrice -->
+                    </div>
+                    
+                              </td>
+
+                              <td class="text-end">
+                                {% if item.is_free %}
+                                  <!-- منتج مجاني -->
+                                  <i class="fa-solid fa-gift text-blue-600 me-2" style="font-size:22px"></i> 
+                                  <span class="text-muted text-decoration-line-through me-2 qv-js-bundle-item-original">
+                                    {{ item.base_price_formatted }}
+                                  </span>
+                                  <span class="badge bg-info ms-1" style="font-size:0.75rem;">{{ text_free }}</span>
+                                {% else %}
+                                  <span class="text-primary fw-bold qv-js-bundle-item-final">
+                                    {{ item.line_total_with_tax_formatted }}
+                                  </span>
+                                {% endif %}
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    
+                      <!-- منطقة المجموع الإجمالي لهذه الباقة -->
+                      <div class="d-flex bg-light justify-content-between align-items-center position-relative">
+                        {% if bundle.discount_type %}
+                          {% if bundle.discount_type == 'percentage' %}
+                            <i class="fas fa-percentage me-2 text-black" style="font-size:22px"></i>
+                          {% elseif bundle.discount_type == 'fixed' %}
+                            <i class="fas fa-money-bill-wave me-2 text-black" style="font-size:22px"></i>
+                          {% elseif bundle.discount_type == 'buy_x_get_y' %}
+                            <i class="fas fa-gift me-2 text-black" style="font-size:22px"></i>
+                          {% endif %}
+                        {% endif %}
+
+                        <div class="qv-bundle-total-info">
+                          <span class="fw-bold">{{ text_bundle_total_1 }} </span>
+                          <span class="text-success fw-bold qv-final-bundle-total qv-js-bundle-final">{{ bundle.total_price }}</span>
+                    
+                          <span class="fw-bold">{{ text_bundle_total_2 }} </span>
+                          <span class="text-muted text-decoration-line-through me-2 mb-2 qv-final-bundle-original-total qv-js-bundle-original">
+                            {{ bundle.original_price }}
+                          </span>
+                    
+                          <br>
+                    
+                          {% if bundle.savings %}
+                            <i style="font-size:22px" class="fas fa-money-bill-wave me-2 text-black"></i>
+                            <span class="fw-bold">{{ text_bundle_total_3 }} </span>
+                            <span class="text-success ms-2 qv-js-bundle-saving" style="font-size:0.9rem; z-index:99">
+                              {{ bundle.savings }}
+                            </span>
+                          {% endif %}
+                        </div>
+                        
+                        <!-- التحقق إن كانت هناك منتجات تحتاج خيارات إضافية -->
+                        {% set has_options = false %}
+                        {% for b_item in bundle.items %}
+                          {% if b_item.options is defined and b_item.options|length > 0 %}
+                            {% set has_options = true %}
+                          {% endif %}
+                        {% endfor %}
+                    
+                        {% if has_options %}
+                          <button type="button"
+                                class="btn btn-secondary btn-sm qv-open-bundle-options"
+                                data-bundle-id="{{ bundle.bundle_id }}">
+                            {{ text_customize_bundle }}
+                          </button>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <input type="hidden" name="product_id" value="{{ product_id }}" id="qv-input-product-id"/>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

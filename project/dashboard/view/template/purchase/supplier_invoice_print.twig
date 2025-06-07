@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+  <base href="{{ base }}" />
+  <link href="view/stylesheet/bootstrap.css" rel="stylesheet" media="all" />
+  <link href="view/stylesheet/font-awesome/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
+  <link type="text/css" href="view/stylesheet/stylesheet.css" rel="stylesheet" media="all" />
+  <script type="text/javascript" src="view/javascript/jquery/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+  <style type="text/css">
+    @media print {
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      .no-print {
+        display: none;
+      }
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+    }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+    .invoice-header {
+      margin-bottom: 20px;
+    }
+    .invoice-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .company-details, .supplier-details {
+      margin-bottom: 20px;
+    }
+    .invoice-items {
+      margin-top: 30px;
+      margin-bottom: 30px;
+    }
+    .invoice-items table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .invoice-items th, .invoice-items td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .invoice-items th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+    .text-right {
+      text-align: right;
+    }
+    .invoice-totals {
+      width: 40%;
+      float: right;
+      margin-bottom: 30px;
+    }
+    .invoice-totals table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .invoice-totals th, .invoice-totals td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    .invoice-notes {
+      clear: both;
+      margin-top: 30px;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+    .print-button {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="print-button no-print">
+      <button type="button" class="btn btn-primary" onclick="window.print();"><i class="fa fa-print"></i> {{ text_print }}</button>
+      <button type="button" class="btn btn-default" onclick="window.close();"><i class="fa fa-times"></i> {{ text_close }}</button>
+    </div>
+    
+    <div class="invoice-header">
+      <div class="invoice-title">{{ text_invoice }} #{{ invoice_number }}</div>
+      
+      <div class="row">
+        <div class="col-xs-6 company-details">
+          <h4>{{ text_invoice_from }}</h4>
+          <p><strong>{{ company_name }}</strong></p>
+          <p>{{ company_address }}</p>
+          <p>{{ text_email }}: {{ company_email }}</p>
+          <p>{{ text_telephone }}: {{ company_telephone }}</p>
+        </div>
+        
+        <div class="col-xs-6 supplier-details text-right">
+          <h4>{{ text_invoice_to }}</h4>
+          <p><strong>{{ supplier_name }}</strong></p>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-xs-6">
+          <p><strong>{{ text_invoice_number }}:</strong> {{ invoice_number }}</p>
+          <p><strong>{{ text_po_number }}:</strong> {{ po_number }}</p>
+        </div>
+        
+        <div class="col-xs-6 text-right">
+          <p><strong>{{ text_invoice_date }}:</strong> {{ invoice_date }}</p>
+          <p><strong>{{ text_due_date }}:</strong> {{ due_date }}</p>
+          <p><strong>{{ text_status }}:</strong> {{ status }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="invoice-items">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ column_product }}</th>
+            <th class="text-right">{{ column_quantity }}</th>
+            <th>{{ column_unit }}</th>
+            <th class="text-right">{{ column_unit_price }}</th>
+            <th class="text-right">{{ column_total }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.product_name }}</td>
+            <td class="text-right">{{ item.quantity }}</td>
+            <td>{{ item.unit_name }}</td>
+            <td class="text-right">{{ item.unit_price }}</td>
+            <td class="text-right">{{ item.line_total }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="invoice-totals">
+      <table>
+        <tr>
+          <td><strong>{{ text_subtotal }}:</strong></td>
+          <td class="text-right">{{ subtotal }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_tax }}:</strong></td>
+          <td class="text-right">{{ tax_amount }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_total }}:</strong></td>
+          <td class="text-right"><strong>{{ total_amount }}</strong></td>
+        </tr>
+      </table>
+    </div>
+    
+    {% if notes %}
+    <div class="invoice-notes">
+      <h4>{{ text_notes }}</h4>
+      <p>{{ notes }}</p>
+    </div>
+    {% endif %}
+  </div>
+  
+  <script type="text/javascript">
+    $(document).ready(function() {
+      window.onload = function() {
+        // Auto-print when page loads
+        if (window.matchMedia) {
+          var mediaQueryList = window.matchMedia('print');
+          mediaQueryList.addListener(function(mql) {
+            if (!mql.matches) {
+              // Print is done, close the window
+              // window.close();
+            }
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>

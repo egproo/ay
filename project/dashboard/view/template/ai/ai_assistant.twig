@@ -1,0 +1,1269 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="btn-clear-chat" class="btn btn-warning" data-toggle="tooltip" title="مسح المحادثة">
+          <i class="fa fa-eraser"></i> مسح المحادثة
+        </button>
+        <button type="button" id="btn-export-chat" class="btn btn-info" data-toggle="tooltip" title="تصدير المحادثة">
+          <i class="fa fa-download"></i> تصدير
+        </button>
+        <button type="button" id="btn-settings" class="btn btn-default" data-toggle="tooltip" title="الإعدادات">
+          <i class="fa fa-cog"></i> الإعدادات
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- الشريط الجانبي للإجراءات السريعة -->
+      <div class="col-md-3">
+        <!-- الإجراءات السريعة -->
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bolt"></i> إجراءات سريعة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              {% for action in quick_actions %}
+              <div class="col-md-12 col-sm-6">
+                <div class="quick-action-card" data-action="{{ action.id }}">
+                  <div class="quick-action-icon {{ action.color }}">
+                    <i class="{{ action.icon }}"></i>
+                  </div>
+                  <div class="quick-action-content">
+                    <h5>{{ action.title }}</h5>
+                    <p>{{ action.description }}</p>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- الأسئلة المقترحة -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-lightbulb"></i> أسئلة مقترحة
+            </h3>
+          </div>
+          <div class="panel-body">
+            {% for question in suggested_questions %}
+            <div class="suggested-question" data-question="{{ question }}">
+              <i class="fa fa-comment-o"></i> {{ question }}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- حالة النظام -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-heartbeat"></i> حالة النظام
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="system-status">
+              <div class="status-item">
+                <span class="status-label">نماذج الذكاء الاصطناعي:</span>
+                <span class="status-value text-success">{{ system_status.ai_models.active_models }}/{{ system_status.ai_models.total_models }} نشط</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">قاعدة البيانات:</span>
+                <span class="status-value text-success">{{ system_status.database.status }}</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label">الأداء:</span>
+                <span class="status-value text-warning">{{ system_status.performance.response_time }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- منطقة المحادثة الرئيسية -->
+      <div class="col-md-6">
+        <div class="panel panel-default chat-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-md-8">
+                <h3 class="panel-title">
+                  <i class="fa fa-robot"></i> المساعد الذكي
+                  <span class="ai-status online">متصل</span>
+                </h3>
+              </div>
+              <div class="col-md-4 text-right">
+                <div class="chat-controls">
+                  <button type="button" class="btn btn-xs btn-default" id="btn-voice-input" title="إدخال صوتي">
+                    <i class="fa fa-microphone"></i>
+                  </button>
+                  <button type="button" class="btn btn-xs btn-default" id="btn-attach-file" title="إرفاق ملف">
+                    <i class="fa fa-paperclip"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-body chat-container">
+            <!-- منطقة الرسائل -->
+            <div id="chat-messages" class="chat-messages">
+              <!-- رسالة ترحيب -->
+              <div class="message assistant-message">
+                <div class="message-avatar">
+                  <i class="fa fa-robot"></i>
+                </div>
+                <div class="message-content">
+                  <div class="message-bubble">
+                    <p>مرحباً {{ user_info.name }}! أنا مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟</p>
+                    <div class="message-time">{{ "now"|date("H:i") }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- مؤشر الكتابة -->
+            <div id="typing-indicator" class="typing-indicator" style="display: none;">
+              <div class="message assistant-message">
+                <div class="message-avatar">
+                  <i class="fa fa-robot"></i>
+                </div>
+                <div class="message-content">
+                  <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- منطقة إدخال الرسائل -->
+          <div class="panel-footer">
+            <form id="chat-form" class="chat-input-form">
+              <div class="input-group">
+                <input type="text" class="form-control" id="chat-input" placeholder="اكتب رسالتك هنا..." autocomplete="off">
+                <span class="input-group-btn">
+                  <button type="submit" class="btn btn-primary" id="btn-send">
+                    <i class="fa fa-paper-plane"></i>
+                  </button>
+                </span>
+              </div>
+            </form>
+
+            <!-- اقتراحات سريعة -->
+            <div id="quick-suggestions" class="quick-suggestions">
+              <div class="suggestion-chip" data-suggestion="عرض ملخص المبيعات اليوم">
+                <i class="fa fa-chart-line"></i> ملخص المبيعات
+              </div>
+              <div class="suggestion-chip" data-suggestion="ما هي حالة المخزون؟">
+                <i class="fa fa-boxes"></i> حالة المخزون
+              </div>
+              <div class="suggestion-chip" data-suggestion="عرض التقارير المالية">
+                <i class="fa fa-dollar-sign"></i> التقارير المالية
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- الشريط الجانبي للمعلومات -->
+      <div class="col-md-3">
+        <!-- معلومات المستخدم -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-user"></i> معلومات المستخدم
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="user-info">
+              <div class="user-avatar">
+                <i class="fa fa-user-circle fa-3x"></i>
+              </div>
+              <div class="user-details">
+                <h5>{{ user_info.name }}</h5>
+                <p class="text-muted">{{ user_info.role }}</p>
+                <p class="text-muted">{{ user_info.department }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- المحادثات الأخيرة -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-history"></i> المحادثات الأخيرة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="recent-conversations">
+              {% for conversation in recent_conversations %}
+              <div class="conversation-item" data-conversation-id="{{ conversation.conversation_id }}">
+                <div class="conversation-preview">
+                  {{ conversation.user_message|slice(0, 50) }}...
+                </div>
+                <div class="conversation-time">
+                  {{ conversation.created_at }}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            <div class="text-center">
+              <button type="button" class="btn btn-sm btn-default" id="btn-view-all-history">
+                عرض جميع المحادثات
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- إحصائيات سريعة -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-chart-bar"></i> إحصائيات سريعة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div id="quick-stats">
+              <div class="stat-item">
+                <div class="stat-icon text-primary">
+                  <i class="fa fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="today-orders">-</div>
+                  <div class="stat-label">طلبات اليوم</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon text-success">
+                  <i class="fa fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="today-sales">-</div>
+                  <div class="stat-label">مبيعات اليوم</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon text-warning">
+                  <i class="fa fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="low-stock-items">-</div>
+                  <div class="stat-label">منتجات منخفضة</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة تاريخ المحادثات -->
+<div class="modal fade" id="modal-chat-history" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">
+          <i class="fa fa-history"></i> تاريخ المحادثات
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div id="chat-history-content">
+          <div class="text-center">
+            <i class="fa fa-spinner fa-spin fa-2x"></i>
+            <p>جاري تحميل المحادثات...</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة الإعدادات -->
+<div class="modal fade" id="modal-ai-settings" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">
+          <i class="fa fa-cog"></i> إعدادات المساعد الذكي
+        </h4>
+      </div>
+      <div class="modal-body">
+        <form id="ai-settings-form">
+          <div class="form-group">
+            <label>أسلوب الرد</label>
+            <select class="form-control" name="response_style">
+              <option value="brief">مختصر</option>
+              <option value="detailed" selected>مفصل</option>
+              <option value="technical">تقني</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>تضمين الرسوم البيانية</label>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="include_charts" checked> عرض الرسوم البيانية في النتائج
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>مستوى الإشعارات</label>
+            <select class="form-control" name="notification_level">
+              <option value="low">منخفض</option>
+              <option value="medium" selected>متوسط</option>
+              <option value="high">عالي</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>الاقتراحات التلقائية</label>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="auto_suggestions" checked> عرض اقتراحات تلقائية
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-save-settings">
+          <i class="fa fa-save"></i> حفظ الإعدادات
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="hidden" id="user-token" value="{{ user_token }}">
+<input type="hidden" id="chat-url" value="{{ chat_url }}">
+<input type="hidden" id="quick-action-url" value="{{ quick_action_url }}">
+<input type="hidden" id="history-url" value="{{ history_url }}">
+
+<style>
+/* أنماط المساعد الذكي */
+.chat-panel {
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  background: #f8f9fa;
+  max-height: 400px;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 15px;
+  animation: fadeInUp 0.3s ease;
+}
+
+.message.user-message {
+  justify-content: flex-end;
+}
+
+.message.assistant-message {
+  justify-content: flex-start;
+}
+
+.message-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+  font-size: 18px;
+}
+
+.user-message .message-avatar {
+  background: #007bff;
+  color: white;
+}
+
+.assistant-message .message-avatar {
+  background: #28a745;
+  color: white;
+}
+
+.message-content {
+  max-width: 70%;
+}
+
+.message-bubble {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.user-message .message-bubble {
+  background: #007bff;
+  color: white;
+}
+
+.assistant-message .message-bubble {
+  background: white;
+  border: 1px solid #e9ecef;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #6c757d;
+  margin-top: 5px;
+  text-align: right;
+}
+
+.user-message .message-time {
+  color: rgba(255,255,255,0.8);
+}
+
+.typing-indicator {
+  margin-bottom: 15px;
+}
+
+.typing-dots {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.typing-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6c757d;
+  margin: 0 2px;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.chat-input-form {
+  margin: 0;
+}
+
+.quick-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.suggestion-chip {
+  background: #e9ecef;
+  border: 1px solid #dee2e6;
+  border-radius: 15px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.suggestion-chip:hover {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.quick-action-card {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.quick-action-card:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+  transform: translateY(-2px);
+}
+
+.quick-action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  margin: 0 auto 10px;
+}
+
+.quick-action-icon.success { background: #28a745; }
+.quick-action-icon.warning { background: #ffc107; }
+.quick-action-icon.info { background: #17a2b8; }
+.quick-action-icon.primary { background: #007bff; }
+.quick-action-icon.danger { background: #dc3545; }
+
+.quick-action-content h5 {
+  text-align: center;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.quick-action-content p {
+  text-align: center;
+  font-size: 11px;
+  color: #6c757d;
+  margin: 0;
+}
+
+.suggested-question {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.suggested-question:hover {
+  background: #e9ecef;
+  color: #007bff;
+}
+
+.ai-status {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 10px;
+}
+
+.ai-status.online {
+  background: #28a745;
+  color: white;
+}
+
+.system-status .status-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.user-info {
+  text-align: center;
+}
+
+.user-avatar {
+  margin-bottom: 10px;
+  color: #6c757d;
+}
+
+.conversation-item {
+  padding: 8px;
+  border-bottom: 1px solid #e9ecef;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.conversation-item:hover {
+  background: #f8f9fa;
+}
+
+.conversation-preview {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.conversation-time {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 16px;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* أنماط متجاوبة */
+@media (max-width: 768px) {
+  .chat-messages {
+    max-height: 300px;
+  }
+
+  .message-content {
+    max-width: 85%;
+  }
+
+  .quick-action-card {
+    margin-bottom: 10px;
+  }
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // متغيرات المساعد الذكي
+    let isTyping = false;
+    let conversationHistory = [];
+    let currentContext = {};
+
+    // تهيئة المساعد
+    initializeAssistant();
+
+    function initializeAssistant() {
+        setupEventHandlers();
+        loadQuickStats();
+        setupAutoScroll();
+
+        // تحديث الإحصائيات كل دقيقة
+        setInterval(loadQuickStats, 60000);
+    }
+
+    // إعداد معالجات الأحداث
+    function setupEventHandlers() {
+        // إرسال الرسالة
+        $('#chat-form').on('submit', function(e) {
+            e.preventDefault();
+            sendMessage();
+        });
+
+        // الإجراءات السريعة
+        $('.quick-action-card').on('click', function() {
+            const action = $(this).data('action');
+            executeQuickAction(action);
+        });
+
+        // الأسئلة المقترحة
+        $('.suggested-question').on('click', function() {
+            const question = $(this).data('question');
+            $('#chat-input').val(question);
+            sendMessage();
+        });
+
+        // الاقتراحات السريعة
+        $('.suggestion-chip').on('click', function() {
+            const suggestion = $(this).data('suggestion');
+            $('#chat-input').val(suggestion);
+            sendMessage();
+        });
+
+        // مسح المحادثة
+        $('#btn-clear-chat').on('click', function() {
+            clearChat();
+        });
+
+        // عرض تاريخ المحادثات
+        $('#btn-view-all-history').on('click', function() {
+            showChatHistory();
+        });
+
+        // الإعدادات
+        $('#btn-settings').on('click', function() {
+            $('#modal-ai-settings').modal('show');
+        });
+
+        // حفظ الإعدادات
+        $('#btn-save-settings').on('click', function() {
+            saveSettings();
+        });
+
+        // تصدير المحادثة
+        $('#btn-export-chat').on('click', function() {
+            exportCurrentChat();
+        });
+
+        // إدخال صوتي (مستقبلي)
+        $('#btn-voice-input').on('click', function() {
+            startVoiceInput();
+        });
+
+        // إرفاق ملف (مستقبلي)
+        $('#btn-attach-file').on('click', function() {
+            attachFile();
+        });
+
+        // Enter للإرسال، Shift+Enter لسطر جديد
+        $('#chat-input').on('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    // إرسال رسالة
+    function sendMessage() {
+        const message = $('#chat-input').val().trim();
+
+        if (!message || isTyping) {
+            return;
+        }
+
+        // إضافة رسالة المستخدم
+        addUserMessage(message);
+
+        // مسح حقل الإدخال
+        $('#chat-input').val('');
+
+        // إظهار مؤشر الكتابة
+        showTypingIndicator();
+
+        // إرسال الطلب للخادم
+        $.ajax({
+            url: $('#chat-url').val(),
+            type: 'POST',
+            data: {
+                message: message,
+                context: currentContext
+            },
+            dataType: 'json',
+            success: function(response) {
+                hideTypingIndicator();
+
+                if (response.success) {
+                    addAssistantMessage(response.response);
+
+                    // تحديث السياق
+                    currentContext = response.response.context || {};
+
+                    // إضافة للتاريخ
+                    conversationHistory.push({
+                        user_message: message,
+                        assistant_response: response.response,
+                        timestamp: new Date()
+                    });
+
+                } else if (response.error) {
+                    addErrorMessage(response.error);
+                }
+            },
+            error: function() {
+                hideTypingIndicator();
+                addErrorMessage('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
+            }
+        });
+    }
+
+    // إضافة رسالة المستخدم
+    function addUserMessage(message) {
+        const messageHtml = `
+            <div class="message user-message">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>${escapeHtml(message)}</p>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    </div>
+                </div>
+                <div class="message-avatar">
+                    <i class="fa fa-user"></i>
+                </div>
+            </div>
+        `;
+
+        $('#chat-messages').append(messageHtml);
+        scrollToBottom();
+    }
+
+    // إضافة رسالة المساعد
+    function addAssistantMessage(response) {
+        let messageContent = '';
+
+        switch (response.type) {
+            case 'analysis':
+                messageContent = formatAnalysisResponse(response);
+                break;
+            case 'help':
+                messageContent = formatHelpResponse(response);
+                break;
+            case 'automation':
+                messageContent = formatAutomationResponse(response);
+                break;
+            case 'recommendation':
+                messageContent = formatRecommendationResponse(response);
+                break;
+            case 'calculation':
+                messageContent = formatCalculationResponse(response);
+                break;
+            case 'search':
+                messageContent = formatSearchResponse(response);
+                break;
+            default:
+                messageContent = `<p>${escapeHtml(response.message)}</p>`;
+        }
+
+        const messageHtml = `
+            <div class="message assistant-message">
+                <div class="message-avatar">
+                    <i class="fa fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        ${messageContent}
+                        <div class="message-time">${getCurrentTime()}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $('#chat-messages').append(messageHtml);
+        scrollToBottom();
+
+        // إضافة اقتراحات إذا وجدت
+        if (response.suggestions && response.suggestions.length > 0) {
+            addSuggestions(response.suggestions);
+        }
+    }
+
+    // تنسيق رد التحليل
+    function formatAnalysisResponse(response) {
+        let html = `<p>${escapeHtml(response.message)}</p>`;
+
+        if (response.data) {
+            html += '<div class="analysis-results">';
+
+            // عرض النتائج الرئيسية
+            if (response.data.summary) {
+                html += '<div class="analysis-summary">';
+                html += '<h6><i class="fa fa-chart-bar"></i> ملخص النتائج:</h6>';
+                html += '<ul>';
+                Object.keys(response.data.summary).forEach(key => {
+                    html += `<li><strong>${key}:</strong> ${response.data.summary[key]}</li>`;
+                });
+                html += '</ul>';
+                html += '</div>';
+            }
+
+            // عرض الرؤى
+            if (response.insights && response.insights.length > 0) {
+                html += '<div class="analysis-insights">';
+                html += '<h6><i class="fa fa-lightbulb"></i> رؤى مهمة:</h6>';
+                html += '<ul>';
+                response.insights.forEach(insight => {
+                    html += `<li>${escapeHtml(insight)}</li>`;
+                });
+                html += '</ul>';
+                html += '</div>';
+            }
+
+            html += '</div>';
+        }
+
+        return html;
+    }
+
+    // تنسيق رد المساعدة
+    function formatHelpResponse(response) {
+        let html = `<p>${escapeHtml(response.message)}</p>`;
+
+        if (response.content) {
+            html += '<div class="help-content">';
+            html += `<h6>${escapeHtml(response.content.title)}</h6>`;
+            html += `<p>${escapeHtml(response.content.description)}</p>`;
+
+            if (response.content.steps) {
+                html += '<ol>';
+                response.content.steps.forEach(step => {
+                    html += `<li>${escapeHtml(step)}</li>`;
+                });
+                html += '</ol>';
+            }
+
+            html += '</div>';
+        }
+
+        return html;
+    }
+
+    // تنسيق رد التوصيات
+    function formatRecommendationResponse(response) {
+        let html = `<p>${escapeHtml(response.message)}</p>`;
+
+        if (response.recommendations && response.recommendations.length > 0) {
+            html += '<div class="recommendations">';
+            html += '<h6><i class="fa fa-star"></i> التوصيات:</h6>';
+            html += '<ul>';
+            response.recommendations.forEach(rec => {
+                html += `<li>${escapeHtml(rec)}</li>`;
+            });
+            html += '</ul>';
+            html += '</div>';
+        }
+
+        return html;
+    }
+
+    // تنفيذ إجراء سريع
+    function executeQuickAction(action) {
+        showTypingIndicator();
+
+        $.ajax({
+            url: $('#quick-action-url').val(),
+            type: 'POST',
+            data: {
+                action: action,
+                parameters: {}
+            },
+            dataType: 'json',
+            success: function(response) {
+                hideTypingIndicator();
+
+                if (response.success) {
+                    addQuickActionResult(action, response.result);
+                } else if (response.error) {
+                    addErrorMessage(response.error);
+                }
+            },
+            error: function() {
+                hideTypingIndicator();
+                addErrorMessage('حدث خطأ أثناء تنفيذ الإجراء.');
+            }
+        });
+    }
+
+    // إضافة نتيجة الإجراء السريع
+    function addQuickActionResult(action, result) {
+        let messageContent = '';
+
+        switch (action) {
+            case 'sales_summary':
+                messageContent = formatSalesSummary(result);
+                break;
+            case 'inventory_status':
+                messageContent = formatInventoryStatus(result);
+                break;
+            case 'financial_overview':
+                messageContent = formatFinancialOverview(result);
+                break;
+            case 'pending_tasks':
+                messageContent = formatPendingTasks(result);
+                break;
+            case 'system_health':
+                messageContent = formatSystemHealth(result);
+                break;
+        }
+
+        const messageHtml = `
+            <div class="message assistant-message">
+                <div class="message-avatar">
+                    <i class="fa fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        ${messageContent}
+                        <div class="message-time">${getCurrentTime()}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $('#chat-messages').append(messageHtml);
+        scrollToBottom();
+    }
+
+    // تنسيق ملخص المبيعات
+    function formatSalesSummary(result) {
+        let html = '<h6><i class="fa fa-chart-line"></i> ملخص المبيعات</h6>';
+
+        if (result.summary) {
+            html += '<div class="sales-summary">';
+            html += `<p><strong>إجمالي الطلبات:</strong> ${result.summary.total_orders}</p>`;
+            html += `<p><strong>إجمالي المبيعات:</strong> ${formatCurrency(result.summary.total_sales)}</p>`;
+            html += `<p><strong>متوسط قيمة الطلب:</strong> ${formatCurrency(result.summary.avg_order_value)}</p>`;
+            html += `<p><strong>العملاء الفريدون:</strong> ${result.summary.unique_customers}</p>`;
+            html += '</div>';
+        }
+
+        if (result.insights && result.insights.length > 0) {
+            html += '<div class="insights">';
+            html += '<h6>رؤى:</h6>';
+            html += '<ul>';
+            result.insights.forEach(insight => {
+                html += `<li>${escapeHtml(insight)}</li>`;
+            });
+            html += '</ul>';
+            html += '</div>';
+        }
+
+        return html;
+    }
+
+    // تحميل الإحصائيات السريعة
+    function loadQuickStats() {
+        // تحديث إحصائيات اليوم
+        executeQuickAction('sales_summary');
+    }
+
+    // إظهار مؤشر الكتابة
+    function showTypingIndicator() {
+        isTyping = true;
+        $('#typing-indicator').show();
+        scrollToBottom();
+    }
+
+    // إخفاء مؤشر الكتابة
+    function hideTypingIndicator() {
+        isTyping = false;
+        $('#typing-indicator').hide();
+    }
+
+    // إضافة رسالة خطأ
+    function addErrorMessage(error) {
+        const messageHtml = `
+            <div class="message assistant-message">
+                <div class="message-avatar">
+                    <i class="fa fa-exclamation-triangle"></i>
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble" style="border-color: #dc3545;">
+                        <p style="color: #dc3545;"><i class="fa fa-exclamation-triangle"></i> ${escapeHtml(error)}</p>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $('#chat-messages').append(messageHtml);
+        scrollToBottom();
+    }
+
+    // مسح المحادثة
+    function clearChat() {
+        if (confirm('هل تريد مسح المحادثة الحالية؟')) {
+            $('#chat-messages').empty();
+            conversationHistory = [];
+            currentContext = {};
+
+            // إضافة رسالة ترحيب جديدة
+            const welcomeMessage = `
+                <div class="message assistant-message">
+                    <div class="message-avatar">
+                        <i class="fa fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>تم مسح المحادثة. كيف يمكنني مساعدتك؟</p>
+                            <div class="message-time">${getCurrentTime()}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#chat-messages').append(welcomeMessage);
+        }
+    }
+
+    // عرض تاريخ المحادثات
+    function showChatHistory() {
+        $('#modal-chat-history').modal('show');
+
+        $.ajax({
+            url: $('#history-url').val(),
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    displayChatHistory(response.conversations);
+                } else {
+                    $('#chat-history-content').html('<p class="text-danger">حدث خطأ أثناء تحميل التاريخ.</p>');
+                }
+            },
+            error: function() {
+                $('#chat-history-content').html('<p class="text-danger">حدث خطأ في الاتصال.</p>');
+            }
+        });
+    }
+
+    // عرض تاريخ المحادثات
+    function displayChatHistory(conversations) {
+        let html = '';
+
+        if (conversations.length === 0) {
+            html = '<p class="text-muted text-center">لا توجد محادثات سابقة.</p>';
+        } else {
+            html = '<div class="list-group">';
+            conversations.forEach(conv => {
+                html += `
+                    <div class="list-group-item">
+                        <div class="conversation-preview">
+                            <strong>الرسالة:</strong> ${escapeHtml(conv.user_message.substring(0, 100))}...
+                        </div>
+                        <div class="conversation-meta">
+                            <small class="text-muted">
+                                <i class="fa fa-clock"></i> ${conv.created_at}
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
+
+        $('#chat-history-content').html(html);
+    }
+
+    // دوال مساعدة
+    function getCurrentTime() {
+        return new Date().toLocaleTimeString('ar-SA', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('ar-SA', {
+            style: 'currency',
+            currency: 'SAR'
+        }).format(amount);
+    }
+
+    function scrollToBottom() {
+        const chatMessages = $('#chat-messages');
+        chatMessages.scrollTop(chatMessages[0].scrollHeight);
+    }
+
+    function setupAutoScroll() {
+        // التمرير التلقائي عند إضافة رسائل جديدة
+        const observer = new MutationObserver(function() {
+            scrollToBottom();
+        });
+
+        observer.observe(document.getElementById('chat-messages'), {
+            childList: true
+        });
+    }
+
+    // دوال مستقبلية
+    function startVoiceInput() {
+        showNotification('info', 'ميزة الإدخال الصوتي قيد التطوير');
+    }
+
+    function attachFile() {
+        showNotification('info', 'ميزة إرفاق الملفات قيد التطوير');
+    }
+
+    function saveSettings() {
+        showNotification('success', 'تم حفظ الإعدادات بنجاح');
+        $('#modal-ai-settings').modal('hide');
+    }
+
+    function exportCurrentChat() {
+        if (conversationHistory.length === 0) {
+            showNotification('warning', 'لا توجد محادثة لتصديرها');
+            return;
+        }
+
+        showNotification('info', 'ميزة التصدير قيد التطوير');
+    }
+
+    function showNotification(type, message) {
+        const alertClass = type === 'success' ? 'alert-success' :
+                          type === 'error' ? 'alert-danger' :
+                          type === 'warning' ? 'alert-warning' : 'alert-info';
+
+        const notification = $(`
+            <div class="alert ${alertClass} alert-dismissible" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                ${message}
+            </div>
+        `);
+
+        $('body').append(notification);
+
+        setTimeout(function() {
+            notification.fadeOut(function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+});
+</script>
+
+{{ footer }}

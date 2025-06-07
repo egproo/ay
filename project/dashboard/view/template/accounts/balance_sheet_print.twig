@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <title>قائمة المركز المالي</title>
+    <link href="view/stylesheet/bootstrap.css" type="text/css" rel="stylesheet" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .section-header {
+            background-color: #ddd;
+            font-weight: bold;
+        }
+        .sub-section-header {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align:right;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">قائمة المركز المالي</h1>
+    <p class="text-center">من {{ start_date }} إلى {{ end_date }}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>بيان</th>
+                <th>المبلغ</th>
+                <th>رقم الإيضاح</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- الأصول -->
+            <tr class="section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">الأصول</td>
+            </tr>
+            <tr class="sub-section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">أصول غير متداولة</td>
+            </tr>
+            {% for item in assets_non_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="sub-section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">أصول متداولة</td>
+            </tr>
+            {% for item in assets_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr style="background-color: #eee !important;">
+                <td>مجموع الأصول</td>
+                <td>{{ total_assets_formatted }}</td>
+                <td></td>
+            </tr>
+            <!-- الخصوم -->
+            <tr class="section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">الخصوم</td>
+            </tr>
+            <tr class="sub-section-header">
+                <td colspan="3" style="
+    text-align: right;
+    padding-right: 20px;
+">خصوم غير متداولة</td>
+            </tr>
+            {% for item in liabilities_non_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="sub-section-header">
+                <td colspan="3">خصوم متداولة</td>
+            </tr>
+            {% for item in liabilities_current %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr style="background-color: #eee !important;">
+                <td>مجموع الخصوم</td>
+                <td>{{ total_liabilities_formatted }}</td>
+                <td></td>
+            </tr>
+            <!-- حقوق الملكية -->
+            <tr class="section-header">
+                <td colspan="3" style="text-align: right;padding-right: 20px;">حقوق الملكية</td>
+            </tr>
+            {% for item in equity %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            {% if profit_loss_account %}
+            <tr>
+                <td>({{ profit_loss_account.account_code }}) - {{ profit_loss_account.name }}</td>
+                <td>
+                    {% if profit_loss_account.closing_balance < 0 %}
+                        ({{ profit_loss_account.closing_balance_formatted | replace({"-": ""}) }})
+                    {% else %}
+                        {{ profit_loss_account.closing_balance_formatted }}
+                    {% endif %}
+                </td>
+                <td></td>
+            </tr>
+            {% endif %}
+            <tr style="background-color: #eee !important;">
+                <td>مجموع حقوق الملكية</td>
+                <td>
+                    {% if total_equity < 0 %}
+                        ({{ total_equity_formatted | replace({"-": ""}) }})
+                    {% else %}
+                        {{ total_equity_formatted }}
+                    {% endif %}
+                </td>
+                
+                <td></td>
+            </tr>
+            <tr style="background-color: #eee !important;">
+                <td>إجمالي الإلتزامات وحقوق الملكية</td>
+                <td>{{ total_equity_liabilities_formatted }}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

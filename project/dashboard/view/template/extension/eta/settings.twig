@@ -1,0 +1,338 @@
+{{ header }}{{ column_left }}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="page-header">
+        <div class="page-header-content">
+          <div class="page-title">
+            <h4><i class="icon-arrow-right6 position-left"></i> <span class="text-semibold">{{ heading_title_settings }}</span></h4>
+          </div>
+          <div class="heading-elements">
+            <div class="heading-btn-group">
+              <a href="{{ back_url }}" class="btn btn-default btn-sm">
+                <i class="icon-arrow-left8"></i> العودة
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-eta-settings" class="form-horizontal">
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Basic Settings -->
+        <div class="panel panel-flat">
+          <div class="panel-heading">
+            <h6 class="panel-title">الإعدادات الأساسية</h6>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_environment }}</label>
+              <div class="col-lg-9">
+                <select name="eta_environment" class="form-control">
+                  {% for key, value in environments %}
+                  <option value="{{ key }}" {% if eta_environment == key %}selected{% endif %}>{{ value }}</option>
+                  {% endfor %}
+                </select>
+                <span class="help-block">اختر بيئة الاختبار للتجربة أو بيئة الإنتاج للاستخدام الفعلي</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_client_id }}</label>
+              <div class="col-lg-9">
+                <input type="text" name="eta_client_id" value="{{ eta_client_id }}" placeholder="{{ entry_client_id }}" class="form-control" required />
+                <span class="help-block">معرف العميل المقدم من مصلحة الضرائب المصرية</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_client_secret }}</label>
+              <div class="col-lg-9">
+                <input type="password" name="eta_client_secret" value="{{ eta_client_secret }}" placeholder="{{ entry_client_secret }}" class="form-control" required />
+                <span class="help-block">كلمة سر العميل المقدمة من مصلحة الضرائب المصرية</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_tax_id }}</label>
+              <div class="col-lg-9">
+                <input type="text" name="eta_tax_id" value="{{ eta_tax_id }}" placeholder="{{ entry_tax_id }}" class="form-control" required />
+                <span class="help-block">الرقم الضريبي للشركة</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_branch_id }}</label>
+              <div class="col-lg-9">
+                <input type="text" name="eta_branch_id" value="{{ eta_branch_id }}" placeholder="{{ entry_branch_id }}" class="form-control" />
+                <span class="help-block">رقم الفرع (اختياري)</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_activity_code }}</label>
+              <div class="col-lg-9">
+                <input type="text" name="eta_activity_code" value="{{ eta_activity_code }}" placeholder="{{ entry_activity_code }}" class="form-control" />
+                <span class="help-block">كود النشاط التجاري</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Company Address -->
+        <div class="panel panel-flat">
+          <div class="panel-heading">
+            <h6 class="panel-title">عنوان الشركة</h6>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="control-label">{{ entry_governate }}</label>
+                  <input type="text" name="eta_governate" value="{{ eta_governate }}" placeholder="{{ entry_governate }}" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="control-label">{{ entry_city }}</label>
+                  <input type="text" name="eta_city" value="{{ eta_city }}" placeholder="{{ entry_city }}" class="form-control" />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-8">
+                <div class="form-group">
+                  <label class="control-label">{{ entry_street }}</label>
+                  <input type="text" name="eta_street" value="{{ eta_street }}" placeholder="{{ entry_street }}" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="control-label">{{ entry_building }}</label>
+                  <input type="text" name="eta_building" value="{{ eta_building }}" placeholder="{{ entry_building }}" class="form-control" />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="control-label">{{ entry_postal_code }}</label>
+                  <input type="text" name="eta_postal_code" value="{{ eta_postal_code }}" placeholder="{{ entry_postal_code }}" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="control-label">{{ entry_floor }}</label>
+                  <input type="text" name="eta_floor" value="{{ eta_floor }}" placeholder="{{ entry_floor }}" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="control-label">{{ entry_room }}</label>
+                  <input type="text" name="eta_room" value="{{ eta_room }}" placeholder="{{ entry_room }}" class="form-control" />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label">{{ entry_landmark }}</label>
+              <input type="text" name="eta_landmark" value="{{ eta_landmark }}" placeholder="{{ entry_landmark }}" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label class="control-label">{{ entry_additional_info }}</label>
+              <textarea name="eta_additional_info" rows="3" placeholder="{{ entry_additional_info }}" class="form-control">{{ eta_additional_info }}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Automation Settings -->
+        <div class="panel panel-flat">
+          <div class="panel-heading">
+            <h6 class="panel-title">الإعدادات التلقائية</h6>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_auto_send }}</label>
+              <div class="col-lg-9">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="eta_auto_send" value="1" {% if eta_auto_send %}checked{% endif %} />
+                    إرسال الفواتير تلقائياً عند إنشاء الطلب
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_auto_receipt }}</label>
+              <div class="col-lg-9">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="eta_auto_receipt" value="1" {% if eta_auto_receipt %}checked{% endif %} />
+                    إرسال الإيصالات الإلكترونية تلقائياً
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-lg-3 control-label">{{ entry_device_serial }}</label>
+              <div class="col-lg-9">
+                <input type="text" name="eta_device_serial" value="{{ eta_device_serial }}" placeholder="{{ entry_device_serial }}" class="form-control" />
+                <span class="help-block">الرقم التسلسلي للجهاز (للإيصالات الإلكترونية)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <!-- Connection Test -->
+        <div class="panel panel-flat">
+          <div class="panel-heading">
+            <h6 class="panel-title">اختبار الاتصال</h6>
+          </div>
+          <div class="panel-body">
+            <div class="text-center">
+              <button type="button" class="btn btn-info btn-lg" onclick="testConnection()">
+                <i class="icon-wifi"></i><br>
+                {{ button_test_connection }}
+              </button>
+              <p class="text-muted content-group">اختبر الاتصال مع مصلحة الضرائب المصرية</p>
+            </div>
+            <div id="connection-result" class="content-group"></div>
+          </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="panel panel-flat">
+          <div class="panel-heading">
+            <h6 class="panel-title">حالة النظام</h6>
+          </div>
+          <div class="panel-body">
+            <div class="content-group">
+              <div class="media">
+                <div class="media-left">
+                  <span class="status-indicator-circle status-active"></span>
+                </div>
+                <div class="media-body">
+                  <h6 class="media-heading text-semibold">ETA Service</h6>
+                  <span class="text-muted text-size-small">متصل ويعمل</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-group">
+              <div class="media">
+                <div class="media-left">
+                  <span class="status-indicator-circle status-active"></span>
+                </div>
+                <div class="media-body">
+                  <h6 class="media-heading text-semibold">Queue Processor</h6>
+                  <span class="text-muted text-size-small">يعمل بشكل طبيعي</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-group">
+              <div class="media">
+                <div class="media-left">
+                  <span class="status-indicator-circle status-warning"></span>
+                </div>
+                <div class="media-body">
+                  <h6 class="media-heading text-semibold">SSL Certificate</h6>
+                  <span class="text-muted text-size-small">صالح حتى 2025/12/31</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help & Documentation -->
+        <div class="panel panel-flat">
+          <div class="panel-heading">
+            <h6 class="panel-title">المساعدة والدعم</h6>
+          </div>
+          <div class="panel-body">
+            <div class="content-group">
+              <a href="#" class="btn btn-default btn-block">
+                <i class="icon-book2"></i> {{ text_documentation }}
+              </a>
+            </div>
+            <div class="content-group">
+              <a href="#" class="btn btn-default btn-block">
+                <i class="icon-support"></i> {{ text_support }}
+              </a>
+            </div>
+            <div class="content-group">
+              <a href="https://eta.gov.eg" target="_blank" class="btn btn-default btn-block">
+                <i class="icon-earth"></i> {{ text_contact_eta }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="panel panel-flat">
+          <div class="panel-body">
+            <div class="text-right">
+              <button type="submit" class="btn btn-primary">
+                <i class="icon-checkmark3"></i> حفظ الإعدادات
+              </button>
+              <a href="{{ cancel }}" class="btn btn-default">
+                <i class="icon-cross2"></i> إلغاء
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script type="text/javascript">
+function testConnection() {
+    var $button = $('#connection-result');
+    $button.html('<div class="alert alert-info"><i class="icon-spinner11 spinner"></i> جاري اختبار الاتصال...</div>');
+    
+    $.ajax({
+        url: 'index.php?route=extension/eta/invoice/testConnection&user_token={{ user_token }}',
+        type: 'POST',
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                $button.html('<div class="alert alert-success"><i class="icon-checkmark3"></i> ' + json.message + '</div>');
+            } else {
+                $button.html('<div class="alert alert-danger"><i class="icon-cross2"></i> ' + (json.error || 'فشل في اختبار الاتصال') + '</div>');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            $button.html('<div class="alert alert-danger"><i class="icon-cross2"></i> خطأ في الاتصال: ' + thrownError + '</div>');
+        }
+    });
+}
+
+// Form validation
+$('#form-eta-settings').on('submit', function(e) {
+    var clientId = $('input[name="eta_client_id"]').val();
+    var clientSecret = $('input[name="eta_client_secret"]').val();
+    var taxId = $('input[name="eta_tax_id"]').val();
+    
+    if (!clientId || !clientSecret || !taxId) {
+        e.preventDefault();
+        alert('يرجى ملء جميع الحقول المطلوبة');
+        return false;
+    }
+});
+</script>
+
+{{ footer }}

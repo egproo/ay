@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+}
+th {
+    background:#eee;
+    text-align:center;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+.summary {
+    margin-top:20px;
+}
+.summary td {
+    text-align:right;
+    border:1px solid #000;
+    padding:5px;
+}
+.summary th {
+    background:#eee;
+    border:1px solid #000;
+    padding:5px;
+    text-align:center;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_changes_in_equity }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_account_name }}</th>
+    <th>{{ text_opening_balance }}</th>
+    <th>{{ text_movement }}</th>
+    <th>{{ text_closing_balance }}</th>
+</tr>
+</thead>
+<tbody>
+{% for acc in accounts %}
+<tr>
+    <td>{{ acc.name }} ({{ acc.account_code }})</td>
+    <td>{{ acc.opening_formatted }}</td>
+    <td>{{ acc.movement_formatted }}</td>
+    <td>{{ acc.closing_formatted }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total }}</strong></td>
+    <td><strong>{{ total_opening }}</strong></td>
+    <td><strong>{{ total_movement }}</strong></td>
+    <td><strong>{{ total_closing }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

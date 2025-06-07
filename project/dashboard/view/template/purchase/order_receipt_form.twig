@@ -1,0 +1,363 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title"><i class="fa fa-truck"></i> {{ text_create_receipt }}</h4>
+</div>
+<div class="modal-body">
+  <form id="receipt-form" class="form-horizontal">
+    <input type="hidden" name="po_id" value="{{ order.po_id }}">
+    <input type="hidden" name="currency_id" value="{{ order.currency_id }}">
+    <input type="hidden" name="exchange_rate" value="{{ order.exchange_rate }}">
+    
+    <!-- معلومات أمر الشراء -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_order_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label class="col-sm-4 control-label">{{ text_order_number }}</label>
+              <div class="col-sm-8">
+                <p class="form-control-static"><strong>{{ order.po_number }}</strong></p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-4 control-label">{{ text_supplier }}</label>
+              <div class="col-sm-8">
+                <p class="form-control-static">{{ order.supplier_name }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label class="col-sm-4 control-label">{{ text_order_date }}</label>
+              <div class="col-sm-8">
+                <p class="form-control-static">{{ order.order_date }}</p>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-4 control-label">{{ text_expected_delivery_date }}</label>
+              <div class="col-sm-8">
+                <p class="form-control-static">{{ order.expected_delivery_date }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- معلومات الاستلام -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-edit"></i> {{ text_receipt_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group required">
+              <label class="col-sm-4 control-label" for="branch-id">{{ text_branch }}</label>
+              <div class="col-sm-8">
+                <select name="branch_id" id="branch-id" class="form-control select2" required>
+                  <option value="">{{ text_select }}</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-group required">
+              <label class="col-sm-4 control-label" for="receipt-date">{{ text_receipt_date }}</label>
+              <div class="col-sm-8">
+                <div class="input-group date">
+                  <input type="text" name="receipt_date" id="receipt-date" class="form-control" required value="{{ "now"|date("Y-m-d") }}" data-date-format="YYYY-MM-DD">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label class="col-sm-4 control-label" for="invoice-number">{{ text_invoice_number }}</label>
+              <div class="col-sm-8">
+                <input type="text" name="invoice_number" id="invoice-number" class="form-control" placeholder="{{ text_supplier_invoice }}">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-4 control-label" for="invoice-date">{{ text_invoice_date }}</label>
+              <div class="col-sm-8">
+                <div class="input-group date">
+                  <input type="text" name="invoice_date" id="invoice-date" class="form-control" data-date-format="YYYY-MM-DD">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label class="col-sm-4 control-label" for="invoice-amount">{{ text_invoice_amount }}</label>
+              <div class="col-sm-8">
+                <input type="number" name="invoice_amount" id="invoice-amount" class="form-control" step="0.01" min="0">
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <div class="col-sm-offset-4 col-sm-8">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="quality_check_required" id="quality-check-required" value="1">
+                    {{ text_quality_check }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="notes">{{ text_notes }}</label>
+          <div class="col-sm-10">
+            <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="{{ text_notes_placeholder }}"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- البنود -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-shopping-cart"></i> {{ text_items }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_product }}</th>
+                <th class="text-center">{{ column_ordered_quantity }}</th>
+                <th class="text-center">{{ column_received_quantity }}</th>
+                <th class="text-center">{{ column_remaining_quantity }}</th>
+                <th>{{ column_unit }}</th>
+                <th class="text-right">{{ column_unit_price }}</th>
+                <th class="text-center">{{ column_receive_quantity }}</th>
+                <th>{{ column_remarks }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if items %}
+                {% for item in items %}
+                <tr id="item-row-{{ item.po_item_id }}" data-remaining-qty="{{ item.remaining_quantity }}" data-po-price="{{ item.unit_price }}">
+                  <input type="hidden" name="item[po_item_id][]" value="{{ item.po_item_id }}">
+                  <input type="hidden" name="item[product_id][]" value="{{ item.product_id }}">
+                  <input type="hidden" name="item[unit_id][]" value="{{ item.unit_id }}">
+                  <td>{{ item.product_name }}</td>
+                  <td class="text-center">{{ item.quantity }}</td>
+                  <td class="text-center">{{ item.received_quantity }}</td>
+                  <td class="text-center">{{ item.remaining_quantity }}</td>
+                  <td>{{ item.unit_name }}</td>
+                  <td class="text-right">{{ item.unit_price_formatted }}</td>
+                  <td>
+                    <input type="number" name="item[quantity_received][]" 
+                           class="form-control quantity-received" 
+                           step="0.01" min="0" max="{{ item.remaining_quantity }}" 
+                           value="0" {% if item.remaining_quantity <= 0 %}disabled{% endif %}>
+                  </td>
+                  <td>
+                    <input type="text" name="item[remarks][]" class="form-control">
+                    <input type="hidden" name="item[invoice_unit_price][]" value="{{ item.unit_price }}">
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="8" class="text-center">{{ text_no_items }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+  <button type="button" class="btn btn-primary" id="save-receipt-btn" onclick="$('#receipt-form').submit();">
+    <i class="fa fa-save"></i> {{ button_save }}
+  </button>
+</div>
+
+<script type="text/javascript">
+// --- Start Moved JavaScript ---
+
+/**
+ * تهيئة نموذج إذن الاستلام
+ */
+function initializeReceiptForm() {
+    // تهيئة منتقي التاريخ
+    $('.date').datetimepicker({
+        pickTime: false,
+        format: 'YYYY-MM-DD',
+        useCurrent: true
+    });
+    
+    // تهيئة حقول select2
+    $('.select2').select2({
+        dropdownParent: $('#modal-receipt-form .modal-content') // Correct parent
+    });
+    
+    // معالجة التحقق من الجودة
+    $('#quality-check-required').off('change.receiptForm').on('change.receiptForm', function() {
+        if ($(this).is(':checked')) {
+            $('.quality-check-notes').removeClass('hidden');
+        } else {
+            $('.quality-check-notes').addClass('hidden');
+        }
+    });
+    
+    // معالجة إدخال معلومات الفاتورة
+    $('#has-invoice').off('change.receiptForm').on('change.receiptForm', function() {
+        if ($(this).is(':checked')) {
+            $('.invoice-details').removeClass('hidden');
+        } else {
+            $('.invoice-details').addClass('hidden');
+        }
+    });
+    
+    // التحقق من الكميات المستلمة
+    $('.quantity-received').off('input.receiptForm').on('input.receiptForm', function() {
+        var $row = $(this).closest('tr');
+        var receivedQty = parseFloat($(this).val()) || 0;
+        var maxQty = parseFloat($row.data('remaining-qty')) || 0;
+        
+        if (receivedQty < 0) {
+            $(this).val(0);
+            receivedQty = 0;
+        }
+        
+        if (receivedQty > maxQty) {
+            $(this).val(maxQty);
+            toastr.warning('{{ warning_qty_exceeds_remaining }}');
+            receivedQty = maxQty;
+        }
+        $(this).attr('value', receivedQty); // Update value attribute
+        
+        // حساب إجمالي الكميات المستلمة
+        calculateTotalReceivedQuantity(); // Direct call
+    });
+    
+    // تحديث سعر الفاتورة استناداً إلى أمر الشراء (Removed as not present in HTML)
+    /*
+    $('.use-po-price').on('change', function() {
+        var $row = $(this).closest('tr');
+        if ($(this).is(':checked')) {
+            var poPrice = parseFloat($row.data('po-price')) || 0;
+            $row.find('.invoice-unit-price').val(poPrice.toFixed(2)).prop('readonly', true);
+        } else {
+            $row.find('.invoice-unit-price').prop('readonly', false);
+        }
+    });
+    */
+    
+    // حساب المجموع الكلي المستلم
+    calculateTotalReceivedQuantity(); // Direct call
+    
+    // إرسال نموذج الاستلام
+    $('#receipt-form').off('submit.receiptForm').on('submit.receiptForm', function(e) {
+        e.preventDefault();
+        saveReceipt($(this)); // Direct call
+    });
+}
+
+/**
+ * حساب إجمالي الكميات المستلمة
+ */
+function calculateTotalReceivedQuantity() {
+    var totalItems = 0;
+    var totalReceived = 0;
+    
+    $('.quantity-received').each(function() {
+        var quantity = parseFloat($(this).val()) || 0;
+        if (quantity > 0) {
+            totalItems++;
+            totalReceived += quantity;
+        }
+    });
+    
+    // عرض المجموع (Assuming elements with these IDs exist, otherwise add them)
+    // $('#total-received-items').text(totalItems);
+    // $('#total-received-quantity').text(totalReceived.toFixed(2));
+}
+  
+/**
+ * حفظ إذن الاستلام
+ * @param {object} $form - عنصر jQuery للنموذج
+ */
+function saveReceipt($form) {
+  showLoading(); // Use global showLoading
+  
+  $.ajax({
+    url: 'index.php?route=purchase/order/ajaxSaveReceipt&user_token={{ user_token }}',
+    type: 'POST',
+    data: $form.serialize(),
+    dataType: 'json',
+    success: function(json) {
+      if (json.error) {
+        toastr.error(json.error);
+      } else if (json.success) {
+        toastr.success(json.success);
+        
+        $('#modal-receipt-form').modal('hide');
+        
+        if (json.redirect) {
+          // Redirect to PO view page after saving receipt
+          window.location.href = json.redirect; 
+        } else {
+          // Fallback: Reload the main PO list if redirect fails
+          if (typeof OrderManager !== 'undefined' && typeof OrderManager.loadOrders === 'function') {
+             OrderManager.loadOrders();
+          } else if (typeof loadOrders === 'function') {
+             loadOrders();
+          }
+        }
+      }
+      hideLoading(); // Use global hideLoading
+    },
+    error: function(xhr, status, error) {
+      toastr.error('{{ error_ajax }}');
+      hideLoading(); // Use global hideLoading
+    }
+  });
+}
+
+// Helper functions (assuming they are defined globally or within OrderManager)
+function showLoading() {
+    // Implement or ensure global showLoading exists
+    if(typeof $.fn.busyLoad === 'function') {
+        $('body').busyLoad('show');
+    } else {
+         $('#loading-overlay').fadeIn(200); // Fallback
+    }
+}
+function hideLoading() {
+    // Implement or ensure global hideLoading exists
+     if(typeof $.fn.busyLoad === 'function') {
+        $('body').busyLoad('hide');
+    } else {
+        $('#loading-overlay').fadeOut(200); // Fallback
+    }
+}
+
+// Initialize form components when the modal is shown
+$('#modal-receipt-form').on('shown.bs.modal', function () {
+    initializeReceiptForm();
+});
+
+// --- End Moved JavaScript ---
+</script>

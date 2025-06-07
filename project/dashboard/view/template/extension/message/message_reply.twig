@@ -1,0 +1,248 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-reply" data-toggle="tooltip" title="{{ button_send }}" class="btn btn-primary"><i class="fa fa-paper-plane"></i></button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-reply"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <!-- Original message display -->
+        <div class="original-message">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">{{ text_original_message }}</h4>
+            </div>
+            <div class="panel-body">
+              <table class="table">
+                <tr>
+                  <td><strong>{{ text_from }}:</strong></td>
+                  <td>{{ original_message.sender_name }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_date }}:</strong></td>
+                  <td>{{ original_message.date_added }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_subject }}:</strong></td>
+                  <td>{{ original_message.subject }}</td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_recipients }}:</strong></td>
+                  <td>
+                    {% for recipient in recipients %}
+                    {{ recipient.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                  </td>
+                </tr>
+              </table>
+              
+              <hr>
+              
+              <div class="original-content">
+                {{ original_message.message }}
+              </div>
+              
+              {% if original_attachments %}
+              <hr>
+              <h5><i class="fa fa-paperclip"></i> {{ text_original_attachments }}</h5>
+              <div class="original-attachments">
+                <div class="row">
+                  {% for attachment in original_attachments %}
+                  <div class="col-md-4">
+                    <div class="attachment-box">
+                      <a href="{{ attachment.download }}" target="_blank">
+                        <i class="fa fa-file{% if attachment.is_image %}-image{% elseif attachment.is_pdf %}-pdf{% elseif attachment.is_archive %}-archive{% elseif attachment.is_excel %}-excel{% elseif attachment.is_word %}-word{% elseif attachment.is_video %}-video{% elseif attachment.is_audio %}-audio{% endif %}-o fa-2x"></i>
+                        <span>{{ attachment.name }}</span>
+                        <small>{{ attachment.size }}</small>
+                      </a>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reply form -->
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-reply" class="form-horizontal">
+          <input type="hidden" name="communication_id" value="{{ communication_id }}" />
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-message">{{ entry_message }}</label>
+            <div class="col-sm-10">
+              <textarea name="message" placeholder="{{ entry_message }}" id="input-message" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control">{{ message }}</textarea>
+              {% if error_message %}
+              <div class="text-danger">{{ error_message }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_attachments }}</label>
+            <div class="col-sm-10">
+              <button type="button" id="button-add-attachment" class="btn btn-default"><i class="fa fa-paperclip"></i> {{ button_add_attachment }}</button>
+              <div id="attachments">
+                {% if attachments %}
+                {% for attachment in attachments %}
+                <div class="attachment-item">
+                  <input type="hidden" name="attachment[]" value="{{ attachment.filename }},{{ attachment.mask }},{{ attachment.size }},{{ attachment.type }}" />
+                  <div class="attachment-info">
+                    <i class="fa fa-file"></i> {{ attachment.mask }} ({{ attachment.size_formatted }})
+                    <button type="button" class="btn btn-danger btn-xs remove-attachment"><i class="fa fa-times"></i></button>
+                  </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_notification }}</label>
+            <div class="col-sm-10">
+              <label class="checkbox-inline">
+                <input type="checkbox" name="notify_all" value="1" checked="checked" /> {{ text_notify_all }}
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$('#input-message').summernote({
+  height: 300,
+  toolbar: [
+    ['style', ['style']],
+    ['font', ['bold', 'underline', 'clear']],
+    ['color', ['color']],
+    ['para', ['ul', 'ol', 'paragraph']],
+    ['table', ['table']],
+    ['insert', ['link']],
+    ['view', ['fullscreen', 'codeview', 'help']]
+  ]
+});
+
+// File upload handling
+$('#button-add-attachment').on('click', function() {
+  var node = this;
+  
+  $('#form-upload').remove();
+  
+  $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" /></form>');
+  
+  $('#form-upload input[name=\'file\']').trigger('click');
+  
+  $('#form-upload input[name=\'file\']').on('change', function() {
+    $.ajax({
+      url: 'index.php?route=extension/message/upload&token={{ token }}',
+      type: 'post',
+      dataType: 'json',
+      data: new FormData($(this).parent()[0]),
+      cache: false,
+      contentType: false,
+      processData: false,
+      beforeSend: function() {
+        $(node).button('loading');
+      },
+      complete: function() {
+        $(node).button('reset');
+      },
+      success: function(json) {
+        if (json['error']) {
+          alert(json['error']);
+        }
+        
+        if (json['success']) {
+          alert(json['success']);
+          
+          if (json['file']) {
+            var fileHtml = '<div class="attachment-item">' +
+                '<input type="hidden" name="attachment[]" value="' + json['file']['filename'] + ',' + json['file']['mask'] + ',' + json['file']['size'] + ',' + json['file']['type'] + '" />' +
+                '<div class="attachment-info">' +
+                '<i class="fa fa-file"></i> ' + json['file']['mask'] + ' (' + json['file']['size_formatted'] + ')' +
+                ' <button type="button" class="btn btn-danger btn-xs remove-attachment"><i class="fa fa-times"></i></button>' +
+                '</div>' +
+                '</div>';
+            
+            $('#attachments').append(fileHtml);
+          }
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  });
+});
+
+// Remove attachment
+$(document).on('click', '.remove-attachment', function() {
+  $(this).closest('.attachment-item').remove();
+});
+</script>
+
+<style type="text/css">
+.original-content {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+.attachment-box {
+  padding: 10px;
+  margin-bottom: 15px;
+  background: #f5f5f5;
+  border-radius: 3px;
+  text-align: center;
+}
+.attachment-box a {
+  display: block;
+  color: #444;
+}
+.attachment-box i {
+  display: block;
+  margin-bottom: 5px;
+}
+.attachment-box span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attachment-box small {
+  display: block;
+  color: #777;
+}
+.attachment-item {
+  margin-top: 10px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 3px;
+}
+</style>
+
+{{ footer }} 

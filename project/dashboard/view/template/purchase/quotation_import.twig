@@ -1,0 +1,199 @@
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+    <h4 class="modal-title">{{ text_import_quotation }}</h4>
+</div>
+
+<div class="modal-body">
+    <form id="form-import-quotation" class="form-horizontal">
+        <!-- اختيار طلب الشراء -->
+        <div class="form-group required">
+            <label class="col-sm-3 control-label">{{ entry_requisition }}</label>
+            <div class="col-sm-9">
+                <select name="requisition_id" class="form-control select2" required>
+                    <option value="">{{ text_select_requisition }}</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- اختيار المورد -->
+        <div class="form-group required">
+            <label class="col-sm-3 control-label">{{ entry_supplier }}</label>
+            <div class="col-sm-9">
+                <select name="supplier_id" class="form-control select2" required>
+                    <option value="">{{ text_select_supplier }}</option>
+                    {% for supplier in suppliers %}
+                    <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- اختيار ملف Excel -->
+        <div class="form-group required">
+            <label class="col-sm-3 control-label">{{ entry_excel_file }}</label>
+            <div class="col-sm-9">
+                <input type="file" name="file" class="form-control" accept=".xls,.xlsx" required>
+                <span class="help-block">{{ text_excel_help }}</span>
+            </div>
+        </div>
+
+        <!-- معاينة البيانات -->
+        <div id="preview-container" style="display: none;">
+            <h4>{{ text_data_preview }}</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ column_product }}</th>
+                            <th>{{ column_quantity }}</th>
+                            <th>{{ column_unit }}</th>
+                            <th>{{ column_unit_price }}</th>
+                            <th>{{ column_status }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-content">
+                        <!-- سيتم ملؤه عبر JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+    <button type="button" id="button-preview" class="btn btn-info">{{ button_preview }}</button>
+    <button type="button" id="button-import" class="btn btn-primary" style="display: none;">{{ button_import }}</button>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة select2 لاختيار طلب الشراء
+    $('select[name="requisition_id"]').select2({
+        ajax: {
+            url: 'index.php?route=purchase/quotation/ajaxRequisitions&user_token={{ user_token }}',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    q: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data
+                };
+            },
+            cache: true
+        },
+        minimumInputLength: 1
+    });
+
+    // معالجة تغيير الملف
+    $('input[name="file"]').on('change', function() {
+        $('#preview-container').hide();
+        $('#button-import').hide();
+        $('#preview-content').empty();
+    });
+
+    // معاينة البيانات
+    $('#button-preview').on('click', function() {
+        var formData = new FormData($('#form-import-quotation')[0]);
+        
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/ajaxPreviewImport&user_token={{ user_token }}',
+            type: 'post',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-preview').button('loading');
+            },
+            complete: function() {
+                $('#button-preview').button('reset');
+            },
+            success: function(json) {
+                if (json.error) {
+                    alert(json.error);
+                    return;
+                }
+
+                if (json.items) {
+                    var html = '';
+                    var hasErrors = false;
+
+                    $.each(json.items, function(index, item) {
+                        html += '<tr class="' + (item.status === 'error' ? 'danger' : 'success') + '">';
+                        html += '<td>' + item.product_name + '</td>';
+                        html += '<td>' + item.quantity + '</td>';
+                        html += '<td>' + item.unit_name + '</td>';
+                        html += '<td>' + item.unit_price + '</td>';
+                        html += '<td>' + item.status_text + '</td>';
+                        html += '</tr>';
+
+                        if (item.status === 'error') {
+                            hasErrors = true;
+                        }
+                    });
+
+                    $('#preview-content').html(html);
+                    $('#preview-container').show();
+
+                    // إظهار زر الاستيراد فقط إذا لم تكن هناك أخطاء
+                    if (!hasErrors) {
+                        $('#button-import').show();
+                        // تخزين البيانات المحللة للاستيراد
+                        $('#form-import-quotation').data('parsed-data', json.items);
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error: ' + error);
+            }
+        });
+    });
+
+    // استيراد البيانات
+    $('#button-import').on('click', function() {
+        var parsedData = $('#form-import-quotation').data('parsed-data');
+        if (!parsedData) {
+            alert('{{ text_no_data }}');
+            return;
+        }
+
+        var postData = {
+            requisition_id: $('select[name="requisition_id"]').val(),
+            supplier_id: $('select[name="supplier_id"]').val(),
+            items: parsedData
+        };
+
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/ajaxImport&user_token={{ user_token }}',
+            type: 'post',
+            data: postData,
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-import').button('loading');
+            },
+            complete: function() {
+                $('#button-import').button('reset');
+            },
+            success: function(json) {
+                if (json.error) {
+                    alert(json.error);
+                    return;
+                }
+
+                if (json.success) {
+                    $('#modal-import').modal('hide');
+                    loadQuotations(); // تحديث القائمة الرئيسية
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error: ' + error);
+            }
+        });
+    });
+});
+</script>

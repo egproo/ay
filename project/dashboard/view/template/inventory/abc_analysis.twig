@@ -1,0 +1,87 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card mb-3">
+      <div class="card-header">
+        <i class="fas fa-info-circle"></i> {{ text_abc_analysis_info }}
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-danger">{{ text_class_a_info }}</h5>
+                <p class="card-text">
+                  <i class="fas fa-exclamation-circle text-danger"></i> {{ text_class_a_info }}
+                </p>
+                <p class="card-text">
+                  <strong>{{ text_management_strategy }}:</strong> {{ text_class_a_strategy }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-warning">{{ text_class_b_info }}</h5>
+                <p class="card-text">
+                  <i class="fas fa-exclamation-triangle text-warning"></i> {{ text_class_b_info }}
+                </p>
+                <p class="card-text">
+                  <strong>{{ text_management_strategy }}:</strong> {{ text_class_b_strategy }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card h-100 bg-light">
+              <div class="card-body">
+                <h5 class="card-title text-success">{{ text_class_c_info }}</h5>
+                <p class="card-text">
+                  <i class="fas fa-check-circle text-success"></i> {{ text_class_c_info }}
+                </p>
+                <p class="card-text">
+                  <strong>{{ text_management_strategy }}:</strong> {{ text_class_c_strategy }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      {% for analysis in analyses %}
+        <div class="col-lg-4 col-md-6 mb-3">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5 class="mb-0">{{ analysis.name }}</h5>
+            </div>
+            <div class="card-body">
+              <p>{{ analysis.description }}</p>
+            </div>
+            <div class="card-footer text-end">
+              {% if analysis.href == '#' %}
+                <button class="btn btn-secondary" disabled>{{ text_coming_soon }}</button>
+              {% else %}
+                <a href="{{ analysis.href }}" class="btn btn-primary">{{ button_filter }}</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{{ footer }}

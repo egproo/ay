@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ direction == 'rtl' ? 'طباعة القيد رقم ' ~ journal_id : 'Print entry number ' ~ journal_id }}</title>
+    <base href="https://store.codaym.com/dashboard/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <!-- Scripts -->
+    <script type="text/javascript" src="view/javascript/jquery/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Styles -->
+    <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    {% if direction == 'rtl' %}
+    <link href="view/stylesheet/bootstrap-a.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet-a.css" rel="stylesheet" />
+    {% else %}
+    <link href="view/stylesheet/bootstrap.css" rel="stylesheet" />
+    <link href="view/stylesheet/stylesheet.css" rel="stylesheet" />
+    {% endif %}
+
+    <!-- Favicon -->
+    <link href="https://store.codaym.com/image/catalog/dlogo.png" rel="icon" />
+
+  <style>
+    @media print {
+      body, html {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        border: none;
+        border-radius: none;
+        box-shadow: none;
+        background: none;
+        page-break-after: always;
+      }
+
+      .container-fluid {
+        padding: 15mm;
+      }
+
+      .table {
+        width: 100%;
+      }
+
+      .table-hover th, .table-hover td {
+        border: 0.5px solid #a7a7a7;
+        padding: 8px;
+        text-align: center;
+      }
+
+      img {
+        max-height: 50mm;
+      }
+    }
+
+    @media print {
+      *, *:before, *:after {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      .table {
+        border-collapse: collapse !important;
+      }
+
+      .table th {
+        background-color: #a7a7a7 !important;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #000 !important;
+      }
+    }
+
+    @media print {
+      .table thead tr td,
+      .table tbody tr td {
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: black !important;
+        font-size: 10px !important;
+        background-color: #fff;
+        padding: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container" title="{{ heading_title }}">
+    {% for journal in journals %}
+    <div style="page-break-after: always;position: relative;">  
+
+        {% if journal.is_cancelled %}
+        <div class="cancelled-overlay">{{text_is_cancelled}}</div>
+        {% endif %}
+
+              <div class="row">
+                  <div style="margin:10px;float: inline-end;text-align: center;">{{ column_whoprint }} : {{ journal.whoprint }} <br> {{ journal.printdate }}</div>
+                <div class="col-md-12 text-center" style="padding-top: 20px;">
+                    <div class="col-md-3 col-sm-3">
+                    <img src="https://store.codaym.com/image/catalog/dlogo.png" alt="Company Logo" style="max-height: 80px;margin-top: -15px;">
+                   </div> 
+                   
+                    <div class="col-md-9 col-sm-9">
+                       <div class="row">
+                           <div class="table-responsive">
+                            <table class="table table-bordered table-hover" style="border-width: 1px;border-style: solid;border-color: black;">
+                                <thead>
+                                    <tr style="border:1px solid #000 !important;">
+                                        <td class="text-center" style="border:1px solid #000  !important;padding: 1px;">{{ column_thedate }}</td>
+                                        <td  class="text-center" style="border:1px solid #000  !important;padding: 1px;">{{ journal_entire_id }}</td>
+                                        <td class="text-center" style="border:0.5px solid #000  !important;padding: 1px;background-colr:#eee">{{ text_journal_type }}</td>
+                                        {% if journal.is_cancelled %}
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;background-colr:#eee">{{ text_status_j }}</td>
+                                        {% endif %} 
+                                    </tr>
+                                </thead>    
+                                <tbody>
+                                        <tr style="border-top: 0.5px solid #a7a7a7;">
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ journal.thedate }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ journal.journal_id }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ journal.entrytype == 1 ? text_manual : text_automatic }}</td>
+                                        {% if journal.is_cancelled %}
+                                         <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 1px;">{{ text_is_cancelled }}</td>
+                                        {% endif %}                                        
+                                        </tr>
+                                </tbody>
+                            </table>                
+                        </div>   
+                       </div> 
+                    </div>
+ 
+                    
+                </div>
+              </div> 
+              <div class="table-responsive">
+                  
+                        <table class="table table-bordered table-hover" style="border-width: 1px;border-style: solid;border-color: black;">
+                            <thead>
+                                <tr>
+                                    <td  class="text-center" style="max-width:80px;border:1px solid #222;padding: 10px;background-color:#eee !important">{{ text_account_code }}</td>
+                                    <td  class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ text_account_name }}</td>
+                                    <td  class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ entry_dedit }}</td>
+                                    <td  class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ entry_credit }}</td>
+                                </tr>
+                            </thead>      
+                            <tbody>
+                                {% for entry in journal.entries %}
+                                    <tr>
+                                        <td class="text-center" style="max-width:80px;border:0.5px solid #a7a7a7;padding: 10px;">{{ entry.account_code }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;">{{ entry.name }}</td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;">
+                                          {{ entry.debit ? entry.debit : '' }}
+                                        </td>
+                                        <td class="text-center" style="border:0.5px solid #a7a7a7;padding: 10px;">
+                                          {{ entry.credit ? entry.credit : '' }}
+                                        </td>
+
+                                    </tr>
+                                {% endfor %}
+                                <tr>
+                                        <td colspan="2" class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ text_journal_total }}</td>
+                                        <td class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ journal.total_debit }}</td>
+                                        <td class="text-center" style="border:1px solid #222;padding: 10px;background-color:#eee !important">{{ journal.total_credit }}</td>
+                                    </tr>                              
+                                <tr class="text-start" style="border-bottom:1px solid #a7a7a7 !important; ">
+                                    <td colspan="5" class="text-start" style="border:0.5px solid #a7a7a7;padding: 10px;text-align: start;">{{ text_notes }} : {{journal.description}}</td>
+                                </tr> 
+
+                            </tbody>
+                        </table>                
+               </div>
+
+
+ 
+                   <div class="col-md-12 text-center" style="padding-top: 20px;">
+                    
+
+                  <div class="pull-left text-center">{{ text_last_edited_by }} <br> {{ journal.last_edit_by }} <br> {{ journal.updated_at }}</div>
+                  <div style="min-width: 160px;text-align: center;" class="pull-right text-center"><strong>{{ text_audited_by }}</strong> <br> {{ journal.audit_by }} <br> {{ journal.audit_date }}</div>
+                  <div style="min-width: 160px;text-align: center;" class="pull-right text-center"><strong>{{ text_added_by }}</strong> <br> {{ journal.added_by }} <br> {{ journal.created_at }}</div>
+
+ </div> 
+
+ 
+   </div>
+  {% endfor %}
+</div>
+</body>
+
+</html>

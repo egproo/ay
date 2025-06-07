@@ -1,0 +1,470 @@
+<div class="panel panel-default erp-dashboard-panel">
+  <div class="panel-heading" style="position: relative;">
+    <h3 class="panel-title">
+      <i class="fa fa-bar-chart"></i> {{ heading_title }}
+    </h3>
+    <div class="pull-right" style="margin-top:-25px; margin-right:10px;">
+      <div class="btn-group" style="margin-right:5px;">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+          <i class="fa fa-calendar"></i> <span id="selected-period">{{ text_select_period }}</span> <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right" id="erp-date-range">
+          <li data-period="today"><a href="#">{{ text_today }}</a></li>
+          <li data-period="week"><a href="#">{{ text_week }}</a></li>
+          <li class="active" data-period="month"><a href="#">{{ text_month }}</a></li>
+          <li data-period="quarter"><a href="#">{{ text_quarter }}</a></li>
+          <li data-period="year"><a href="#">{{ text_year }}</a></li>
+          <li data-period="custom"><a href="#">{{ text_custom_range }}</a></li>
+        </ul>
+      </div>
+
+      <span id="customDateRangeContainer" class="custom-date-range hidden" style="margin-right:5px;">
+        <div class="input-group date" id="startPicker" style="display:inline-block; width:130px;">
+          <input type="text" class="form-control" id="date_start" placeholder="{{ text_from }}" />
+          <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+        </div>
+        <div class="input-group date" id="endPicker" style="display:inline-block; width:130px; margin-left:3px;">
+          <input type="text" class="form-control" id="date_end" placeholder="{{ text_to }}" />
+          <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+        </div>
+      </span>
+
+      <select class="form-control select2" id="branch_id" style="display:inline-block; width:160px;min-height:45px">
+        <option value="all">{{ text_all_branches }}</option>
+        {% for br in branches %}
+        <option value="{{ br.branch_id }}">{{ br.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="panel-body" style="background-color:#f4f6f9;">
+    <div class="row erp-tiles-container">
+      <!-- مبيعات -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-sales">
+          <div class="icon"><i class="fa fa-shopping-cart"></i></div>
+          <div class="info">
+            <span class="title">{{ text_sales }}</span>
+            <span class="value" id="kpi-sales-total">0.00</span>
+            <small>{{ text_orders }}: <span id="kpi-sales-orders">0</span></small>
+          </div>
+        </div>
+      </div>
+      <!-- مشتريات -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-po">
+          <div class="icon"><i class="fa fa-truck text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_purchase_orders }}</span>
+            <span class="value" id="kpi-po-amount">0.00</span>
+            <small>{{ text_po_count }}: <span id="kpi-po-count">0</span></small>
+          </div>
+        </div>
+      </div>
+      <!-- مخزون -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-inv">
+          <div class="icon"><i class="fa fa-archive  text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_inventory }}</span>
+            <span class="value" id="kpi-inv-qty">0</span>
+            <small>SKUs: <span id="kpi-inv-skus">0</span></small>
+          </div>
+        </div>
+      </div>
+
+      <!-- حسابات -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-accounts">
+          <div class="icon"><i class="fa fa-credit-card text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_accounts_balance }}</span>
+            <span class="value" id="kpi-accounts-balance">0.00</span>
+            <small>{{ text_active_accounts }}: <span id="kpi-accounts-count">0</span></small>
+          </div>
+        </div>
+      </div>
+
+      <!-- موظفون -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-hr">
+          <div class="icon"><i class="fa fa-users text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_active_employees }}</span>
+            <span class="value" id="kpi-hr-active">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- الإلغاء -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-cancel-rate">
+          <div class="icon"><i class="fa fa-times-circle text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_cancel_rate }}</span>
+            <span class="value" id="kpi-cancel-rate">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row erp-tiles-container">
+      <!-- أرصدة بنكية -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-bank">
+          <div class="icon"><i class="fa fa-university text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_bank_balance }}</span>
+            <span class="value" id="kpi-bank-balance">0.00</span>
+          </div>
+        </div>
+      </div>
+      <!-- ذمم عملاء -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-customer-balance">
+          <div class="icon"><i class="fa fa-user-circle text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_customer_ar }}</span>
+            <span class="value" id="kpi-ar-amount">0.00</span>
+          </div>
+        </div>
+      </div>
+      <!-- ذمم موردين -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-supplier-balance">
+          <div class="icon"><i class="fa fa-handshake-o  text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_supplier_ap }}</span>
+            <span class="value" id="kpi-ap-amount">0.00</span>
+          </div>
+        </div>
+      </div>
+      <!-- الحضور اليوم -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-attendance">
+          <div class="icon"><i class="fa fa-check-square-o text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_attendance_today }}</span>
+            <span class="value" id="kpi-attendance-rate">0%</span>
+            <small>{{ text_present }}: <span id="kpi-present-count">0</span></small>
+          </div>
+        </div>
+      </div>
+      <!-- المتأخر -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-delayed">
+          <div class="icon"><i class="fa fa-clock-o text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_delayed_orders }}</span>
+            <span class="value" id="kpi-delayed">0</span>
+          </div>
+        </div>
+      </div>
+      <!-- المرتجعات -->
+      <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+        <div class="erp-tile tile-returns">
+          <div class="icon"><i class="fa fa-undo  text-white"></i></div>
+          <div class="info">
+            <span class="title">{{ text_returns_rate }}</span>
+            <span class="value" id="kpi-return-rate">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- عيّنة المخططات -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default" style="margin-bottom:20px;">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-line-chart"></i> {{ text_sales_chart }}</h3>
+          </div>
+          <div class="panel-body">
+            <div id="chart-sales" style="width:100%; height:260px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="panel panel-default" style="margin-bottom:20px;">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_revenue_expense_chart }}</h3>
+          </div>
+          <div class="panel-body">
+            <div id="chart-rev-exp" style="width:100%; height:260px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- آخر الطلبات وأوامر الشراء -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-shopping-basket"></i> {{ text_latest_orders }}
+          </div>
+          <div class="panel-body">
+            <table class="table table-bordered table-striped" id="latestOrdersTable">
+              <thead>
+                <tr>
+                  <th>{{ text_order_id }}</th>
+                  <th>{{ text_customer }}</th>
+                  <th>{{ text_total }}</th>
+                  <th>{{ text_date_added }}</th>
+                  <th>{{ text_status }}</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-latest-orders"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-truck"></i> {{ text_latest_po }}
+          </div>
+          <div class="panel-body">
+            <table class="table table-bordered table-striped" id="latestPOsTable">
+              <thead>
+                <tr>
+                  <th>{{ text_po_id }}</th>
+                  <th>{{ text_po_number }}</th>
+                  <th>{{ text_vendor }}</th>
+                  <th>{{ text_total }}</th>
+                  <th>{{ text_status }}</th>
+                  <th>{{ text_created_at }}</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-latest-pos"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/jquery.dataTables.min.css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap.min.css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" 
+      rel="stylesheet"/>
+
+<style>
+.erp-tile {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 15px;
+  color: #fff;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  min-height: 90px;
+}
+.text-white{color: #fff;}
+.erp-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.erp-tile .icon {
+  font-size: 34px;
+  opacity: 0.8;
+  margin-right: 10px;
+}
+.erp-tile .info {
+  flex: 1;
+  text-align: center;
+  padding-inline-start: 20px;
+}
+.erp-tile .title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.erp-tile .value {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+}
+.select2 {
+  min-width: 120px;
+}
+.custom-date-range.hidden {
+  display: none;
+}
+
+/* ألوان مختلفة لكل KPI */
+.tile-sales { background-color: #50905f; }
+.tile-po { background-color: #ac880e; }
+.tile-inv { background-color: #051626; }
+.tile-accounts { background-color: #17a2b8; }
+.tile-hr { background-color: #0b2165; }
+.tile-cancel-rate { background-color: #dc3545; }
+.tile-bank { background-color: #20c997; }
+.tile-customer-balance { background-color: #6610f2; }
+.tile-supplier-balance { background-color: #795548; }
+.tile-attendance { background-color: #3c6288; }
+.tile-delayed { background-color: #a62003; }
+.tile-returns { background-color: #704554; }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/4.2.6/jquery.flot.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/4.2.6/jquery.flot.resize.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
+
+<script>
+(function($){
+  "use strict";
+  let user_token = "{{ user_token }}";
+
+  $(document).ready(function(){
+    if($.fn.select2){
+      $('#branch_id').select2();
+    }
+    if($.fn.datetimepicker){
+      $('#startPicker').datetimepicker({ format:'YYYY-MM-DD' });
+      $('#endPicker').datetimepicker({ format:'YYYY-MM-DD' });
+    }
+    if($.fn.DataTable){
+      $('#latestOrdersTable').DataTable({ pageLength:5 });
+      $('#latestPOsTable').DataTable({ pageLength:5 });
+    }
+    $('#erp-date-range li').on('click', function(e){
+      e.preventDefault();
+      let period = $(this).data('period');
+      $('#erp-date-range li').removeClass('active');
+      $(this).addClass('active');
+      $('#selected-period').text($(this).text());
+
+      if(period === 'custom'){
+        $('#customDateRangeContainer').removeClass('hidden');
+      } else {
+        $('#customDateRangeContainer').addClass('hidden');
+        loadDashboardData(period, $('#branch_id').val());
+      }
+    });
+    $('#date_start, #date_end').on('dp.change', function(){
+      let activePeriod = $('#erp-date-range li.active').data('period');
+      if(activePeriod === 'custom'){
+        let start = $('#date_start').val();
+        let end   = $('#date_end').val();
+        if(start && end){
+          loadDashboardData('custom', $('#branch_id').val(), start, end);
+        }
+      }
+    });
+    $('#branch_id').on('change', function(){
+      let period = $('#erp-date-range li.active').data('period');
+      if(!period) period='month';
+      if(period === 'custom'){
+        loadDashboardData('custom', $(this).val(), $('#date_start').val(), $('#date_end').val());
+      } else {
+        loadDashboardData(period, $(this).val());
+      }
+    });
+    $('#erp-date-range li.active').trigger('click');
+  });
+
+  function loadDashboardData(period, branch_id, date_start='', date_end=''){
+    $.ajax({
+      url: "index.php?route=extension/dashboard/erp_dashboard/ajaxFilter&user_token="+user_token,
+      type: 'post',
+      dataType: 'json',
+      data:{
+        periodType: period,
+        branch_id: branch_id,
+        date_start: date_start,
+        date_end: date_end
+      },
+      beforeSend: function(){},
+      success: function(json){
+        if(json.error){
+          console.error(json.error);
+          return;
+        }
+        $('#kpi-sales-total').text(json.stats.sales.total_sales);
+        $('#kpi-sales-orders').text(json.stats.sales.total_orders);
+        $('#kpi-po-amount').text(json.stats.purchase.total_po_amount);
+        $('#kpi-po-count').text(json.stats.purchase.total_po);
+        $('#kpi-inv-qty').text(json.stats.inventory.total_qty);
+        $('#kpi-inv-skus').text(json.stats.inventory.total_skus);
+        $('#kpi-accounts-balance').text(json.stats.accounts.total_balance);
+        $('#kpi-accounts-count').text(json.stats.accounts.total_accounts);
+        $('#kpi-hr-active').text(json.stats.hr.total_active);
+        $('#kpi-cancel-rate').text(json.cancel + '%');
+        $('#kpi-attendance-rate').text(json.attendance.rate + '%');
+        $('#kpi-present-count').text(json.attendance.present_count);
+        $('#kpi-delayed').text(json.stats.delayed.delayed_orders);
+        $('#kpi-return-rate').text(json.stats.return_rate + '%');
+        $('#kpi-bank-balance').text(json.finance.bank_balance);
+        $('#kpi-ar-amount').text(json.finance.ar_amount);
+        $('#kpi-ap-amount').text(json.finance.ap_amount);
+
+        let htmlOrders = '';
+        if(json.latest_orders && json.latest_orders.length){
+          for(let i=0; i<json.latest_orders.length; i++){
+            let o = json.latest_orders[i];
+            htmlOrders += `<tr>
+                <td>${o.order_id}</td>
+                <td>${o.firstname} ${o.lastname}</td>
+                <td>${o.total}</td>
+                <td>${o.date_added}</td>
+                <td>${o.order_status}</td>
+            </tr>`;
+          }
+        }
+        $('#tbody-latest-orders').html(htmlOrders);
+        if($.fn.DataTable){
+          $('#latestOrdersTable').DataTable().clear().destroy();
+          $('#latestOrdersTable').DataTable({ pageLength:5 });
+        }
+
+        let htmlPos = '';
+        if(json.latest_pos && json.latest_pos.length){
+          for(let i=0; i<json.latest_pos.length; i++){
+            let p = json.latest_pos[i];
+            htmlPos += `<tr>
+                <td>${p.po_id}</td>
+                <td>${p.po_number}</td>
+                <td>${p.vendor_name}</td>
+                <td>${p.total_amount}</td>
+                <td>${p.status}</td>
+                <td>${p.created_at}</td>
+            </tr>`;
+          }
+        }
+        $('#tbody-latest-pos').html(htmlPos);
+        if($.fn.DataTable){
+          $('#latestPOsTable').DataTable().clear().destroy();
+          $('#latestPOsTable').DataTable({ pageLength:5 });
+        }
+
+        if(typeof $.plot !== 'undefined' && json.chart_sales){
+          // ... (مثال إن أردت رسم إضافي)
+        }
+      },
+      error: function(xhr, st, err){
+        console.error(err, xhr.responseText);
+      }
+    });
+  }
+})(jQuery);
+</script>

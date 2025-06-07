@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل الحسابات - {{ company_name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            direction: rtl;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .report-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+        
+        .report-date {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .summary-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .summary-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .summary-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .accounts-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .accounts-table th,
+        .accounts-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        
+        .accounts-table th {
+            background-color: #34495e;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .accounts-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .accounts-table tbody tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .account-code {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: center;
+        }
+        
+        .account-name {
+            font-weight: 600;
+        }
+        
+        .account-level-0 { 
+            font-weight: bold; 
+            background-color: #ecf0f1 !important;
+            color: #2c3e50;
+        }
+        
+        .account-level-1 { 
+            padding-right: 20px; 
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        .account-level-2 { 
+            padding-right: 40px; 
+            color: #5a6c7d;
+        }
+        
+        .account-level-3 { 
+            padding-right: 60px; 
+            color: #7f8c8d;
+        }
+        
+        .account-level-4 { 
+            padding-right: 80px; 
+            color: #95a5a6;
+        }
+        
+        .account-type {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .type-asset { background-color: #3498db; }
+        .type-liability { background-color: #e74c3c; }
+        .type-equity { background-color: #9b59b6; }
+        .type-revenue { background-color: #27ae60; }
+        .type-expense { background-color: #f39c12; }
+        
+        .balance {
+            text-align: left;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .balance-positive {
+            color: #27ae60;
+        }
+        
+        .balance-negative {
+            color: #e74c3c;
+        }
+        
+        .status {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .status-active {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .status-inactive {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 11px;
+            color: #7f8c8d;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .tree-view .account-item {
+            margin-bottom: 2px;
+        }
+        
+        .tree-connector {
+            color: #bdc3c7;
+            margin-left: 5px;
+        }
+        
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- رأس التقرير -->
+    <div class="header">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="report-title">دليل الحسابات</div>
+        <div class="report-date">تاريخ الطباعة: {{ print_date }}</div>
+    </div>
+
+    <!-- ملخص الحسابات -->
+    {% if include_balances %}
+    <div class="summary-section">
+        <div class="summary-title">ملخص الحسابات</div>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-value">{{ total_assets|number_format(2) }}</div>
+                <div class="summary-label">إجمالي الأصول</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ total_liabilities|number_format(2) }}</div>
+                <div class="summary-label">إجمالي الخصوم</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ total_equity|number_format(2) }}</div>
+                <div class="summary-label">حقوق الملكية</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ total_revenue|number_format(2) }}</div>
+                <div class="summary-label">إجمالي الإيرادات</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ total_expenses|number_format(2) }}</div>
+                <div class="summary-label">إجمالي المصروفات</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value">{{ accounts|length }}</div>
+                <div class="summary-label">عدد الحسابات</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- جدول الحسابات -->
+    {% if format == 'tree' %}
+        <!-- عرض شجري -->
+        <div class="tree-view">
+            <h3 style="margin-bottom: 15px; color: #2c3e50;">دليل الحسابات - العرض الشجري</h3>
+            {% for account in accounts %}
+                <div class="account-item account-level-{{ account.level|default(0) }}">
+                    <span class="tree-connector">
+                        {% for i in 0..account.level|default(0) %}
+                            {% if i == account.level|default(0) %}
+                                ├─
+                            {% else %}
+                                │&nbsp;&nbsp;
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                    <span class="account-code">{{ account.account_code }}</span>
+                    <span class="account-name">{{ account.name }}</span>
+                    {% if include_balances %}
+                        <span class="balance {{ account.current_balance < 0 ? 'balance-negative' : 'balance-positive' }}" style="float: left;">
+                            {{ account.current_balance|number_format(2) }}
+                        </span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- عرض جدولي -->
+        <table class="accounts-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">رقم الحساب</th>
+                    <th style="width: 35%;">اسم الحساب</th>
+                    <th style="width: 15%;">نوع الحساب</th>
+                    {% if include_balances %}
+                    <th style="width: 20%;">الرصيد الحالي</th>
+                    {% endif %}
+                    <th style="width: 15%;">الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                <tr class="account-level-{{ account.level|default(0) }}">
+                    <td class="account-code">{{ account.account_code }}</td>
+                    <td class="account-name">{{ account.name }}</td>
+                    <td>
+                        <span class="account-type type-{{ account.account_type }}">
+                            {% if account.account_type == 'asset' %}
+                                أصول
+                            {% elseif account.account_type == 'liability' %}
+                                خصوم
+                            {% elseif account.account_type == 'equity' %}
+                                حقوق ملكية
+                            {% elseif account.account_type == 'revenue' %}
+                                إيرادات
+                            {% elseif account.account_type == 'expense' %}
+                                مصروفات
+                            {% endif %}
+                        </span>
+                    </td>
+                    {% if include_balances %}
+                    <td class="balance {{ account.current_balance < 0 ? 'balance-negative' : 'balance-positive' }}">
+                        {{ account.current_balance|number_format(2) }}
+                    </td>
+                    {% endif %}
+                    <td>
+                        <span class="status {{ account.is_active ? 'status-active' : 'status-inactive' }}">
+                            {{ account.is_active ? 'نشط' : 'غير نشط' }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <!-- تفاصيل إضافية -->
+    {% if include_balances %}
+    <div class="page-break"></div>
+    
+    <h3 style="margin-bottom: 15px; color: #2c3e50;">تفاصيل الأرصدة حسب النوع</h3>
+    
+    <table class="accounts-table">
+        <thead>
+            <tr>
+                <th>نوع الحساب</th>
+                <th>عدد الحسابات</th>
+                <th>إجمالي الرصيد المدين</th>
+                <th>إجمالي الرصيد الدائن</th>
+                <th>صافي الرصيد</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set account_types = {
+                'asset': 'الأصول',
+                'liability': 'الخصوم', 
+                'equity': 'حقوق الملكية',
+                'revenue': 'الإيرادات',
+                'expense': 'المصروفات'
+            } %}
+            
+            {% for type, name in account_types %}
+                {% set type_accounts = accounts|filter(account => account.account_type == type) %}
+                {% set debit_total = 0 %}
+                {% set credit_total = 0 %}
+                {% for account in type_accounts %}
+                    {% if account.current_balance > 0 %}
+                        {% set debit_total = debit_total + account.current_balance %}
+                    {% else %}
+                        {% set credit_total = credit_total + (account.current_balance * -1) %}
+                    {% endif %}
+                {% endfor %}
+                
+                <tr>
+                    <td class="account-name">{{ name }}</td>
+                    <td style="text-align: center;">{{ type_accounts|length }}</td>
+                    <td class="balance balance-positive">{{ debit_total|number_format(2) }}</td>
+                    <td class="balance balance-negative">{{ credit_total|number_format(2) }}</td>
+                    <td class="balance {{ (debit_total - credit_total) >= 0 ? 'balance-positive' : 'balance-negative' }}">
+                        {{ (debit_total - credit_total)|number_format(2) }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- تذييل التقرير -->
+    <div class="footer">
+        <p>تم إنشاء هذا التقرير بواسطة نظام ERP المتكامل</p>
+        <p>{{ company_name }} - جميع الحقوق محفوظة</p>
+        <p>تاريخ الطباعة: {{ print_date }}</p>
+    </div>
+
+    <!-- JavaScript للطباعة التلقائية -->
+    <script>
+        window.onload = function() {
+            // طباعة تلقائية عند تحميل الصفحة
+            setTimeout(function() {
+                window.print();
+            }, 1000);
+        };
+        
+        // إغلاق النافذة بعد الطباعة
+        window.onafterprint = function() {
+            window.close();
+        };
+    </script>
+</body>
+</html>

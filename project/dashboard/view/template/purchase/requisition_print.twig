@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8" />
+    <title>{{ title }} - {{ requisition.req_number }}</title>
+    <base href="{{ base }}" />
+    <style type="text/css">
+        {{ print_css|raw }}
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12pt;
+            color: #333;
+            line-height: 1.5;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 24pt;
+            margin: 0;
+            color: #2F3C4E;
+        }
+        .requisition-info {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .info-box {
+            width: 48%;
+            display: inline-block;
+            vertical-align: top;
+            margin-bottom: 20px;
+        }
+        .info-box h3 {
+            background-color: #f8f8f8;
+            padding: 5px;
+            margin: 0 0 10px 0;
+            font-size: 14pt;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-table td {
+            padding: 5px;
+            border-bottom: 1px dotted #eee;
+        }
+        .info-table td:first-child {
+            font-weight: bold;
+            width: 40%;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .items-table th {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            color: white;
+            font-weight: bold;
+        }
+        .status-draft {
+            background-color: #777;
+        }
+        .status-pending {
+            background-color: #f0ad4e;
+        }
+        .status-approved {
+            background-color: #5cb85c;
+        }
+        .status-rejected {
+            background-color: #d9534f;
+        }
+        .status-processing {
+            background-color: #5bc0de;
+        }
+        .status-completed {
+            background-color: #337ab7;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 10pt;
+            color: #777;
+        }
+        .signature-box {
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+        .signature-line {
+            display: inline-block;
+            margin: 0 20px;
+            text-align: center;
+        }
+        .signature-line hr {
+            width: 200px;
+            border: none;
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+        }
+        @media print {
+            @page {
+                size: A4;
+                margin: 1cm;
+            }
+            body {
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if logo %}
+        <img src="{{ logo }}" alt="{{ store_name }}" class="logo" />
+        {% endif %}
+        <h1>{{ title }}</h1>
+        <p>{{ text_requisition_number }}: <strong>{{ requisition.req_number }}</strong></p>
+    </div>
+    
+    <div class="requisition-info">
+        <div class="info-box">
+            <h3>{{ text_requisition_details }}</h3>
+            <table class="info-table">
+                <tr>
+                    <td>{{ text_requisition_number }}:</td>
+                    <td>{{ requisition.req_number }}</td>
+                </tr>
+                <tr>
+                    <td>{{ text_date_added }}:</td>
+                    <td>{{ requisition.created_at|date("Y-m-d") }}</td>
+                </tr>
+                <tr>
+                    <td>{{ text_status }}:</td>
+                    <td>
+                        {% set status_class = 'status-' ~ requisition.status %}
+                        <span class="status-badge {{ status_class }}">{{ requisition.status }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{ text_priority }}:</td>
+                    <td>
+                        {% if requisition.priority == 'low' %}
+                            {{ text_priority_low }}
+                        {% elseif requisition.priority == 'medium' %}
+                            {{ text_priority_medium }}
+                        {% elseif requisition.priority == 'high' %}
+                            {{ text_priority_high }}
+                        {% elseif requisition.priority == 'urgent' %}
+                            {{ text_priority_urgent }}
+                        {% else %}
+                            {{ requisition.priority }}
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>{{ text_required_date }}:</td>
+                    <td>{{ requisition.required_date }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="info-box">
+            <h3>{{ text_requester_info }}</h3>
+            <table class="info-table">
+                <tr>
+                    <td>{{ text_requester }}:</td>
+                    <td>{{ requisition.user_name }}</td>
+                </tr>
+                <tr>
+                    <td>{{ text_department }}:</td>
+                    <td>{{ requisition.user_group_name }}</td>
+                </tr>
+                <tr>
+                    <td>{{ text_branch }}:</td>
+                    <td>{{ requisition.branch_name }}</td>
+                </tr>
+            </table>
+        </div>
+</div>
+    </div>
+    
+    <div class="items-section">
+        <h3>{{ text_requisition_items }}</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>{{ column_product }}</th>
+                    <th>{{ column_model }}</th>
+                    <th>{{ column_quantity }}</th>
+                    <th>{{ column_unit }}</th>
+                    <th>{{ column_description }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.model }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_name }}</td>
+                    <td>{{ item.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if requisition.notes %}
+    <div class="notes-section">
+        <h3>{{ text_notes }}</h3>
+        <div class="notes-content" style="padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9; margin-bottom: 20px;">
+            {{ requisition.notes }}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if history %}
+    <div class="history-section">
+        <h3>{{ text_requisition_history }}</h3>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>{{ column_date }}</th>
+                    <th>{{ column_action }}</th>
+                    <th>{{ column_user }}</th>
+                    <th>{{ column_description }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td>{{ record.created_at|date("Y-m-d H:i") }}</td>
+                    <td>{{ record.action }}</td>
+                    <td>{{ record.user_name }}</td>
+                    <td>{{ record.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <div class="signature-box">
+        <div class="signature-line">
+            <hr>
+            <p>{{ text_requester_signature }}</p>
+        </div>
+        <div class="signature-line">
+            <hr>
+            <p>{{ text_approver_signature }}</p>
+        </div>
+        <div class="signature-line">
+            <hr>
+            <p>{{ text_receiving_signature }}</p>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>{{ store_name }} - {{ store_address }}</p>
+        <p>{{ store_email }} - {{ store_telephone }}</p>
+        <p>{{ text_printed_date }}: {{ "now"|date("Y-m-d H:i:s") }}</p>
+    </div>
+    
+    <div class="no-print" style="text-align: center; margin-top: 20px;">
+        <button onclick="window.print();" style="padding: 10px 20px; background-color: #337ab7; color: white; border: none; border-radius: 3px; cursor: pointer;">
+            <i class="fa fa-print"></i> طباعة
+        </button>
+        <button onclick="window.close();" style="padding: 10px 20px; background-color: #d9534f; color: white; border: none; border-radius: 3px; cursor: pointer; margin-left: 10px;">
+            <i class="fa fa-times"></i> إغلاق
+        </button>
+    </div>
+</body>
+</html>        

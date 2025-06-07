@@ -1,0 +1,546 @@
+{{ header }}{{ column_left }}
+<div class="container-fluid">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_recalculate }}" class="btn btn-warning" onclick="recalculateScore();"><i class="fa fa-calculator"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_convert }}" class="btn btn-success" onclick="convertLead();"><i class="fa fa-exchange"></i></button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }} - {{ lead.customer_name }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- معلومات العميل المحتمل -->
+    <div class="col-md-4">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-user"></i> {{ text_lead_info }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-xs-12">
+              <h4>{{ lead.customer_name }}</h4>
+              <p class="text-muted">{{ lead.company }}</p>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-xs-6">
+              <strong>{{ column_email }}:</strong><br>
+              <a href="mailto:{{ lead.email }}">{{ lead.email }}</a>
+            </div>
+            <div class="col-xs-6">
+              <strong>{{ column_phone }}:</strong><br>
+              <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-xs-6">
+              <strong>{{ column_source }}:</strong><br>
+              <span class="label label-info">{{ lead.source }}</span>
+            </div>
+            <div class="col-xs-6">
+              <strong>{{ column_status }}:</strong><br>
+              <span class="label label-{{ lead.status_class }}">{{ lead.status_text }}</span>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-xs-12">
+              <strong>{{ column_assigned_to }}:</strong><br>
+              {{ lead.assigned_to }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- نقاط التقييم -->
+    <div class="col-md-4">
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-star"></i> {{ text_scoring_info }}</h3>
+        </div>
+        <div class="panel-body">
+          <!-- النقاط الإجمالية -->
+          <div class="text-center">
+            <h2><span class="label label-{{ lead.score_class }}" style="font-size: 24px;">{{ lead.total_score }}</span></h2>
+            <p>{{ text_total_score }}</p>
+          </div>
+          <hr>
+          
+          <!-- تفصيل النقاط -->
+          <div class="progress-group">
+            <span class="progress-text">{{ text_demographic_score }}</span>
+            <span class="float-right"><b>{{ score_breakdown.demographic_score }}</b>/30</span>
+            <div class="progress progress-sm">
+              <div class="progress-bar bg-primary" style="width: {{ (score_breakdown.demographic_score / 30 * 100) }}%"></div>
+            </div>
+          </div>
+
+          <div class="progress-group">
+            <span class="progress-text">{{ text_behavioral_score }}</span>
+            <span class="float-right"><b>{{ score_breakdown.behavioral_score }}</b>/40</span>
+            <div class="progress progress-sm">
+              <div class="progress-bar bg-info" style="width: {{ (score_breakdown.behavioral_score / 40 * 100) }}%"></div>
+            </div>
+          </div>
+
+          <div class="progress-group">
+            <span class="progress-text">{{ text_engagement_score }}</span>
+            <span class="float-right"><b>{{ score_breakdown.engagement_score }}</b>/50</span>
+            <div class="progress progress-sm">
+              <div class="progress-bar bg-warning" style="width: {{ (score_breakdown.engagement_score / 50 * 100) }}%"></div>
+            </div>
+          </div>
+
+          <div class="progress-group">
+            <span class="progress-text">{{ text_company_score }}</span>
+            <span class="float-right"><b>{{ score_breakdown.company_score }}</b>/35</span>
+            <div class="progress progress-sm">
+              <div class="progress-bar bg-success" style="width: {{ (score_breakdown.company_score / 35 * 100) }}%"></div>
+            </div>
+          </div>
+
+          <div class="progress-group">
+            <span class="progress-text">{{ text_source_score }}</span>
+            <span class="float-right"><b>{{ score_breakdown.source_score }}</b>/25</span>
+            <div class="progress progress-sm">
+              <div class="progress-bar bg-danger" style="width: {{ (score_breakdown.source_score / 25 * 100) }}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- التوقعات والإحصائيات -->
+    <div class="col-md-4">
+      <div class="panel panel-info">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-chart-line"></i> {{ text_prediction_info }}</h3>
+        </div>
+        <div class="panel-body">
+          <!-- احتمالية التحويل -->
+          <div class="text-center">
+            <h3>{{ lead.conversion_probability }}%</h3>
+            <p>{{ text_conversion_probability }}</p>
+            <div class="progress">
+              <div class="progress-bar progress-bar-{{ lead.score_class }}" role="progressbar" style="width: {{ lead.conversion_probability }}%">
+                {{ lead.conversion_probability }}%
+              </div>
+            </div>
+          </div>
+          <hr>
+          
+          <!-- القيمة المتوقعة -->
+          <div class="row">
+            <div class="col-xs-12">
+              <strong>{{ text_estimated_value }}:</strong><br>
+              <h4 class="text-success">{{ lead.estimated_value }} {{ text_currency }}</h4>
+            </div>
+          </div>
+          <hr>
+          
+          <!-- الأولوية -->
+          <div class="row">
+            <div class="col-xs-12">
+              <strong>{{ column_priority }}:</strong><br>
+              <span class="label label-{{ lead.priority_class }}" style="font-size: 14px;">{{ lead.priority_text }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- إحصائيات الرحلة -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-chart-bar"></i> {{ text_lead_statistics }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon bg-aqua"><i class="fa fa-list"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_total_activities }}</span>
+                  <span class="info-box-number">{{ lead_statistics.total_activities }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon bg-yellow"><i class="fa fa-clock-o"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_last_activity_days }}</span>
+                  <span class="info-box-number">{{ lead_statistics.last_activity_days }} {{ text_days }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon bg-green"><i class="fa fa-heart"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_engagement_score }}</span>
+                  <span class="info-box-number">{{ lead_statistics.engagement_score }}%</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="info-box">
+                <span class="info-box-icon bg-red"><i class="fa fa-calendar"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_days_in_pipeline }}</span>
+                  <span class="info-box-number">{{ lead_statistics.days_in_pipeline|round }} {{ text_days }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- تاريخ الأنشطة -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-history"></i> {{ text_activity_history }}</h3>
+        </div>
+        <div class="panel-body">
+          {% if activities %}
+          <div class="timeline">
+            {% for activity in activities %}
+            <div class="timeline-item">
+              <div class="timeline-marker"></div>
+              <div class="timeline-content">
+                <h6 class="timeline-title">{{ activity.activity_type_text }}</h6>
+                <p>{{ activity.description }}</p>
+                <small class="text-muted">
+                  <i class="fa fa-clock-o"></i> {{ activity.date_created }}
+                  {% if activity.created_by %} - {{ activity.created_by }}{% endif %}
+                </small>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-center text-muted">{{ text_no_activities }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- التوقعات التفصيلية -->
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-crystal-ball"></i> {{ text_predictions }}</h3>
+        </div>
+        <div class="panel-body">
+          {% if predictions %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>{{ text_prediction_type }}</th>
+                  <th>{{ text_prediction_value }}</th>
+                  <th>{{ text_confidence }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for prediction in predictions %}
+                <tr>
+                  <td>{{ prediction.type_text }}</td>
+                  <td>{{ prediction.value }}</td>
+                  <td>
+                    <div class="progress" style="margin-bottom: 0;">
+                      <div class="progress-bar progress-bar-{{ prediction.confidence_class }}" style="width: {{ prediction.confidence }}%">
+                        {{ prediction.confidence }}%
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-center text-muted">{{ text_no_predictions }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal تحويل العميل المحتمل -->
+<div class="modal fade" id="modal-convert" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">{{ button_convert }}</h4>
+      </div>
+      <div class="modal-body">
+        <p>{{ text_confirm_convert }}</p>
+        <div class="form-group">
+          <label>{{ entry_conversion_notes }}</label>
+          <textarea class="form-control" id="conversion-notes" rows="3" placeholder="{{ entry_conversion_notes }}"></textarea>
+        </div>
+        <div class="form-group">
+          <label>{{ entry_customer_group }}</label>
+          <select class="form-control" id="customer-group">
+            {% for group in customer_groups %}
+            <option value="{{ group.customer_group_id }}">{{ group.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-success" onclick="confirmConvert();">{{ button_convert }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// إعادة حساب النقاط
+function recalculateScore() {
+  if (confirm('{{ text_confirm_recalculate }}')) {
+    $.ajax({
+      url: 'index.php?route=crm/lead_scoring/recalculate&user_token={{ user_token }}&lead_id={{ lead.lead_id }}',
+      type: 'post',
+      dataType: 'json',
+      beforeSend: function() {
+        $('.btn').prop('disabled', true);
+      },
+      complete: function() {
+        $('.btn').prop('disabled', false);
+      },
+      success: function(json) {
+        if (json['success']) {
+          location.reload();
+        }
+        
+        if (json['error']) {
+          alert(json['error']);
+        }
+      }
+    });
+  }
+}
+
+// تحويل العميل المحتمل
+function convertLead() {
+  $('#modal-convert').modal('show');
+}
+
+function confirmConvert() {
+  var notes = $('#conversion-notes').val();
+  var customer_group = $('#customer-group').val();
+  
+  $.ajax({
+    url: 'index.php?route=crm/lead_scoring/convert&user_token={{ user_token }}&lead_id={{ lead.lead_id }}',
+    type: 'post',
+    data: {
+      notes: notes,
+      customer_group_id: customer_group
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#modal-convert').modal('hide');
+      $('.btn').prop('disabled', true);
+    },
+    complete: function() {
+      $('.btn').prop('disabled', false);
+    },
+    success: function(json) {
+      if (json['success']) {
+        if (json['redirect']) {
+          location = json['redirect'];
+        } else {
+          location.reload();
+        }
+      }
+      
+      if (json['error']) {
+        alert(json['error']);
+      }
+    }
+  });
+}
+
+// تفعيل التلميحات
+$('[data-toggle="tooltip"]').tooltip();
+
+// رسم بياني للنقاط
+$(document).ready(function() {
+  // رسم بياني دائري لتوزيع النقاط
+  var ctx = document.getElementById('scoreChart');
+  if (ctx) {
+    var scoreChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [
+          '{{ text_demographic_score }}',
+          '{{ text_behavioral_score }}',
+          '{{ text_engagement_score }}',
+          '{{ text_company_score }}',
+          '{{ text_source_score }}'
+        ],
+        datasets: [{
+          data: [
+            {{ score_breakdown.demographic_score }},
+            {{ score_breakdown.behavioral_score }},
+            {{ score_breakdown.engagement_score }},
+            {{ score_breakdown.company_score }},
+            {{ score_breakdown.source_score }}
+          ],
+          backgroundColor: [
+            '#007bff',
+            '#17a2b8',
+            '#ffc107',
+            '#28a745',
+            '#dc3545'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+          position: 'bottom'
+        }
+      }
+    });
+  }
+});
+</script>
+
+<style>
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -35px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #007bff;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #007bff;
+}
+
+.timeline-item:before {
+  content: '';
+  position: absolute;
+  left: -31px;
+  top: 15px;
+  width: 2px;
+  height: calc(100% + 10px);
+  background-color: #dee2e6;
+}
+
+.timeline-item:last-child:before {
+  display: none;
+}
+
+.timeline-content {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 3px solid #007bff;
+}
+
+.timeline-title {
+  margin: 0 0 5px 0;
+  font-weight: bold;
+  color: #495057;
+}
+
+.info-box {
+  display: block;
+  min-height: 90px;
+  background: #fff;
+  width: 100%;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  border-radius: 2px;
+  margin-bottom: 15px;
+}
+
+.info-box-icon {
+  border-top-left-radius: 2px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 2px;
+  display: block;
+  float: left;
+  height: 90px;
+  width: 90px;
+  text-align: center;
+  font-size: 45px;
+  line-height: 90px;
+  background: rgba(0,0,0,0.2);
+}
+
+.info-box-content {
+  padding: 5px 10px;
+  margin-left: 90px;
+}
+
+.info-box-text {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.info-box-number {
+  display: block;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.bg-aqua { background-color: #00c0ef !important; }
+.bg-yellow { background-color: #f39c12 !important; }
+.bg-green { background-color: #00a65a !important; }
+.bg-red { background-color: #dd4b39 !important; }
+
+.progress-group {
+  margin-bottom: 15px;
+}
+
+.progress-text {
+  font-weight: 600;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.float-right {
+  float: right !important;
+}
+</style>
+
+{{ footer }}

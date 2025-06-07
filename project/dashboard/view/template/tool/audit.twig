@@ -1,0 +1,662 @@
+{{ header }}{{ column_left }}
+{#
+/**
+ * AYM ERP System: Audit Trail View
+ *
+ * عرض سجل المراجعة والتدقيق - مطور بجودة عالمية
+ *
+ * الميزات المتقدمة:
+ * - سجل شامل لجميع العمليات
+ * - فلترة متقدمة للبيانات
+ * - عرض تفاصيل المراجعة
+ * - تصدير التقارير
+ * - واجهة مستخدم متجاوبة
+ * - تكامل مع Bootstrap 3.3
+ *
+ * @package    AYM ERP
+ * @author     AYM Development Team
+ * @copyright  2024 AYM ERP Systems
+ * @license    Commercial License
+ * @version    1.0.0
+ * @since      2024-01-15
+ */
+#}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-download"></i> تصدير <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="#" onclick="exportAuditLog('excel')"><i class="fa fa-file-excel-o"></i> تصدير Excel</a></li>
+            <li><a href="#" onclick="exportAuditLog('pdf')"><i class="fa fa-file-pdf-o"></i> تصدير PDF</a></li>
+            <li><a href="#" onclick="exportAuditLog('csv')"><i class="fa fa-file-text-o"></i> تصدير CSV</a></li>
+          </ul>
+        </div>
+        <button type="button" class="btn btn-warning" onclick="clearOldLogs()">
+          <i class="fa fa-trash"></i> مسح السجلات القديمة
+        </button>
+        <button type="button" class="btn btn-default" onclick="refreshAuditLog()">
+          <i class="fa fa-refresh"></i> تحديث
+        </button>
+      </div>
+      <h1><i class="fa fa-shield"></i> {{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        <li><a href="{{ dashboard }}"><i class="fa fa-dashboard"></i> {{ text_home }}</a></li>
+        <li class="active">{{ heading_title }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {# رسائل التنبيه #}
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {# إحصائيات سريعة #}
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-shield fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="total-logs">-</div>
+                <div>إجمالي السجلات</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-green">
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="success-actions">-</div>
+                <div>عمليات ناجحة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-yellow">
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exclamation-triangle fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="warning-actions">-</div>
+                <div>تحذيرات</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-red">
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-times fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="error-actions">-</div>
+                <div>أخطاء</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# فلاتر البحث #}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-filter"></i> فلاتر البحث
+          <button type="button" class="btn btn-xs btn-default pull-right" data-toggle="collapse" data-target="#filter-panel">
+            <i class="fa fa-chevron-down"></i>
+          </button>
+        </h3>
+      </div>
+      <div class="panel-body collapse in" id="filter-panel">
+        <form id="audit-filter-form" class="form-horizontal">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="control-label">المستخدم</label>
+                <select name="filter_user_id" class="form-control">
+                  <option value="">جميع المستخدمين</option>
+                  {% for user in users %}
+                  <option value="{{ user.user_id }}" {% if filter_user_id == user.user_id %}selected{% endif %}>
+                    {{ user.firstname }} {{ user.lastname }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="control-label">نوع العملية</label>
+                <select name="filter_action" class="form-control">
+                  <option value="">جميع العمليات</option>
+                  <option value="create" {% if filter_action == 'create' %}selected{% endif %}>إنشاء</option>
+                  <option value="update" {% if filter_action == 'update' %}selected{% endif %}>تحديث</option>
+                  <option value="delete" {% if filter_action == 'delete' %}selected{% endif %}>حذف</option>
+                  <option value="login" {% if filter_action == 'login' %}selected{% endif %}>تسجيل دخول</option>
+                  <option value="logout" {% if filter_action == 'logout' %}selected{% endif %}>تسجيل خروج</option>
+                  <option value="view" {% if filter_action == 'view' %}selected{% endif %}>عرض</option>
+                  <option value="export" {% if filter_action == 'export' %}selected{% endif %}>تصدير</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="control-label">نوع المرجع</label>
+                <select name="filter_reference_type" class="form-control">
+                  <option value="">جميع الأنواع</option>
+                  <option value="order" {% if filter_reference_type == 'order' %}selected{% endif %}>طلبات</option>
+                  <option value="product" {% if filter_reference_type == 'product' %}selected{% endif %}>منتجات</option>
+                  <option value="customer" {% if filter_reference_type == 'customer' %}selected{% endif %}>عملاء</option>
+                  <option value="user" {% if filter_reference_type == 'user' %}selected{% endif %}>مستخدمين</option>
+                  <option value="setting" {% if filter_reference_type == 'setting' %}selected{% endif %}>إعدادات</option>
+                  <option value="report" {% if filter_reference_type == 'report' %}selected{% endif %}>تقارير</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="control-label">الفترة الزمنية</label>
+                <div class="input-group">
+                  <input type="text" name="filter_date_start" value="{{ filter_date_start }}" 
+                         placeholder="من تاريخ" class="form-control date-picker" />
+                  <span class="input-group-addon">إلى</span>
+                  <input type="text" name="filter_date_end" value="{{ filter_date_end }}" 
+                         placeholder="إلى تاريخ" class="form-control date-picker" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <button type="button" class="btn btn-primary" onclick="applyFilters()">
+                  <i class="fa fa-search"></i> بحث
+                </button>
+                <button type="button" class="btn btn-default" onclick="clearFilters()">
+                  <i class="fa fa-times"></i> مسح الفلاتر
+                </button>
+                <div class="btn-group pull-right">
+                  <button type="button" class="btn btn-info btn-sm" onclick="setQuickFilter('today')">اليوم</button>
+                  <button type="button" class="btn btn-info btn-sm" onclick="setQuickFilter('week')">هذا الأسبوع</button>
+                  <button type="button" class="btn btn-info btn-sm" onclick="setQuickFilter('month')">هذا الشهر</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {# جدول سجل المراجعة #}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-list"></i> سجل المراجعة
+          <span class="badge" id="records-count">0</span>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div id="audit-loading" class="text-center" style="display: none;">
+          <i class="fa fa-spinner fa-spin fa-3x"></i>
+          <p>جاري تحميل البيانات...</p>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-striped table-hover" id="audit-table">
+            <thead>
+              <tr>
+                <th width="5%">
+                  <input type="checkbox" id="select-all" />
+                </th>
+                <th width="15%">التاريخ والوقت</th>
+                <th width="15%">المستخدم</th>
+                <th width="10%">العملية</th>
+                <th width="15%">نوع المرجع</th>
+                <th width="10%">رقم المرجع</th>
+                <th width="20%">التفاصيل</th>
+                <th width="10%">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="audit-tbody">
+              <tr>
+                <td colspan="8" class="text-center text-muted">
+                  <i class="fa fa-info-circle"></i> اضغط على "بحث" لعرض السجلات
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        {# الترقيم #}
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="dataTables_info" id="audit-info">
+              عرض 0 إلى 0 من 0 سجل
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="dataTables_paginate paging_simple_numbers" id="audit-pagination">
+              <!-- سيتم إنشاء الترقيم ديناميكياً -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# نافذة تفاصيل السجل #}
+<div class="modal fade" id="audit-detail-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-info-circle"></i> تفاصيل سجل المراجعة</h4>
+      </div>
+      <div class="modal-body" id="audit-detail-content">
+        <!-- سيتم تحميل المحتوى ديناميكياً -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var currentPage = 1;
+var recordsPerPage = 20;
+var totalRecords = 0;
+
+// تهيئة الصفحة
+$(document).ready(function() {
+    // تهيئة منتقي التاريخ
+    $('.date-picker').datepicker({
+        format: 'yyyy-mm-dd',
+        language: 'ar',
+        autoclose: true,
+        todayHighlight: true
+    });
+    
+    // تحميل الإحصائيات
+    loadStatistics();
+    
+    // تحديد/إلغاء تحديد جميع الصفوف
+    $('#select-all').on('change', function() {
+        $('input[name="selected[]"]').prop('checked', this.checked);
+    });
+});
+
+// تحميل الإحصائيات
+function loadStatistics() {
+    $.ajax({
+        url: 'index.php?route=tool/audit/getStatistics&user_token={{ user_token }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.stats) {
+                $('#total-logs').text(data.stats.total || 0);
+                $('#success-actions').text(data.stats.success || 0);
+                $('#warning-actions').text(data.stats.warning || 0);
+                $('#error-actions').text(data.stats.error || 0);
+            }
+        }
+    });
+}
+
+// تطبيق الفلاتر
+function applyFilters() {
+    currentPage = 1;
+    loadAuditData();
+}
+
+// مسح الفلاتر
+function clearFilters() {
+    $('#audit-filter-form')[0].reset();
+    currentPage = 1;
+    loadAuditData();
+}
+
+// فلاتر سريعة
+function setQuickFilter(period) {
+    var today = new Date();
+    var startDate, endDate = today.toISOString().split('T')[0];
+    
+    switch(period) {
+        case 'today':
+            startDate = endDate;
+            break;
+        case 'week':
+            var weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            startDate = weekAgo.toISOString().split('T')[0];
+            break;
+        case 'month':
+            var monthAgo = new Date(today.getFullYear(), today.getMonth(), 1);
+            startDate = monthAgo.toISOString().split('T')[0];
+            break;
+    }
+    
+    $('input[name="filter_date_start"]').val(startDate);
+    $('input[name="filter_date_end"]').val(endDate);
+    applyFilters();
+}
+
+// تحميل بيانات المراجعة
+function loadAuditData() {
+    $('#audit-loading').show();
+    $('#audit-tbody').empty();
+    
+    var formData = $('#audit-filter-form').serialize();
+    formData += '&start=' + ((currentPage - 1) * recordsPerPage);
+    formData += '&limit=' + recordsPerPage;
+    
+    $.ajax({
+        url: 'index.php?route=tool/audit/loadData&user_token={{ user_token }}',
+        type: 'POST',
+        data: formData,
+        dataType: 'json',
+        success: function(data) {
+            $('#audit-loading').hide();
+            
+            if (data.error) {
+                showAlert('danger', data.error);
+                return;
+            }
+            
+            totalRecords = data.total || 0;
+            $('#records-count').text(totalRecords);
+            
+            if (data.logs && data.logs.length > 0) {
+                var tbody = '';
+                $.each(data.logs, function(index, log) {
+                    tbody += '<tr>';
+                    tbody += '<td><input type="checkbox" name="selected[]" value="' + log.log_id + '" /></td>';
+                    tbody += '<td>' + log.date_added + '</td>';
+                    tbody += '<td>' + log.user_name + '</td>';
+                    tbody += '<td><span class="label label-' + getActionClass(log.action) + '">' + log.action + '</span></td>';
+                    tbody += '<td>' + log.reference_type + '</td>';
+                    tbody += '<td>' + (log.reference_id || '-') + '</td>';
+                    tbody += '<td>' + (log.description || '-') + '</td>';
+                    tbody += '<td>';
+                    tbody += '<button type="button" class="btn btn-info btn-xs" onclick="viewDetails(' + log.log_id + ')">';
+                    tbody += '<i class="fa fa-eye"></i> عرض';
+                    tbody += '</button> ';
+                    tbody += '<button type="button" class="btn btn-danger btn-xs" onclick="deleteLog(' + log.log_id + ')">';
+                    tbody += '<i class="fa fa-trash"></i> حذف';
+                    tbody += '</button>';
+                    tbody += '</td>';
+                    tbody += '</tr>';
+                });
+                $('#audit-tbody').html(tbody);
+            } else {
+                $('#audit-tbody').html('<tr><td colspan="8" class="text-center text-muted"><i class="fa fa-info-circle"></i> لا توجد سجلات</td></tr>');
+            }
+            
+            updatePagination();
+            updateInfo();
+        },
+        error: function() {
+            $('#audit-loading').hide();
+            showAlert('danger', 'حدث خطأ أثناء تحميل البيانات');
+        }
+    });
+}
+
+// تحديث الترقيم
+function updatePagination() {
+    var totalPages = Math.ceil(totalRecords / recordsPerPage);
+    var pagination = '';
+    
+    if (totalPages > 1) {
+        pagination += '<ul class="pagination">';
+        
+        // السابق
+        if (currentPage > 1) {
+            pagination += '<li><a href="#" onclick="changePage(' + (currentPage - 1) + ')">السابق</a></li>';
+        }
+        
+        // الصفحات
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, currentPage + 2);
+        
+        for (var i = startPage; i <= endPage; i++) {
+            if (i === currentPage) {
+                pagination += '<li class="active"><span>' + i + '</span></li>';
+            } else {
+                pagination += '<li><a href="#" onclick="changePage(' + i + ')">' + i + '</a></li>';
+            }
+        }
+        
+        // التالي
+        if (currentPage < totalPages) {
+            pagination += '<li><a href="#" onclick="changePage(' + (currentPage + 1) + ')">التالي</a></li>';
+        }
+        
+        pagination += '</ul>';
+    }
+    
+    $('#audit-pagination').html(pagination);
+}
+
+// تغيير الصفحة
+function changePage(page) {
+    currentPage = page;
+    loadAuditData();
+}
+
+// تحديث معلومات العرض
+function updateInfo() {
+    var start = totalRecords > 0 ? ((currentPage - 1) * recordsPerPage) + 1 : 0;
+    var end = Math.min(currentPage * recordsPerPage, totalRecords);
+    $('#audit-info').text('عرض ' + start + ' إلى ' + end + ' من ' + totalRecords + ' سجل');
+}
+
+// الحصول على فئة CSS للعملية
+function getActionClass(action) {
+    switch(action) {
+        case 'create': return 'success';
+        case 'update': return 'info';
+        case 'delete': return 'danger';
+        case 'login': return 'primary';
+        case 'logout': return 'default';
+        default: return 'default';
+    }
+}
+
+// عرض تفاصيل السجل
+function viewDetails(logId) {
+    $('#audit-detail-modal').modal('show');
+    $('#audit-detail-content').html('<div class="text-center"><i class="fa fa-spinner fa-spin"></i> جاري التحميل...</div>');
+    
+    $.ajax({
+        url: 'index.php?route=tool/audit/getLogDetails&user_token={{ user_token }}&log_id=' + logId,
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.log) {
+                var content = '<div class="row">';
+                content += '<div class="col-md-6"><strong>رقم السجل:</strong> ' + data.log.log_id + '</div>';
+                content += '<div class="col-md-6"><strong>التاريخ:</strong> ' + data.log.date_added + '</div>';
+                content += '<div class="col-md-6"><strong>المستخدم:</strong> ' + data.log.user_name + '</div>';
+                content += '<div class="col-md-6"><strong>العملية:</strong> ' + data.log.action + '</div>';
+                content += '<div class="col-md-6"><strong>نوع المرجع:</strong> ' + data.log.reference_type + '</div>';
+                content += '<div class="col-md-6"><strong>رقم المرجع:</strong> ' + (data.log.reference_id || '-') + '</div>';
+                content += '<div class="col-md-12"><strong>التفاصيل:</strong><br>' + (data.log.description || '-') + '</div>';
+                if (data.log.data) {
+                    content += '<div class="col-md-12"><strong>البيانات:</strong><br><pre>' + JSON.stringify(JSON.parse(data.log.data), null, 2) + '</pre></div>';
+                }
+                content += '</div>';
+                $('#audit-detail-content').html(content);
+            } else {
+                $('#audit-detail-content').html('<div class="alert alert-danger">لم يتم العثور على السجل</div>');
+            }
+        }
+    });
+}
+
+// حذف سجل
+function deleteLog(logId) {
+    if (confirm('هل أنت متأكد من حذف هذا السجل؟')) {
+        $.ajax({
+            url: 'index.php?route=tool/audit/deleteLog&user_token={{ user_token }}',
+            type: 'POST',
+            data: {log_id: logId},
+            dataType: 'json',
+            success: function(data) {
+                if (data.success) {
+                    showAlert('success', 'تم حذف السجل بنجاح');
+                    loadAuditData();
+                    loadStatistics();
+                } else {
+                    showAlert('danger', data.error || 'حدث خطأ أثناء الحذف');
+                }
+            }
+        });
+    }
+}
+
+// تحديث السجلات
+function refreshAuditLog() {
+    loadAuditData();
+    loadStatistics();
+}
+
+// مسح السجلات القديمة
+function clearOldLogs() {
+    if (confirm('هل أنت متأكد من حذف السجلات الأقدم من 30 يوماً؟')) {
+        $.ajax({
+            url: 'index.php?route=tool/audit/clearOldLogs&user_token={{ user_token }}',
+            type: 'POST',
+            dataType: 'json',
+            success: function(data) {
+                if (data.success) {
+                    showAlert('success', 'تم حذف السجلات القديمة بنجاح');
+                    loadAuditData();
+                    loadStatistics();
+                } else {
+                    showAlert('danger', data.error || 'حدث خطأ أثناء الحذف');
+                }
+            }
+        });
+    }
+}
+
+// تصدير سجل المراجعة
+function exportAuditLog(format) {
+    var formData = $('#audit-filter-form').serialize();
+    formData += '&format=' + format;
+    
+    window.open('index.php?route=tool/audit/export&user_token={{ user_token }}&' + formData, '_blank');
+}
+
+// عرض التنبيهات
+function showAlert(type, message) {
+    var alertClass = 'alert-' + type;
+    var alert = '<div class="alert ' + alertClass + ' alert-dismissible">';
+    alert += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+    alert += message + '</div>';
+    
+    $('.container-fluid').prepend(alert);
+    
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+</script>
+
+<style>
+.huge {
+    font-size: 40px;
+}
+
+.panel-green {
+    border-color: #5cb85c;
+}
+
+.panel-green > .panel-heading {
+    border-color: #5cb85c;
+    color: white;
+    background-color: #5cb85c;
+}
+
+.panel-green > a {
+    color: #5cb85c;
+}
+
+.panel-green > a:hover {
+    color: #3d8b3d;
+}
+
+.panel-yellow {
+    border-color: #f0ad4e;
+}
+
+.panel-yellow > .panel-heading {
+    border-color: #f0ad4e;
+    color: white;
+    background-color: #f0ad4e;
+}
+
+.panel-red {
+    border-color: #d9534f;
+}
+
+.panel-red > .panel-heading {
+    border-color: #d9534f;
+    color: white;
+    background-color: #d9534f;
+}
+
+.panel-body {
+    color: white;
+}
+
+.panel-primary .panel-body,
+.panel-green .panel-body,
+.panel-yellow .panel-body,
+.panel-red .panel-body {
+    color: white;
+}
+</style>
+
+{{ footer }}

@@ -1,0 +1,524 @@
+{{ header }}{{ column_left }}
+<div class="container-fluid">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_create }}" class="btn btn-primary" onclick="location = '{{ create }}';"><i class="fa fa-plus"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_auto_generate }}" class="btn btn-info" onclick="location = '{{ auto_generate }}';"><i class="fa fa-magic"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-success" onclick="exportData();"><i class="fa fa-download"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_analytics }}" class="btn btn-warning" onclick="location = '{{ analytics }}';"><i class="fa fa-bar-chart"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_scenarios }}" class="btn btn-default" onclick="location = '{{ scenarios }}';"><i class="fa fa-sitemap"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <!-- إحصائيات سريعة -->
+  <div class="row">
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-line-chart fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ statistics.total_forecasts }}</div>
+              <div>{{ text_total_forecasts }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_total_forecasts }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-green">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-play fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ statistics.active_forecasts }}</div>
+              <div>{{ text_active_forecasts }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_active_forecasts }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-yellow">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-bullseye fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ statistics.avg_accuracy }}%</div>
+              <div>{{ text_avg_accuracy }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_avg_accuracy }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-red">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-trophy fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge-text">{{ statistics.best_method }}</div>
+              <div>{{ text_best_method }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_best_method }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الرسوم البيانية -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-line-chart"></i> {{ text_accuracy_chart }}</h3>
+        </div>
+        <div class="panel-body">
+          <canvas id="accuracyChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_method_comparison }}</h3>
+        </div>
+        <div class="panel-body">
+          <canvas id="methodChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+    </div>
+    <div class="panel-body">
+      <!-- فلاتر البحث -->
+      <div class="well">
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-period">{{ entry_filter_period }}</label>
+              <select name="filter_period" id="input-period" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for key, value in periods %}
+                <option value="{{ key }}"{% if filter_period == key %} selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-type">{{ entry_filter_type }}</label>
+              <select name="filter_type" id="input-type" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for key, value in forecast_types %}
+                <option value="{{ key }}"{% if filter_type == key %} selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-method">{{ entry_filter_method }}</label>
+              <select name="filter_method" id="input-method" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for key, value in methods %}
+                <option value="{{ key }}"{% if filter_method == key %} selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-accuracy">{{ entry_filter_accuracy }}</label>
+              <select name="filter_accuracy" id="input-accuracy" class="form-control">
+                <option value="">{{ text_all }}</option>
+                <option value="90-100"{% if filter_accuracy == '90-100' %} selected="selected"{% endif %}>{{ text_accuracy_excellent }}</option>
+                <option value="80-89"{% if filter_accuracy == '80-89' %} selected="selected"{% endif %}>{{ text_accuracy_good }}</option>
+                <option value="70-79"{% if filter_accuracy == '70-79' %} selected="selected"{% endif %}>{{ text_accuracy_fair }}</option>
+                <option value="0-69"{% if filter_accuracy == '0-69' %} selected="selected"{% endif %}>{{ text_accuracy_poor }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+          <button type="button" id="button-clear" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_clear }}</button>
+        </div>
+      </div>
+
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-forecast">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                <td class="text-left">{% if sort == 'period' %}<a href="{{ sort_period }}" class="{{ order|lower }}">{{ column_period }}</a>{% else %}<a href="{{ sort_period }}">{{ column_period }}</a>{% endif %}</td>
+                <td class="text-center">{{ column_forecast_type }}</td>
+                <td class="text-center">{{ column_method }}</td>
+                <td class="text-right">{% if sort == 'predicted_amount' %}<a href="{{ sort_predicted }}" class="{{ order|lower }}">{{ column_predicted_amount }}</a>{% else %}<a href="{{ sort_predicted }}">{{ column_predicted_amount }}</a>{% endif %}</td>
+                <td class="text-right">{{ column_actual_amount }}</td>
+                <td class="text-right">{{ column_variance }}</td>
+                <td class="text-center">{% if sort == 'accuracy' %}<a href="{{ sort_accuracy }}" class="{{ order|lower }}">{{ column_accuracy }}</a>{% else %}<a href="{{ sort_accuracy }}">{{ column_accuracy }}</a>{% endif %}</td>
+                <td class="text-center">{{ column_confidence_level }}</td>
+                <td class="text-left">{{ column_created_by }}</td>
+                <td class="text-center">{% if sort == 'date_created' %}<a href="{{ sort_date }}" class="{{ order|lower }}">{{ column_date_created }}</a>{% else %}<a href="{{ sort_date }}">{{ column_date_created }}</a>{% endif %}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if forecasts %}
+              {% for forecast in forecasts %}
+              <tr>
+                <td class="text-center">{% if forecast.selected %}<input type="checkbox" name="selected[]" value="{{ forecast.forecast_id }}" checked="checked" />{% else %}<input type="checkbox" name="selected[]" value="{{ forecast.forecast_id }}" />{% endif %}</td>
+                <td class="text-left">
+                  <strong>{{ forecast.period_text }}</strong><br>
+                  <small class="text-muted">{{ forecast.start_date }} - {{ forecast.end_date }}</small>
+                </td>
+                <td class="text-center">
+                  <span class="label label-primary">{{ forecast.forecast_type_text }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="label label-info">{{ forecast.method_text }}</span>
+                </td>
+                <td class="text-right">
+                  <strong>{{ forecast.predicted_amount }} {{ text_currency }}</strong>
+                </td>
+                <td class="text-right">
+                  {% if forecast.actual_amount > 0 %}
+                    {{ forecast.actual_amount }} {{ text_currency }}
+                  {% else %}
+                    <span class="text-muted">{{ text_pending }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  {% if forecast.variance != 0 %}
+                    <span class="text-{{ forecast.variance > 0 ? 'danger' : 'success' }}">
+                      {{ forecast.variance > 0 ? '+' : '' }}{{ forecast.variance }} {{ text_currency }}
+                      <br><small>({{ forecast.variance_percentage }}%)</small>
+                    </span>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  {% if forecast.accuracy > 0 %}
+                    <span class="label label-{{ forecast.accuracy_class }}">{{ forecast.accuracy }}%</span>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <div class="progress" style="margin-bottom: 0; width: 80px;">
+                    <div class="progress-bar progress-bar-{{ forecast.confidence_class }}" role="progressbar" style="width: {{ forecast.confidence_level }}%">
+                      {{ forecast.confidence_level }}%
+                    </div>
+                  </div>
+                </td>
+                <td class="text-left">{{ forecast.created_by }}</td>
+                <td class="text-center">{{ forecast.date_created }}</td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">
+                      {{ button_action }} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="{{ forecast.view }}"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                      <li><a href="{{ forecast.edit }}"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                      <li><a href="{{ forecast.compare }}"><i class="fa fa-exchange"></i> {{ button_compare }}</a></li>
+                      <li class="divider"></li>
+                      <li><a href="javascript:void(0);" onclick="recalculateForecast({{ forecast.forecast_id }});"><i class="fa fa-calculator"></i> {{ button_recalculate }}</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="12">{{ text_no_forecasts }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+      
+      <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination }}</div>
+        <div class="col-sm-6 text-right">{{ results }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// فلترة البيانات
+$('#button-filter').on('click', function() {
+  var url = 'index.php?route=crm/sales_forecast&user_token={{ user_token }}';
+  
+  var filter_period = $('select[name=\'filter_period\']').val();
+  if (filter_period) {
+    url += '&filter_period=' + encodeURIComponent(filter_period);
+  }
+  
+  var filter_type = $('select[name=\'filter_type\']').val();
+  if (filter_type) {
+    url += '&filter_type=' + encodeURIComponent(filter_type);
+  }
+  
+  var filter_method = $('select[name=\'filter_method\']').val();
+  if (filter_method) {
+    url += '&filter_method=' + encodeURIComponent(filter_method);
+  }
+  
+  var filter_accuracy = $('select[name=\'filter_accuracy\']').val();
+  if (filter_accuracy) {
+    url += '&filter_accuracy=' + encodeURIComponent(filter_accuracy);
+  }
+  
+  location = url;
+});
+
+// مسح الفلاتر
+$('#button-clear').on('click', function() {
+  location = 'index.php?route=crm/sales_forecast&user_token={{ user_token }}';
+});
+
+// إعادة حساب التوقع
+function recalculateForecast(forecast_id) {
+  if (confirm('{{ text_confirm_recalculate }}')) {
+    $.ajax({
+      url: 'index.php?route=crm/sales_forecast/recalculate&user_token={{ user_token }}&forecast_id=' + forecast_id,
+      type: 'post',
+      dataType: 'json',
+      beforeSend: function() {
+        $('.btn').prop('disabled', true);
+      },
+      complete: function() {
+        $('.btn').prop('disabled', false);
+      },
+      success: function(json) {
+        if (json['success']) {
+          location.reload();
+        }
+        
+        if (json['error']) {
+          alert(json['error']);
+        }
+      }
+    });
+  }
+}
+
+// تصدير البيانات
+function exportData() {
+  var url = 'index.php?route=crm/sales_forecast/export&user_token={{ user_token }}';
+  
+  // إضافة الفلاتر الحالية
+  var filter_period = $('select[name=\'filter_period\']').val();
+  if (filter_period) {
+    url += '&filter_period=' + encodeURIComponent(filter_period);
+  }
+  
+  window.open(url, '_blank');
+}
+
+// تفعيل التلميحات
+$('[data-toggle="tooltip"]').tooltip();
+
+// الرسوم البيانية
+$(document).ready(function() {
+  // رسم بياني لدقة التوقعات
+  var ctx1 = document.getElementById('accuracyChart').getContext('2d');
+  var accuracyChart = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: {{ charts.accuracy_chart.labels|json_encode|raw }},
+      datasets: [{
+        label: '{{ text_accuracy }}',
+        data: {{ charts.accuracy_chart.data|json_encode|raw }},
+        borderColor: '#007bff',
+        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+        borderWidth: 2,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            callback: function(value) {
+              return value + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // رسم بياني لمقارنة الطرق
+  var ctx2 = document.getElementById('methodChart').getContext('2d');
+  var methodChart = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: {{ charts.method_comparison.labels|json_encode|raw }},
+      datasets: [{
+        label: '{{ text_avg_accuracy }}',
+        data: {{ charts.method_comparison.data|json_encode|raw }},
+        backgroundColor: [
+          '#007bff',
+          '#28a745',
+          '#ffc107',
+          '#dc3545',
+          '#17a2b8',
+          '#6f42c1'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            callback: function(value) {
+              return value + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+});
+
+// تحديث الإحصائيات كل دقيقة
+setInterval(function() {
+  $.ajax({
+    url: 'index.php?route=crm/sales_forecast/getStatistics&user_token={{ user_token }}',
+    type: 'get',
+    dataType: 'json',
+    success: function(json) {
+      if (json['statistics']) {
+        // تحديث الإحصائيات في الصفحة
+        $('.huge').each(function(index) {
+          var stat_keys = ['total_forecasts', 'active_forecasts', 'avg_accuracy'];
+          if (json['statistics'][stat_keys[index]]) {
+            $(this).text(json['statistics'][stat_keys[index]] + (index === 2 ? '%' : ''));
+          }
+        });
+        
+        if (json['statistics']['best_method']) {
+          $('.huge-text').text(json['statistics']['best_method']);
+        }
+      }
+    }
+  });
+}, 60000);
+</script>
+
+<style>
+.huge {
+  font-size: 40px;
+}
+
+.huge-text {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.panel-green {
+  border-color: #5cb85c;
+}
+
+.panel-green > .panel-heading {
+  border-color: #5cb85c;
+  color: white;
+  background-color: #5cb85c;
+}
+
+.panel-green > a {
+  color: #5cb85c;
+}
+
+.panel-green > a:hover {
+  color: #3d8b3d;
+}
+
+.panel-yellow {
+  border-color: #f0ad4e;
+}
+
+.panel-yellow > .panel-heading {
+  border-color: #f0ad4e;
+  color: white;
+  background-color: #f0ad4e;
+}
+
+.panel-red {
+  border-color: #d9534f;
+}
+
+.panel-red > .panel-heading {
+  border-color: #d9534f;
+  color: white;
+  background-color: #d9534f;
+}
+
+.progress {
+  height: 20px;
+}
+
+.label {
+  font-size: 11px;
+}
+</style>
+
+{{ footer }}

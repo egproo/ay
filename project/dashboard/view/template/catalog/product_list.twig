@@ -1,0 +1,2993 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-bulk-actions" data-toggle="dropdown" class="btn btn-primary dropdown-toggle">
+          <i class="fa fa-cogs"></i> {{ text_bulk_actions }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right">
+          <li><a href="#" id="button-bulk-price-update"><i class="fa fa-tags"></i> {{ text_bulk_price_update }}</a></li>
+          <li><a href="#" id="button-bulk-stock-update"><i class="fa fa-cubes"></i> {{ text_bulk_stock_update }}</a></li>
+          <li><a href="#" id="button-bulk-cost-update"><i class="fa fa-money"></i> {{ text_bulk_cost_update }}</a></li>
+          <li><a href="#" id="button-bulk-status-change"><i class="fa fa-toggle-on"></i> {{ text_bulk_status_change }}</a></li>
+          <li class="divider"></li>
+          <li><a href="#" id="button-print-barcodes"><i class="fa fa-barcode"></i> {{ text_print_barcodes }}</a></li>
+          <li><a href="#" id="button-export-excel"><i class="fa fa-file-excel-o"></i> {{ text_export_excel }}</a></li>
+          <li><a href="#" id="button-export-pdf"><i class="fa fa-file-pdf-o"></i> {{ text_export_pdf }}</a></li>
+        </ul>
+        
+        <button type="button" id="button-inventory-actions" data-toggle="dropdown" class="btn btn-info dropdown-toggle">
+          <i class="fa fa-warehouse"></i> {{ text_inventory_actions }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-right">
+          <li><a href="#" id="button-quick-stock-adjustment"><i class="fa fa-balance-scale"></i> {{ text_quick_stock_adjustment }}</a></li>
+          <li><a href="#" id="button-create-count-sheet"><i class="fa fa-list-alt"></i> {{ text_create_count_sheet }}</a></li>
+          <li><a href="#" id="button-create-transfer"><i class="fa fa-exchange"></i> {{ text_create_transfer }}</a></li>
+          <li class="divider"></li>
+          <li><a href="#" id="button-inventory-report"><i class="fa fa-file-text-o"></i> {{ text_inventory_report }}</a></li>
+          <li><a href="#" id="button-valuation-report"><i class="fa fa-bar-chart"></i> {{ text_valuation_report }}</a></li>
+          <li><a href="#" id="button-view-low-stock"><i class="fa fa-warning"></i> {{ text_low_stock_products }}</a></li>
+        </ul>
+        
+        <button type="button" id="button-filter-toggle" class="btn btn-default"><i class="fa fa-filter"></i> {{ text_filter }}</button>
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-product').submit() : false;"><i class="fa fa-trash-o"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div id="system-message" style="display: none;"></div>
+    
+    <!-- المنتجات ذات المخزون المنخفض -->
+    <div id="low-stock-container" class="alert alert-warning" style="display: none;">
+      <h4><i class="fa fa-exclamation-triangle"></i> {{ text_low_stock_warning }}</h4>
+      <div id="low-stock-items"></div>
+      <button type="button" id="btn-view-all-low-stock" class="btn btn-warning btn-sm">{{ text_view_all_low_stock }}</button>
+      <button type="button" class="btn btn-default btn-sm pull-right" onclick="$('#low-stock-container').slideUp();">{{ text_hide }}</button>
+    </div>
+    
+    <!-- فلاتر البحث -->
+    <div class="panel panel-default filter-panel" style="display: none;">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-name">{{ entry_name }}</label>
+              <input type="text" name="filter_name" value="{{ filter_name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-model">{{ entry_model }}</label>
+              <input type="text" name="filter_model" value="{{ filter_model }}" placeholder="{{ entry_model }}" id="input-model" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-category">{{ entry_category }}</label>
+              <select name="filter_category" id="input-category" class="form-control">
+                <option value="">{{ text_all_categories }}</option>
+                {% for category in categories %}
+                {% if category.category_id == filter_category %}
+                <option value="{{ category.category_id }}" selected="selected">{{ category.name }}</option>
+                {% else %}
+                <option value="{{ category.category_id }}">{{ category.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-unit">{{ entry_unit }}</label>
+              <select name="filter_unit" id="input-unit" class="form-control">
+                <option value="">{{ text_all_units }}</option>
+                {% for unit in units %}
+                {% if unit.unit_id == filter_unit %}
+                <option value="{{ unit.unit_id }}" selected="selected">{{ unit.unit_name }}</option>
+                {% else %}
+                <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-quantity-min">{{ entry_quantity_min }}</label>
+              <input type="text" name="filter_quantity_min" value="{{ filter_quantity_min }}" placeholder="{{ entry_quantity_min }}" id="input-quantity-min" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-quantity-max">{{ entry_quantity_max }}</label>
+              <input type="text" name="filter_quantity_max" value="{{ filter_quantity_max }}" placeholder="{{ entry_quantity_max }}" id="input-quantity-max" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-status">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-control">
+                <option value="">{{ text_all_status }}</option>
+                {% if filter_status == '1' %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                {% endif %}
+                {% if filter_status == '0' %}
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% else %}
+                <option value="0">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-has-image">{{ entry_has_image }}</label>
+              <select name="filter_has_image" id="input-has-image" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% if filter_has_image == '1' %}
+                <option value="1" selected="selected">{{ text_yes }}</option>
+                {% else %}
+                <option value="1">{{ text_yes }}</option>
+                {% endif %}
+                {% if filter_has_image == '0' %}
+                <option value="0" selected="selected">{{ text_no }}</option>
+                {% else %}
+                <option value="0">{{ text_no }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <button type="button" id="button-filter" class="btn btn-primary pull-right"><i class="fa fa-search"></i> {{ button_filter }}</button>
+            <button type="button" id="button-clear-filter" class="btn btn-default pull-right" style="margin-right: 5px;"><i class="fa fa-times"></i> {{ button_clear }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+        <div class="pull-right">
+          <button type="button" class="btn btn-xs btn-default" id="button-column-settings" data-toggle="modal" data-target="#column-settings-modal">
+            <i class="fa fa-cog"></i> {{ text_column_settings }}
+          </button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-product">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-center column-id" data-column="id">{{ column_id }}</td>
+                  <td class="text-center column-image" data-column="image">{{ column_image }}</td>
+                  <td class="text-left column-name" data-column="name">
+                    {% if sort == 'pd.name' %}
+                    <a href="{{ sort_name }}" class="{{ order|lower }}">{{ column_name }}</a>
+                    {% else %}
+                    <a href="{{ sort_name }}">{{ column_name }}</a>
+                    {% endif %}
+                  </td>
+                  <td class="text-left column-model" data-column="model">
+                    {% if sort == 'p.model' %}
+                    <a href="{{ sort_model }}" class="{{ order|lower }}">{{ column_model }}</a>
+                    {% else %}
+                    <a href="{{ sort_model }}">{{ column_model }}</a>
+                    {% endif %}
+                  </td>
+                  <td class="text-center column-unit" data-column="unit">{{ column_unit }}</td>
+                  <td class="text-center column-stock" data-column="stock">
+                    {% if sort == 'quantity' %}
+                    <a href="{{ sort_quantity }}" class="{{ order|lower }}">{{ column_stock }}</a>
+                    {% else %}
+                    <a href="{{ sort_quantity }}">{{ column_stock }}</a>
+                    {% endif %}
+                  </td>
+                  <td class="text-center column-available" data-column="available">{{ column_available }}</td>
+                  <td class="text-right column-price" data-column="price">
+                    {% if sort == 'p.price' %}
+                    <a href="{{ sort_price }}" class="{{ order|lower }}">{{ column_price }}</a>
+                    {% else %}
+                    <a href="{{ sort_price }}">{{ column_price }}</a>
+                    {% endif %}
+                  </td>
+                  <td class="text-center column-special-price" data-column="special-price">{{ column_special_price }}</td>
+                  <td class="text-center column-wholesale-price" data-column="wholesale-price">{{ column_wholesale_price }}</td>
+                  <td class="text-center column-status" data-column="status">
+                    {% if sort == 'p.status' %}
+                    <a href="{{ sort_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                    {% else %}
+                    <a href="{{ sort_status }}">{{ column_status }}</a>
+                    {% endif %}
+                  </td>
+                  <td class="text-right column-action" data-column="action">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if products %}
+                {% for product in products %}
+                <tr {% if product.alert %} class="warning" {% endif %}>
+                  <td class="text-center">
+                    {% if product.product_id in selected %}
+                    <input type="checkbox" name="selected[]" value="{{ product.product_id }}" checked="checked" />
+                    {% else %}
+                    <input type="checkbox" name="selected[]" value="{{ product.product_id }}" />
+                    {% endif %}
+                  </td>
+                  <td class="text-center column-id">{{ product.product_id }}</td>
+                  <td class="text-center column-image">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" class="img-thumbnail" width="40" height="40" />
+                  </td>
+                  <td class="text-left column-name">
+                    {{ product.name }}
+                    {% if product.alert %}
+                    <div><span class="label label-warning"><i class="fa fa-exclamation-triangle"></i> {{ text_low_stock }}</span></div>
+                    {% endif %}
+                  </td>
+                  <td class="text-left column-model">{{ product.model }}</td>
+                  <td class="text-center column-unit">
+                    {% for unit in product.sorted_units %}
+                    <div class="unit-row">{{ unit.unit_name }}</div>
+                    {% endfor %}
+                  </td>
+                  <td class="text-right column-stock">
+                    {% for unit in product.sorted_units %}
+                    <div class="unit-row {% if unit.quantity < unit.min_quantity %}text-danger{% endif %}">
+                      {{ unit.quantity|number_format(2, '.', ',') }}
+                    </div>
+                    {% endfor %}
+                  </td>
+                  <td class="text-right column-available">
+                    {% for unit in product.sorted_units %}
+                    <div class="unit-row">
+                      {{ unit.quantity_available|number_format(2, '.', ',') }}
+                    </div>
+                    {% endfor %}
+                  </td>
+                  <td class="text-right column-price">
+                    {% for unit in product.sorted_units %}
+                    <div class="unit-row">
+                      {% if unit.base_price %}
+                      {{ unit.base_price|number_format(2, '.', ',') }}
+                      {% else %}
+                      <span class="text-muted">-</span>
+                      {% endif %}
+                    </div>
+                    {% endfor %}
+                  </td>
+                  <td class="text-right column-special-price">
+                    {% for unit in product.sorted_units %}
+                    <div class="unit-row">
+                      {% if unit.special_price %}
+                      <span class="text-danger">{{ unit.special_price|number_format(2, '.', ',') }}</span>
+                      {% else %}
+                      <span class="text-muted">-</span>
+                      {% endif %}
+                    </div>
+                    {% endfor %}
+                  </td>
+                  <td class="text-right column-wholesale-price">
+                    {% for unit in product.sorted_units %}
+                    <div class="unit-row">
+                      {% if unit.wholesale_price %}
+                      {{ unit.wholesale_price|number_format(2, '.', ',') }}
+                      {% else %}
+                      <span class="text-muted">-</span>
+                      {% endif %}
+                    </div>
+                    {% endfor %}
+                  </td>
+                  <td class="text-center column-status">
+                    {% if product.status %}
+                    <span class="label label-success">{{ text_enabled }}</span>
+                    {% else %}
+                    <span class="label label-danger">{{ text_disabled }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-right column-action">
+                    <div class="btn-group">
+                      <a href="{{ product.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                      <button type="button" data-toggle="dropdown" class="btn btn-primary btn-sm dropdown-toggle"><span class="caret"></span></button>
+                      <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="#" onclick="viewInventory({{ product.product_id }})"><i class="fa fa-cubes"></i> {{ text_view_inventory }}</a></li>
+                        <li><a href="#" onclick="quickAdjust({{ product.product_id }})"><i class="fa fa-exchange"></i> {{ text_quick_adjustment }}</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#" onclick="printBarcode({{ product.product_id }})"><i class="fa fa-barcode"></i> {{ text_print_barcode }}</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="13">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: إعدادات الأعمدة -->
+<div class="modal fade" id="column-settings-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_column_settings }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-column-settings">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="id" checked> {{ column_id }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="image" checked> {{ column_image }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="name" checked> {{ column_name }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="model" checked> {{ column_model }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="unit" checked> {{ column_unit }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="stock" checked> {{ column_stock }}
+                </label>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="available" checked> {{ column_available }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="price" checked> {{ column_price }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="special-price" checked> {{ column_special_price }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="wholesale-price" checked> {{ column_wholesale_price }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="status" checked> {{ column_status }}
+                </label>
+              </div>
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="columns[]" value="action" checked> {{ column_action }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+        <button type="button" class="btn btn-primary" id="save-column-settings">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تعديل المخزون السريع -->
+<div class="modal fade" id="modal-quick-adjust" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="quick-adjust-title">{{ text_quick_adjustment }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-quick-adjust">
+          <input type="hidden" id="product-id" name="product_id" value="">
+          
+          <div class="form-group">
+            <label for="branch-id" class="control-label">{{ entry_branch }}:</label>
+            <select id="branch-id" name="branch_id" class="form-control" required>
+              <option value="">{{ text_select_branch }}</option>
+              {% for branch in branches %}
+              <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="unit-id" class="control-label">{{ entry_unit }}:</label>
+            <select id="unit-id" name="unit_id" class="form-control" required>
+              <option value="">{{ text_select_unit }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="adjustment-type" class="control-label">{{ entry_adjustment_type }}:</label>
+            <select id="adjustment-type" name="type" class="form-control" required>
+              <option value="adjustment_increase">{{ text_increase }}</option>
+              <option value="adjustment_decrease">{{ text_decrease }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="quantity" class="control-label">{{ entry_quantity }}:</label>
+            <input type="number" id="quantity" name="quantity" class="form-control" value="1" min="0.0001" step="0.0001" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="reason" class="control-label">{{ entry_reason }}:</label>
+            <select id="reason" name="reason" class="form-control" required>
+              <option value="">{{ text_select }}</option>
+              <option value="correction">{{ text_reason_correction }}</option>
+              <option value="damaged">{{ text_reason_damaged }}</option>
+              <option value="expired">{{ text_reason_expired }}</option>
+              <option value="returned">{{ text_reason_returned }}</option>
+              <option value="other">{{ text_reason_other }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="other-reason-group" style="display: none;">
+            <label for="other-reason" class="control-label">{{ text_other_reason }}:</label>
+            <input type="text" id="other-reason" name="other_reason" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="cost" class="control-label">{{ entry_cost }} ({{ text_optional }}):</label>
+            <div class="input-group">
+              <span class="input-group-addon">{{ text_currency_symbol }}</span>
+              <input type="number" id="cost" name="cost" class="form-control" min="0" step="0.0001">
+            </div>
+            <small class="help-block">{{ text_cost_help }}</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="apply-adjustment">{{ button_apply }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: عرض بيانات المخزون -->
+<div class="modal fade" id="modal-inventory-details" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="inventory-title">{{ text_inventory_details }}</h4>
+      </div>
+      <div class="modal-body">
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li role="presentation" class="active"><a href="#tab-inventory" aria-controls="tab-inventory" role="tab" data-toggle="tab">{{ text_inventory }}</a></li>
+          <li role="presentation"><a href="#tab-movements" aria-controls="tab-movements" role="tab" data-toggle="tab">{{ text_movements }}</a></li>
+          <li role="presentation"><a href="#tab-cost-history" aria-controls="tab-cost-history" role="tab" data-toggle="tab">{{ text_cost_history }}</a></li>
+          <li role="presentation"><a href="#tab-price-history" aria-controls="tab-price-history" role="tab" data-toggle="tab">{{ text_price_history }}</a></li>
+        </ul>
+        
+        <!-- Tab panes -->
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active" id="tab-inventory">
+            <div class="table-responsive">
+              <table class="table table-striped" id="inventory-table">
+                <thead>
+                  <tr>
+                    <th>{{ column_branch }}</th>
+                    <th>{{ column_unit }}</th>
+                    <th class="text-right">{{ column_quantity }}</th>
+                    <th class="text-right">{{ column_available }}</th>
+                    <th class="text-right">{{ column_reserved }}</th>
+                    <th class="text-right">{{ column_average_cost }}</th>
+                    <th class="text-right">{{ column_total_value }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- سيتم ملؤها عن طريق الجافاسكريبت -->
+                </tbody>
+                <tfoot id="inventory-summary">
+                  <!-- ملخص المخزون -->
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab-movements">
+            <div class="form-inline filter-bar">
+              <div class="form-group">
+                <label for="movement-type">{{ text_type }}:</label>
+                <select id="movement-type" class="form-control input-sm">
+<option value="">{{ text_all_types }}</option>
+                  <option value="purchase">{{ text_purchase }}</option>
+                  <option value="adjustment_increase">{{ text_adjustment_increase }}</option>
+                  <option value="adjustment_decrease">{{ text_adjustment_decrease }}</option>
+                  <option value="sale">{{ text_sale }}</option>
+                  <option value="transfer_in">{{ text_transfer_in }}</option>
+                  <option value="transfer_out">{{ text_transfer_out }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="movement-branch">{{ text_branch }}:</label>
+                <select id="movement-branch" class="form-control input-sm">
+                  <option value="">{{ text_all_branches }}</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="movement-date-start">{{ text_date_start }}:</label>
+                <div class="input-group date">
+                  <input type="text" name="date_start" placeholder="{{ text_date_start }}" data-date-format="YYYY-MM-DD" id="movement-date-start" class="form-control input-sm" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="movement-date-end">{{ text_date_end }}:</label>
+                <div class="input-group date">
+                  <input type="text" name="date_end" placeholder="{{ text_date_end }}" data-date-format="YYYY-MM-DD" id="movement-date-end" class="form-control input-sm" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default btn-sm"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+              <button type="button" id="filter-movements" class="btn btn-primary btn-sm">{{ button_filter }}</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-striped" id="movements-table">
+                <thead>
+                  <tr>
+                    <th>{{ column_date }}</th>
+                    <th>{{ column_type }}</th>
+                    <th class="text-right">{{ column_quantity }}</th>
+                    <th>{{ column_unit }}</th>
+                    <th>{{ column_branch }}</th>
+                    <th>{{ column_reference }}</th>
+                    <th class="text-right">{{ column_cost }}</th>
+                    <th>{{ column_user }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- سيتم ملؤها عن طريق الجافاسكريبت -->
+                </tbody>
+              </table>
+            </div>
+            <div id="movements-pagination" class="text-center"></div>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab-cost-history">
+            <div class="table-responsive">
+              <table class="table table-striped" id="cost-history-table">
+                <thead>
+                  <tr>
+                    <th>{{ column_date }}</th>
+                    <th>{{ column_unit }}</th>
+                    <th class="text-right">{{ column_old_cost }}</th>
+                    <th class="text-right">{{ column_new_cost }}</th>
+                    <th>{{ column_reason }}</th>
+                    <th>{{ column_notes }}</th>
+                    <th>{{ column_user }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- سيتم ملؤها عن طريق الجافاسكريبت -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div role="tabpanel" class="tab-pane" id="tab-price-history">
+            <div class="table-responsive">
+              <table class="table table-striped" id="price-history-table">
+                <thead>
+                  <tr>
+                    <th>{{ column_date }}</th>
+                    <th>{{ column_unit }}</th>
+                    <th>{{ column_price_type }}</th>
+                    <th class="text-right">{{ column_old_price }}</th>
+                    <th class="text-right">{{ column_new_price }}</th>
+                    <th>{{ column_change_type }}</th>
+                    <th>{{ column_user }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- سيتم ملؤها عن طريق الجافاسكريبت -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: طباعة الباركود -->
+<div class="modal fade" id="modal-barcode" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_print_barcode }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-barcode">
+          <input type="hidden" id="barcode-product-id" name="product_id" value="">
+          
+          <div class="form-group">
+            <label for="barcode-type" class="control-label">{{ text_barcode_type }}:</label>
+            <select id="barcode-type" name="type" class="form-control">
+              <option value="CODE128">CODE128</option>
+              <option value="EAN13">EAN13</option>
+              <option value="UPC">UPC</option>
+              <option value="QR">QR Code</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="barcode-unit" class="control-label">{{ text_unit }}:</label>
+            <select id="barcode-unit" name="unit_id" class="form-control">
+              <option value="">{{ text_loading }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="barcode-quantity" class="control-label">{{ text_quantity }}:</label>
+            <input type="number" id="barcode-quantity" name="quantity" class="form-control" value="1" min="1" step="1">
+          </div>
+          
+          <div class="form-group">
+            <label for="barcode-size" class="control-label">{{ text_label_size }}:</label>
+            <select id="barcode-size" name="size" class="form-control">
+              <option value="small">{{ text_small }}</option>
+              <option value="medium" selected>{{ text_medium }}</option>
+              <option value="large">{{ text_large }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_include_price }}:</label>
+            <div class="radio">
+              <label>
+                <input type="radio" name="include_price" value="1"> {{ text_yes }}
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="include_price" value="0" checked> {{ text_no }}
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="print-barcode">{{ button_print }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تحديث الأسعار الجماعي -->
+<div class="modal fade" id="modal-bulk-price" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_bulk_price_update }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-bulk-price">
+          <div class="form-group">
+            <label for="price-update-type" class="control-label">{{ text_update_type }}:</label>
+            <select id="price-update-type" name="update_type" class="form-control">
+              <option value="percentage">{{ text_percentage }}</option>
+              <option value="fixed">{{ text_fixed }}</option>
+              <option value="cost_based">{{ text_cost_based }}</option>
+              <option value="set">{{ text_set_price }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="percentage-group">
+            <label for="price-percentage" class="control-label">{{ text_percentage_value }}:</label>
+            <div class="input-group">
+              <input type="number" id="price-percentage" name="value" class="form-control" value="0" step="0.01">
+              <span class="input-group-addon">%</span>
+            </div>
+            <small class="help-block">{{ text_percentage_help }}</small>
+          </div>
+          
+          <div class="form-group" id="fixed-group" style="display: none;">
+            <label for="price-fixed" class="control-label">{{ text_fixed_value }}:</label>
+            <div class="input-group">
+              <span class="input-group-addon">{{ text_currency_symbol }}</span>
+              <input type="number" id="price-fixed" name="value" class="form-control" value="0" step="0.01">
+            </div>
+            <small class="help-block">{{ text_fixed_help }}</small>
+          </div>
+          
+          <div class="form-group" id="margin-group" style="display: none;">
+            <label for="price-margin" class="control-label">{{ text_profit_margin }}:</label>
+            <div class="input-group">
+              <input type="number" id="price-margin" name="value" class="form-control" value="20" min="0" max="100" step="0.01">
+              <span class="input-group-addon">%</span>
+            </div>
+            <small class="help-block">{{ text_margin_help }}</small>
+          </div>
+          
+          <div class="form-group" id="set-price-group" style="display: none;">
+            <label for="price-set" class="control-label">{{ text_new_price }}:</label>
+            <div class="input-group">
+              <span class="input-group-addon">{{ text_currency_symbol }}</span>
+              <input type="number" id="price-set" name="value" class="form-control" value="0" min="0" step="0.01">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="price-field" class="control-label">{{ text_price_field }}:</label>
+            <select id="price-field" name="price_field" class="form-control">
+              <option value="base_price">{{ text_base_price }}</option>
+              <option value="special_price">{{ text_special_price }}</option>
+              <option value="wholesale_price">{{ text_wholesale_price }}</option>
+              <option value="half_wholesale_price">{{ text_half_wholesale_price }}</option>
+              <option value="all_prices">{{ text_all_prices }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="price-unit" class="control-label">{{ text_unit }}:</label>
+            <select id="price-unit" name="unit_id" class="form-control">
+              <option value="all">{{ text_all_units }}</option>
+              {% for unit in units %}
+              <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="apply-bulk-price">{{ button_apply }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تحديث المخزون الجماعي -->
+<div class="modal fade" id="modal-bulk-stock" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_bulk_stock_update }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-bulk-stock">
+          <div class="form-group">
+            <label for="stock-branch" class="control-label">{{ text_branch }}:</label>
+            <select id="stock-branch" name="branch_id" class="form-control" required>
+              <option value="">{{ text_select_branch }}</option>
+              {% for branch in branches %}
+              <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="stock-unit" class="control-label">{{ text_unit }}:</label>
+            <select id="stock-unit" name="unit_id" class="form-control" required>
+              <option value="all">{{ text_all_units }}</option>
+              {% for unit in units %}
+              <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="stock-update-type" class="control-label">{{ text_update_type }}:</label>
+            <select id="stock-update-type" name="update_type" class="form-control">
+              <option value="set">{{ text_set_quantity }}</option>
+              <option value="increase">{{ text_increase_by }}</option>
+              <option value="decrease">{{ text_decrease_by }}</option>
+              <option value="percentage">{{ text_percentage }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="stock-value" class="control-label">{{ text_value }}:</label>
+            <input type="number" id="stock-value" name="value" class="form-control" value="0" min="0" step="0.0001">
+          </div>
+          
+          <div class="form-group">
+            <label for="stock-reason" class="control-label">{{ text_reason }}:</label>
+            <select id="stock-reason" name="reason" class="form-control" required>
+              <option value="">{{ text_select }}</option>
+              <option value="correction">{{ text_reason_correction }}</option>
+              <option value="damaged">{{ text_reason_damaged }}</option>
+              <option value="expired">{{ text_reason_expired }}</option>
+              <option value="returned">{{ text_reason_returned }}</option>
+              <option value="other">{{ text_reason_other }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="stock-other-reason-group" style="display: none;">
+            <label for="stock-other-reason" class="control-label">{{ text_other_reason }}:</label>
+            <input type="text" id="stock-other-reason" name="other_reason" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_update_cost }}:</label>
+            <div class="radio">
+              <label>
+                <input type="radio" name="update_cost" value="1"> {{ text_yes }}
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="update_cost" value="0" checked> {{ text_no }}
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group" id="cost-value-group" style="display: none;">
+            <label for="cost-value" class="control-label">{{ text_cost_value }}:</label>
+            <div class="input-group">
+              <span class="input-group-addon">{{ text_currency_symbol }}</span>
+              <input type="number" id="cost-value" name="cost_value" class="form-control" value="0" min="0" step="0.0001">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="apply-bulk-stock">{{ button_apply }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تغيير الحالة الجماعي -->
+<div class="modal fade" id="modal-bulk-status" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_bulk_status_change }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-bulk-status">
+          <div class="form-group">
+            <label for="status-value" class="control-label">{{ text_status }}:</label>
+            <select id="status-value" name="status" class="form-control" required>
+              <option value="">{{ text_select }}</option>
+              <option value="1">{{ text_enabled }}</option>
+              <option value="0">{{ text_disabled }}</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="apply-bulk-status">{{ button_apply }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: نقل المخزون -->
+<div class="modal fade" id="modal-transfer" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_create_transfer }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-transfer">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="source-branch" class="control-label">{{ text_source_branch }}:</label>
+                <select id="source-branch" name="source_branch_id" class="form-control" required>
+                  <option value="">{{ text_select_branch }}</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="destination-branch" class="control-label">{{ text_destination_branch }}:</label>
+                <select id="destination-branch" name="destination_branch_id" class="form-control" required>
+                  <option value="">{{ text_select_branch }}</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="transfer-notes" class="control-label">{{ text_notes }}:</label>
+            <textarea id="transfer-notes" name="notes" class="form-control" rows="2"></textarea>
+          </div>
+          
+          <hr>
+          
+          <div class="form-group">
+            <label for="product-search" class="control-label">{{ text_search_product }}:</label>
+            <div class="input-group">
+              <input type="text" id="product-search" class="form-control" placeholder="{{ text_search_placeholder }}">
+              <span class="input-group-btn">
+                <button type="button" id="add-product" class="btn btn-primary"><i class="fa fa-plus"></i></button>
+              </span>
+            </div>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-striped table-bordered" id="transfer-items">
+              <thead>
+                <tr>
+                  <th>{{ column_product }}</th>
+                  <th>{{ column_unit }}</th>
+                  <th class="text-right">{{ column_available }}</th>
+                  <th class="text-right">{{ column_quantity }}</th>
+                  <th>{{ column_action }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- سيتم ملؤها عن طريق الجافاسكريبت -->
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="create-transfer">{{ button_create }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ورقة الجرد -->
+<div class="modal fade" id="modal-count-sheet" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_create_count_sheet }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-count-sheet">
+          <div class="form-group">
+            <label for="count-branch" class="control-label">{{ text_branch }}:</label>
+            <select id="count-branch" name="branch_id" class="form-control" required>
+              <option value="">{{ text_select_branch }}</option>
+              {% for branch in branches %}
+              <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="count-category" class="control-label">{{ text_category }}:</label>
+            <select id="count-category" name="category_id" class="form-control">
+              <option value="">{{ text_all_categories }}</option>
+              {% for category in categories %}
+              <option value="{{ category.category_id }}">{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="count-type" class="control-label">{{ text_count_type }}:</label>
+            <select id="count-type" name="count_type" class="form-control">
+              <option value="full">{{ text_full_count }}</option>
+              <option value="random">{{ text_random_count }}</option>
+              <option value="abc">{{ text_abc_count }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="count-format" class="control-label">{{ text_output_format }}:</label>
+            <select id="count-format" name="format" class="form-control">
+              <option value="print">{{ text_print }}</option>
+              <option value="excel">{{ text_excel }}</option>
+              <option value="app">{{ text_mobile_app }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="count-notes" class="control-label">{{ text_notes }}:</label>
+            <textarea id="count-notes" name="notes" class="form-control" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="create-count-sheet">{{ button_create }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+// Variables globales
+var user_token = '{{ user_token }}';
+var low_stock_checked = false;
+
+$(document).ready(function() {
+  // تحميل إعدادات الأعمدة من التخزين المحلي
+  var columnSettings = JSON.parse(localStorage.getItem('productListColumns')) || {
+    'id': true,
+    'image': true,
+    'name': true,
+    'model': true,
+    'unit': true,
+    'stock': true,
+    'available': true,
+    'price': true,
+    'special-price': true,
+    'wholesale-price': true,
+    'status': true,
+    'action': true
+  };
+  
+  // تطبيق إعدادات الأعمدة
+  $.each(columnSettings, function(column, visible) {
+    $('.column-' + column).toggle(visible);
+    $('input[name="columns[]"][value="' + column + '"]').prop('checked', visible);
+  });
+  
+  // حفظ إعدادات الأعمدة
+  $('#save-column-settings').on('click', function() {
+    var settings = {};
+    $('input[name="columns[]"]').each(function() {
+      var column = $(this).val();
+      var isChecked = $(this).prop('checked');
+      settings[column] = isChecked;
+      $('.column-' + column).toggle(isChecked);
+    });
+    localStorage.setItem('productListColumns', JSON.stringify(settings));
+    $('#column-settings-modal').modal('hide');
+    
+    // إظهار رسالة نجاح
+    showAlert('success', '{{ text_columns_saved }}');
+  });
+  
+  // إظهار/إخفاء فلاتر البحث
+  $('#button-filter-toggle').on('click', function() {
+    $('.filter-panel').slideToggle();
+  });
+  
+  // التحقق من المخزون المنخفض بعد تحميل الصفحة
+  if (!low_stock_checked) {
+    checkLowStock();
+    low_stock_checked = true;
+  }
+  
+  // تهيئة تواريخ البحث
+  $('.date').datetimepicker({
+    pickTime: false
+  });
+  
+  // إعداد التكملة التلقائية للبحث عن المنتجات
+  setupAutocomplete();
+});
+
+// دالة إظهار تنبيه
+function showAlert(type, message) {
+  var alertClass = 'alert-' + type;
+  var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+  
+  var html = '<div class="alert ' + alertClass + ' alert-dismissible">';
+  html += '<i class="fa ' + icon + '"></i> ' + message;
+  html += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+  html += '</div>';
+  
+  $('#system-message').html(html).show();
+  
+  // إخفاء التنبيه تلقائيًا بعد 3 ثوان
+  setTimeout(function() {
+    $('#system-message').fadeOut('slow', function() {
+      $(this).html('');
+    });
+  }, 3000);
+}
+
+// دالة التحقق من المخزون المنخفض
+function checkLowStock() {
+  $.ajax({
+    url: 'index.php?route=catalog/product/getLowStockProducts&user_token=' + user_token,
+    dataType: 'json',
+    success: function(json) {
+      if (json.products && json.products.length > 0) {
+        // تجهيز قائمة المنتجات ذات المخزون المنخفض
+        var html = '<ul class="list-unstyled">';
+        for (var i = 0; i < Math.min(json.products.length, 5); i++) {
+          var product = json.products[i];
+          html += '<li>';
+          html += '<strong>' + product.name + '</strong> - ' + product.unit_name + ': ';
+          html += '<span class="text-danger">' + product.quantity + '</span> / <span class="text-warning">' + product.min_stock + '</span>';
+          html += ' <a href="javascript:void(0);" onclick="quickAdjust(' + product.product_id + ');" class="btn btn-xs btn-info"><i class="fa fa-exchange"></i></a>';
+          html += '</li>';
+        }
+        html += '</ul>';
+        
+        $('#low-stock-items').html(html);
+        $('#low-stock-container').slideDown();
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+}
+
+// دالة إعداد التكملة التلقائية
+function setupAutocomplete() {
+  // بحث المنتجات
+// بحث المنتجات
+  $('input[name=\'filter_name\']').autocomplete({
+    'source': function(request, response) {
+      $.ajax({
+        url: 'index.php?route=catalog/product/autocomplete&user_token=' + user_token + '&filter_name=' +  encodeURIComponent(request),
+        dataType: 'json',
+        success: function(json) {
+          response($.map(json, function(item) {
+            return {
+              label: item.name,
+              value: item.product_id
+            }
+          }));
+        }
+      });
+    },
+    'select': function(item) {
+      $('input[name=\'filter_name\']').val(item.label);
+    }
+  });
+
+  // بحث الموديل
+  $('input[name=\'filter_model\']').autocomplete({
+    'source': function(request, response) {
+      $.ajax({
+        url: 'index.php?route=catalog/product/autocomplete&user_token=' + user_token + '&filter_model=' +  encodeURIComponent(request),
+        dataType: 'json',
+        success: function(json) {
+          response($.map(json, function(item) {
+            return {
+              label: item.model,
+              value: item.product_id
+            }
+          }));
+        }
+      });
+    },
+    'select': function(item) {
+      $('input[name=\'filter_model\']').val(item.label);
+    }
+  });
+
+  // البحث في نقل المخزون
+  $('#product-search').autocomplete({
+    'source': function(request, response) {
+      var sourceBranchId = $('#source-branch').val();
+      if (!sourceBranchId) {
+        showAlert('warning', '{{ text_select_source_branch_first }}');
+        return;
+      }
+      
+      $.ajax({
+        url: 'index.php?route=catalog/product/autocomplete&user_token=' + user_token + '&filter_name=' +  encodeURIComponent(request),
+        dataType: 'json',
+        success: function(json) {
+          response($.map(json, function(item) {
+            return {
+              label: item.name,
+              value: item.product_id,
+              model: item.model
+            }
+          }));
+        }
+      });
+    },
+    'select': function(item) {
+      $('#product-search').val(item.label);
+      addTransferItem(item.value, item.label);
+    }
+  });
+}
+
+// فلتر المنتجات
+$('#button-filter').on('click', function() {
+  var url = 'index.php?route=catalog/product&user_token={{ user_token }}';
+  
+  var filter_name = $('input[name=\'filter_name\']').val();
+  if (filter_name) {
+    url += '&filter_name=' + encodeURIComponent(filter_name);
+  }
+  
+  var filter_model = $('input[name=\'filter_model\']').val();
+  if (filter_model) {
+    url += '&filter_model=' + encodeURIComponent(filter_model);
+  }
+  
+  var filter_category = $('#input-category').val();
+  if (filter_category) {
+    url += '&filter_category=' + encodeURIComponent(filter_category);
+  }
+  
+  var filter_unit = $('#input-unit').val();
+  if (filter_unit) {
+    url += '&filter_unit=' + encodeURIComponent(filter_unit);
+  }
+  
+  var filter_quantity_min = $('input[name=\'filter_quantity_min\']').val();
+  if (filter_quantity_min) {
+    url += '&filter_quantity_min=' + encodeURIComponent(filter_quantity_min);
+  }
+  
+  var filter_quantity_max = $('input[name=\'filter_quantity_max\']').val();
+  if (filter_quantity_max) {
+    url += '&filter_quantity_max=' + encodeURIComponent(filter_quantity_max);
+  }
+  
+  var filter_status = $('#input-status').val();
+  if (filter_status !== '') {
+    url += '&filter_status=' + encodeURIComponent(filter_status);
+  }
+  
+  var filter_has_image = $('#input-has-image').val();
+  if (filter_has_image !== '') {
+    url += '&filter_has_image=' + encodeURIComponent(filter_has_image);
+  }
+  
+  location = url;
+});
+
+// مسح فلتر المنتجات
+$('#button-clear-filter').on('click', function() {
+  $('input[name=\'filter_name\']').val('');
+  $('input[name=\'filter_model\']').val('');
+  $('#input-category').val('');
+  $('#input-unit').val('');
+  $('input[name=\'filter_quantity_min\']').val('');
+  $('input[name=\'filter_quantity_max\']').val('');
+  $('#input-status').val('');
+  $('#input-has-image').val('');
+  
+  location = 'index.php?route=catalog/product&user_token={{ user_token }}';
+});
+
+// عرض تفاصيل المخزون
+function viewInventory(productId) {
+  // تعيين عنوان المودال
+  $('#inventory-title').text('{{ text_loading }}');
+  
+  // تحميل اسم المنتج
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProduct&user_token=' + user_token,
+    data: { product_id: productId },
+    dataType: 'json',
+    success: function(json) {
+      if (json.product) {
+        $('#inventory-title').text('{{ text_inventory_details }}: ' + json.product.name);
+      }
+    }
+  });
+  
+  // تحميل بيانات المخزون
+  loadInventoryData(productId);
+  
+  // تحميل التبويبات الأخرى عند النقر عليها
+  $('a[href="#tab-movements"]').on('shown.bs.tab', function() {
+    loadMovementsHistory(productId, 1);
+  });
+  
+  $('a[href="#tab-cost-history"]').on('shown.bs.tab', function() {
+    loadCostHistory(productId);
+  });
+  
+  $('a[href="#tab-price-history"]').on('shown.bs.tab', function() {
+    loadPriceHistory(productId);
+  });
+  
+  // فتح المودال
+  $('#modal-inventory-details').modal('show');
+}
+
+// تحميل بيانات المخزون
+function loadInventoryData(productId) {
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProductInventory&user_token=' + user_token,
+    data: { product_id: productId },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#inventory-table tbody').html('<tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> {{ text_loading }}</td></tr>');
+      $('#inventory-summary').html('');
+    },
+    success: function(json) {
+      if (json.inventory && json.inventory.length > 0) {
+        var html = '';
+        var totalQuantity = 0;
+        var totalValue = 0;
+        
+        for (var i = 0; i < json.inventory.length; i++) {
+          var item = json.inventory[i];
+          var reserved = parseFloat(item.quantity) - parseFloat(item.quantity_available);
+          var totalItemValue = parseFloat(item.quantity) * parseFloat(item.average_cost);
+          
+          totalQuantity += parseFloat(item.quantity);
+          totalValue += totalItemValue;
+          
+          html += '<tr>';
+          html += '<td>' + item.branch_name + '</td>';
+          html += '<td>' + item.unit_name + '</td>';
+          html += '<td class="text-right">' + formatNumber(item.quantity) + '</td>';
+          html += '<td class="text-right">' + formatNumber(item.quantity_available) + '</td>';
+          html += '<td class="text-right">' + formatNumber(reserved) + '</td>';
+          html += '<td class="text-right">' + formatNumber(item.average_cost, 4) + '</td>';
+          html += '<td class="text-right">' + formatNumber(totalItemValue, 2) + '</td>';
+          html += '</tr>';
+        }
+        
+        $('#inventory-table tbody').html(html);
+        
+        // إضافة ملخص المخزون
+        var summary = '<tr class="info">';
+        summary += '<td colspan="2"><strong>{{ text_total }}</strong></td>';
+        summary += '<td class="text-right"><strong>' + formatNumber(totalQuantity) + '</strong></td>';
+        summary += '<td colspan="3"></td>';
+        summary += '<td class="text-right"><strong>' + formatNumber(totalValue, 2) + '</strong></td>';
+        summary += '</tr>';
+        
+        $('#inventory-summary').html(summary);
+      } else {
+        $('#inventory-table tbody').html('<tr><td colspan="7" class="text-center">{{ text_no_results }}</td></tr>');
+      }
+    },
+    error: function() {
+      $('#inventory-table tbody').html('<tr><td colspan="7" class="text-center text-danger">{{ text_error_loading }}</td></tr>');
+    }
+  });
+}
+
+// تحميل سجل حركات المخزون
+function loadMovementsHistory(productId, page) {
+  page = page || 1;
+  var type = $('#movement-type').val();
+  var branchId = $('#movement-branch').val();
+  var dateStart = $('#movement-date-start').val();
+  var dateEnd = $('#movement-date-end').val();
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/getInventoryMovements&user_token=' + user_token,
+    type: 'post',
+    data: {
+      product_id: productId,
+      type: type,
+      branch_id: branchId,
+      date_start: dateStart,
+      date_end: dateEnd,
+      page: page
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#movements-table tbody').html('<tr><td colspan="8" class="text-center"><i class="fa fa-spinner fa-spin"></i> {{ text_loading }}</td></tr>');
+    },
+    success: function(json) {
+      if (json.movements && json.movements.length > 0) {
+        var html = '';
+        
+        for (var i = 0; i < json.movements.length; i++) {
+          var movement = json.movements[i];
+          var rowClass = '';
+          
+          if (movement.type === 'purchase' || movement.type === 'adjustment_increase' || movement.type === 'transfer_in') {
+            rowClass = 'success';
+          } else if (movement.type === 'sale' || movement.type === 'adjustment_decrease' || movement.type === 'transfer_out') {
+            rowClass = 'danger';
+          }
+          
+          html += '<tr class="' + rowClass + '">';
+          html += '<td>' + movement.date_added + '</td>';
+          html += '<td>' + getMovementTypeName(movement.type) + '</td>';
+          html += '<td class="text-right">' + formatNumber(movement.quantity) + '</td>';
+          html += '<td>' + movement.unit_name + '</td>';
+          html += '<td>' + movement.branch_name + '</td>';
+          html += '<td>' + (movement.reference || '') + '</td>';
+          html += '<td class="text-right">' + (movement.cost || '') + '</td>';
+          html += '<td>' + (movement.user_name || '') + '</td>';
+          html += '</tr>';
+        }
+        
+        $('#movements-table tbody').html(html);
+        
+        // تحديث الترقيم
+        if (json.pagination) {
+          $('#movements-pagination').html(json.pagination);
+        } else {
+          $('#movements-pagination').html('');
+        }
+      } else {
+        $('#movements-table tbody').html('<tr><td colspan="8" class="text-center">{{ text_no_results }}</td></tr>');
+        $('#movements-pagination').html('');
+      }
+    },
+    error: function() {
+      $('#movements-table tbody').html('<tr><td colspan="8" class="text-center text-danger">{{ text_error_loading }}</td></tr>');
+    }
+  });
+}
+
+// تحميل سجل تكلفة المنتج
+function loadCostHistory(productId) {
+  $.ajax({
+    url: 'index.php?route=catalog/product/getCostHistory&user_token=' + user_token,
+    data: { product_id: productId },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#cost-history-table tbody').html('<tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> {{ text_loading }}</td></tr>');
+    },
+    success: function(json) {
+      if (json.history && json.history.length > 0) {
+        var html = '';
+        
+        for (var i = 0; i < json.history.length; i++) {
+          var item = json.history[i];
+          var changeClass = '';
+          
+          if (parseFloat(item.new_cost) > parseFloat(item.old_cost)) {
+            changeClass = 'danger';
+          } else if (parseFloat(item.new_cost) < parseFloat(item.old_cost)) {
+            changeClass = 'success';
+          }
+          
+          html += '<tr class="' + changeClass + '">';
+          html += '<td>' + item.date_added + '</td>';
+          html += '<td>' + item.unit_name + '</td>';
+          html += '<td class="text-right">' + formatNumber(item.old_cost, 4) + '</td>';
+          html += '<td class="text-right">' + formatNumber(item.new_cost, 4) + '</td>';
+          html += '<td>' + getCostChangeReasonName(item.change_reason) + '</td>';
+          html += '<td>' + (item.notes || '') + '</td>';
+          html += '<td>' + (item.user_name || '') + '</td>';
+          html += '</tr>';
+        }
+        
+        $('#cost-history-table tbody').html(html);
+      } else {
+        $('#cost-history-table tbody').html('<tr><td colspan="7" class="text-center">{{ text_no_results }}</td></tr>');
+      }
+    },
+    error: function() {
+      $('#cost-history-table tbody').html('<tr><td colspan="7" class="text-center text-danger">{{ text_error_loading }}</td></tr>');
+    }
+  });
+}
+
+// تحميل سجل أسعار المنتج
+function loadPriceHistory(productId) {
+  $.ajax({
+    url: 'index.php?route=catalog/product/getPriceHistory&user_token=' + user_token,
+    data: { product_id: productId },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#price-history-table tbody').html('<tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> {{ text_loading }}</td></tr>');
+    },
+    success: function(json) {
+      if (json.history && json.history.length > 0) {
+        var html = '';
+        
+        for (var i = 0; i < json.history.length; i++) {
+          var item = json.history[i];
+          var changeClass = '';
+          
+          if (parseFloat(item.new_price) > parseFloat(item.old_price)) {
+            changeClass = 'danger';
+          } else if (parseFloat(item.new_price) < parseFloat(item.old_price)) {
+            changeClass = 'success';
+          }
+          
+          html += '<tr class="' + changeClass + '">';
+          html += '<td>' + item.change_date + '</td>';
+          html += '<td>' + item.unit_name + '</td>';
+          html += '<td>' + getPriceTypeName(item.price_type) + '</td>';
+          html += '<td class="text-right">' + formatNumber(item.old_price, 2) + '</td>';
+          html += '<td class="text-right">' + formatNumber(item.new_price, 2) + '</td>';
+          html += '<td>' + item.change_type + '</td>';
+          html += '<td>' + (item.user_name || '') + '</td>';
+          html += '</tr>';
+        }
+        
+        $('#price-history-table tbody').html(html);
+      } else {
+        $('#price-history-table tbody').html('<tr><td colspan="7" class="text-center">{{ text_no_results }}</td></tr>');
+      }
+    },
+    error: function() {
+      $('#price-history-table tbody').html('<tr><td colspan="7" class="text-center text-danger">{{ text_error_loading }}</td></tr>');
+    }
+  });
+}
+
+// التعديل السريع للمخزون
+function quickAdjust(productId) {
+  // تحميل بيانات المنتج
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProduct&user_token=' + user_token,
+    data: { product_id: productId },
+    dataType: 'json',
+    success: function(json) {
+      if (json.product) {
+        $('#quick-adjust-title').text('{{ text_quick_adjustment }}: ' + json.product.name);
+        $('#product-id').val(productId);
+        
+        // تحميل وحدات المنتج
+        loadProductUnits(productId);
+        
+        // فتح المودال
+        $('#modal-quick-adjust').modal('show');
+      } else {
+        showAlert('danger', '{{ text_product_not_found }}');
+      }
+    },
+    error: function() {
+      showAlert('danger', '{{ text_error_loading }}');
+    }
+  });
+}
+
+// تحميل وحدات المنتج
+function loadProductUnits(productId) {
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProductUnits&user_token=' + user_token,
+    data: { product_id: productId },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#unit-id').html('<option value="">{{ text_loading }}</option>');
+    },
+    success: function(json) {
+      var html = '<option value="">{{ text_select_unit }}</option>';
+      
+      if (json.length > 0) {
+        for (var i = 0; i < json.length; i++) {
+          html += '<option value="' + json[i].unit_id + '">' + json[i].unit_name + '</option>';
+        }
+      }
+      
+      $('#unit-id').html(html);
+    },
+    error: function() {
+      $('#unit-id').html('<option value="">{{ text_error_loading }}</option>');
+    }
+  });
+}
+
+// تطبيق التعديل السريع للمخزون
+$('#apply-adjustment').on('click', function() {
+  // التحقق من صحة المدخلات
+  var productId = $('#product-id').val();
+  var branchId = $('#branch-id').val();
+  var unitId = $('#unit-id').val();
+  var type = $('#adjustment-type').val();
+  var quantity = $('#quantity').val();
+  var reason = $('#reason').val();
+  var otherReason = $('#other-reason').val();
+  var cost = $('#cost').val();
+  
+  // التحقق من الحقول المطلوبة
+  if (!branchId) {
+    showAlert('warning', '{{ text_select_branch_first }}');
+    return;
+  }
+  
+  if (!unitId) {
+    showAlert('warning', '{{ text_select_unit_first }}');
+    return;
+  }
+  
+  if (!quantity || parseFloat(quantity) <= 0) {
+    showAlert('warning', '{{ text_quantity_must_be_positive }}');
+    return;
+  }
+  
+  if (!reason) {
+    showAlert('warning', '{{ text_select_reason_first }}');
+    return;
+  }
+  
+  if (reason === 'other' && !otherReason) {
+    showAlert('warning', '{{ text_specify_other_reason }}');
+    return;
+  }
+  
+  // تجهيز البيانات
+  var reasonText = reason === 'other' ? otherReason : $('#reason option:selected').text();
+  
+  // تنفيذ التعديل
+  $.ajax({
+    url: 'index.php?route=catalog/product/addStockMovement&user_token=' + user_token,
+    type: 'post',
+    data: {
+      product_id: productId,
+      branch_id: branchId,
+      unit_id: unitId,
+      type: type,
+      quantity: quantity,
+      reason: reasonText,
+      cost: cost
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#apply-adjustment').button('loading');
+    },
+    complete: function() {
+      $('#apply-adjustment').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#modal-quick-adjust').modal('hide');
+        showAlert('success', json.success);
+        
+        // إعادة تحميل الصفحة بعد فترة وجيزة
+        setTimeout(function() {
+          location.reload();
+        }, 1500);
+      } else if (json.error) {
+        showAlert('danger', json.error);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      showAlert('danger', thrownError + "\r\n" + xhr.statusText);
+    }
+  });
+});
+
+// طباعة باركود المنتج
+function printBarcode(productId) {
+  // تحميل بيانات المنتج
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProduct&user_token=' + user_token,
+    data: { product_id: productId },
+    dataType: 'json',
+    success: function(json) {
+      if (json.product) {
+        $('#barcode-product-id').val(productId);
+        
+        // تحميل وحدات المنتج
+        $.ajax({
+          url: 'index.php?route=catalog/product/getProductUnits&user_token=' + user_token,
+          data: { product_id: productId },
+          dataType: 'json',
+          beforeSend: function() {
+            $('#barcode-unit').html('<option value="">{{ text_loading }}</option>');
+          },
+          success: function(units) {
+            var html = '<option value="all">{{ text_all_units }}</option>';
+            
+            if (units.length > 0) {
+              for (var i = 0; i < units.length; i++) {
+                html += '<option value="' + units[i].unit_id + '">' + units[i].unit_name + '</option>';
+              }
+            }
+            
+            $('#barcode-unit').html(html);
+            
+            // فتح المودال
+            $('#modal-barcode').modal('show');
+          },
+          error: function() {
+            $('#barcode-unit').html('<option value="">{{ text_error_loading }}</option>');
+          }
+        });
+      } else {
+        showAlert('danger', '{{ text_product_not_found }}');
+      }
+    },
+    error: function() {
+      showAlert('danger', '{{ text_error_loading }}');
+    }
+  });
+}
+
+// إظهار الحقل الإضافي عند اختيار "أخرى" كسبب للتعديل
+$('#reason').on('change', function() {
+  if ($(this).val() === 'other') {
+    $('#other-reason-group').slideDown();
+  } else {
+    $('#other-reason-group').slideUp();
+  }
+});
+
+$('#stock-reason').on('change', function() {
+  if ($(this).val() === 'other') {
+    $('#stock-other-reason-group').slideDown();
+  } else {
+    $('#stock-other-reason-group').slideUp();
+  }
+});
+
+// إظهار حقل قيمة التكلفة عند اختيار تحديث التكلفة
+$('input[name="update_cost"]').on('change', function() {
+  if ($(this).val() === '1') {
+    $('#cost-value-group').slideDown();
+  } else {
+    $('#cost-value-group').slideUp();
+  }
+});
+
+// تغيير عرض الحقول حسب نوع تحديث السعر
+$('#price-update-type').on('change', function() {
+  var type = $(this).val();
+  
+  $('#percentage-group, #fixed-group, #margin-group, #set-price-group').hide();
+  
+  if (type === 'percentage') {
+    $('#percentage-group').show();
+  } else if (type === 'fixed') {
+    $('#fixed-group').show();
+  } else if (type === 'cost_based') {
+    $('#margin-group').show();
+  } else if (type === 'set') {
+    $('#set-price-group').show();
+  }
+});
+
+// طباعة الباركود
+$('#print-barcode').on('click', function() {
+  var productId = $('#barcode-product-id').val();
+  var barcodeType = $('#barcode-type').val();
+  var unitId = $('#barcode-unit').val() || 'all';
+  var quantity = $('#barcode-quantity').val();
+  var size = $('#barcode-size').val();
+  var includePrice = $('input[name="include_price"]:checked').val();
+  
+  var url = 'index.php?route=catalog/product/printBarcodes&user_token=' + user_token;
+  url += '&product_ids[]=' + productId;
+  url += '&type=' + barcodeType;
+  url += '&unit_id=' + unitId;
+  url += '&quantity=' + quantity;
+  url += '&size=' + size;
+  url += '&include_price=' + includePrice;
+  
+  window.open(url, '_blank');
+  $('#modal-barcode').modal('hide');
+});
+
+// تفعيل الأزرار الرئيسية
+$('#button-bulk-price-update').on('click', function() {
+  // التحقق من اختيار منتجات
+  if ($('input[name^="selected"]:checked').length === 0) {
+    showAlert('warning', '{{ text_select_products_first }}');
+    return;
+  }
+  
+  $('#modal-bulk-price').modal('show');
+});
+
+$('#button-bulk-stock-update').on('click', function() {
+  // التحقق من اختيار منتجات
+  if ($('input[name^="selected"]:checked').length === 0) {
+    showAlert('warning', '{{ text_select_products_first }}');
+    return;
+  }
+  
+  $('#modal-bulk-stock').modal('show');
+});
+
+$('#button-bulk-status-change').on('click', function() {
+  // التحقق من اختيار منتجات
+  if ($('input[name^="selected"]:checked').length === 0) {
+    showAlert('warning', '{{ text_select_products_first }}');
+    return;
+  }
+  
+  $('#modal-bulk-status').modal('show');
+});
+
+$('#button-create-count-sheet').on('click', function() {
+  $('#modal-count-sheet').modal('show');
+});
+
+$('#button-create-transfer').on('click', function() {
+  $('#modal-transfer').modal('show');
+});
+
+$('#button-print-barcodes').on('click', function() {
+  // التحقق من اختيار منتجات
+  if ($('input[name^="selected"]:checked').length === 0) {
+    showAlert('warning', '{{ text_select_products_first }}');
+    return;
+  }
+  
+  var url = 'index.php?route=catalog/product/printBarcodes&user_token=' + user_token;
+  
+  $('input[name^="selected"]:checked').each(function() {
+    url += '&product_ids[]=' + $(this).val();
+  });
+  
+  window.open(url, '_blank');
+});
+
+$('#button-export-excel').on('click', function() {
+  // التحقق من اختيار منتجات
+  var selectedProducts = $('input[name^="selected"]:checked');
+  var url = 'index.php?route=catalog/product/exportExcel&user_token=' + user_token;
+  
+  if (selectedProducts.length > 0) {
+    selectedProducts.each(function() {
+      url += '&product_ids[]=' + $(this).val();
+    });
+  }
+  
+  location = url;
+});
+
+$('#button-export-pdf').on('click', function() {
+  // التحقق من اختيار منتجات
+  var selectedProducts = $('input[name^="selected"]:checked');
+  var url = 'index.php?route=catalog/product/exportPdf&user_token=' + user_token;
+  
+  if (selectedProducts.length > 0) {
+    selectedProducts.each(function() {
+      url += '&product_ids[]=' + $(this).val();
+    });
+  }
+  
+  window.open(url, '_blank');
+});
+
+// عرض كل المنتجات ذات المخزون المنخفض
+$('#btn-view-all-low-stock').on('click', function() {
+  location = 'index.php?route=catalog/product&user_token={{ user_token }}&filter_low_stock=1';
+});
+
+// تنفيذ تحديث الأسعار الجماعي
+$('#apply-bulk-price').on('click', function() {
+  var selectedProducts = [];
+  $('input[name^="selected"]:checked').each(function() {
+    selectedProducts.push($(this).val());
+  });
+  
+  if (selectedProducts.length === 0) {
+    showAlert('warning', '{{ text_select_products_first }}');
+    return;
+  }
+  
+  var updateType = $('#price-update-type').val();
+  var value;
+  
+  if (updateType === 'percentage') {
+    value = $('#price-percentage').val();
+  } else if (updateType === 'fixed') {
+    value = $('#price-fixed').val();
+  } else if (updateType === 'cost_based') {
+    value = $('#price-margin').val();
+  } else if (updateType === 'set') {
+    value = $('#price-set').val();
+  }
+  
+  var priceField = $('#price-field').val();
+  var unitId = $('#price-unit').val();
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/bulkUpdatePrices&user_token=' + user_token,
+    type: 'post',
+    data: {
+      products: selectedProducts,
+      update_type: updateType,
+      value: value,
+      price_field: priceField,
+      unit_id: unitId
+    },
+dataType: 'json',
+    beforeSend: function() {
+      $('#apply-bulk-price').button('loading');
+    },
+    complete: function() {
+      $('#apply-bulk-price').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#modal-bulk-price').modal('hide');
+        showAlert('success', json.success);
+        
+        // إعادة تحميل الصفحة بعد فترة وجيزة
+        setTimeout(function() {
+          location.reload();
+        }, 1500);
+      } else if (json.error) {
+        showAlert('danger', json.error);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      showAlert('danger', thrownError + "\r\n" + xhr.statusText);
+    }
+  });
+});
+
+// تنفيذ تحديث المخزون الجماعي
+$('#apply-bulk-stock').on('click', function() {
+  var selectedProducts = [];
+  $('input[name^="selected"]:checked').each(function() {
+    selectedProducts.push($(this).val());
+  });
+  
+  if (selectedProducts.length === 0) {
+    showAlert('warning', '{{ text_select_products_first }}');
+    return;
+  }
+  
+  var branchId = $('#stock-branch').val();
+  var unitId = $('#stock-unit').val();
+  var updateType = $('#stock-update-type').val();
+  var value = $('#stock-value').val();
+  var reason = $('#stock-reason').val();
+  var otherReason = $('#stock-other-reason').val();
+  var updateCost = $('input[name="update_cost"]:checked').val();
+  var costValue = $('#cost-value').val();
+  
+  // التحقق من الحقول المطلوبة
+  if (!branchId) {
+    showAlert('warning', '{{ text_select_branch_first }}');
+    return;
+  }
+  
+  if (!unitId) {
+    showAlert('warning', '{{ text_select_unit_first }}');
+    return;
+  }
+  
+  if (!value || parseFloat(value) < 0) {
+    showAlert('warning', '{{ text_enter_valid_value }}');
+    return;
+  }
+  
+  if (!reason) {
+    showAlert('warning', '{{ text_select_reason_first }}');
+    return;
+  }
+  
+  if (reason === 'other' && !otherReason) {
+    showAlert('warning', '{{ text_specify_other_reason }}');
+    return;
+  }
+  
+  // تجهيز البيانات
+  var reasonText = reason === 'other' ? otherReason : $('#stock-reason option:selected').text();
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/bulkStockUpdate&user_token=' + user_token,
+    type: 'post',
+    data: {
+      products: selectedProducts,
+      branch_id: branchId,
+      unit_id: unitId,
+      update_type: updateType,
+      value: value,
+      reason: reasonText,
+      update_cost: updateCost,
+      cost_value: costValue
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#apply-bulk-stock').button('loading');
+    },
+    complete: function() {
+      $('#apply-bulk-stock').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#modal-bulk-stock').modal('hide');
+        showAlert('success', json.success);
+        
+        // إعادة تحميل الصفحة بعد فترة وجيزة
+        setTimeout(function() {
+          location.reload();
+        }, 1500);
+      } else if (json.error) {
+        showAlert('danger', json.error);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      showAlert('danger', thrownError + "\r\n" + xhr.statusText);
+    }
+  });
+});
+
+// تنفيذ تحديث الحالة الجماعي
+$('#apply-bulk-status').on('click', function() {
+  var selectedProducts = [];
+  $('input[name^="selected"]:checked').each(function() {
+    selectedProducts.push($(this).val());
+  });
+  
+  if (selectedProducts.length === 0) {
+    showAlert('warning', '{{ text_select_products_first }}');
+    return;
+  }
+  
+  var status = $('#status-value').val();
+  
+  if (!status) {
+    showAlert('warning', '{{ text_select_status_first }}');
+    return;
+  }
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/bulkStatusUpdate&user_token=' + user_token,
+    type: 'post',
+    data: {
+      products: selectedProducts,
+      status: status
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#apply-bulk-status').button('loading');
+    },
+    complete: function() {
+      $('#apply-bulk-status').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#modal-bulk-status').modal('hide');
+        showAlert('success', json.success);
+        
+        // إعادة تحميل الصفحة بعد فترة وجيزة
+        setTimeout(function() {
+          location.reload();
+        }, 1500);
+      } else if (json.error) {
+        showAlert('danger', json.error);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      showAlert('danger', thrownError + "\r\n" + xhr.statusText);
+    }
+  });
+});
+
+// إنشاء نقل المخزون
+$('#create-transfer').on('click', function() {
+  var sourceBranchId = $('#source-branch').val();
+  var destinationBranchId = $('#destination-branch').val();
+  var notes = $('#transfer-notes').val();
+  
+  // التحقق من اختيار الفروع
+  if (!sourceBranchId) {
+    showAlert('warning', '{{ text_select_source_branch_first }}');
+    return;
+  }
+  
+  if (!destinationBranchId) {
+    showAlert('warning', '{{ text_select_destination_branch_first }}');
+    return;
+  }
+  
+  if (sourceBranchId === destinationBranchId) {
+    showAlert('warning', '{{ text_source_destination_same }}');
+    return;
+  }
+  
+  // التحقق من إضافة منتجات للنقل
+  var items = [];
+  var validItems = true;
+  
+  $('#transfer-items tbody tr').each(function() {
+    var productId = $(this).data('product-id');
+    var unitId = $(this).find('select[name^="unit_id"]').val();
+    var quantity = $(this).find('input[name^="quantity"]').val();
+    var available = parseFloat($(this).find('select[name^="unit_id"] option:selected').data('available') || 0);
+    
+    if (!productId || !unitId || !quantity) {
+      validItems = false;
+      return false;
+    }
+    
+    if (parseFloat(quantity) <= 0) {
+      showAlert('warning', '{{ text_quantity_must_be_positive }}');
+      validItems = false;
+      return false;
+    }
+    
+    if (parseFloat(quantity) > available) {
+      showAlert('warning', '{{ text_quantity_exceeds_available }}');
+      validItems = false;
+      return false;
+    }
+    
+    items.push({
+      product_id: productId,
+      unit_id: unitId,
+      quantity: quantity
+    });
+  });
+  
+  if (!validItems) {
+    return;
+  }
+  
+  if (items.length === 0) {
+    showAlert('warning', '{{ text_add_transfer_items_first }}');
+    return;
+  }
+  
+  // إرسال البيانات
+  $.ajax({
+    url: 'index.php?route=catalog/product/transferStock&user_token=' + user_token,
+    type: 'post',
+    data: {
+      source_branch_id: sourceBranchId,
+      destination_branch_id: destinationBranchId,
+      notes: notes,
+      items: items
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#create-transfer').button('loading');
+    },
+    complete: function() {
+      $('#create-transfer').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#modal-transfer').modal('hide');
+        showAlert('success', json.success);
+        
+        // إعادة تحميل الصفحة بعد فترة وجيزة
+        setTimeout(function() {
+          location.reload();
+        }, 1500);
+      } else if (json.error) {
+        showAlert('danger', json.error);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      showAlert('danger', thrownError + "\r\n" + xhr.statusText);
+    }
+  });
+});
+
+// إضافة عنصر إلى قائمة النقل
+function addTransferItem(productId, productName) {
+  var sourceBranchId = $('#source-branch').val();
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProductInventory&user_token=' + user_token,
+    type: 'post',
+    data: {
+      product_id: productId,
+      branch_id: sourceBranchId
+    },
+    dataType: 'json',
+    success: function(json) {
+      if (json.inventory && json.inventory.length > 0) {
+        var html = '<tr data-product-id="' + productId + '">';
+        html += '<td>' + productName + '</td>';
+        html += '<td>';
+        html += '<select name="unit_id[]" class="form-control unit-select">';
+        
+        for (var i = 0; i < json.inventory.length; i++) {
+          var item = json.inventory[i];
+          html += '<option value="' + item.unit_id + '" data-available="' + item.quantity_available + '">';
+          html += item.unit_name;
+          html += '</option>';
+        }
+        
+        html += '</select>';
+        html += '</td>';
+        html += '<td class="text-right available-quantity">' + formatNumber(json.inventory[0].quantity_available) + '</td>';
+        html += '<td><input type="number" name="quantity[]" class="form-control quantity-input" value="1" min="0.0001" step="0.0001" max="' + json.inventory[0].quantity_available + '"></td>';
+        html += '<td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-item"><i class="fa fa-trash-o"></i></button></td>';
+        html += '</tr>';
+        
+        $('#transfer-items tbody').append(html);
+        $('#product-search').val('');
+        
+        // تحديث الكمية المتاحة عند تغيير الوحدة
+        $('.unit-select').off('change').on('change', function() {
+          var available = $(this).find('option:selected').data('available');
+          var row = $(this).closest('tr');
+          row.find('.available-quantity').text(formatNumber(available));
+          row.find('.quantity-input').attr('max', available);
+        });
+        
+        // حذف العنصر
+        $('.remove-item').off('click').on('click', function() {
+          $(this).closest('tr').remove();
+        });
+        
+        // التحقق من الكمية
+        $('.quantity-input').off('change').on('change', function() {
+          var max = parseFloat($(this).attr('max'));
+          var val = parseFloat($(this).val());
+          
+          if (isNaN(val) || val <= 0) {
+            $(this).val(1);
+          } else if (val > max) {
+            showAlert('warning', '{{ text_quantity_exceeds_available }}');
+            $(this).val(max);
+          }
+        });
+      } else {
+        showAlert('warning', '{{ text_no_inventory_for_product }}');
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      showAlert('danger', thrownError + "\r\n" + xhr.statusText);
+    }
+  });
+}
+
+// إنشاء ورقة جرد المخزون
+$('#create-count-sheet').on('click', function() {
+  var branchId = $('#count-branch').val();
+  var categoryId = $('#count-category').val();
+  var countType = $('#count-type').val();
+  var format = $('#count-format').val();
+  var notes = $('#count-notes').val();
+  
+  // التحقق من اختيار الفرع
+  if (!branchId) {
+    showAlert('warning', '{{ text_select_branch_first }}');
+    return;
+  }
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/createInventoryCountSheet&user_token=' + user_token,
+    type: 'post',
+    data: {
+      branch_id: branchId,
+      filter_category_id: categoryId,
+      count_type: countType,
+      sheet_format: format,
+      notes: notes
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#create-count-sheet').button('loading');
+    },
+    complete: function() {
+      $('#create-count-sheet').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#modal-count-sheet').modal('hide');
+        showAlert('success', json.success);
+        
+        if (json.redirect) {
+          setTimeout(function() {
+            window.open(json.redirect, '_blank');
+          }, 1000);
+        }
+      } else if (json.error) {
+        showAlert('danger', json.error);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      showAlert('danger', thrownError + "\r\n" + xhr.statusText);
+    }
+  });
+});
+
+// تصفية سجل الحركات
+$('#filter-movements').on('click', function() {
+  var productId = $('#inventory-title').data('product-id');
+  loadMovementsHistory(productId, 1);
+});
+
+// تنسيق الأرقام
+function formatNumber(number, decimals) {
+  decimals = typeof decimals !== 'undefined' ? decimals : 2;
+  return parseFloat(number).toFixed(decimals).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+}
+
+// الحصول على اسم نوع الحركة
+function getMovementTypeName(type) {
+  var types = {
+    'purchase': '{{ text_purchase }}',
+    'sale': '{{ text_sale }}',
+    'adjustment_increase': '{{ text_adjustment_increase }}',
+    'adjustment_decrease': '{{ text_adjustment_decrease }}',
+    'transfer_in': '{{ text_transfer_in }}',
+    'transfer_out': '{{ text_transfer_out }}',
+    'initial': '{{ text_initial }}',
+    'return_in': '{{ text_return_in }}',
+    'return_out': '{{ text_return_out }}'
+  };
+  
+  return types[type] || type;
+}
+
+// الحصول على اسم سبب تغيير التكلفة
+function getCostChangeReasonName(reason) {
+  var reasons = {
+    'purchase': '{{ text_purchase }}',
+    'manual': '{{ text_manual }}',
+    'adjustment': '{{ text_adjustment }}',
+    'transfer': '{{ text_transfer }}'
+  };
+  
+  return reasons[reason] || reason;
+}
+
+// الحصول على اسم نوع السعر
+function getPriceTypeName(type) {
+  var types = {
+    'base_price': '{{ text_base_price }}',
+    'special_price': '{{ text_special_price }}',
+    'wholesale_price': '{{ text_wholesale_price }}',
+    'half_wholesale_price': '{{ text_half_wholesale_price }}',
+    'custom_price': '{{ text_custom_price }}'
+  };
+  
+  return types[type] || type;
+}
+//--></script>
+
+<style type="text/css">
+/* تنسيقات عامة */
+.table tbody tr.info {
+  background-color: #d9edf7;
+}
+
+.table tbody tr.success {
+  background-color: #dff0d8;
+}
+
+.table tbody tr.danger {
+  background-color: #f2dede;
+}
+
+.table tbody tr.warning {
+  background-color: #fcf8e3;
+}
+
+/* تنسيقات وحدات المنتج */
+.unit-row {
+  padding: 2px 0;
+  margin-bottom: 3px;
+  border-bottom: 1px dotted #eee;
+}
+
+.unit-row:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+/* تنسيقات المخزون المنخفض */
+#low-stock-container {
+  margin-bottom: 15px;
+}
+
+#low-stock-items {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+/* تنسيقات الفلاتر */
+.filter-panel {
+  margin-bottom: 15px;
+}
+
+.filter-bar {
+  margin-bottom: 15px;
+}
+
+.filter-bar .form-group {
+  margin-right: 15px;
+  margin-bottom: 10px;
+}
+
+/* تنسيقات التبويبات */
+.nav-tabs {
+  margin-bottom: 15px;
+}
+
+/* تنسيقات أخرى */
+.help-block {
+  font-size: 12px;
+  color: #777;
+}
+
+.dropdown-menu > li > a {
+  padding: 5px 15px;
+}
+
+.dropdown-menu > li > a:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #ccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+
+.dropdown-submenu:hover > a:after {
+  border-left-color: #fff;
+}
+
+.dropdown-submenu .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  -webkit-border-radius: 0 6px 6px 6px;
+  -moz-border-radius: 0 6px 6px 6px;
+  border-radius: 0 6px 6px 6px;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+}
+
+@media print {
+  .btn, .breadcrumb, .page-header, .filter-panel {
+    display: none !important;
+  }
+  
+  .container-fluid {
+    padding: 0;
+  }
+  
+  .container-fluid > .panel {
+    border: none;
+    margin: 0;
+  }
+}
+</style>
+
+<!-- Quick Stock Adjustment Modal -->
+<div class="modal fade" id="quick-stock-adjustment-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-balance-scale"></i> {{ text_quick_stock_adjustment }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="quick-adjustment-form" class="form-horizontal">
+          <input type="hidden" id="quick-adjustment-product-id" name="product_id" value="">
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_name }}</label>
+                <div class="col-sm-8">
+                  <p class="form-control-static" id="quick-adjustment-product-name"></p>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ entry_model }}</label>
+                <div class="col-sm-8">
+                  <p class="form-control-static" id="quick-adjustment-product-model"></p>
+                </div>
+              </div>
+              
+              <div class="form-group required">
+                <label class="col-sm-4 control-label" for="quick-adjustment-branch">{{ entry_branch }}</label>
+                <div class="col-sm-8">
+                  <select id="quick-adjustment-branch" name="branch_id" class="form-control" required onchange="loadProductInventory();">
+                    <!-- Will be populated via AJAX -->
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group required">
+                <label class="col-sm-4 control-label" for="quick-adjustment-unit">{{ text_available_units }}</label>
+                <div class="col-sm-8">
+                  <select id="quick-adjustment-unit" name="unit_id" class="form-control" required onchange="updateCurrentStock();">
+                    <!-- Will be populated based on product -->
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ text_current_stock }}</label>
+                <div class="col-sm-8">
+                  <p class="form-control-static" id="quick-adjustment-current-stock">0</p>
+                </div>
+              </div>
+              
+              <div class="form-group required">
+                <label class="col-sm-4 control-label" for="quick-adjustment-type">{{ text_adjustment_type }}</label>
+                <div class="col-sm-8">
+                  <select id="quick-adjustment-type" name="movement_type" class="form-control" required>
+                    <option value="increase">{{ text_quick_increase }}</option>
+                    <option value="decrease">{{ text_quick_decrease }}</option>
+                    <option value="count">{{ text_quick_count }}</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group required">
+                <label class="col-sm-4 control-label" for="quick-adjustment-quantity">{{ entry_quantity }}</label>
+                <div class="col-sm-8">
+                  <input type="number" id="quick-adjustment-quantity" name="quantity" class="form-control" min="0.0001" step="0.0001" required>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="col-sm-4 control-label" for="quick-adjustment-reason">{{ entry_reason }}</label>
+                <div class="col-sm-8">
+                  <select id="quick-adjustment-reason" name="reason" class="form-control">
+                    <option value="stock_count">{{ text_reason_stock_count }}</option>
+                    <option value="damaged">{{ text_reason_damaged }}</option>
+                    <option value="expired">{{ text_reason_expired }}</option>
+                    <option value="correction">{{ text_reason_correction }}</option>
+                    <option value="production">{{ text_reason_production }}</option>
+                    <option value="initial">{{ text_reason_initial_stock }}</option>
+                    <option value="other">{{ text_reason_other }}</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group" id="quick-adjustment-custom-reason-container" style="display:none;">
+                <label class="col-sm-4 control-label" for="quick-adjustment-custom-reason">{{ entry_custom_reason }}</label>
+                <div class="col-sm-8">
+                  <input type="text" id="quick-adjustment-custom-reason" name="custom_reason" class="form-control">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="col-sm-4 control-label" for="quick-adjustment-notes">{{ entry_notes }}</label>
+                <div class="col-sm-8">
+                  <textarea id="quick-adjustment-notes" name="notes" class="form-control" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="alert alert-info">
+                <h4><i class="fa fa-info-circle"></i> {{ text_adjustment_information }}</h4>
+                <p>{{ text_adjustment_help }}</p>
+              </div>
+              
+              <div id="quick-adjustment-warnings" class="alert alert-warning" style="display:none;"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div class="row">
+          <div class="col-xs-7 text-left">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" id="quick-adjustment-confirmation" required> 
+                {{ text_confirm_adjustment }}
+              </label>
+            </div>
+          </div>
+          <div class="col-xs-5">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" id="save-quick-adjustment" disabled>{{ button_save }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// Quick Stock Adjustment
+$(document).ready(function() {
+  // Open quick adjustment modal
+  $('#button-quick-stock-adjustment').on('click', function(e) {
+    e.preventDefault();
+    
+    // Check if any products are selected
+    var selectedProducts = $('input[name^="selected"]:checked');
+    if (selectedProducts.length === 0) {
+      showAlert('warning', '{{ text_select_product }}');
+      return;
+    }
+    
+    if (selectedProducts.length > 1) {
+      showAlert('warning', '{{ text_select_one_product }}');
+      return;
+    }
+    
+    var productId = selectedProducts.val();
+    openQuickAdjustmentModal(productId);
+  });
+  
+  // Toggle custom reason field
+  $('#quick-adjustment-reason').on('change', function() {
+    if ($(this).val() === 'other') {
+      $('#quick-adjustment-custom-reason-container').show();
+    } else {
+      $('#quick-adjustment-custom-reason-container').hide();
+    }
+  });
+  
+  // Toggle save button based on confirmation checkbox
+  $('#quick-adjustment-confirmation').on('change', function() {
+    $('#save-quick-adjustment').prop('disabled', !$(this).is(':checked'));
+  });
+  
+  // Save quick adjustment
+  $('#save-quick-adjustment').on('click', function() {
+    saveQuickAdjustment();
+  });
+});
+
+function openQuickAdjustmentModal(productId) {
+  // Reset form
+  $('#quick-adjustment-form')[0].reset();
+  $('#quick-adjustment-warnings').hide();
+  $('#quick-adjustment-custom-reason-container').hide();
+  $('#quick-adjustment-confirmation').prop('checked', false);
+  $('#save-quick-adjustment').prop('disabled', true);
+  
+  // Set product ID
+  $('#quick-adjustment-product-id').val(productId);
+  
+  // Load product info
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProductInfo&user_token={{ user_token }}&product_id=' + productId,
+    dataType: 'json',
+    beforeSend: function() {
+      $('#quick-adjustment-product-name').html('<i class="fa fa-spinner fa-spin"></i>');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#quick-adjustment-product-name').text(json.name);
+        $('#quick-adjustment-product-model').text(json.model);
+        
+        // Load branches
+        loadBranches();
+        
+        // Load units for this product
+        loadProductUnits(productId);
+      } else {
+        showAlert('danger', json.error || '{{ text_error_loading_product }}');
+      }
+    },
+    error: function(xhr, status, error) {
+      showAlert('danger', '{{ text_error_loading_product }}');
+    }
+  });
+  
+  // Show modal
+  $('#quick-stock-adjustment-modal').modal('show');
+}
+
+function loadBranches() {
+  $.ajax({
+    url: 'index.php?route=catalog/product/getBranches&user_token={{ user_token }}',
+    dataType: 'json',
+    beforeSend: function() {
+      $('#quick-adjustment-branch').html('<option value="">{{ text_loading }}</option>');
+    },
+    success: function(json) {
+      var html = '<option value="">{{ text_select }}</option>';
+      
+      if (json.branches && json.branches.length > 0) {
+        $.each(json.branches, function(index, branch) {
+          html += '<option value="' + branch.branch_id + '">' + branch.name + '</option>';
+        });
+      }
+      
+      $('#quick-adjustment-branch').html(html);
+    }
+  });
+}
+
+function loadProductUnits(productId) {
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProductUnits&user_token={{ user_token }}&product_id=' + productId,
+    dataType: 'json',
+    beforeSend: function() {
+      $('#quick-adjustment-unit').html('<option value="">{{ text_loading }}</option>');
+    },
+    success: function(json) {
+      var html = '<option value="">{{ text_select }}</option>';
+      
+      if (json.units && json.units.length > 0) {
+        $.each(json.units, function(index, unit) {
+          html += '<option value="' + unit.unit_id + '">' + unit.unit_name + '</option>';
+        });
+      }
+      
+      $('#quick-adjustment-unit').html(html);
+    }
+  });
+}
+
+function loadProductInventory() {
+  var productId = $('#quick-adjustment-product-id').val();
+  var branchId = $('#quick-adjustment-branch').val();
+  var unitId = $('#quick-adjustment-unit').val();
+  
+  if (!productId || !branchId || !unitId) {
+    $('#quick-adjustment-current-stock').text('0');
+    return;
+  }
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProductInventory&user_token={{ user_token }}&product_id=' + productId,
+    method: 'POST',
+    data: {
+      branch_id: branchId
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#quick-adjustment-current-stock').html('<i class="fa fa-spinner fa-spin"></i>');
+    },
+    success: function(json) {
+      updateCurrentStock();
+    }
+  });
+}
+
+function updateCurrentStock() {
+  var branchId = $('#quick-adjustment-branch').val();
+  var unitId = $('#quick-adjustment-unit').val();
+  
+  if (!branchId || !unitId) {
+    $('#quick-adjustment-current-stock').text('0');
+    return;
+  }
+  
+  var productId = $('#quick-adjustment-product-id').val();
+  
+  $.ajax({
+    url: 'index.php?route=catalog/product/getProductQuantity&user_token={{ user_token }}&product_id=' + productId,
+    method: 'POST',
+    data: {
+      branch_id: branchId,
+      unit_id: unitId
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#quick-adjustment-current-stock').html('<i class="fa fa-spinner fa-spin"></i>');
+    },
+    success: function(json) {
+      var quantity = json.quantity || 0;
+      $('#quick-adjustment-current-stock').text(quantity);
+      
+      // Also update the preview after loading current inventory
+      updateAdjustmentPreview();
+    }
+  });
+}
+
+function updateAdjustmentPreview() {
+  var currentQuantity = parseFloat($('#quick-adjustment-current-stock').text()) || 0;
+  var newQuantity = parseFloat($('#quick-adjustment-quantity').val()) || 0;
+  var movementType = $('#quick-adjustment-type').val();
+  
+  if (isNaN(newQuantity) || newQuantity <= 0) {
+    $('#quick-adjustment-warnings').text('{{ error_quantity_must_be_positive }}').show();
+    return;
+  }
+  
+  // Calculate the new quantity based on adjustment type
+  var finalQuantity = 0;
+  var quantityChange = 0;
+  
+  if (movementType === 'increase') {
+    finalQuantity = currentQuantity + newQuantity;
+    quantityChange = newQuantity;
+  } else if (movementType === 'decrease') {
+    if (newQuantity > currentQuantity) {
+      $('#quick-adjustment-warnings').text('{{ error_insufficient_stock }}'.replace('%s', currentQuantity).replace('%s', newQuantity)).show();
+      return;
+    }
+    finalQuantity = currentQuantity - newQuantity;
+    quantityChange = -newQuantity;
+  } else if (movementType === 'count') {
+    finalQuantity = newQuantity;
+    quantityChange = newQuantity - currentQuantity;
+  }
+  
+  // Display the preview
+  $('#quick-adjustment-warnings').hide();
+  
+  var previewHtml = '<div class="alert alert-info">';
+  previewHtml += '<h4><i class="fa fa-info-circle"></i> {{ text_adjustment_preview }}</h4>';
+  previewHtml += '<table class="table table-bordered">';
+  previewHtml += '<tr><td>{{ text_current_quantity }}</td><td>' + currentQuantity.toFixed(2) + '</td></tr>';
+  previewHtml += '<tr><td>{{ text_new_quantity }}</td><td>' + finalQuantity.toFixed(2) + '</td></tr>';
+  previewHtml += '<tr><td>{{ text_quantity_change }}</td><td>' + (quantityChange > 0 ? '+' : '') + quantityChange.toFixed(2) + '</td></tr>';
+  previewHtml += '</table>';
+  previewHtml += '</div>';
+  
+  // Add the preview to the modal
+  if ($('#quick-adjustment-preview').length) {
+    $('#quick-adjustment-preview').html(previewHtml);
+  } else {
+    $('#quick-adjustment-warnings').after('<div id="quick-adjustment-preview">' + previewHtml + '</div>');
+  }
+}
+
+// Add event handlers for the quantity input
+$(document).ready(function() {
+  // Existing code...
+  
+  // Add event for real-time preview updates
+  $('#quick-adjustment-quantity').on('input', function() {
+    updateAdjustmentPreview();
+  });
+  
+  $('#quick-adjustment-type').on('change', function() {
+    updateAdjustmentPreview();
+  });
+});
+
+function saveQuickAdjustment() {
+  var productId = $('#quick-adjustment-product-id').val();
+  var branchId = $('#quick-adjustment-branch').val();
+  var unitId = $('#quick-adjustment-unit').val();
+  var movementType = $('#quick-adjustment-type').val();
+  var quantity = parseFloat($('#quick-adjustment-quantity').val()) || 0;
+  var reason = $('#quick-adjustment-reason').val();
+  var customReason = $('#quick-adjustment-custom-reason').val();
+  var notes = $('#quick-adjustment-notes').val();
+  
+  // Validation
+  if (!branchId) {
+    $('#quick-adjustment-warnings').text('{{ error_branch_required }}').show();
+    return;
+  }
+  
+  if (!unitId) {
+    $('#quick-adjustment-warnings').text('{{ error_unit_required }}').show();
+    return;
+  }
+  
+  if (quantity <= 0) {
+    $('#quick-adjustment-warnings').text('{{ error_quantity_must_be_positive }}').show();
+    return;
+  }
+  
+  // For decrease movements, check if there's enough stock
+  if (movementType === 'decrease') {
+    var currentStock = parseFloat($('#quick-adjustment-current-stock').text()) || 0;
+    if (quantity > currentStock) {
+      $('#quick-adjustment-warnings').text('{{ error_insufficient_stock }}'.replace('%s', currentStock).replace('%s', quantity)).show();
+      return;
+    }
+  }
+  
+  if (reason === 'other' && !customReason) {
+    $('#quick-adjustment-warnings').text('{{ error_custom_reason_required }}').show();
+    return;
+  }
+  
+  // Prepare data
+  var finalReason = reason === 'other' ? customReason : reason;
+  
+  var data = {
+    branch_id: branchId,
+    unit_id: unitId,
+    movement_type: movementType,
+    quantity: quantity,
+    reason: finalReason,
+    notes: notes
+  };
+  
+  // Send AJAX request
+  $.ajax({
+    url: 'index.php?route=catalog/product/saveInventoryMovement&user_token={{ user_token }}&product_id=' + productId,
+    type: 'POST',
+    data: data,
+    dataType: 'json',
+    beforeSend: function() {
+      $('#save-quick-adjustment').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_saving }}');
+      $('#quick-adjustment-warnings').hide();
+    },
+    success: function(json) {
+      if (json.error) {
+        $('#quick-adjustment-warnings').text(json.error).show();
+        $('#save-quick-adjustment').prop('disabled', false).text('{{ button_save }}');
+      } else {
+        // Show success message
+        showAlert('success', json.success || '{{ text_adjustment_saved }}');
+        
+        // Close modal
+        $('#quick-stock-adjustment-modal').modal('hide');
+        
+        // Refresh product list to show updated quantities
+        $('#button-filter').trigger('click');
+      }
+    },
+    error: function(xhr, status, error) {
+      $('#quick-adjustment-warnings').text('{{ error_save_failed }}: ' + error).show();
+    },
+    complete: function() {
+      $('#save-quick-adjustment').prop('disabled', false).text('{{ button_save }}');
+    }
+  });
+}
+
+function showAlert(type, message) {
+  $('#system-message').html('<div class="alert alert-' + type + ' alert-dismissible"><i class="fa fa-' + (type === 'success' ? 'check' : 'exclamation') + '-circle"></i> ' + message + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+  $('#system-message').show();
+  
+  $('html, body').animate({
+    scrollTop: $('#system-message').offset().top - 50
+  }, 500);
+  
+  // Auto hide after 5 seconds
+  setTimeout(function() {
+    $('#system-message .alert').fadeOut(500, function() {
+      $(this).remove();
+    });
+  }, 5000);
+}
+</script>
+
+{{ footer }}    

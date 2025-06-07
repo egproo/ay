@@ -1,0 +1,196 @@
+<!-- Modal لإنشاء رسالة جديدة -->
+<div class="modal fade" id="modal-compose-message" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ text_compose_message }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-compose-message">
+          <div class="form-group">
+            <label class="control-label">{{ text_recipient }}</label>
+            <select name="recipient_id" id="recipient-select" class="form-control">
+              <option value="">{{ text_select_recipient }}</option>
+              {% for recipient in recipients %}
+              <option value="{{ recipient.user_id }}">{{ recipient.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_subject }}</label>
+            <input type="text" name="subject" class="form-control" placeholder="{{ text_subject_placeholder }}">
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_message }}</label>
+            <textarea name="message" class="form-control" rows="5" placeholder="{{ text_message_placeholder }}"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_priority }}</label>
+            <select name="priority" class="form-control">
+              <option value="normal">{{ text_normal }}</option>
+              <option value="high">{{ text_high }}</option>
+              <option value="urgent">{{ text_urgent }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_attachments }}</label>
+            <div class="input-group">
+              <input type="text" name="attachment" id="attachment" class="form-control" readonly>
+              <span class="input-group-btn">
+                <button type="button" id="button-upload" class="btn btn-primary"><i class="fa fa-upload"></i> {{ button_upload }}</button>
+              </span>
+            </div>
+            <div class="attachment-list" id="attachment-list">
+              <!-- سيتم إضافة المرفقات هنا -->
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="send-message">{{ button_send }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// معالجة النقر على زر إنشاء رسالة جديدة
+$('#compose-new-message').on('click', function() {
+  $('#modal-compose-message').modal('show');
+});
+
+// معالجة تحميل المرفقات
+$('#button-upload').on('click', function() {
+  $('#form-upload').remove();
+  
+  $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" /></form>');
+  
+  $('#form-upload input[name=\'file\']').trigger('click');
+  
+  if (typeof timer != 'undefined') {
+    clearInterval(timer);
+  }
+  
+  timer = setInterval(function() {
+    if ($('#form-upload input[name=\'file\']').val() != '') {
+      clearInterval(timer);
+      
+      $.ajax({
+        url: 'index.php?route=common/message/upload&user_token=' + getURLVar('user_token'),
+        type: 'post',
+        dataType: 'json',
+        data: new FormData($('#form-upload')[0]),
+        cache: false,
+        contentType: false,
+        processData: false,
+        beforeSend: function() {
+          $('#button-upload').button('loading');
+        },
+        complete: function() {
+          $('#button-upload').button('reset');
+        },
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+          }
+          
+          if (json.success) {
+            alert(json.success);
+            
+            // إضافة المرفق إلى القائمة
+            var fileType = json.filename.split('.').pop().toLowerCase();
+            var fileIcon = 'fa-file-o';
+            
+            // تحديد أيقونة الملف بناءً على نوعه
+            if (fileType == 'pdf') {
+              fileIcon = 'fa-file-pdf-o';
+            } else if (['doc', 'docx'].indexOf(fileType) !== -1) {
+              fileIcon = 'fa-file-word-o';
+            } else if (['xls', 'xlsx'].indexOf(fileType) !== -1) {
+              fileIcon = 'fa-file-excel-o';
+            } else if (['jpg', 'jpeg', 'png', 'gif'].indexOf(fileType) !== -1) {
+              fileIcon = 'fa-file-image-o';
+            }
+            
+            var attachmentHtml = '<div class="attachment-item" data-file="' + json.filename + '">' +
+              '<i class="fa ' + fileIcon + '"></i> ' + json.filename +
+              '<span class="remove-attachment"><i class="fa fa-times"></i></span>' +
+              '<input type="hidden" name="attachments[]" value="' + json.filename + '">' +
+              '</div>';
+            
+            $('#attachment-list').append(attachmentHtml);
+          }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+          alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+      });
+    }
+  }, 500);
+});
+
+// معالجة إزالة المرفقات
+$(document).on('click', '.remove-attachment', function() {
+  $(this).closest('.attachment-item').remove();
+});
+
+// معالجة إرسال الرسالة
+$('#send-message').on('click', function() {
+  $.ajax({
+    url: 'index.php?route=common/message/send&user_token=' + getURLVar('user_token'),
+    type: 'POST',
+    data: $('#form-compose-message').serialize(),
+    dataType: 'json',
+    beforeSend: function() {
+      $('#send-message').button('loading');
+    },
+    complete: function() {
+      $('#send-message').button('reset');
+    },
+    success: function(json) {
+      $('.alert-dismissible, .text-danger').remove();
+      $('.form-group').removeClass('has-error');
+      
+      if (json.error) {
+        if (json.error.recipient_id) {
+          $('#recipient-select').after('<div class="text-danger">' + json.error.recipient_id + '</div>');
+          $('#recipient-select').closest('.form-group').addClass('has-error');
+        }
+        
+        if (json.error.subject) {
+          $('input[name=\'subject\']').after('<div class="text-danger">' + json.error.subject + '</div>');
+          $('input[name=\'subject\']').closest('.form-group').addClass('has-error');
+        }
+        
+        if (json.error.message) {
+          $('textarea[name=\'message\']').after('<div class="text-danger">' + json.error.message + '</div>');
+          $('textarea[name=\'message\']').closest('.form-group').addClass('has-error');
+        }
+      }
+      
+      if (json.success) {
+        $('#modal-compose-message').modal('hide');
+        
+        // إظهار رسالة النجاح
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        // إعادة تحميل الرسائل
+        loadMessages();
+        
+        // إعادة تعيين النموذج
+        $('#form-compose-message')[0].reset();
+        $('#attachment-list').empty();
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+</script>

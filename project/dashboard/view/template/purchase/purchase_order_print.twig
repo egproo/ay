@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ text_purchase_order }} #{{ order.po_number }}</title>
+    <style type="text/css">
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #fff;
+            direction: rtl;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        .company-logo {
+            max-width: 200px;
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .company-address {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .company-contact {
+            font-size: 14px;
+        }
+        .document-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .info-section {
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .info-box {
+            float: right;
+            width: 48%;
+            margin-bottom: 15px;
+        }
+        .info-box:nth-child(even) {
+            float: left;
+        }
+        .info-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info-content {
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .amount-section {
+            float: left;
+            width: 300px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .amount-row.total {
+            font-weight: bold;
+            border-top: 2px solid #ddd;
+            border-bottom: none;
+            padding-top: 8px;
+        }
+        .notes-section {
+            clear: both;
+            margin-bottom: 30px;
+        }
+        .notes-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .notes-content {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 60px;
+        }
+        .signatures-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-box {
+            width: 30%;
+            text-align: center;
+        }
+        .signature-title {
+            font-weight: bold;
+            margin-bottom: 50px;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 10px;
+            padding-top: 5px;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 12px;
+        }
+        .barcode {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .qr-code {
+            width: 100px;
+            height: 100px;
+        }
+        .print-info {
+            font-size: 11px;
+            text-align: left;
+            margin-top: 30px;
+            color: #777;
+        }
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .container {
+                width: 100%;
+                max-width: none;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ترويسة الصفحة -->
+        <div class="header">
+            {% if company.logo %}
+            <img src="{{ company.logo }}" alt="{{ company.name }}" class="company-logo">
+            {% endif %}
+            <div class="company-name">{{ company.name }}</div>
+            <div class="company-address">{{ company.address }}</div>
+            <div class="company-contact">{{ company.email }} | {{ company.telephone }}</div>
+        </div>
+        
+        <!-- عنوان المستند -->
+        <div class="document-title">{{ text_purchase_order }} #{{ order.po_number }}</div>
+        
+        <!-- معلومات أمر الشراء -->
+        <div class="info-section">
+            <div class="info-box">
+                <div class="info-title">{{ text_supplier }}</div>
+                <div class="info-content">{{ order.supplier_name }}</div>
+                <div class="info-content">{{ order.supplier_address }}</div>
+            </div>
+            
+            <div class="info-box">
+                <div class="info-title">{{ text_po_number }}</div>
+                <div class="info-content">{{ order.po_number }}</div>
+                
+                <div class="info-title">{{ text_date }}</div>
+                <div class="info-content">{{ order.order_date }}</div>
+                
+                {% if order.quotation_number %}
+                <div class="info-title">{{ text_quotation_reference }}</div>
+                <div class="info-content">{{ order.quotation_number }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="info-box">
+                <div class="info-title">{{ text_expected_delivery }}</div>
+                <div class="info-content">{{ order.expected_delivery_date }}</div>
+                
+                <div class="info-title">{{ text_payment_terms }}</div>
+                <div class="info-content">{{ order.payment_terms }}</div>
+            </div>
+            
+            <div class="info-box">
+                <div class="info-title">{{ text_delivery_terms }}</div>
+                <div class="info-content">{{ order.delivery_terms }}</div>
+            </div>
+        </div>
+        
+        <!-- جدول المنتجات -->
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 30%;">{{ column_item }}</th>
+                    <th style="width: 35%;">{{ column_description }}</th>
+                    <th style="width: 8%;">{{ column_quantity }}</th>
+                    <th style="width: 7%;">{{ column_unit }}</th>
+                    <th style="width: 15%;">{{ column_unit_price }}</th>
+                    <th style="width: 15%;">{{ column_total }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_name }}</td>
+                    <td>{{ item.unit_price_formatted }}</td>
+                    <td>{{ item.total_price_formatted }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- المبالغ والإجماليات -->
+        <div class="amount-section">
+            <div class="amount-row">
+                <span>{{ text_subtotal }}:</span>
+                <span>{{ order.subtotal }}</span>
+            </div>
+            
+            {% if order.discount_amount > 0 %}
+            <div class="amount-row">
+                <span>{{ text_discount }}:</span>
+                <span>{{ order.discount_amount }}</span>
+            </div>
+            {% endif %}
+            
+            {% if order.tax_amount > 0 %}
+            <div class="amount-row">
+                <span>{{ text_tax }} ({{ order.tax_rate }}%):</span>
+                <span>{{ order.tax_amount }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="amount-row total">
+                <span>{{ text_total }}:</span>
+                <span>{{ order.total_amount }}</span>
+            </div>
+        </div>
+        
+        <!-- الملاحظات -->
+        <div class="notes-section">
+            <div class="notes-title">{{ text_notes }}</div>
+            <div class="notes-content">{{ order.notes }}</div>
+        </div>
+        
+        <!-- التوقيعات -->
+        <div class="signatures-section">
+            <div class="signature-box">
+                <div class="signature-title">{{ text_prepared_by }}</div>
+                <div class="signature-line">{{ order.created_by_name }}</div>
+            </div>
+            
+            <div class="signature-box">
+                <div class="signature-title">{{ text_authorized_by }}</div>
+                <div class="signature-line"></div>
+            </div>
+            
+            <div class="signature-box">
+                <div class="signature-title">{{ text_supplier_signature }}</div>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+        
+        <!-- معلومات الطباعة -->
+        <div class="print-info">
+            {{ text_print_date }}: {{ print_date }}
+        </div>
+        
+        <!-- تذييل الصفحة -->
+        <div class="footer">
+            {{ company.name }} - {{ text_purchase_order }} #{{ order.po_number }}
+        </div>
+    </div>
+    
+    <!-- أزرار الطباعة - لا تظهر عند الطباعة -->
+    <div class="no-print" style="text-align: center; margin: 20px;">
+        <button onclick="window.print();" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
+            <i class="fa fa-print"></i> طباعة
+        </button>
+        <button onclick="window.close();" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 10px;">
+            <i class="fa fa-times"></i> إغلاق
+        </button>
+    </div>
+</body>
+</html>

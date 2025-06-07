@@ -1,0 +1,52 @@
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+    {% if error_warning %}
+    <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+    {% endif %}
+    <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label" for="input-order_id">{{ entry_order_id }}</label>
+                    <input type="number" name="order_id" value="{{ order_id }}" placeholder="{{ entry_order_id }}" id="input-order_id" class="form-control" />
+                    {% if error_order_id %}
+                    <div class="text-danger">{{ error_order_id }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="input-amount">{{ entry_amount }}</label>
+                    <input type="text" name="amount" value="{{ amount }}" placeholder="{{ entry_amount }}" id="input-amount" class="form-control" />
+                    {% if error_amount %}
+                    <div class="text-danger">{{ error_amount }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="input-due_date">{{ entry_due_date }}</label>
+                    <input type="date" name="due_date" value="{{ due_date }}" placeholder="{{ entry_due_date }}" id="input-due_date" class="form-control" />
+                    {% if error_due_date %}
+                    <div class="text-danger">{{ error_due_date }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="input-status">{{ entry_status }}</label>
+                    <select name="status" id="input-status" class="form-control">
+                        <option value="1" {% if status == 1 %}selected{% endif %}>Paid</option>
+                        <option value="0" {% if status == 0 %}selected{% endif %}>Unpaid</option>
+                    </select>
+                </div>
+                <div class="buttons">
+                    <div class="pull-right">
+                        <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+                        <a href="{{ cancel }}" class="btn btn-default">{{ button_cancel }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{{ footer }}

@@ -1,0 +1,341 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible">
+        <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible">
+        <i class="fa fa-check-circle"></i> {{ success }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-shield"></i> {{ text_list }}
+        </h3>
+      </div>
+      <div class="panel-body">
+
+        <!-- Filters Section -->
+        <form id="form-filter" class="form-inline" style="margin-bottom:15px;">
+          <!-- Control Name Filter -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_control_name">{{ entry_control_name }}</label>
+            <input type="text" id="filter_control_name" class="form-control" style="margin-left:5px;" />
+          </div>
+
+          <!-- Status Filter -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_status">{{ entry_status }}</label>
+            <select id="filter_status" class="form-control" style="margin-left:5px;">
+              <option value="">{{ text_all_statuses }}</option>
+              <option value="active">{{ text_active }}</option>
+              <option value="obsolete">{{ text_obsolete }}</option>
+            </select>
+          </div>
+
+          <!-- Group Filter -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_responsible_group_id">{{ entry_responsible_group }}</label>
+            <select id="filter_responsible_group_id" class="form-control" style="margin-left:5px;">
+              <option value="">{{ text_all_groups }}</option>
+              {% if user_groups %}
+                {% for grp in user_groups %}
+                  <option value="{{ grp.user_group_id }}">{{ grp.name }}</option>
+                {% endfor %}
+              {% endif %}
+            </select>
+          </div>
+
+          <!-- Effective Date Range -->
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_effective_date_start">{{ text_effective_date_start }}</label>
+            <input type="date" id="filter_effective_date_start" class="form-control" style="margin-left:5px;" />
+          </div>
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_effective_date_end">{{ text_effective_date_end }}</label>
+            <input type="date" id="filter_effective_date_end" class="form-control" style="margin-left:5px;" />
+          </div>
+
+          <!-- Filter Button -->
+          <button type="button" id="btn-filter" class="btn btn-primary" style="margin-left:10px;">
+            <i class="fa fa-filter"></i> {{ button_filter }}
+          </button>
+
+          <!-- Add Button -->
+          {% if can_add %}
+          <button type="button" id="btn-add" class="btn btn-success" style="margin-left:20px;">
+            <i class="fa fa-plus"></i> {{ button_add }}
+          </button>
+          {% endif %}
+        </form>
+
+        <!-- Table -->
+        <table id="table-control" class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_control_id }}</th>
+              <th>{{ column_control_name }}</th>
+              <th>{{ column_effective_date }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_responsible }}</th>
+              <th>{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <!-- /Table -->
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit -->
+<div class="modal fade" id="modalControl" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="formControl">
+        <div class="modal-header">
+          <h4 class="modal-title">{{ text_modal_add }}</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" name="control_id" id="control_id" />
+
+          <div class="form-group">
+            <label for="control_name_input">{{ entry_control_name }} <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="control_name" id="control_name_input" required />
+          </div>
+
+          <div class="form-group">
+            <label for="description_input">{{ entry_description }}</label>
+            <textarea class="form-control" name="description" id="description_input" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="responsible_group_id_input">{{ entry_responsible_group }}</label>
+            <select class="form-control" name="responsible_group_id" id="responsible_group_id_input">
+              <option value="0">{{ text_no_group }}</option>
+              {% if user_groups %}
+                {% for grp in user_groups %}
+                  <option value="{{ grp.user_group_id }}">{{ grp.name }}</option>
+                {% endfor %}
+              {% endif %}
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label for="effective_date_input">{{ entry_effective_date }}</label>
+              <input type="date" class="form-control" name="effective_date" id="effective_date_input" />
+            </div>
+            <div class="col-md-6 form-group">
+              <label for="review_date_input">{{ entry_review_date }}</label>
+              <input type="date" class="form-control" name="review_date" id="review_date_input" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="status_input">{{ entry_status }}</label>
+            <select class="form-control" name="status" id="status_input">
+              <option value="active">{{ text_active }}</option>
+              <option value="obsolete">{{ text_obsolete }}</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> {{ button_save }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function($){
+  'use strict';
+
+  let tableControl;
+
+  $(document).ready(function(){
+    // Initialize DataTable
+    tableControl = $('#table-control').DataTable({
+      processing: true,
+      serverSide: false,
+      ajax: {
+        url: "index.php?route=governance/internal_control/ajaxList&user_token={{ user_token }}",
+        type: "POST",
+        data: function(d){
+          d.filter_status                = $('#filter_status').val();
+          d.filter_control_name          = $('#filter_control_name').val();
+          d.filter_responsible_group_id  = $('#filter_responsible_group_id').val();
+          d.filter_effective_date_start  = $('#filter_effective_date_start').val();
+          d.filter_effective_date_end    = $('#filter_effective_date_end').val();
+        },
+        dataSrc: function(json){
+          if(json.error){
+            toastr.error(json.error);
+            return [];
+          }
+          return json.data;
+        }
+      },
+      columns: [
+        { data: 'control_id' },
+        { data: 'control_name' },
+        { data: 'effective_date' },
+        { data: 'status' },
+        { data: 'responsible' },
+        {
+          data:null,
+          orderable:false,
+          render:function(data,type,row){
+            let btns = '';
+            {% if can_edit %}
+            btns += `<button class="btn btn-sm btn-info btn-edit mr-2" data-id="${row.control_id}">
+                       <i class="fa fa-pencil"></i> {{ button_edit }}
+                     </button>`;
+            {% endif %}
+            {% if can_delete %}
+            btns += `<button class="btn btn-sm btn-danger btn-delete" data-id="${row.control_id}">
+                       <i class="fa fa-trash"></i> {{ button_delete }}
+                     </button>`;
+            {% endif %}
+            return btns;
+          }
+        }
+      ]
+    });
+
+    // فلترة
+    $('#btn-filter').on('click', function(){
+      tableControl.ajax.reload();
+    });
+
+    // إضافة
+    $('#btn-add').on('click', function(){
+      clearForm();
+      $('#control_id').val('');
+      $('#modalControl .modal-title').text('{{ text_modal_add }}');
+      $('#modalControl').modal('show');
+    });
+
+    // تعديل
+    $('#table-control').on('click','.btn-edit',function(){
+      let cid = $(this).data('id');
+      editControl(cid);
+    });
+
+    // حذف
+    $('#table-control').on('click','.btn-delete',function(){
+      let cid = $(this).data('id');
+      if(confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+          url:"index.php?route=governance/internal_control/ajaxDelete&user_token={{ user_token }}",
+          type:"POST",
+          data:{control_id: cid},
+          dataType:"json",
+          success:function(json){
+            if(json.error){
+              toastr.error(json.error);
+            } else {
+              toastr.success(json.success);
+              tableControl.ajax.reload(null,false);
+            }
+          }
+        });
+      }
+    });
+
+    // حفظ (Add/Edit)
+    $('#formControl').on('submit',function(e){
+      e.preventDefault();
+      let formData = $(this).serializeArray();
+      let cid = $('#control_id').val();
+      let urlReq = (cid=='')
+        ? "index.php?route=governance/internal_control/ajaxAdd&user_token={{ user_token }}"
+        : "index.php?route=governance/internal_control/ajaxEdit&user_token={{ user_token }}";
+
+      $.ajax({
+        url: urlReq,
+        type: "POST",
+        data: formData,
+        dataType: "json",
+        success:function(json){
+          if(json.error){
+            toastr.error(json.error);
+          } else {
+            toastr.success(json.success);
+            $('#modalControl').modal('hide');
+            tableControl.ajax.reload(null,false);
+          }
+        },
+        error:function(xhr,status,err){
+          toastr.error("Request failed: "+err);
+        }
+      });
+    });
+
+  }); // end doc ready
+
+  function editControl(control_id){
+    $.ajax({
+      url:"index.php?route=governance/internal_control/getOne&user_token={{ user_token }}",
+      type:"POST",
+      data:{control_id},
+      dataType:"json",
+      success:function(json){
+        if(json.error){
+          toastr.error(json.error);
+        } else if(json.success){
+          let c = json.data;
+          clearForm();
+          $('#control_id').val(c.control_id);
+          $('#control_name_input').val(c.control_name);
+          $('#description_input').val(c.description);
+          $('#responsible_group_id_input').val(c.responsible_group_id||0);
+          $('#effective_date_input').val(c.effective_date||'');
+          $('#review_date_input').val(c.review_date||'');
+          $('#status_input').val(c.status);
+
+          $('#modalControl .modal-title').text('{{ text_modal_edit }} #'+c.control_id);
+          $('#modalControl').modal('show');
+        }
+      }
+    });
+  }
+
+  function clearForm(){
+    $('#formControl')[0].reset();
+    $('#control_id').val('');
+  }
+
+})(jQuery);
+</script>
+
+{{ footer }}

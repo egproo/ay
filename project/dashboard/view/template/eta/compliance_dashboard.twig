@@ -1,0 +1,738 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-test-connection" data-toggle="tooltip" title="{{ button_test_connection }}" class="btn btn-info">
+          <i class="fa fa-plug"></i> {{ button_test_connection }}
+        </button>
+        <button type="button" id="button-refresh" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-default">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <button type="button" id="button-export" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-success">
+          <i class="fa fa-download"></i> {{ button_export }}
+        </button>
+        <a href="{{ dashboard }}" data-toggle="tooltip" title="{{ text_dashboard }}" class="btn btn-primary">
+          <i class="fa fa-dashboard"></i> {{ text_dashboard }}
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- تنبيهات الامتثال -->
+    <div id="compliance-alerts"></div>
+
+    <!-- إحصائيات الامتثال -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-file-text fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ compliance_stats.total_invoices|default(0) }}</div>
+                <div>{{ text_total_invoices }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ compliance_stats.submitted_invoices|default(0) }}</div>
+                <div>{{ text_submitted_invoices }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-clock-o fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ compliance_stats.pending_invoices|default(0) }}</div>
+                <div>{{ text_pending_invoices }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-danger">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-times fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ compliance_stats.rejected_invoices|default(0) }}</div>
+                <div>{{ text_rejected_invoices }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- مؤشرات الأداء -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-percent fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ compliance_stats.compliance_rate|default(0) }}%</div>
+                <div>{{ text_compliance_rate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-money fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ compliance_stats.total_tax_amount|default(0)|number_format(2) }}</div>
+                <div>{{ text_total_tax_amount }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-clock-o fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="avg-submission-time">--</div>
+                <div>{{ text_avg_submission_time }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-line-chart fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="success-rate">--</div>
+                <div>{{ text_success_rate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-date-from">{{ entry_date_from }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-date-to">{{ entry_date_to }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-status">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-control">
+                <option value="">{{ text_all_statuses }}</option>
+                {% for status_key, status_name in invoice_statuses %}
+                <option value="{{ status_key }}"{% if status_key == filter_status %} selected{% endif %}>{{ status_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="form-group">
+              <button type="button" id="button-filter" class="btn btn-primary pull-right">
+                <i class="fa fa-search"></i> {{ button_filter }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-line-chart"></i> {{ text_submission_trend }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="submissionChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_status_distribution }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="statusChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_tax_breakdown }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="taxChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-area-chart"></i> {{ text_compliance_timeline }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="complianceChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول الفواتير الحديثة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-table"></i> {{ text_recent_invoices }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover" id="invoicesTable">
+            <thead>
+              <tr>
+                <th>{{ column_invoice_number }}</th>
+                <th>{{ column_customer }}</th>
+                <th>{{ column_amount }}</th>
+                <th>{{ column_tax_amount }}</th>
+                <th>{{ column_eta_status }}</th>
+                <th>{{ column_submission_date }}</th>
+                <th>{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- سيتم ملؤها بـ JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal للتصدير -->
+<div class="modal fade" id="modal-export" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ text_export_report }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="export-form">
+          <div class="form-group">
+            <label for="report-type">{{ entry_report_type }}</label>
+            <select name="report_type" id="report-type" class="form-control" required>
+              <option value="submission_summary">{{ text_submission_summary }}</option>
+              <option value="status_breakdown">{{ text_status_breakdown }}</option>
+              <option value="tax_summary">{{ text_tax_summary }}</option>
+              <option value="compliance_timeline">{{ text_compliance_timeline }}</option>
+              <option value="detailed_invoices">{{ text_detailed_invoices }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="export-date-from">{{ entry_date_from }}</label>
+            <input type="date" name="date_from" id="export-date-from" class="form-control" value="{{ filter_date_from }}">
+          </div>
+          <div class="form-group">
+            <label for="export-date-to">{{ entry_date_to }}</label>
+            <input type="date" name="date_to" id="export-date-to" class="form-control" value="{{ filter_date_to }}">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-success" id="button-confirm-export">{{ button_export }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal لتفاصيل الفاتورة -->
+<div class="modal fade" id="modal-invoice-details" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ text_invoice_details }}</h4>
+      </div>
+      <div class="modal-body" id="invoice-details-content">
+        <!-- سيتم ملؤها بـ JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-warning" id="button-resubmit" style="display:none;">
+          <i class="fa fa-refresh"></i> {{ button_resubmit }}
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+var charts = {};
+var currentInvoiceId = null;
+
+// تحديث الصفحة
+$('#button-refresh').on('click', function() {
+    loadDashboardData();
+});
+
+// اختبار الاتصال
+$('#button-test-connection').on('click', function() {
+    $.ajax({
+        url: '{{ test_connection_url }}',
+        type: 'get',
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-test-connection').button('loading');
+        },
+        complete: function() {
+            $('#button-test-connection').button('reset');
+        },
+        success: function(json) {
+            if (json['error']) {
+                alert('خطأ في الاتصال: ' + json['error']);
+            }
+            
+            if (json['success']) {
+                alert(json['success']);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert('خطأ في الاتصال: ' + thrownError);
+        }
+    });
+});
+
+// فلترة النتائج
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=eta/compliance_dashboard&user_token={{ user_token }}';
+    
+    var filter_date_from = $('input[name=\'filter_date_from\']').val();
+    if (filter_date_from) {
+        url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+    }
+    
+    var filter_date_to = $('input[name=\'filter_date_to\']').val();
+    if (filter_date_to) {
+        url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+    }
+    
+    var filter_status = $('select[name=\'filter_status\']').val();
+    if (filter_status) {
+        url += '&filter_status=' + encodeURIComponent(filter_status);
+    }
+    
+    location = url;
+});
+
+// تصدير التقارير
+$('#button-export').on('click', function() {
+    $('#modal-export').modal('show');
+});
+
+$('#button-confirm-export').on('click', function() {
+    var formData = $('#export-form').serialize();
+    
+    $.ajax({
+        url: '{{ export_url }}',
+        type: 'post',
+        data: formData,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-confirm-export').button('loading');
+        },
+        complete: function() {
+            $('#button-confirm-export').button('reset');
+        },
+        success: function(json) {
+            $('#modal-export').modal('hide');
+            
+            if (json['error']) {
+                alert(json['error']);
+            }
+            
+            if (json['success']) {
+                alert(json['success']);
+                if (json['download_url']) {
+                    window.open(json['download_url'], '_blank');
+                }
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// إعادة إرسال الفاتورة
+$('#button-resubmit').on('click', function() {
+    if (currentInvoiceId && confirm('هل أنت متأكد من إعادة إرسال هذه الفاتورة؟')) {
+        $.ajax({
+            url: '{{ resubmit_url }}',
+            type: 'post',
+            data: {invoice_id: currentInvoiceId},
+            dataType: 'json',
+            beforeSend: function() {
+                $('#button-resubmit').button('loading');
+            },
+            complete: function() {
+                $('#button-resubmit').button('reset');
+            },
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+                
+                if (json['success']) {
+                    alert(json['success']);
+                    $('#modal-invoice-details').modal('hide');
+                    loadDashboardData();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError);
+            }
+        });
+    }
+});
+
+// تحميل بيانات لوحة التحكم
+function loadDashboardData() {
+    $.ajax({
+        url: '{{ stats_url }}',
+        type: 'get',
+        dataType: 'json',
+        success: function(json) {
+            if (json['error']) {
+                console.error(json['error']);
+                return;
+            }
+            
+            if (json['compliance_stats']) {
+                updateComplianceStats(json['compliance_stats']);
+            }
+            
+            if (json['performance_stats']) {
+                updatePerformanceStats(json['performance_stats']);
+            }
+            
+            if (json['charts']) {
+                updateCharts(json['charts']);
+            }
+            
+            if (json['alerts']) {
+                displayAlerts(json['alerts']);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.error('Error loading dashboard data:', thrownError);
+        }
+    });
+}
+
+// تحديث إحصائيات الامتثال
+function updateComplianceStats(stats) {
+    // تحديث الأرقام الرئيسية
+    $('.huge').each(function(index) {
+        var keys = ['total_invoices', 'submitted_invoices', 'pending_invoices', 'rejected_invoices', 'compliance_rate', 'total_tax_amount'];
+        if (keys[index] && stats[keys[index]] !== undefined) {
+            var value = stats[keys[index]];
+            if (keys[index] === 'compliance_rate') {
+                value += '%';
+            } else if (keys[index] === 'total_tax_amount') {
+                value = parseFloat(value).toFixed(2);
+            }
+            $(this).text(value);
+        }
+    });
+}
+
+// تحديث إحصائيات الأداء
+function updatePerformanceStats(stats) {
+    $('#avg-submission-time').text(stats.avg_submission_time + 'h');
+    $('#success-rate').text(stats.success_rate + '%');
+}
+
+// عرض التنبيهات
+function displayAlerts(alerts) {
+    var alertsHtml = '';
+    
+    alerts.forEach(function(alert) {
+        var alertClass = 'alert-' + alert.type;
+        var icon = alert.type === 'danger' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+        
+        alertsHtml += '<div class="alert ' + alertClass + ' alert-dismissible">' +
+            '<i class="fa ' + icon + '"></i> <strong>' + alert.title + ':</strong> ' + alert.message +
+            '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+            '</div>';
+    });
+    
+    $('#compliance-alerts').html(alertsHtml);
+}
+
+// تحديث الرسوم البيانية
+function updateCharts(chartData) {
+    if (chartData.submission_trend) {
+        createSubmissionChart(chartData.submission_trend);
+    }
+    
+    if (chartData.status_distribution) {
+        createStatusChart(chartData.status_distribution);
+    }
+    
+    if (chartData.tax_breakdown) {
+        createTaxChart(chartData.tax_breakdown);
+    }
+    
+    if (chartData.compliance_timeline) {
+        createComplianceChart(chartData.compliance_timeline);
+    }
+}
+
+// إنشاء رسم اتجاه الإرسال
+function createSubmissionChart(data) {
+    var ctx = document.getElementById('submissionChart').getContext('2d');
+    
+    if (charts.submission) {
+        charts.submission.destroy();
+    }
+    
+    charts.submission = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(item => item.date),
+            datasets: [{
+                label: '{{ text_total_invoices }}',
+                data: data.map(item => item.total),
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2
+            }, {
+                label: '{{ text_submitted_invoices }}',
+                data: data.map(item => item.submitted),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// إنشاء رسم توزيع الحالات
+function createStatusChart(data) {
+    var ctx = document.getElementById('statusChart').getContext('2d');
+    
+    if (charts.status) {
+        charts.status.destroy();
+    }
+    
+    charts.status = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(item => item.status),
+            datasets: [{
+                data: data.map(item => item.count),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+}
+
+// إنشاء رسم تفصيل الضرائب
+function createTaxChart(data) {
+    var ctx = document.getElementById('taxChart').getContext('2d');
+    
+    if (charts.tax) {
+        charts.tax.destroy();
+    }
+    
+    charts.tax = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.tax_type),
+            datasets: [{
+                label: '{{ text_tax_amount }}',
+                data: data.map(item => item.amount),
+                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// إنشاء رسم الجدول الزمني للامتثال
+function createComplianceChart(data) {
+    var ctx = document.getElementById('complianceChart').getContext('2d');
+    
+    if (charts.compliance) {
+        charts.compliance.destroy();
+    }
+    
+    charts.compliance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(item => item.date),
+            datasets: [{
+                label: '{{ text_compliance_rate }}',
+                data: data.map(item => item.compliance_rate),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+// تفعيل date picker
+$('.date').datetimepicker({
+    language: '{{ datepicker }}',
+    pickTime: false
+});
+
+// تحميل البيانات عند تحميل الصفحة
+$(document).ready(function() {
+    loadDashboardData();
+    
+    // تحديث تلقائي كل 5 دقائق
+    setInterval(loadDashboardData, 300000);
+});
+</script>
+
+{{ footer }}

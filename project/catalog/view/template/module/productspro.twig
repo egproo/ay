@@ -1,0 +1,1170 @@
+
+{% if products %}
+    {% if type == 'static' %}
+        <h3 style="margin-top: 10px;     border-bottom: 1px solid #ebe9e9;
+            padding-inline: 20px;
+            font-weight: 900;
+            color: #000;font-size: 14px;
+line-height: 25px;">{{ title }}</h3>
+        
+                  <div id="product-list" class="row">
+          {% for product in products %}
+            <div class="col-6 col-sm-6 col-md-3 col-lg-2" style="margin-bottom: 10px;">{{ product }}</div>
+          {% endfor %}
+
+        </div>
+    {% elseif type == 'slider' %}
+        <h3 style="line-height: 50px;margin-top: 10px;     border-bottom: 1px solid #ebe9e9;
+            padding-inline: 20px;
+            font-weight: 900;
+            color: #000;font-size: 14px;
+line-height: 25px;">{{ title }}</h3>       
+<div class="fold">
+    <div class="carousel">
+        <div class="carousel__container">
+            <div class="carousel__wrapper">
+            <div  class="swiper mySwiperscroll-{{ module_id }}">
+                <div class="swiper-wrapper">
+                    {% for product in products %}
+                    <div class="carousel__slide swiper-slide" >
+                        {{ product }}
+                    </div>
+                   {% endfor %}
+   
+                </div>
+            </div>    
+
+            </div>
+        </div>
+    </div>
+</div>                                   
+
+<script>
+
+
+const swiper{{ module_id  }} = new Swiper('.mySwiperscroll-{{ module_id  }}', {
+    slidesPerView: 1,
+    lazy: true,
+     rewind: true,
+    spaceBetween: 32,
+    resistanceRatio : 0,
+    autoplay: {
+        delay: 7000, // Delay between slides in milliseconds
+        disableOnInteraction: false // Allow user interaction (e.g., swipe) to stop autoplay
+    },    
+    breakpoints: {
+        0: {
+            slidesPerView: 1,
+            spaceBetween: 0,
+            resistanceRatio: 0.85
+        },        
+        260: {
+            slidesPerView: 1,
+            spaceBetween: 0,
+            resistanceRatio: 0.85
+        },
+         320: {
+            slidesPerView: 1,
+            spaceBetween: 0,
+            resistanceRatio: 0.85
+        },  
+         360: {
+            slidesPerView: 2,
+            spaceBetween: 2,
+            resistanceRatio: 0.55
+        },        
+        767: {
+            slidesPerView: 3,
+            spaceBetween: 10,
+            resistanceRatio: 0.85
+        },        
+        980: {
+            slidesPerView: 4,
+            spaceBetween: 10,
+            resistanceRatio: 0.85
+        },
+        1199: {
+            slidesPerView: 5,
+            spaceBetween: 10,
+            resistanceRatio: 0.85
+        },
+        1280: {
+            slidesPerView: 6,
+            spaceBetween: 10,
+            resistanceRatio : 0
+        },
+        1540: {
+            slidesPerView: 7,
+            spaceBetween: 10,
+            resistanceRatio : 0
+        },
+        5000: {
+            slidesPerView: 8,
+            spaceBetween: 32,
+            resistanceRatio : 0
+        },        
+    },
+    keyboard: {
+        enabled: true,
+     },
+      navigation: false,
+      pagination: false, 
+      scrollbar: false,      
+});
+
+</script>
+    {% elseif type == 'images' %}
+        <h3 style="line-height: 50px;margin-top: 10px;     border-bottom: 1px solid #ebe9e9;
+            padding-inline: 20px;
+            font-weight: 900;
+            color: #000;font-size: 14px;
+line-height: 25px;">{{ title }}</h3>
+    <div class="swiper mySwiperscroll{{ module_id }}">
+    <div class="swiper-wrapper">
+        {% for product in products %}
+         <div class="swiper-slide">
+         <a href="{{product.href}}" title="{{product.name}}">
+            <img loading="lazy" alt="{{product.name}}" src="{{product.thumb}}"  width="100" height="100">
+         </a>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="swiper-scrollbar swiper-scrollbar{{ module_id }}" ></div>
+  </div>
+    <script>
+    const swiper{{ module_id  }} = new Swiper(".mySwiperscroll{{ module_id }}", {
+    slidesPerView: 1,
+    lazy: true,
+     rewind: true,
+    spaceBetween: 32,
+    resistanceRatio : 0,
+    autoplay: {
+        delay: 4500, // Delay between slides in milliseconds
+        disableOnInteraction: false // Allow user interaction (e.g., swipe) to stop autoplay
+    },    
+    breakpoints: {
+        0: {
+            slidesPerView: 1,
+            spaceBetween: 0,
+            resistanceRatio: 0.85
+        },        
+        260: {
+            slidesPerView: 2,
+            spaceBetween: 0,
+            resistanceRatio: 0.85
+        },
+         320: {
+            slidesPerView: 3,
+            spaceBetween: 0,
+            resistanceRatio: 0.85
+        },  
+         360: {
+            slidesPerView: 3,
+            spaceBetween: 2,
+            resistanceRatio: 0.85
+        },        
+        550: {
+            slidesPerView: 5,
+            spaceBetween: 10,
+            resistanceRatio: 0.85
+        },        
+        980: {
+            slidesPerView: 6,
+            spaceBetween: 10,
+            resistanceRatio: 0.85
+        },
+        1199: {
+            slidesPerView: 7,
+            spaceBetween: 10,
+            resistanceRatio: 0.85
+        },
+        1280: {
+            slidesPerView: 8,
+            spaceBetween: 10,
+            resistanceRatio : 0
+        },
+        1540: {
+            slidesPerView: 10,
+            spaceBetween: 10,
+            resistanceRatio : 0
+        },
+        5000: {
+            slidesPerView: 12,
+            spaceBetween: 32,
+            resistanceRatio : 0
+        },        
+    },
+    keyboard: {
+        enabled: true,
+     },        
+      scrollbar: {
+        el: ".swiper-scrollbar.swiper-scrollbar{{ module_id }}",
+        hide: false,
+      },
+      navigation: false,
+      pagination: false,      
+    });
+  </script>  
+    {% elseif type == 'simages' %}
+        <h3 style="line-height: 50px;margin-top: 10px;     border-bottom: 1px solid #ebe9e9;
+            padding-inline: 20px;
+            font-weight: 900;
+            color: #000;font-size: 14px;
+line-height: 25px;">{{ title }}</h3>
+    <div class="row">
+        {% for product in products %}
+
+                     <div class="py-1 px-1 col-4 col-sm-4 col-md-2 col-lg-2 text-center">
+                         <a href="{{product.href}}" title="{{product.name}}">
+                            <img loading="lazy" style="max-width:100%" alt="{{product.name}}" src="{{product.thumb}}">
+                         </a>                         
+                     </div>
+
+        {% endfor %}
+    </div>
+    {% elseif type == 'modern' %}
+        {% if random_type == 'modern1' %}
+{# modern1.twig #}
+<div class="swiper-container" id="flip-cards-{{ module_id }}">
+  <div class="swiper-wrapper">
+    {% for product in products %}
+    <div class="swiper-slide">
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            {{ product.fullproduct }}
+          </div>
+          <div class="flip-card-back">
+            <h3>{{ product.name }}</h3>
+            <p class="price">
+              {% if product.special %}
+              <span class="price-new">{{ product.special }}</span>
+              <span class="price-old">{{ product.price }}</span>
+              {% else %}
+              <span>{{ product.price }}</span>
+              {% endif %}
+            </p>
+            <button class="btn-quick-view" data-product-id="{{ product.product_id }}">{{ text_quick_view }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="swiper-pagination"></div>
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+</div>
+
+<div id="quick-view-modal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_quick_view }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Content will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    new Swiper('#flip-cards-{{ module_id }}', {
+      effect: 'flip',
+      grabCursor: true,
+      pagination: {
+        el: '.swiper-pagination',
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+    });
+
+    $('.btn-quick-view').on('click', function() {
+      var product_id = $(this).data('product-id');
+      $.ajax({
+        url: 'index.php?route=product/product/quickview&product_id=' + product_id,
+        type: 'get',
+        dataType: 'html',
+        success: function(response) {
+          $('#quick-view-modal .modal-body').html(response);
+          $('#quick-view-modal').modal('show');
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .flip-card {
+    perspective: 1000px;
+    height: 100%;
+  }
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  .flip-card-back {
+    background-color: #f8f9fa;
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .btn-quick-view {
+    margin-top: 10px;
+  }
+</style>
+        {% elseif random_type == 'modern2' %}
+<div class="swiper-container" id="zoom-fade-{{ module_id }}">
+  <div class="swiper-wrapper">
+    {% for product in products %}
+    <div class="swiper-slide">
+      <div class="zoom-fade-card">
+        <img src="{{ product.thumb }}" alt="{{ product.name }}">
+        <div class="zoom-fade-content">
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.price }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+</div>
+
+<style>
+.zoom-fade-card {
+  position: relative;
+  overflow: hidden;
+}
+.zoom-fade-card img {
+  transition: transform 0.5s ease;
+}
+.zoom-fade-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 20px;
+  transform: translateY(100%);
+  transition: transform 0.5s ease;
+}
+.zoom-fade-card:hover img {
+  transform: scale(1.1);
+}
+.zoom-fade-card:hover .zoom-fade-content {
+  transform: translateY(0);
+}
+</style>
+
+<script>
+new Swiper('#zoom-fade-{{ module_id }}', {
+  effect: 'fade',
+  fadeEffect: {
+    crossFade: true
+  },
+  navigation: {
+    nextEl: '.swiper-button-next',
+    prevEl: '.swiper-button-prev',
+  },
+  autoplay: {
+    delay: 3000,
+  },
+});
+</script>
+        {% elseif random_type == 'modern3' %}
+<div class="animated-grid" id="animated-grid-{{ module_id }}">
+  {% for product in products %}
+  <div class="grid-item">
+    <img src="{{ product.thumb }}" alt="{{ product.name }}">
+    <div class="grid-item-content">
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.price }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<style>
+.animated-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+.grid-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+.grid-item:hover {
+  transform: translateY(-10px);
+}
+.grid-item img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+.grid-item:hover img {
+  transform: scale(1.1);
+}
+.grid-item-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  color: white;
+  padding: 20px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+.grid-item:hover .grid-item-content {
+  transform: translateY(0);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const grid = document.getElementById('animated-grid-{{ module_id }}');
+  const items = grid.querySelectorAll('.grid-item');
+  
+  items.forEach((item, index) => {
+    item.style.animationDelay = `${index * 0.1}s`;
+  });
+});
+</script>
+        {% elseif random_type == 'modern4' %}
+<div class="swiper-container" id="curtain-reveal-{{ module_id }}">
+  <div class="swiper-wrapper">
+    {% for product in products %}
+    <div class="swiper-slide">
+      <div class="curtain-card">
+        <div class="curtain-front"></div>
+        <div class="curtain-back">
+          <img src="{{ product.thumb }}" alt="{{ product.name }}">
+        </div>
+        <div class="curtain-content">
+          <h3>{{ product.name }}</h3>
+          <p>{{ product.price }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+.curtain-card {
+  position: relative;
+  height: 400px;
+  overflow: hidden;
+}
+.curtain-front, .curtain-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.curtain-front {
+  background: #f1f1f1;
+  transform-origin: left;
+  transition: transform 0.5s ease;
+}
+.curtain-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.curtain-content {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.swiper-slide-active .curtain-front {
+  transform: perspective(1200px) rotateY(-90deg);
+}
+.swiper-slide-active .curtain-content {
+  opacity: 1;
+}
+</style>
+
+<script>
+new Swiper('#curtain-reveal-{{ module_id }}', {
+  effect: 'cube',
+  grabCursor: true,
+  cubeEffect: {
+    shadow: true,
+    slideShadows: true,
+    shadowOffset: 20,
+    shadowScale: 0.94,
+  },
+  autoplay: {
+    delay: 3000,
+  },
+});
+</script>
+        {% elseif random_type == 'modern5' %}
+<div class="cosmic-container" id="cosmic-showcase-{{ module_id }}">
+  <div class="stars"></div>
+  <div class="swiper-container">
+    <div class="swiper-wrapper">
+      {% for product in products %}
+      <div class="swiper-slide">
+        <div class="planet">
+          <img src="{{ product.thumb }}" alt="{{ product.name }}">
+          <div class="orbit">
+            <div class="moon">
+              <span class="price">{{ product.price }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<style>
+.cosmic-container {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #000033, #000066);
+}
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: twinkle 5s infinite;
+}
+@keyframes twinkle {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+.planet {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(255,255,255,0.3);
+  animation: pulse 4s infinite alternate;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+.planet img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.orbit {
+  position: absolute;
+  top: -25px;
+  left: -25px;
+  width: 250px;
+  height: 250px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  animation: rotate 10s linear infinite;
+}
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.moon {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  background: #f1f1f1;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+.price {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #000;
+  font-weight: bold;
+}
+</style>
+
+<script>
+new Swiper('#cosmic-showcase-{{ module_id }} .swiper-container', {
+  effect: 'coverflow',
+  grabCursor: true,
+  centeredSlides: true,
+  slidesPerView: 'auto',
+  coverflowEffect: {
+    rotate: 50,
+    stretch: 0,
+    depth: 100,
+    modifier: 1,
+    slideShadows: true,
+  },
+  autoplay: {
+    delay: 3000,
+  },
+});
+</script>
+        {% elseif random_type == 'modern6' %}
+<div class="hologram-container" id="ripple-hologram-{{ module_id }}">
+  <div class="swiper-container">
+    <div class="swiper-wrapper">
+      {% for product in products %}
+      <div class="swiper-slide">
+        <div class="hologram">
+          <div class="ripple"></div>
+          <img src="{{ product.thumb }}" alt="{{ product.name }}">
+          <div class="hologram-info">
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.price }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<style>
+.hologram-container {
+  background: #000;
+  padding: 50px 0;
+}
+.hologram {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: auto;
+  perspective: 1000px;
+}
+.hologram img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.7;
+  filter: brightness(1.2) contrast(1.2);
+}
+.ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border: 2px solid rgba(0, 255, 255, 0.5);
+  border-radius: 50%;
+  animation: ripple 2s linear infinite;
+}
+@keyframes ripple {
+  0% { width: 0; height: 0; opacity: 1; }
+  100% { width: 500px; height: 500px; opacity: 0; }
+}
+.hologram-info {
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #0ff;
+  text-shadow: 0 0 10px #0ff;
+}
+.hologram::before,
+.hologram::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 40%, rgba(0, 255, 255, 0.3) 50%, transparent 60%);
+  animation: hologram-effect 5s linear infinite;
+}
+.hologram::after {
+  animation-delay: -2.5s;
+}
+@keyframes hologram-effect {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(360deg); }
+}
+</style>
+
+<script>
+new Swiper('#ripple-hologram-{{ module_id }} .swiper-container', {
+  effect: 'cube',
+  grabCursor: true,
+  cubeEffect: {
+    shadow: true,
+    slideShadows: true,
+    shadowOffset: 20,
+    shadowScale: 0.94,
+  },
+  autoplay: {
+    delay: 3000,
+  },
+});
+</script>
+        {% elseif random_type == 'modern7' %}
+<div class="disintegrate-container" id="disintegrate-assemble-{{ module_id }}">
+  <div class="swiper-container">
+    <div class="swiper-wrapper">
+      {% for product in products %}
+      <div class="swiper-slide">
+        <div class="product-showcase">
+          <div class="product-image">
+            <img src="{{ product.thumb }}" alt="{{ product.name }}">
+          </div>
+          <div class="product-info">
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.price }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<style>
+.disintegrate-container {
+  background: #111;
+  padding: 50px 0;
+}
+.product-showcase {
+  position: relative;
+  width: 300px;
+  height: 400px;
+  margin: auto;
+  overflow: hidden;
+}
+.product-image {
+  width: 100%;
+  height: 100%;
+  background: #222;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.product-image img {
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+}
+.product-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 20px;
+  transform: translateY(100%);
+  transition: transform 0.5s ease;
+}
+.product-showcase:hover .product-info {
+  transform: translateY(0);
+}
+.swiper-slide-active .product-image img {
+  animation: disintegrate 1s ease forwards;
+}
+@keyframes disintegrate {
+  0% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+  50% { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
+  100% { clip-path: polygon(50% 0%, 50% 0%, 100% 50%, 50% 100%, 50% 100%, 0% 50%); }
+}
+.swiper-slide-active .product-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('{{ product.thumb }}') center/cover no-repeat;
+  animation: assemble 1s ease 1s forwards;
+  opacity: 0;
+}
+@keyframes assemble {
+  0% { clip-path: polygon(50% 0%, 50% 0%, 100% 50%, 50% 100%, 50% 100%, 0% 50%); opacity: 1; }
+  50% { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); opacity: 1; }
+  100% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); opacity: 1; }
+}
+</style>
+
+<script>
+new Swiper('#disintegrate-assemble-{{ module_id }} .swiper-container', {
+  effect: 'flip',
+  grabCursor: true,
+  flipEffect: {
+    slideShadows: false,
+  },
+  autoplay: {
+    delay: 5000,
+  },
+});
+</script>
+        {% elseif random_type == 'modern8' %}
+<div class="mixed-reality-container" id="mixed-reality-{{ module_id }}">
+  <video id="background-video" autoplay loop muted>
+    <source src="{{ background_video_url }}" type="video/mp4">
+  </video>
+  <div class="product-overlay">
+    {% for product in products %}
+    <div class="product-hotspot" style="left: {{ product.x }}%; top: {{ product.y }}%;">
+      <div class="hotspot-dot"></div>
+      <div class="product-popup">
+        <img src="{{ product.thumb }}" alt="{{ product.name }}">
+        <h3>{{ product.name }}</h3>
+        <p>{{ product.price }}</p>
+        <button class="add-to-cart">Add to Cart</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+.mixed-reality-container {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  overflow: hidden;
+}
+#background-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+}
+.product-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.product-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+.hotspot-dot {
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  cursor: pointer;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+.product-popup {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 200px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+.hotspot-dot:hover + .product-popup,
+.product-popup:hover {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+}
+.product-popup img {
+  width: 100%;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+.add-to-cart {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.add-to-cart:hover {
+  background: #45a049;
+}
+</style>
+
+<script>
+document.querySelectorAll('.hotspot-dot').forEach(dot => {
+  dot.addEventListener('mouseover', () => {
+    dot.style.animation = 'none';
+  });
+  dot.addEventListener('mouseout', () => {
+    dot.style.animation = 'pulse 2s infinite';
+  });
+});
+</script>
+        {% elseif random_type == 'modern9' %}
+<div class="sensory-container" id="sensory-{{ module_id }}">
+  <div class="swiper-container">
+    <div class="swiper-wrapper">
+      {% for product in products %}
+      <div class="swiper-slide">
+        <div class="sensory-product" data-scent="{{ product.scent }}" data-sound="{{ product.sound_url }}">
+          <div class="product-visual">
+            <img src="{{ product.thumb }}" alt="{{ product.name }}">
+          </div>
+          <div class="product-info">
+            <h3>{{ product.name }}</h3>
+            <p>{{ product.price }}</p>
+          </div>
+          <div class="sensory-controls">
+            <button class="scent-button">Experience Scent</button>
+            <button class="sound-button">Listen</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div id="scent-display"></div>
+  <audio id="product-sound"></audio>
+</div>
+
+<style>
+.sensory-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sensory-product {
+  width: 300px;
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.product-visual {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.product-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.product-visual:hover img {
+  transform: scale(1.1);
+}
+.sensory-controls {
+  margin-top: 20px;
+}
+.scent-button, .sound-button {
+  background: #6c5ce7;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 0 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.scent-button:hover, .sound-button:hover {
+  background: #5b4cdb;
+  transform: translateY(-2px);
+}
+#scent-display {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 20%, #ffeaa7 20%, #ffeaa7 80%, transparent 80%, transparent);
+  opacity: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+</style>
+
+<script>
+new Swiper('#sensory-{{ module_id }} .swiper-container', {
+  effect: 'cards',
+  grabCursor: true,
+});
+
+document.querySelectorAll('.scent-button').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const scent = e.target.closest('.sensory-product').dataset.scent;
+    const display = document.getElementById('scent-display');
+    display.style.opacity = '1';
+    display.style.background = `radial-gradient(circle, transparent 20%, ${scent} 20%, ${scent} 80%, transparent 80%, transparent)`;
+    setTimeout(() => {
+      display.style.opacity = '0';
+    }, 2000);
+  });
+});
+
+const audio = document.getElementById('product-sound');
+document.querySelectorAll('.sound-button').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const sound = e.target.closest('.sensory-product').dataset.sound;
+    audio.src = sound;
+    audio.play();
+  });
+});
+</script>
+        {% elseif random_type == 'modern10' %}
+<div class="ar-container" id="ar-experience-{{ module_id }}">
+  <video id="ar-video" autoplay playsinline></video>
+  <canvas id="ar-overlay"></canvas>
+  <div class="product-selector">
+    {% for product in products %}
+    <div class="product-option" data-model="{{ product.ar_model }}">
+      <img src="{{ product.thumb }}" alt="{{ product.name }}">
+      <span>{{ product.name }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+.ar-container {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  overflow: hidden;
+}
+#ar-video, #ar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.product-selector {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 10px;
+}
+.product-option {
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+.product-option:hover {
+  transform: scale(1.1);
+}
+.product-option img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+.product-option span {
+  display: block;
+  font-size: 12px;
+  margin-top: 5px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image.prod.js"></script>
+<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-aframe.prod.js"></script>
+
+<script>
+const startAR = async () => {
+  const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+    container: document.querySelector("#ar-experience-{{ module_id }}"),
+    imageTargetSrc: "path/to/your/target/image.mind",
+  });
+  const {renderer, scene, camera} = mindarThree;
+  const anchor = mindarThree.addAnchor(0);
+  
+  const productOptions = document.querySelectorAll('.product-option');
+  productOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      const modelUrl = option.dataset.model;
+      // Load and display 3D model using the modelUrl
+      // This part depends on your 3D model format and library
+    });
+  });
+
+  await mindarThree.start();
+  renderer.setAnimationLoop(() => {
+    renderer.render(scene, camera);
+  });
+};
+
+startAR();
+</script>
+        {% endif %}
+    {% endif %}
+{% endif %}

@@ -1,0 +1,249 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_export_csv }}" class="btn btn-light" onclick="exportCsv()">
+          <i class="fas fa-file-csv"></i>
+        </button>
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_export_pdf }}" class="btn btn-light" onclick="exportPdf()">
+          <i class="fas fa-file-pdf"></i>
+        </button>
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_print }}" class="btn btn-light" onclick="printList()">
+          <i class="fas fa-print"></i>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-cubes"></i> {{ text_inventory_list }}</div>
+      <div class="card-body">
+        <!-- فلاتر البحث -->
+        <div class="row mb-3">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="form-label">{{ entry_branch }}</label>
+              <select name="filter_branch_id" id="input-branch" class="form-select">
+                <option value="">{{ text_all_branches }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="form-label">{{ entry_consignment }}</label>
+              <select name="filter_consignment" id="input-consignment" class="form-select">
+                <option value="">{{ text_all }}</option>
+                <option value="1">{{ text_consignment }}</option>
+                <option value="0">{{ text_regular }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="form-label">{{ entry_search }}</label>
+              <input type="text" name="filter_search" id="input-search" class="form-control" placeholder="{{ text_search_placeholder }}">
+            </div>
+          </div>
+        </div>
+
+        <!-- جدول المخزون -->
+        <div class="table-responsive">
+          <table id="inventory-table" class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_branch }}</th>
+                <th>{{ column_product }}</th>
+                <th>{{ column_unit }}</th>
+                <th class="text-end">{{ column_quantity }}</th>
+                <th class="text-end">{{ column_average_cost }}</th>
+                <th class="text-end">{{ column_total_value }}</th>
+                <th class="text-center">{{ column_action }}</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال تفاصيل المخزون -->
+<div class="modal fade" id="modal-inventory-details" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_inventory_details }}</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- تفاصيل المخزون -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <th>{{ text_current_quantity }}:</th>
+                <td id="detail-quantity" class="text-end"></td>
+              </tr>
+              <tr>
+                <th>{{ text_average_cost }}:</th>
+                <td id="detail-cost" class="text-end"></td>
+              </tr>
+              <tr>
+                <th>{{ text_total_value }}:</th>
+                <td id="detail-value" class="text-end"></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <!-- حركات المخزون -->
+        <h5>{{ text_movements }}</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_date }}</th>
+                <th>{{ column_type }}</th>
+                <th class="text-end">{{ column_quantity }}</th>
+                <th>{{ column_reference }}</th>
+              </tr>
+            </thead>
+            <tbody id="movements-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة DataTables
+    var table = $('#inventory-table').DataTable({
+        'processing': true,
+        'serverSide': true,
+        'ajax': {
+            'url': 'index.php?route=inventory/inventory/getList&user_token={{ user_token }}',
+            'type': 'POST',
+            'data': function(d) {
+                d.filter_branch_id = $('#input-branch').val();
+                d.filter_consignment = $('#input-consignment').val();
+                d.filter_search = $('#input-search').val();
+            }
+        },
+        'columns': [
+            { 'data': 0 }, // branch
+            { 'data': 1 }, // product
+            { 'data': 2 }, // unit
+            { 
+                'data': 3,
+                'className': 'text-end'
+            },
+            { 
+                'data': 4,
+                'className': 'text-end'
+            },
+            { 
+                'data': 5,
+                'className': 'text-end'
+            },
+            { 
+                'data': null,
+                'className': 'text-center',
+                'render': function(data, type, row) {
+                    return '<button type="button" class="btn btn-info btn-sm" onclick="viewDetails(\'' + row[0] + '\')">' +
+                           '<i class="fas fa-info-circle"></i></button>';
+                }
+            }
+        ]
+    });
+
+    // إعادة تحميل عند تغيير الفلاتر
+    $('#input-branch, #input-consignment').on('change', function() {
+        table.ajax.reload();
+    });
+
+    // البحث
+    var searchTimeout = null;
+    $('#input-search').on('keyup', function() {
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        searchTimeout = setTimeout(function() {
+            table.ajax.reload();
+        }, 500);
+    });
+});
+
+// عرض التفاصيل
+function viewDetails(branchId) {
+    $.ajax({
+        url: 'index.php?route=inventory/inventory/getInventoryDetails&user_token={{ user_token }}',
+        type: 'GET',
+        data: { branch_id: branchId },
+        dataType: 'json',
+        success: function(json) {
+            if (json.inventory) {
+                $('#detail-quantity').text(json.inventory.quantity);
+                $('#detail-cost').text(json.inventory.average_cost);
+                $('#detail-value').text(json.inventory.total_value);
+
+                var movementsHtml = '';
+                if (json.movements && json.movements.length) {
+                    json.movements.forEach(function(movement) {
+                        movementsHtml += '<tr>' +
+                            '<td>' + movement.created_at + '</td>' +
+                            '<td>' + movement.movement_type + '</td>' +
+                            '<td class="text-end">' + movement.quantity + '</td>' +
+                            '<td>' + movement.reference_type + ' #' + movement.reference_id + '</td>' +
+                            '</tr>';
+                    });
+                } else {
+                    movementsHtml = '<tr><td colspan="4" class="text-center">{{ text_no_movements }}</td></tr>';
+                }
+                $('#movements-list').html(movementsHtml);
+
+                $('#modal-inventory-details').modal('show');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+// تصدير CSV
+function exportCsv() {
+    var url = '{{ export_csv_action }}';
+    url += '&filter_branch_id=' + $('#input-branch').val();
+    url += '&filter_consignment=' + $('#input-consignment').val();
+    window.location = url;
+}
+
+// تصدير PDF
+function exportPdf() {
+    var url = '{{ export_pdf_action }}';
+    url += '&filter_branch_id=' + $('#input-branch').val();
+    url += '&filter_consignment=' + $('#input-consignment').val();
+    window.location = url;
+}
+
+// طباعة
+function printList() {
+    var url = '{{ print_action }}';
+    url += '&filter_branch_id=' + $('#input-branch').val();
+    url += '&filter_consignment=' + $('#input-consignment').val();
+    window.open(url, '_blank');
+}
+</script>
+{{ footer }}

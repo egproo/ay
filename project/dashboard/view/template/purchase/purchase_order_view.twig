@@ -1,0 +1,496 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title"><i class="fa fa-file-text-o"></i> {{ text_order_view }} #{{ order.po_number }}</h4>
+</div>
+<div class="modal-body">
+  <!-- معلومات أمر الشراء -->
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_order_details }}</h3>
+    </div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-sm-6">
+          <table class="table table-bordered table-details">
+            <tr>
+              <th>{{ text_po_number }}</th>
+              <td><strong>{{ order.po_number }}</strong></td>
+            </tr>
+            {% if order.quotation_number %}
+            <tr>
+              <th>{{ text_quotation }}</th>
+              <td>{{ order.quotation_number }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <th>{{ text_supplier }}</th>
+              <td>{{ order.supplier_name }}</td>
+            </tr>
+            <tr>
+              <th>{{ text_currency }}</th>
+              <td>{{ order.currency_code }}</td>
+            </tr>
+            <tr>
+              <th>{{ text_order_date }}</th>
+              <td>{{ order.order_date }}</td>
+            </tr>
+            <tr>
+              <th>{{ text_expected_delivery }}</th>
+              <td>{{ order.expected_delivery_date }}</td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-sm-6">
+          <table class="table table-bordered table-details">
+            <tr>
+              <th>{{ text_payment_terms }}</th>
+              <td>{{ order.payment_terms }}</td>
+            </tr>
+            <tr>
+              <th>{{ text_delivery_terms }}</th>
+              <td>{{ order.delivery_terms }}</td>
+            </tr>
+            <tr>
+              <th>{{ text_tax_included }}</th>
+              <td>{{ order.tax_included }}</td>
+            </tr>
+            <tr>
+              <th>{{ text_tax_rate }}</th>
+              <td>{{ order.tax_rate }}</td>
+            </tr>
+            <tr>
+              <th>{{ text_status }}</th>
+              <td><span class="label label-{{ order.status_class }}">{{ order.status_text }}</span></td>
+            </tr>
+            <tr>
+              <th>{{ text_created_by }}</th>
+              <td>{{ order.created_by_name }} ({{ order.created_at }})</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      {% if order.notes %}
+      <div class="row">
+        <div class="col-md-12">
+          <div class="well well-sm">
+            <strong>{{ text_notes }}:</strong> {{ order.notes }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <!-- بنود أمر الشراء -->
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-shopping-cart"></i> {{ text_items }}</h3>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_product }}</th>
+              <th class="text-center">{{ column_quantity }}</th>
+              <th>{{ column_unit }}</th>
+              <th class="text-right">{{ column_unit_price }}</th>
+              <th class="text-right">{{ column_discount }}</th>
+              <th class="text-right">{{ column_tax }}</th>
+              <th class="text-right">{{ column_total }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if items %}
+              {% for item in items %}
+              <tr>
+                <td>{{ item.product_name }}{% if item.description %}<br><small class="text-muted">{{ item.description }}</small>{% endif %}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td>{{ item.unit_name }}</td>
+                <td class="text-right">{{ item.unit_price_formatted }}</td>
+                <td class="text-right">{{ item.discount_amount_formatted }}</td>
+                <td class="text-right">{{ item.tax_amount_formatted }}</td>
+                <td class="text-right">{{ item.total_price_formatted }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center">{{ text_no_items }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5"></td>
+              <td class="text-right"><strong>{{ text_subtotal }}</strong></td>
+              <td class="text-right">{{ order.subtotal }}</td>
+            </tr>
+            {% if order.discount_amount > 0 %}
+            <tr>
+              <td colspan="5"></td>
+              <td class="text-right"><strong>{{ text_discount }}</strong></td>
+              <td class="text-right">{{ order.discount_amount }}</td>
+            </tr>
+            {% endif %}
+            {% if order.tax_amount > 0 %}
+            <tr>
+              <td colspan="5"></td>
+              <td class="text-right"><strong>{{ text_tax }}</strong></td>
+              <td class="text-right">{{ order.tax_amount }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td colspan="5"></td>
+              <td class="text-right"><strong>{{ text_total }}</strong></td>
+              <td class="text-right"><strong>{{ order.total_amount }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Tabs لعرض المستندات والتاريخ والاستلام والمطابقة -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#documents-tab" aria-controls="documents-tab" role="tab" data-toggle="tab"><i class="fa fa-file-o"></i> {{ text_documents }}</a></li>
+    <li role="presentation"><a href="#history-tab" aria-controls="history-tab" role="tab" data-toggle="tab"><i class="fa fa-history"></i> {{ text_history }}</a></li>
+    <li role="presentation"><a href="#receipts-tab" aria-controls="receipts-tab" role="tab" data-toggle="tab"><i class="fa fa-truck"></i> {{ text_receipts }}</a></li>
+    <li role="presentation"><a href="#matching-tab" aria-controls="matching-tab" role="tab" data-toggle="tab"><i class="fa fa-balance-scale"></i> {{ text_matching }}</a></li>
+  </ul>
+  
+  <div class="tab-content">
+    <!-- المستندات -->
+    <div role="tabpanel" class="tab-pane active" id="documents-tab">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_document_name }}</th>
+              <th>{{ column_document_type }}</th>
+              <th>{{ column_uploaded_by }}</th>
+              <th>{{ column_upload_date }}</th>
+              <th class="text-right">{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody id="documents-list">
+            {% if documents %}
+              {% for document in documents %}
+              <tr>
+                <td>{{ document.document_name }}</td>
+                <td>{{ document.document_type_text }}</td>
+                <td>{{ document.uploaded_by_name }}</td>
+                <td>{{ document.upload_date }}</td>
+                <td class="text-right">
+                  <div class="btn-group btn-group-sm">
+                    {% if document.can_view %}
+                    <button type="button" class="btn btn-info" onclick="OrderManager.previewDocument({{ document.document_id }});" data-toggle="tooltip" title="{{ button_view }}">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    {% endif %}
+                    
+                    {% if document.can_download %}
+                    <a href="{{ document.download_url }}" class="btn btn-primary" target="_blank" data-toggle="tooltip" title="{{ button_download }}">
+                      <i class="fa fa-download"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if document.can_delete %}
+                    <button type="button" class="btn btn-danger" onclick="OrderManager.deleteDocument({{ document.document_id }});" data-toggle="tooltip" title="{{ button_delete }}">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center">{{ text_no_documents }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+      
+      {% if can_upload %}
+      <form id="document-upload-form" class="form-horizontal" enctype="multipart/form-data" style="margin-top: 20px;">
+        <input type="hidden" name="document_po_id" id="document-po-id" value="{{ order.po_id }}">
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ text_document_type }}</label>
+                <div class="col-sm-8">
+                  <select name="document_type" class="form-control">
+                    <option value="purchase_order">{{ text_po_document }}</option>
+                    <option value="invoice">{{ text_invoice_document }}</option>
+                    <option value="delivery_note">{{ text_delivery_note }}</option>
+                    <option value="other">{{ text_other_document }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-5">
+              <div class="input-group">
+                <input type="text" class="form-control" id="document-file-name" readonly placeholder="{{ text_select_file }}">
+                <input type="file" name="file" id="document-file" style="display: none;">
+                <span class="input-group-btn">
+                  <button type="button" id="upload-document-btn" class="btn btn-primary">
+                    <i class="fa fa-folder-open"></i> {{ button_browse }}
+                  </button>
+                </span>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <button type="submit" class="btn btn-success">
+                <i class="fa fa-upload"></i> {{ button_upload }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+    
+    <!-- التاريخ -->
+    <div role="tabpanel" class="tab-pane" id="history-tab">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_date }}</th>
+              <th>{{ column_user }}</th>
+              <th>{{ column_action_type }}</th>
+              <th>{{ column_description }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if history %}
+              {% for entry in history %}
+              <tr>
+                <td>{{ entry.created_at }}</td>
+                <td>{{ entry.user_name }}</td>
+                <td>{{ entry.action }}</td>
+                <td>{{ entry.description }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center">{{ text_no_history }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- الاستلام -->
+    <div role="tabpanel" class="tab-pane" id="receipts-tab">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_receipt_number }}</th>
+              <th>{{ column_receipt_date }}</th>
+              <th>{{ column_branch }}</th>
+              <th>{{ column_invoice_number }}</th>
+              <th class="text-right">{{ column_invoice_amount }}</th>
+              <th class="text-center">{{ column_receipt_status }}</th>
+              <th class="text-right">{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if receipts %}
+              {% for receipt in receipts %}
+              <tr>
+                <td>{{ receipt.receipt_number }}</td>
+                <td>{{ receipt.receipt_date }}</td>
+                <td>{{ receipt.branch_name }}</td>
+                <td>{{ receipt.invoice_number }}</td>
+                <td class="text-right">{{ receipt.invoice_amount_formatted }}</td>
+                <td class="text-center"><span class="label label-{{ receipt.status_class }}">{{ receipt.status_text }}</span></td>
+                <td class="text-right">
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-info" onclick="OrderManager.viewReceipt({{ receipt.goods_receipt_id }});" data-toggle="tooltip" title="{{ button_view }}">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="OrderManager.printReceipt({{ receipt.goods_receipt_id }});" data-toggle="tooltip" title="{{ button_print }}">
+                      <i class="fa fa-print"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7" class="text-center">{{ text_no_receipts }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- المطابقة -->
+    <div role="tabpanel" class="tab-pane" id="matching-tab">
+      {% if matching %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">{{ text_matching_info }}</h4>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="control-label">{{ text_matching_status }}</label>
+                  <p class="form-control-static">
+                    <span class="label label-{{ matching.status_class }}">{{ matching.status_text }}</span>
+                  </p>
+                </div>
+                <div class="form-group">
+                  <label class="control-label">{{ text_matched_by }}</label>
+                  <p class="form-control-static">{{ matching.matched_by_name }}</p>
+                </div>
+                <div class="form-group">
+                  <label class="control-label">{{ text_matched_at }}</label>
+                  <p class="form-control-static">{{ matching.matched_at }}</p>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label class="control-label">{{ text_matching_summary }}</label>
+                  <ul class="list-group">
+                    <li class="list-group-item">{{ text_total_items }}: <span class="badge">{{ matching.total_items }}</span></li>
+                    <li class="list-group-item">{{ text_matched_items }}: <span class="badge">{{ matching.matched_items }}</span></li>
+                    <li class="list-group-item">{{ text_variance_items }}: <span class="badge">{{ matching.variance_items }}</span></li>
+                  </ul>
+                </div>
+                {% if matching.notes %}
+                <div class="form-group">
+                  <label class="control-label">{{ text_notes }}</label>
+                  <p class="form-control-static">{{ matching.notes }}</p>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_product }}</th>
+                <th class="text-center">{{ column_po_quantity }}</th>
+                <th class="text-right">{{ column_po_price }}</th>
+                <th class="text-center">{{ column_received_quantity }}</th>
+                <th class="text-right">{{ column_invoice_price }}</th>
+                <th class="text-center">{{ column_variance }}</th>
+                <th>{{ text_variance_notes }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in matching.items %}
+              <tr class="{% if item.status == 'mismatch' %}danger{% endif %}">
+                <td>{{ item.product_name }}</td>
+                <td class="text-center">{{ item.quantity_ordered }}</td>
+                <td class="text-right">{{ item.unit_price_ordered_formatted }}</td>
+                <td class="text-center">{{ item.quantity_received }}</td>
+                <td class="text-right">{{ item.unit_price_invoiced_formatted }}</td>
+                <td class="text-center">
+                  {% if item.quantity_variance != 0 or item.price_variance != 0 %}
+                  <span class="label label-warning">{{ item.quantity_variance }} / {{ item.price_variance_formatted }}</span>
+                  {% else %}
+                  <span class="label label-success">{{ text_no_variance }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ item.variance_notes }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info">
+          <i class="fa fa-info-circle"></i> {{ text_no_matching }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <div class="btn-group">
+    {% if can_edit %}
+    <button type="button" class="btn btn-primary" id="edit-order-btn" data-po-id="{{ order.po_id }}">
+      <i class="fa fa-pencil"></i> {{ button_edit }}
+    </button>
+    {% endif %}
+    
+    {% if can_approve %}
+    <button type="button" class="btn btn-success" onclick="OrderManager.approveOrder({{ order.po_id }});">
+      <i class="fa fa-check"></i> {{ button_approve }}
+    </button>
+    {% endif %}
+    
+    {% if can_reject %}
+    <button type="button" class="btn btn-warning" onclick="OrderManager.rejectOrder({{ order.po_id }});">
+      <i class="fa fa-times"></i> {{ button_reject }}
+    </button>
+    {% endif %}
+    
+    {% if can_print %}
+    <button type="button" class="btn btn-default" onclick="OrderManager.printOrder({{ order.po_id }});">
+      <i class="fa fa-print"></i> {{ button_print }}
+    </button>
+    {% endif %}
+    
+    {% if can_create_receipt %}
+    <button type="button" class="btn btn-info" onclick="OrderManager.createReceipt({{ order.po_id }});">
+      <i class="fa fa-truck"></i> {{ button_create_receipt }}
+    </button>
+    {% endif %}
+    
+    {% if can_match %}
+    <button type="button" class="btn btn-success" onclick="OrderManager.matchOrder({{ order.po_id }});">
+      <i class="fa fa-balance-scale"></i> {{ button_match }}
+    </button>
+    {% endif %}
+  </div>
+  
+  <button type="button" class="btn btn-default" data-dismiss="modal">
+    <i class="fa fa-reply"></i> {{ button_close }}
+  </button>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  // تحديث المستندات
+  OrderManager.refreshDocuments({{ order.po_id }});
+  
+  // معالج تحميل المستندات
+  $('#document-upload-form').on('submit', function(e) {
+    e.preventDefault();
+    OrderManager.uploadDocument(this);
+  });
+  
+  $('#upload-document-btn').on('click', function() {
+    $('#document-file').click();
+  });
+  
+  $('#document-file').on('change', function() {
+    if ($(this).val()) {
+      var fileName = $(this).val().split('\\').pop();
+      $('#document-file-name').val(fileName);
+    }
+  });
+  
+  // إعداد tabs
+  $('.nav-tabs a').on('click', function(e) {
+    e.preventDefault();
+    $(this).tab('show');
+  });
+  
+  // تفعيل tooltips
+  $('[data-toggle="tooltip"]').tooltip();
+});
+</script>

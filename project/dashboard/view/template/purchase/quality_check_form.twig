@@ -1,0 +1,303 @@
+<!-- Quality Check Form -->
+<div class="modal-dialog modal-lg">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+      <h4 class="modal-title"><i class="fa fa-check-square-o"></i> {{ heading_title }}</h4>
+    </div>
+    <div class="modal-body">
+      <form id="form-quality-check" class="form-horizontal">
+        <input type="hidden" name="goods_receipt_id" value="{{ receipt.goods_receipt_id }}" />
+        
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_receipt_details }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-sm-6">
+                <table class="table table-bordered table-details">
+                  <tr>
+                    <th>{{ text_receipt_number }}</th>
+                    <td><strong>{{ receipt.receipt_number }}</strong></td>
+                  </tr>
+                  <tr>
+                    <th>{{ text_po_number }}</th>
+                    <td>{{ order.po_number }}</td>
+                  </tr>
+                  <tr>
+                    <th>{{ text_supplier }}</th>
+                    <td>{{ order.supplier_name }}</td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-sm-6">
+                <table class="table table-bordered table-details">
+                  <tr>
+                    <th>{{ text_receipt_date }}</th>
+                    <td>{{ receipt.receipt_date }}</td>
+                  </tr>
+                  <tr>
+                    <th>{{ text_reference }}</th>
+                    <td>{{ receipt.reference }}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list-alt"></i> {{ text_items_quality_check }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>{{ column_product }}</th>
+                    <th class="text-center">{{ column_quantity }}</th>
+                    <th>{{ column_quality_status }}</th>
+                    <th>{{ column_notes }}</th>
+                    <th class="text-center">{{ column_action }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if items %}
+                    {% for item in items %}
+                    <tr id="item-row-{{ item.receipt_item_id }}">
+                      <td>{{ item.product_name }}</td>
+                      <td class="text-center">{{ item.quantity_received }}</td>
+                      <td>
+                        <span class="quality-status quality-status-{{ item.quality_status }}">
+                          {% if item.quality_status == 'pending' %}
+                            <span class="text-warning"><i class="fa fa-clock-o"></i> {{ text_pending }}</span>
+                          {% elseif item.quality_status == 'pass' %}
+                            <span class="text-success"><i class="fa fa-check"></i> {{ text_pass }}</span>
+                          {% elseif item.quality_status == 'fail' %}
+                            <span class="text-danger"><i class="fa fa-times"></i> {{ text_fail }}</span>
+                          {% elseif item.quality_status == 'partial' %}
+                            <span class="text-warning"><i class="fa fa-adjust"></i> {{ text_partial }}</span>
+                          {% endif %}
+                        </span>
+                      </td>
+                      <td>{{ item.quality_notes }}</td>
+                      <td class="text-center">
+                        <button type="button" class="btn btn-primary btn-sm" 
+                                onclick="QualityCheck.openItemCheck({{ item.receipt_item_id }})">
+                          <i class="fa fa-check-square-o"></i> {{ button_check }}
+                        </button>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="5" class="text-center">{{ text_no_items }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+          <div class="col-sm-10">
+            <textarea name="notes" rows="5" id="input-notes" class="form-control">{{ receipt.quality_notes }}</textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      <button type="button" class="btn btn-primary" onclick="QualityCheck.save()">
+        <i class="fa fa-save"></i> {{ button_save }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Item Quality Check Modal -->
+<div class="modal fade" id="modal-item-quality" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-check-circle"></i> {{ text_item_quality_check }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-item-quality" class="form-horizontal">
+          <input type="hidden" name="item_id" id="input-item-id" value="" />
+          
+          <div class="form-group">
+            <label class="col-sm-3 control-label">{{ entry_product }}</label>
+            <div class="col-sm-9">
+              <p class="form-control-static" id="quality-product-name"></p>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-3 control-label">{{ entry_quantity }}</label>
+            <div class="col-sm-9">
+              <p class="form-control-static" id="quality-quantity"></p>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="input-quality-status">{{ entry_quality_status }}</label>
+            <div class="col-sm-9">
+              <select name="status" id="input-quality-status" class="form-control">
+                <option value="pass">{{ text_pass }}</option>
+                <option value="fail">{{ text_fail }}</option>
+                <option value="partial">{{ text_partial }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="input-quality-notes">{{ entry_notes }}</label>
+            <div class="col-sm-9">
+              <textarea name="notes" id="input-quality-notes" class="form-control" rows="3"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="QualityCheck.saveItemCheck()">
+          <i class="fa fa-save"></i> {{ button_save }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var QualityCheck = {
+  openItemCheck: function(itemId) {
+    $('#input-item-id').val(itemId);
+    
+    $.ajax({
+      url: 'index.php?route=purchase/goods_receipt/getQualityCheck&token={{ token }}&item_id=' + itemId,
+      dataType: 'json',
+      beforeSend: function() {
+        $('#modal-item-quality .modal-title').after('<i class="fa fa-spinner fa-spin"></i>');
+        $('#modal-item-quality button').prop('disabled', true);
+      },
+      complete: function() {
+        $('#modal-item-quality .fa-spinner').remove();
+        $('#modal-item-quality button').prop('disabled', false);
+      },
+      success: function(json) {
+        if (json.success) {
+          var item = json.item;
+          
+          $('#quality-product-name').text(item.product_name);
+          $('#quality-quantity').text(item.quantity_received);
+          
+          if (item.quality_status) {
+            $('#input-quality-status').val(item.quality_status);
+          } else {
+            $('#input-quality-status').val('pass');
+          }
+          
+          $('#input-quality-notes').val(item.quality_notes || '');
+          
+          $('#modal-item-quality').modal('show');
+        } else {
+          alert(json.error);
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  },
+  
+  saveItemCheck: function() {
+    $.ajax({
+      url: 'index.php?route=purchase/goods_receipt/ajaxQualityCheck&token={{ token }}',
+      type: 'post',
+      data: $('#form-item-quality').serialize(),
+      dataType: 'json',
+      beforeSend: function() {
+        $('#modal-item-quality button').prop('disabled', true);
+        $('#modal-item-quality .btn-primary').html('<i class="fa fa-spinner fa-spin"></i> {{ button_saving }}');
+      },
+      complete: function() {
+        $('#modal-item-quality button').prop('disabled', false);
+        $('#modal-item-quality .btn-primary').html('<i class="fa fa-save"></i> {{ button_save }}');
+      },
+      success: function(json) {
+        if (json.success) {
+          $('#modal-item-quality').modal('hide');
+          
+          // Update UI
+          var itemId = $('#input-item-id').val();
+          var status = $('#input-quality-status').val();
+          var notes = $('#input-quality-notes').val();
+          
+          var statusHtml = '';
+          if (status == 'pass') {
+            statusHtml = '<span class="text-success"><i class="fa fa-check"></i> {{ text_pass }}</span>';
+          } else if (status == 'fail') {
+            statusHtml = '<span class="text-danger"><i class="fa fa-times"></i> {{ text_fail }}</span>';
+          } else if (status == 'partial') {
+            statusHtml = '<span class="text-warning"><i class="fa fa-adjust"></i> {{ text_partial }}</span>';
+          }
+          
+          $('#item-row-' + itemId + ' .quality-status').html(statusHtml);
+          $('#item-row-' + itemId + ' td:nth-child(4)').text(notes);
+          
+          // Show success message
+          $('#form-quality-check').before('<div class="alert alert-success"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        } else if (json.error) {
+          $('#modal-item-quality .modal-body').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + json.error + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  },
+  
+  save: function() {
+    $.ajax({
+      url: 'index.php?route=purchase/goods_receipt/saveQualityCheck&token={{ token }}',
+      type: 'post',
+      data: $('#form-quality-check').serialize(),
+      dataType: 'json',
+      beforeSend: function() {
+        $('.modal-footer button').prop('disabled', true);
+        $('.modal-footer .btn-primary').html('<i class="fa fa-spinner fa-spin"></i> {{ button_saving }}');
+      },
+      complete: function() {
+        $('.modal-footer button').prop('disabled', false);
+        $('.modal-footer .btn-primary').html('<i class="fa fa-save"></i> {{ button_save }}');
+      },
+      success: function(json) {
+        $('.alert-danger, .alert-success').remove();
+        
+        if (json.success) {
+          $('#modal-quality-check').modal('hide');
+          
+          // Refresh goods receipt list
+          if (typeof GoodsReceiptList !== 'undefined' && GoodsReceiptList.loadReceipts) {
+            GoodsReceiptList.loadReceipts();
+          }
+          
+          // Show success message
+          $('#content > .container-fluid').prepend('<div class="alert alert-success"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        } else if (json.error) {
+          $('#form-quality-check').before('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + json.error + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+};
+</script> 

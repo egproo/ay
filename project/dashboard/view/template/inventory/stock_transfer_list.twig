@@ -1,0 +1,1075 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+          <i class="fa fa-plus"></i>
+        </a>
+        <div class="btn-group">
+          <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-download"></i> {{ button_export_excel }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="{{ export_excel }}"><i class="fa fa-file-excel-o"></i> {{ button_export_excel }}</a></li>
+            <li><a href="{{ export_pdf }}"><i class="fa fa-file-pdf-o"></i> {{ button_export_pdf }}</a></li>
+            <li class="divider"></li>
+            <li><a href="{{ print }}" target="_blank"><i class="fa fa-print"></i> {{ button_print }}</a></li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-cog"></i> {{ button_bulk_actions }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="#" onclick="bulkApprove();"><i class="fa fa-check"></i> {{ button_bulk_approve }}</a></li>
+            <li><a href="#" onclick="bulkShip();"><i class="fa fa-truck"></i> {{ button_bulk_ship }}</a></li>
+            <li><a href="#" onclick="bulkCancel();"><i class="fa fa-times"></i> {{ button_bulk_cancel }}</a></li>
+            <li class="divider"></li>
+            <li><a href="#" onclick="bulkPrint();"><i class="fa fa-print"></i> {{ button_bulk_print }}</a></li>
+          </ul>
+        </div>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-stock-transfer').submit() : false;">
+          <i class="fa fa-trash-o"></i>
+        </button>
+        <a href="{{ refresh }}" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-default">
+          <i class="fa fa-refresh"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- لوحة المعلومات المتقدمة -->
+    <div class="row dashboard-stats">
+      <!-- إجمالي طلبات النقل -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-primary stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exchange fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.total_transfers }}</div>
+                <div class="stats-label">{{ text_total_transfers }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">عرض التفاصيل</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- المسودات -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-default stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-file-o fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.draft_count }}</div>
+                <div class="stats-label">{{ text_draft_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">يحتاج مراجعة</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- في انتظار الموافقة -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-warning stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-clock-o fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.pending_approval_count }}</div>
+                <div class="stats-label">{{ text_pending_approval_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">يحتاج موافقة</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- المعتمدة -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-info stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.approved_count }}</div>
+                <div class="stats-label">{{ text_approved_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">جاهزة للشحن</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- المشحونة -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-primary stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-truck fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.shipped_count }}</div>
+                <div class="stats-label">{{ text_shipped_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">في الطريق</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- المكتملة -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-success stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.completed_count }}</div>
+                <div class="stats-label">{{ text_completed_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">مكتملة بنجاح</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الصف الثاني - إحصائيات متقدمة -->
+    <div class="row dashboard-stats">
+      <!-- في الطريق -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-orange stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-road fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.in_transit_count }}</div>
+                <div class="stats-label">{{ text_in_transit_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">قيد النقل</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- المسلمة -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-teal stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-download fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.delivered_count }}</div>
+                <div class="stats-label">{{ text_delivered_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">تم التسليم</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- المستلمة -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-cyan stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-inbox fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.received_count }}</div>
+                <div class="stats-label">{{ text_received_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">تم الاستلام</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- الملغية -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-danger stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-times fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.cancelled_count }}</div>
+                <div class="stats-label">{{ text_cancelled_count }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">تم الإلغاء</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- إجمالي القيمة -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-green stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-money fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge-value">{{ summary.total_completed_value }}</div>
+                <div class="stats-label">{{ text_total_completed_value }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">القيمة الإجمالية</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- متوسط العناصر -->
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-purple stats-panel">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-calculator fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ summary.avg_items_per_transfer }}</div>
+                <div class="stats-label">{{ text_avg_items_per_transfer }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span class="pull-left">متوسط العناصر</span>
+            <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+            <div class="clearfix"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- النقل حسب الفرع -->
+    {% if transfers_by_branch %}
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-building"></i> {{ text_transfers_by_branch }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>{{ column_from_branch }}</th>
+                    <th class="text-center">{{ text_outgoing_count }}</th>
+                    <th class="text-right">{{ text_outgoing_value }}</th>
+                    <th class="text-center">{{ text_incoming_count }}</th>
+                    <th class="text-right">{{ text_incoming_value }}</th>
+                    <th class="text-right">{{ text_net_transfer }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for branch in transfers_by_branch %}
+                  <tr>
+                    <td>
+                      <strong>{{ branch.branch_name }}</strong>
+                      <br><small class="text-muted">{{ branch.branch_type }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-danger">{{ branch.outgoing_count }}</span>
+                    </td>
+                    <td class="text-right text-danger">{{ branch.outgoing_value }}</td>
+                    <td class="text-center">
+                      <span class="badge badge-success">{{ branch.incoming_count }}</span>
+                    </td>
+                    <td class="text-right text-success">{{ branch.incoming_value }}</td>
+                    <td class="text-right">
+                      <strong class="text-{{ (branch.incoming_value - branch.outgoing_value) >= 0 ? 'success' : 'danger' }}">
+                        {{ (branch.incoming_value - branch.outgoing_value)|number_format(2) }}
+                      </strong>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- الفلاتر المتقدمة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-filter"></i> {{ text_advanced_filters }}
+          <button type="button" class="btn btn-xs btn-default pull-right" data-toggle="collapse" data-target="#filter-panel">
+            <i class="fa fa-chevron-down"></i>
+          </button>
+        </h3>
+      </div>
+      <div id="filter-panel" class="panel-collapse collapse">
+        <div class="panel-body">
+          <form method="get" id="filter-form">
+            <input type="hidden" name="route" value="inventory/stock_transfer" />
+            <input type="hidden" name="user_token" value="{{ user_token }}" />
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_transfer_number">{{ entry_filter_transfer_number }}</label>
+                  <input type="text" name="filter_transfer_number" value="{{ filter_transfer_number }}" placeholder="{{ entry_filter_transfer_number }}" id="filter_transfer_number" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_transfer_name">{{ entry_filter_transfer_name }}</label>
+                  <input type="text" name="filter_transfer_name" value="{{ filter_transfer_name }}" placeholder="{{ entry_filter_transfer_name }}" id="filter_transfer_name" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_status">{{ entry_filter_status }}</label>
+                  <select name="filter_status" id="filter_status" class="form-control">
+                    {% for option in status_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_status %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_transfer_type">{{ entry_filter_transfer_type }}</label>
+                  <select name="filter_transfer_type" id="filter_transfer_type" class="form-control">
+                    {% for option in transfer_type_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_transfer_type %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_priority">{{ entry_filter_priority }}</label>
+                  <select name="filter_priority" id="filter_priority" class="form-control">
+                    {% for option in priority_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_priority %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_from_branch_id">{{ entry_filter_from_branch }}</label>
+                  <select name="filter_from_branch_id" id="filter_from_branch_id" class="form-control">
+                    <option value="">{{ text_all }}</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.branch_id }}"{% if branch.branch_id == filter_from_branch_id %} selected="selected"{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_to_branch_id">{{ entry_filter_to_branch }}</label>
+                  <select name="filter_to_branch_id" id="filter_to_branch_id" class="form-control">
+                    <option value="">{{ text_all }}</option>
+                    {% for branch in branches %}
+                    <option value="{{ branch.branch_id }}"{% if branch.branch_id == filter_to_branch_id %} selected="selected"{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_date_from">{{ entry_filter_date_from }}</label>
+                  <input type="date" name="filter_date_from" value="{{ filter_date_from }}" id="filter_date_from" class="form-control" />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_date_to">{{ entry_filter_date_to }}</label>
+                  <input type="date" name="filter_date_to" value="{{ filter_date_to }}" id="filter_date_to" class="form-control" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_min_value">{{ entry_filter_min_value }}</label>
+                  <input type="number" name="filter_min_value" value="{{ filter_min_value }}" placeholder="{{ entry_filter_min_value }}" id="filter_min_value" class="form-control" step="0.01" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_max_value">{{ entry_filter_max_value }}</label>
+                  <input type="number" name="filter_max_value" value="{{ filter_max_value }}" placeholder="{{ entry_filter_max_value }}" id="filter_max_value" class="form-control" step="0.01" />
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <div>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                    <a href="{{ refresh }}" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_clear }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول طلبات النقل -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-stock-transfer">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center">
+                    <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                  </td>
+                  <td>{{ column_transfer_number }}</td>
+                  <td>{{ column_transfer_name }}</td>
+                  <td class="text-center">{{ column_status }}</td>
+                  <td>{{ column_from_branch }}</td>
+                  <td>{{ column_to_branch }}</td>
+                  <td class="text-center">{{ column_total_items }}</td>
+                  <td class="text-right">{{ column_total_value }}</td>
+                  <td class="text-center">{{ column_progress }}</td>
+                  <td>{{ column_request_date }}</td>
+                  <td class="text-center">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if stock_transfers %}
+                {% for transfer in stock_transfers %}
+                <tr>
+                  <td class="text-center">
+                    {% if transfer.can_edit %}
+                    <input type="checkbox" name="selected[]" value="{{ transfer.transfer_id }}" />
+                    {% endif %}
+                  </td>
+                  <td><strong>{{ transfer.transfer_number }}</strong></td>
+                  <td>{{ transfer.transfer_name }}</td>
+                  <td class="text-center">
+                    <span class="label label-{{ transfer.status_class }}">{{ transfer.status_text }}</span>
+                  </td>
+                  <td>{{ transfer.from_branch_name }}</td>
+                  <td>{{ transfer.to_branch_name }}</td>
+                  <td class="text-center"><strong>{{ transfer.total_items }}</strong></td>
+                  <td class="text-right"><strong>{{ transfer.total_value }}</strong></td>
+                  <td class="text-center">
+                    <div class="progress" style="margin-bottom: 0;">
+                      <div class="progress-bar progress-bar-{{ transfer.progress_class }}"
+                           style="width: {{ transfer.progress_percentage }}%;">
+                        {{ transfer.progress_percentage }}%
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ transfer.request_date }}</td>
+                  <td class="text-center">
+                    <div class="btn-group">
+                      <a href="{{ transfer.view }}" class="btn btn-info btn-xs">
+                        <i class="fa fa-eye"></i>
+                      </a>
+                      {% if transfer.can_edit %}
+                      <a href="{{ transfer.edit }}" class="btn btn-primary btn-xs">
+                        <i class="fa fa-pencil"></i>
+                      </a>
+                      {% endif %}
+                      {% if transfer.can_approve %}
+                      <a href="{{ transfer.approve }}" class="btn btn-success btn-xs">
+                        <i class="fa fa-check"></i>
+                      </a>
+                      {% endif %}
+                      {% if transfer.can_ship %}
+                      <a href="{{ transfer.ship }}" class="btn btn-primary btn-xs">
+                        <i class="fa fa-truck"></i>
+                      </a>
+                      {% endif %}
+                      {% if transfer.can_receive %}
+                      <a href="{{ transfer.receive }}" class="btn btn-warning btn-xs">
+                        <i class="fa fa-download"></i>
+                      </a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="11">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* لوحة المعلومات المتقدمة */
+.dashboard-stats { margin-bottom: 20px; }
+.stats-panel {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.stats-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* أحجام النصوص */
+.huge {
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 1;
+}
+.huge-value {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+}
+.stats-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ألوان الألواح المتقدمة */
+.panel-green { border-color: #27ae60; }
+.panel-green > .panel-heading {
+    border-color: #27ae60;
+    color: white;
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+.panel-purple { border-color: #8e44ad; }
+.panel-purple > .panel-heading {
+    border-color: #8e44ad;
+    color: white;
+    background: linear-gradient(135deg, #8e44ad, #9b59b6);
+}
+
+.panel-orange { border-color: #e67e22; }
+.panel-orange > .panel-heading {
+    border-color: #e67e22;
+    color: white;
+    background: linear-gradient(135deg, #e67e22, #f39c12);
+}
+
+.panel-teal { border-color: #16a085; }
+.panel-teal > .panel-heading {
+    border-color: #16a085;
+    color: white;
+    background: linear-gradient(135deg, #16a085, #1abc9c);
+}
+
+.panel-cyan { border-color: #3498db; }
+.panel-cyan > .panel-heading {
+    border-color: #3498db;
+    color: white;
+    background: linear-gradient(135deg, #3498db, #5dade2);
+}
+
+/* تحسين الجداول */
+.table > tbody > tr > td {
+    vertical-align: middle;
+    padding: 12px 8px;
+}
+.table > thead > tr > th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+/* شريط التقدم المحسن */
+.progress {
+    height: 20px;
+    background-color: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-bar {
+    line-height: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    transition: width 0.6s ease;
+}
+
+/* تحسين الأزرار */
+.btn-group .btn {
+    margin-right: 2px;
+}
+.btn-xs {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
+/* تحسين الفلاتر */
+.panel-footer {
+    background-color: rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding: 8px 15px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.panel-footer:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+/* تحسين الشارات */
+.badge {
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+.badge-danger { background-color: #e74c3c; }
+.badge-success { background-color: #27ae60; }
+
+/* تحسين التسميات */
+.label {
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* تأثيرات الحركة */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stats-panel {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.stats-panel:nth-child(1) { animation-delay: 0.1s; }
+.stats-panel:nth-child(2) { animation-delay: 0.2s; }
+.stats-panel:nth-child(3) { animation-delay: 0.3s; }
+.stats-panel:nth-child(4) { animation-delay: 0.4s; }
+.stats-panel:nth-child(5) { animation-delay: 0.5s; }
+.stats-panel:nth-child(6) { animation-delay: 0.6s; }
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تفعيل التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // تحريك أشرطة التقدم
+    $('.progress-bar').each(function() {
+        var $this = $(this);
+        var width = $this.css('width');
+        $this.css('width', '0%').animate({ width: width }, 1000);
+    });
+
+    // تفعيل النقر على الألواح الإحصائية
+    $('.stats-panel .panel-footer').click(function() {
+        var panel = $(this).closest('.stats-panel');
+        var panelClass = panel.find('.panel').attr('class');
+
+        if (panelClass.includes('panel-default')) {
+            // فلترة المسودات
+            $('#filter_status').val('draft');
+        } else if (panelClass.includes('panel-warning')) {
+            // فلترة في انتظار الموافقة
+            $('#filter_status').val('pending_approval');
+        } else if (panelClass.includes('panel-info')) {
+            // فلترة المعتمدة
+            $('#filter_status').val('approved');
+        } else if (panelClass.includes('panel-primary')) {
+            // فلترة المشحونة
+            $('#filter_status').val('shipped');
+        } else if (panelClass.includes('panel-success')) {
+            // فلترة المكتملة
+            $('#filter_status').val('completed');
+        } else if (panelClass.includes('panel-orange')) {
+            // فلترة في الطريق
+            $('#filter_status').val('in_transit');
+        } else if (panelClass.includes('panel-teal')) {
+            // فلترة المسلمة
+            $('#filter_status').val('delivered');
+        } else if (panelClass.includes('panel-cyan')) {
+            // فلترة المستلمة
+            $('#filter_status').val('received');
+        } else if (panelClass.includes('panel-danger')) {
+            // فلترة الملغية
+            $('#filter_status').val('cancelled');
+        }
+
+        // تطبيق الفلتر
+        $('#filter-form').submit();
+    });
+
+    // تحسين الفلاتر المتقدمة
+    $('#filter-panel').on('shown.bs.collapse', function() {
+        $(this).find('input:first').focus();
+    });
+
+    // حفظ حالة الفلاتر
+    if (localStorage.getItem('transfer_filters_collapsed') === 'false') {
+        $('#filter-panel').addClass('in');
+    }
+
+    $('#filter-panel').on('hidden.bs.collapse', function() {
+        localStorage.setItem('transfer_filters_collapsed', 'true');
+    }).on('shown.bs.collapse', function() {
+        localStorage.setItem('transfer_filters_collapsed', 'false');
+    });
+
+    // تحديث تلقائي للصفحة كل 5 دقائق
+    setInterval(function() {
+        if (!$('#filter-panel').hasClass('in')) {
+            location.reload();
+        }
+    }, 300000);
+
+    // تحسين تجربة المستخدم للجدول
+    $('.table tbody tr').hover(
+        function() {
+            $(this).addClass('active');
+        },
+        function() {
+            $(this).removeClass('active');
+        }
+    );
+
+    // إضافة تأثيرات للأزرار
+    $('.btn').hover(
+        function() {
+            $(this).addClass('btn-hover');
+        },
+        function() {
+            $(this).removeClass('btn-hover');
+        }
+    );
+
+    // تحسين عرض البيانات الكبيرة
+    $('.huge, .huge-value').each(function() {
+        var value = $(this).text();
+        if ($.isNumeric(value) && value > 999) {
+            $(this).text(numberWithCommas(value));
+        }
+    });
+
+    // دالة تنسيق الأرقام
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // تحسين الاستجابة للشاشات الصغيرة
+    if ($(window).width() < 768) {
+        $('.stats-panel').removeClass('col-lg-2 col-md-3').addClass('col-sm-6 col-xs-12');
+    }
+
+    // إضافة مؤشر التحميل للعمليات
+    $('form').submit(function() {
+        var btn = $(this).find('button[type="submit"]');
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> جاري التحميل...');
+    });
+});
+
+// وظائف العمليات المجمعة
+function bulkApprove() {
+    var selected = $('input[name="selected[]"]:checked');
+    if (selected.length === 0) {
+        alert('يرجى تحديد عنصر واحد على الأقل');
+        return false;
+    }
+
+    if (confirm('هل أنت متأكد من اعتماد العناصر المحددة؟')) {
+        var ids = [];
+        selected.each(function() {
+            ids.push($(this).val());
+        });
+
+        $.ajax({
+            url: 'index.php?route=inventory/stock_transfer/bulkApprove&user_token={{ user_token }}',
+            type: 'POST',
+            data: {transfer_ids: ids},
+            dataType: 'json',
+            beforeSend: function() {
+                $('#content').prepend('<div class="alert alert-info"><i class="fa fa-spinner fa-spin"></i> جاري المعالجة...</div>');
+            },
+            success: function(json) {
+                $('.alert').remove();
+                if (json.success) {
+                    $('#content').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                }
+                if (json.error) {
+                    $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json.error + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                }
+            },
+            error: function() {
+                $('.alert').remove();
+                $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> حدث خطأ في الاتصال<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+        });
+    }
+}
+
+// وظيفة الشحن المجمع
+function bulkShip() {
+    var selected = $('input[name="selected[]"]:checked');
+    if (selected.length === 0) {
+        alert('يرجى تحديد عنصر واحد على الأقل');
+        return false;
+    }
+
+    if (confirm('هل أنت متأكد من شحن العناصر المحددة؟')) {
+        var ids = [];
+        selected.each(function() {
+            ids.push($(this).val());
+        });
+
+        $.ajax({
+            url: 'index.php?route=inventory/stock_transfer/bulkShip&user_token={{ user_token }}',
+            type: 'POST',
+            data: {transfer_ids: ids},
+            dataType: 'json',
+            beforeSend: function() {
+                $('#content').prepend('<div class="alert alert-info"><i class="fa fa-spinner fa-spin"></i> جاري المعالجة...</div>');
+            },
+            success: function(json) {
+                $('.alert').remove();
+                if (json.success) {
+                    $('#content').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                }
+                if (json.error) {
+                    $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json.error + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                }
+            },
+            error: function() {
+                $('.alert').remove();
+                $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> حدث خطأ في الاتصال<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+        });
+    }
+}
+
+// وظيفة الإلغاء المجمع
+function bulkCancel() {
+    var selected = $('input[name="selected[]"]:checked');
+    if (selected.length === 0) {
+        alert('يرجى تحديد عنصر واحد على الأقل');
+        return false;
+    }
+
+    if (confirm('هل أنت متأكد من إلغاء العناصر المحددة؟ لا يمكن التراجع عن هذا الإجراء!')) {
+        var ids = [];
+        selected.each(function() {
+            ids.push($(this).val());
+        });
+
+        $.ajax({
+            url: 'index.php?route=inventory/stock_transfer/bulkCancel&user_token={{ user_token }}',
+            type: 'POST',
+            data: {transfer_ids: ids},
+            dataType: 'json',
+            beforeSend: function() {
+                $('#content').prepend('<div class="alert alert-info"><i class="fa fa-spinner fa-spin"></i> جاري المعالجة...</div>');
+            },
+            success: function(json) {
+                $('.alert').remove();
+                if (json.success) {
+                    $('#content').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                }
+                if (json.error) {
+                    $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json.error + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                }
+            },
+            error: function() {
+                $('.alert').remove();
+                $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> حدث خطأ في الاتصال<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+        });
+    }
+}
+
+// وظيفة الطباعة المجمعة
+function bulkPrint() {
+    var selected = $('input[name="selected[]"]:checked');
+    if (selected.length === 0) {
+        alert('يرجى تحديد عنصر واحد على الأقل');
+        return false;
+    }
+
+    var ids = [];
+    selected.each(function() {
+        ids.push($(this).val());
+    });
+
+    var url = 'index.php?route=inventory/stock_transfer/bulkPrint&user_token={{ user_token }}&transfer_ids=' + ids.join(',');
+    window.open(url, '_blank');
+}
+
+// وظيفة تحديث الحالة
+function updateStatus(transferId, status) {
+    if (confirm('هل أنت متأكد من تحديث الحالة؟')) {
+        $.ajax({
+            url: 'index.php?route=inventory/stock_transfer/updateStatus&user_token={{ user_token }}',
+            type: 'POST',
+            data: {
+                transfer_id: transferId,
+                status: status
+            },
+            dataType: 'json',
+            beforeSend: function() {
+                $('#content').prepend('<div class="alert alert-info"><i class="fa fa-spinner fa-spin"></i> جاري التحديث...</div>');
+            },
+            success: function(json) {
+                $('.alert').remove();
+                if (json.success) {
+                    $('#content').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
+                }
+                if (json.error) {
+                    $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json.error + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                }
+            },
+            error: function() {
+                $('.alert').remove();
+                $('#content').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> حدث خطأ في الاتصال<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+        });
+    }
+}
+</script>
+
+{{ footer }}

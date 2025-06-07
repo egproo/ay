@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title }}</title>
+  <base href="{{ base }}" />
+  <link href="view/stylesheet/bootstrap.css" rel="stylesheet" media="all" />
+  <link href="view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+  <link type="text/css" href="view/stylesheet/stylesheet.css" rel="stylesheet" media="all" />
+  <script type="text/javascript" src="view/javascript/jquery/jquery-2.1.1.min.js"></script>
+  <script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+  <style type="text/css">
+    body {
+      padding: 30px;
+    }
+    
+    @media print {
+      body {
+        padding: 0;
+      }
+      
+      .no-print {
+        display: none;
+      }
+      
+      .page-header {
+        margin-top: 0;
+      }
+    }
+    
+    .stat-box {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .stat-box h4 {
+      margin-top: 0;
+      font-weight: bold;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    
+    .positive {
+      color: #5cb85c;
+    }
+    
+    .negative {
+      color: #d9534f;
+    }
+    
+    .neutral {
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="page-header">
+      <div class="row">
+        <div class="col-md-6">
+          <h1>{{ title }}</h1>
+        </div>
+        <div class="col-md-6 text-right">
+          <button type="button" class="btn btn-primary no-print" onclick="window.print();"><i class="fa fa-print"></i> {{ button_print }}</button>
+          <button type="button" class="btn btn-default no-print" onclick="window.close();"><i class="fa fa-times"></i> {{ button_close }}</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_product }}</h3>
+          </div>
+          <div class="panel-body">
+            <table class="table table-bordered">
+              <tr>
+                <th>{{ text_product }}</th>
+                <td>{{ product.name }}</td>
+              </tr>
+              <tr>
+                <th>{{ text_model }}</th>
+                <td>{{ product.model }}</td>
+              </tr>
+              <tr>
+                <th>{{ text_sku }}</th>
+                <td>{{ product.sku }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_inventory_statistics }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="stat-box">
+                  <h4>{{ text_total_incoming }}</h4>
+                  <span class="stat-value positive">{{ statistics.total_incoming }}</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="stat-box">
+                  <h4>{{ text_total_outgoing }}</h4>
+                  <span class="stat-value negative">{{ statistics.total_outgoing }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="stat-box">
+                  <h4>{{ text_net_change }}</h4>
+                  <span class="stat-value {% if statistics.net_change > 0 %}positive{% elseif statistics.net_change < 0 %}negative{% else %}neutral{% endif %}">{{ statistics.net_change }}</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="stat-box">
+                  <h4>{{ text_current_stock }}</h4>
+                  <span class="stat-value {% if statistics.current_stock > 0 %}positive{% elseif statistics.current_stock < 0 %}negative{% else %}neutral{% endif %}">{{ statistics.current_stock }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_movement_history }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_date_added }}</th>
+                <th>{{ column_type }}</th>
+                <th class="text-right">{{ column_quantity }}</th>
+                <th>{{ column_unit }}</th>
+                <th>{{ column_branch }}</th>
+                <th>{{ column_reference }}</th>
+                <th class="text-right">{{ column_cost }}</th>
+                <th class="text-right">{{ column_new_cost }}</th>
+                <th>{{ column_user }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if movements %}
+                {% for movement in movements %}
+                <tr>
+                  <td>{{ movement.date_added }}</td>
+                  <td>{{ movement.movement_type }}</td>
+                  <td class="text-right">{{ movement.quantity }}</td>
+                  <td>{{ movement.unit_name }}</td>
+                  <td>{{ movement.warehouse_name }}</td>
+                  <td>{{ movement.reference }}</td>
+                  <td class="text-right">{{ movement.cost }}</td>
+                  <td class="text-right">{{ movement.new_average_cost }}</td>
+                  <td>{{ movement.username }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="9" class="text-center">{{ text_no_movements }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-12">
+        <div class="well">
+          <p><strong>{{ text_report_date }}:</strong> {{ date_generated }}</p>
+          <p><strong>{{ text_generated_by }}:</strong> {{ generated_by }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="text/javascript">
+    $(document).ready(function() {
+      window.onload = function() {
+        window.setTimeout(function() {
+          if (window.opener && !window.opener.closed) {
+            window.focus();
+          }
+        }, 500);
+      };
+    });
+  </script>
+</body>
+</html>

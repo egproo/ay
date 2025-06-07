@@ -1,0 +1,434 @@
+{{ header }}{{ column_left }}
+
+<div id="content">
+<style>
+input[type="checkbox"] {
+  position: relative;
+  top: 2px;
+  box-sizing: content-box;
+  height: 25px;
+  width: 25px;
+  margin: 0 5px 0 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  border-radius: 2px;
+  background-color: #fff;
+  border: 1px solid #115c80;
+}
+
+input[type="checkbox"]:before {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:after {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:checked:before {
+    width: 10px;
+    height: 15px;
+    margin: 2px 7px;
+    border-bottom: 4px solid #115c80;
+    border-right: 4px solid #115c80;
+    transform: rotate(45deg);
+} 
+input[type="checkbox"]:checked::after, .checkbox input[type="checkbox"]:checked::after, .checkbox-inline input[type="checkbox"]:checked::after {
+  content: '';
+}
+.form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.form-group {
+  flex-grow: 1;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+  .form-group {
+    flex-basis: 50%;
+    max-height: 52px;
+  }
+  .fg1{flex-basis: 28%;}
+  .fg2{flex-basis: 60%;}  
+  .fg3{flex-basis: 10%;}
+    
+}
+table tr[href] {
+    cursor: pointer;
+}
+</style>    
+    <div class="panel panel-default" style="padding-top: 10px;padding-right: 10px;padding-left: 10px;">
+    <div class="panel-header form-inline" style="margin-top: -5px;margin-bottom: 5px;">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+
+<!-- Button for printing multiple journals -->
+<button onclick="printMultipleJournals();" class="btn btn-info"><i class="fa fa-print"></i> {{button_print}}</button>
+
+<script>
+function printMultipleJournals() {
+    var selected = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        selected.push($(this).val());
+    });
+    if (selected.length > 0) {
+        window.open('index.php?route=accounts/journal/print_multiple&user_token={{ user_token }}&journal_ids=' + selected.join(','));
+    } else {
+        alert('Please select at least one journal to print.');
+    }
+}
+
+
+</script>
+        
+        
+        <button type="button" id="cancel_selected" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-warning"><i class="fa fa-ban"></i> {{ button_cancel }}</button>    
+        <button type="button" id="delete_selected" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-journal').submit() : false;"><i class="fa fa-trash-o"></i></button>
+
+<button type="button" data-toggle="tooltip" title="" onclick="$('#filter-j').toggle();" class="btn btn-default" data-original-title="تصفية"><i class="fa fa-filter"></i></button>  
+    
+      </div>
+      
+        <div id="filter-j" class="form-inline" style="padding: 0px;display: flex;width: 100%;padding-top: 8px;padding-bottom:8px">
+      <div class="form-group" style="border-top: #fff;">
+            <label for="filter_date_start">{{text_from}}</label>
+            <input type="date" id="filter_date_start" name="filter_date_start" class="form-control">
+          </div>
+      <div class="form-group" style="border-top: #fff;">
+            <label for="filter_date_end">{{text_to}}</label>
+            <input type="date" id="filter_date_end" name="filter_date_end" class="form-control">
+          </div>
+      <div class="form-group fg1" style="border-top: #fff;">
+            <input type="text" id="filter_journal_id" placeholder="{{journal_entire_id}}"  name="filter_journal_id" class="form-control">
+          </div>
+      <div class="form-group fg2" style="border-top: #fff;">
+            <input type="text" id="filter_description" placeholder="{{column_thedescription}}" name="filter_description" class="form-control">
+          </div>
+      <div class="form-group fg3" style="border-top: #fff;">
+            <input style="height: 25px;width: 25px;" type="checkbox" id="filter_cancelled" name="filter_cancelled" class="form-control">
+            <label for="filter_cancelled">{{ text_show_cancelled }}</label>
+
+        </div>
+          
+        </div>
+    </div>        
+
+    </div>    
+
+  <div class="container-fluid" title="{{heading_title}}">
+    <!-- Start of Filters -->
+    <div class="show-messages" id="show-messages"></div>
+    <!-- End of Filters -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+           <td class="text-center"><input type="checkbox" onclick="selectDeselectAll(this.checked);" /></td>
+            <td class="text-center">{{column_thedate}}</td>
+            <td class="text-center">{{journal_entire_id}}</td>
+            <td class="text-center">{{column_thedescription}}</td>
+            <td class="text-center">{{entry_debit}}</td>
+            <td class="text-center">{{entry_credit}}</td>
+            <td class="text-center">{{balance_status}}</td>
+          </tr>
+        </thead>
+        <tbody id="journal_list">
+          {% if journals %}
+            {% for journal in journals %}
+              <tr href="{{ journal.edit }}"  {% if journal.is_cancelled=='1' %} style="background-color:#ffeaea;" {% endif %}>
+                <td class="select-checkbox text-center"><input type="checkbox" name="selected[]" value="{{ journal.journal_id }}" /></td>                  
+                <td class="text-center">{{ journal.thedate }}</td>
+                <td class="text-center">{{ journal.journal_id }}</td>
+                <td class="text-center">{{ journal.description }}</td>
+                <td class="text-center">{{ journal.total_debit }}</td>
+                <td class="text-center">{{ journal.total_credit }}</td>
+                <td class="text-center">
+                  <i class="fa fa-circle" style="color: {{ journal.is_balanced ? 'green' : 'red' }};"></i>
+                  {{ journal.is_balanced ? text_balanced : text_unbalanced }} {% if journal.is_cancelled=='1' %} <br> (<span style="color:red">{{text_is_cancelled}}</span>) {% endif %}
+                </td>
+              </tr>
+                         
+            {% endfor %}
+          {% else %}
+            <tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+
+
+      
+    </div>
+
+    <nav aria-label="Page navigation example" class="text-center" >
+        <ul class="pagination  text-center" id="pagination">
+            <!-- Pagination links will be dynamically generated here -->
+        </ul>
+    </nav>
+
+  
+    <!-- Journal Details Modal -->
+    <div id="journalDetailsModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Journal Details</h4>
+          </div>
+          <div class="modal-body">
+            <!-- Content will be loaded by JavaScript -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#filter-j').toggle();
+  // Function to view journal details
+  function viewJournalDetails(journalId) {
+    var user_token = '{{ user_token }}';
+    $.ajax({
+      url: 'index.php?route=accounts/journal/getJournalDetails&user_token=' + user_token + '&journal_id=' + journalId,
+      type: 'GET',
+      success: function(data) {
+        $('#journalDetailsModal .modal-body').html(data);
+        $('#journalDetailsModal').modal('show');
+      },
+      error: function(xhr, status, error) {
+        alert('Error: ' + xhr.responseText);
+      }
+    });
+  }
+
+  // Automatically trigger journal filtering when filter values change
+  $('#filter_date_start, #filter_date_end, #filter_journal_id, #filter_description, #filter_cancelled').on('change', function() {
+    filterJournals();
+  });
+
+  // Function to filter journals
+function filterJournals(page = 1) {
+    var user_token = '{{ user_token }}';
+  var url = 'index.php?route=accounts/journal/getJournals&user_token=' + '{{ user_token }}';
+  url += '&page=' + page;
+  
+    // Collect filter values
+    var filters = {
+      filter_date_start: $('#filter_date_start').val(),
+      filter_date_end: $('#filter_date_end').val(),
+      filter_journal_id: $('#filter_journal_id').val(),
+      filter_description: $('#filter_description').val(),
+      include_cancelled: $('#filter_cancelled').is(':checked') ? 1 : 0 
+    };
+
+    // Append filters to the URL
+    Object.keys(filters).forEach(function(key) {
+      if (filters[key]) {
+        url += '&' + key + '=' + encodeURIComponent(filters[key]);
+      }
+    });
+
+    // Perform the AJAX request
+    $.ajax({
+      url: url,
+      type: 'GET',
+      success: function(response) {
+        // If not empty, display the response inside the table
+        $('#journal_list').html(response.html);
+        setupPagination(response.total_pages, page);
+
+      },
+      error: function(xhr, status, error) {
+        alert('Error: ' + xhr.responseText);
+      }
+    });
+  }
+
+
+
+  function selectDeselectAll(isChecked) {
+    var checkboxes = document.querySelectorAll('input[type="checkbox"][name="selected[]"]');
+    checkboxes.forEach(function(checkbox) {
+        checkbox.checked = isChecked;
+    });
+} 
+function displayErrorMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function displaySuccessMessage(message) {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = `<div class="alert alert-success"><i class="fa fa-exclamation-circle"></i> ${message} <button type="button" class="close" data-dismiss="alert">&times;</button></div>`;
+    errorContainer.style.display = 'block';
+}
+function clearErrorMessages() {
+    const errorContainer = document.getElementById('show-messages');
+    errorContainer.innerHTML = '';
+    errorContainer.style.display = 'none';
+}
+
+$('#delete_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+        if (confirm('{{confirm_delete}}')) {
+            $.ajax({
+                url: '{{get_delete_multiple}}',
+                type: 'post',
+                data: { 'journal_ids': journalIds },
+                success: function(response) {
+                    if(response.success){
+                      displaySuccessMessage(response.success);
+                      window.location.href = '{{ cancelled }}';
+                    }else if(response.error){
+                      displayErrorMessage(response.error);
+                    }
+                    
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    
+                    window.location.href = '{{ cancelled }}'; // استبدل برابط الإلغاء الخاص بك
+
+                }
+            });
+        }
+    } else {
+        alert('{{cancelled_please_select}}');
+    }
+});
+
+$('#cancel_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+        if (confirm('{{confirm_cancelled}}')) {
+            $.ajax({
+                url: '{{get_cancel_multiple}}',
+                type: 'post',
+                data: { 'journal_ids': journalIds },
+                success: function(response) {
+                    if(response.success){
+                      displaySuccessMessage(response.success);
+                      window.location.href = '{{ cancelled }}';
+                    }else if(response.error){
+                      displayErrorMessage(response.error);
+                    }
+                    
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    
+                    window.location.href = '{{ cancelled }}'; // استبدل برابط الإلغاء الخاص بك
+
+                }
+            });
+        }
+    } else {
+        alert('{{cancelled_please_select}}');
+    }
+});
+
+$('#print_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+            $.ajax({
+                url: '{{get_print_multiple}}',
+                type: 'post',
+                data: { 'journal_ids': journalIds },
+                success: function(response) {
+                    if(response.success){
+                      displaySuccessMessage(response.success);
+                      window.location.href = '{{ cancelled }}';
+                    }else if(response.error){
+                      displayErrorMessage(response.error);
+                    }
+                    
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    
+                    window.location.href = '{{ cancelled }}'; // استبدل برابط الإلغاء الخاص بك
+
+                }
+            });
+        }
+});
+
+
+
+
+
+
+$('#journal_list').on('click', 'tr', function(event) {
+    // تحقق إذا كان العنصر المنقور هو الـ <td> الأول أو عنصر داخله
+    if (!$(event.target).closest('td:first-child, td:first-child *').length) {
+        // إذا لم يكن النقر داخل الـ <td> الأول، قم بالانتقال
+        window.location = $(this).attr('href');
+    }
+});
+
+
+
+function setupPagination(totalPages, currentPage) {
+    console.log('Total Pages:', totalPages, 'Current Page:', currentPage);
+    const paginationContainer = $('#pagination');
+    paginationContainer.empty(); // Clear previous links
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageItem = $('<li>').addClass('page-item');
+        if (i === currentPage) {
+            pageItem.addClass('active');
+        }
+        const pageLink = $('<a>').addClass('page-link').attr('href', '#').text(i).on('click', function(e) {
+            e.preventDefault();
+            filterJournals(i);
+        });
+
+        pageItem.append(pageLink);
+        paginationContainer.append(pageItem);
+    }
+}
+
+// Initial call to load the default page
+$(document).ready(function() {
+    filterJournals();
+});
+
+$('#print_selected').click(function() {
+    var journalIds = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        journalIds.push($(this).val());
+    });
+
+    if (journalIds.length > 0) {
+        $('#journal_ids_input').val(journalIds.join(','));
+        $('#form-order').submit(); // تحفيز إرسال النموذج
+    } else {
+        alert('Please select at least one journal to print.');
+        return false; // منع الإرسال إذا لم يتم تحديد أي قيود
+    }
+});
+
+
+
+</script>
+
+{{ footer }}

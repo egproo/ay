@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+    font-size:14px;
+}
+th {
+    background:#eee;
+}
+.summary {
+    margin-top:20px;
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_fixed_assets_report }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_asset_code }}</th>
+    <th>{{ text_asset_name }}</th>
+    <th>{{ text_purchase_date }}</th>
+    <th>{{ text_purchase_value }}</th>
+    <th>{{ text_current_value }}</th>
+    <th>{{ text_method }}</th>
+    <th>{{ text_useful_life }}</th>
+    <th>{{ text_salvage_value }}</th>
+    <th>{{ text_period_depreciation }}</th>
+    <th>{{ text_new_current_value }}</th>
+</tr>
+</thead>
+<tbody>
+{% for asset in assets %}
+<tr>
+    <td>{{ asset.asset_code }}</td>
+    <td>{{ asset.name }}</td>
+    <td>{{ asset.purchase_date }}</td>
+    <td>{{ asset.purchase_value }}</td>
+    <td>{{ asset.current_value }}</td>
+    <td>{{ asset.method }}</td>
+    <td>{{ asset.useful_life }}</td>
+    <td>{{ asset.salvage_value }}</td>
+    <td>{{ asset.period_depreciation }}</td>
+    <td>{{ asset.new_current_value }}</td>
+</tr>
+{% endfor %}
+{% if assets is empty %}
+<tr><td colspan="10" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="summary">
+    <strong>{{ text_total_depreciation }}: {{ total_depreciation }}</strong>
+</div>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

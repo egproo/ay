@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8"/>
+<title>قائمة التدفقات النقدية</title>
+<style>
+  body { font-family: sans-serif; margin:20px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 20px;}
+  th, td { border: 1px solid #000; padding: 5px; }
+  th { background: #eee; }
+</style>
+</head>
+<body>
+
+<h2>قائمة التدفقات النقدية</h2>
+<p>الفترة من: {{ start_date }} إلى: {{ end_date }}</p>
+
+<p>رصيد النقدية أول الفترة: {{ opening_balance }}</p>
+
+<h3>التدفقات من الأنشطة التشغيلية</h3>
+<table>
+  <thead>
+    <tr><th>التاريخ</th><th>الحساب المقابل</th><th>المبلغ</th></tr>
+  </thead>
+  <tbody>
+  {% for row in operating %}
+    <tr>
+      <td>{{ row.date }}</td>
+      <td>{{ row.other_name }} ({{ row.other_code }})</td>
+      <td>{{ row.amount }}</td>
+    </tr>
+  {% endfor %}
+  <tr>
+    <td colspan="2"><strong>إجمالي التدفق التشغيلي</strong></td>
+    <td><strong>{{ total_operating }}</strong></td>
+  </tr>
+  </tbody>
+</table>
+
+<h3>التدفقات من الأنشطة الاستثمارية</h3>
+<table>
+  <thead>
+    <tr><th>التاريخ</th><th>الحساب المقابل</th><th>المبلغ</th></tr>
+  </thead>
+  <tbody>
+  {% for row in investing %}
+    <tr>
+      <td>{{ row.date }}</td>
+      <td>{{ row.other_name }} ({{ row.other_code }})</td>
+      <td>{{ row.amount }}</td>
+    </tr>
+  {% endfor %}
+  <tr>
+    <td colspan="2"><strong>إجمالي التدفق الاستثماري</strong></td>
+    <td><strong>{{ total_investing }}</strong></td>
+  </tr>
+  </tbody>
+</table>
+
+<h3>التدفقات من الأنشطة التمويلية</h3>
+<table>
+  <thead>
+    <tr><th>التاريخ</th><th>الحساب المقابل</th><th>المبلغ</th></tr>
+  </thead>
+  <tbody>
+  {% for row in financing %}
+    <tr>
+      <td>{{ row.date }}</td>
+      <td>{{ row.other_name }} ({{ row.other_code }})</td>
+      <td>{{ row.amount }}</td>
+    </tr>
+  {% endfor %}
+  <tr>
+    <td colspan="2"><strong>إجمالي التدفق التمويلي</strong></td>
+    <td><strong>{{ total_financing }}</strong></td>
+  </tr>
+  </tbody>
+</table>
+
+<h4>صافي التغير في النقدية: {{ net_change }}</h4>
+<h4>رصيد النقدية آخر الفترة: {{ closing_balance }}</h4>
+
+</body>
+</html>

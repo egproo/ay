@@ -1,0 +1,142 @@
+{{ header }}
+<style>
+.ticket-conversation {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    background-color: #F0F0F0;
+    border-radius: 10px;
+}
+
+.message {
+    display: inline-block;
+    max-width: 90%;
+    padding: 10px;
+    border-radius: 10px;
+    word-wrap: break-word;
+}
+
+.admin-message {
+    align-self: flex-start;
+    background-color: #DCF8C6;
+}
+
+.client-message {
+    align-self: flex-end;
+    background-color: #E2E2E2;
+}
+
+.message p {
+    margin: 0;
+    padding-bottom: 5px;
+}
+
+.message p:last-child {
+    font-size: 0.8em;
+    color: #999;
+}
+
+.message.client-message p:last-child {
+    text-align: right;
+}
+    
+</style>
+<div id="tiket-info" class="container">
+  <div class="row">{{ column_left }}
+    <div id="content" class="col">{{ content_top }}
+      <div class="row row-cols-md-2">
+        <div class="col">
+          <table class="table table-bordered table-hover">
+            <tr>
+              <td class="text-center"><b>{{ column_date }}</b></td>
+              <td class="text-center">{{ date_added }}</td>
+            </tr>            
+            <tr>
+              <td class="text-center"><b>{{ column_tsubject }}</b></td>
+              <td class="text-center">{{ subject }}</td>
+            </tr>
+            <tr>
+              <td class="text-center"><b>{{ column_tstatus }}</b></td>
+              <td class="text-center">
+                    {% if status == '1' %}<span style="color:green">{{text_open}}</span>{% endif %}
+                    {% if status == '2' %}<span style="color:red">{{text_close}}</span>{% endif %}                  
+                  </td>
+            </tr>
+          </table>
+        </div>
+        <div class="col-md-12">
+            <div id="ticket-conversation" class="ticket-conversation">
+                    <div class="message client-message">
+                        <p>{{ description }}</p>
+                        <p>{{ date_added }}</p>
+                    </div>       
+                    {% for message in messages %}
+                    <div class="message {{ message.user_id > 0 ? 'admin-message' : 'client-message' }}">
+                        <p>{{ message.message }}</p>
+                        <p>{{ message.date_added }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+      </div>
+        <div style="padding-top:50px;padding-bottom:100px" class="col">
+    <h5>{{ text_addreply }}</h5>
+    <form style="text-align:center" id="addReplyMessage" method="post" enctype="multipart/form-data">
+        <textarea name="message" id="rmessage" class="form-control"></textarea>
+        <br>
+        <button style="
+    margin: 0 auto;
+    text-align: center;
+    min-width: 260px;
+    height: 40px;
+" type="submit" class="btn btn-primary">{{ button_submit }}</button>
+    </form>
+        </div>
+<script>
+           
+$(document).ready(function() {
+    $('#addReplyMessage').submit(function(e) {
+        e.preventDefault();
+        var message = $('#rmessage').val();
+        var ticket_id = '{{ticket_id}}';
+        $.ajax({
+            url: 'index.php?route=account/account.replyTicket&language={{ language }}',
+            type: 'post',
+            data: {
+                message: message,
+                ticket_id: ticket_id
+                
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    $('#alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                    $('.ticket-conversation').append('<div class="message client-message"><p>'+ json['message'] +'</p><p>'+ json['date_added'] +'</p></div>');
+var ticketConversation = $('#ticket-conversation');
+var lastMessage = ticketConversation.find('.message').last();
+
+// Smooth scroll to the last added message
+$('html, body').animate({
+    scrollTop: lastMessage.offset().top
+}, 1000);
+$('#rmessage').val('');
+
+                } else {
+                    $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+                }
+            },
+            error: function(xhr, status, error) {
+                // Handle the AJAX request error
+            }
+        });
+    });
+});
+
+</script> 
+
+      {{ content_bottom }}</div>
+    {{ column_right }}</div>
+</div>
+
+{{ footer }}

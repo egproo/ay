@@ -1,0 +1,730 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-save" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-workflow" class="form-horizontal">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+            <li><a href="#tab-visual-editor" data-toggle="tab">{{ tab_visual_editor }}</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab-general">
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+                  {% if error_name %}
+                  <div class="text-danger">{{ error_name }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-description">{{ entry_description }}</label>
+                <div class="col-sm-10">
+                  <textarea name="description" rows="5" placeholder="{{ entry_description }}" id="input-description" class="form-control">{{ description }}</textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-workflow-type">{{ entry_workflow_type }}</label>
+                <div class="col-sm-10">
+                  <select name="workflow_type" id="input-workflow-type" class="form-control">
+                    {% for type in workflow_types %}
+                    {% if type.value == workflow_type %}
+                    <option value="{{ type.value }}" selected="selected">{{ type.text }}</option>
+                    {% else %}
+                    <option value="{{ type.value }}">{{ type.text }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+                <div class="col-sm-10">
+                  <select name="status" id="input-status" class="form-control">
+                    {% if status == 'active' %}
+                    <option value="active" selected="selected">{{ text_active }}</option>
+                    <option value="inactive">{{ text_inactive }}</option>
+                    <option value="archived">{{ text_archived }}</option>
+                    {% elseif status == 'inactive' %}
+                    <option value="active">{{ text_active }}</option>
+                    <option value="inactive" selected="selected">{{ text_inactive }}</option>
+                    <option value="archived">{{ text_archived }}</option>
+                    {% else %}
+                    <option value="active">{{ text_active }}</option>
+                    <option value="inactive">{{ text_inactive }}</option>
+                    <option value="archived" selected="selected">{{ text_archived }}</option>
+                    {% endif %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-department">{{ entry_department }}</label>
+                <div class="col-sm-10">
+                  <select name="department_id" id="input-department" class="form-control">
+                    <option value="0">{{ text_none }}</option>
+                    {% for department in departments %}
+                    {% if department.department_id == department_id %}
+                    <option value="{{ department.department_id }}" selected="selected">{{ department.name }}</option>
+                    {% else %}
+                    <option value="{{ department.department_id }}">{{ department.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_escalation_enabled }}</label>
+                <div class="col-sm-10">
+                  <label class="radio-inline">
+                    {% if escalation_enabled %}
+                    <input type="radio" name="escalation_enabled" value="1" checked="checked" />
+                    {{ text_yes }}
+                    {% else %}
+                    <input type="radio" name="escalation_enabled" value="1" />
+                    {{ text_yes }}
+                    {% endif %}
+                  </label>
+                  <label class="radio-inline">
+                    {% if not escalation_enabled %}
+                    <input type="radio" name="escalation_enabled" value="0" checked="checked" />
+                    {{ text_no }}
+                    {% else %}
+                    <input type="radio" name="escalation_enabled" value="0" />
+                    {{ text_no }}
+                    {% endif %}
+                  </label>
+                </div>
+              </div>
+              <div class="form-group" id="escalation-days-container" style="{% if not escalation_enabled %}display: none;{% endif %}">
+                <label class="col-sm-2 control-label" for="input-escalation-days">{{ entry_escalation_after_days }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="escalation_after_days" value="{{ escalation_after_days }}" placeholder="{{ entry_escalation_after_days }}" id="input-escalation-days" class="form-control" min="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ entry_notify_creator }}</label>
+                <div class="col-sm-10">
+                  <label class="radio-inline">
+                    {% if notify_creator %}
+                    <input type="radio" name="notify_creator" value="1" checked="checked" />
+                    {{ text_yes }}
+                    {% else %}
+                    <input type="radio" name="notify_creator" value="1" />
+                    {{ text_yes }}
+                    {% endif %}
+                  </label>
+                  <label class="radio-inline">
+                    {% if not notify_creator %}
+                    <input type="radio" name="notify_creator" value="0" checked="checked" />
+                    {{ text_no }}
+                    {% else %}
+                    <input type="radio" name="notify_creator" value="0" />
+                    {{ text_no }}
+                    {% endif %}
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-visual-editor">
+              <div class="row">
+                <div class="col-md-2">
+                  <!-- Nodes Sidebar -->
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title">{{ text_nodes }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="nodes-list">
+                        <div class="node-item trigger-node" data-node-type="trigger">
+                          <i class="fa fa-play-circle"></i> {{ text_trigger }}
+                        </div>
+                        <div class="node-item approval-node" data-node-type="approval">
+                          <i class="fa fa-check-circle"></i> {{ text_approval }}
+                        </div>
+                        <div class="node-item condition-node" data-node-type="condition">
+                          <i class="fa fa-code-fork"></i> {{ text_condition }}
+                        </div>
+                        <div class="node-item email-node" data-node-type="email">
+                          <i class="fa fa-envelope"></i> {{ text_email }}
+                        </div>
+                        <div class="node-item notification-node" data-node-type="notification">
+                          <i class="fa fa-bell"></i> {{ text_notification }}
+                        </div>
+                        <div class="node-item task-node" data-node-type="task">
+                          <i class="fa fa-tasks"></i> {{ text_task }}
+                        </div>
+                        <div class="node-item delay-node" data-node-type="delay">
+                          <i class="fa fa-clock-o"></i> {{ text_delay }}
+                        </div>
+                        <div class="node-item webhook-node" data-node-type="webhook">
+                          <i class="fa fa-link"></i> {{ text_webhook }}
+                        </div>
+                        <div class="node-item function-node" data-node-type="function">
+                          <i class="fa fa-code"></i> {{ text_function }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-10">
+                  <!-- Workflow Canvas -->
+                  <div class="workflow-canvas-container">
+                    <div class="workflow-toolbar">
+                      <button type="button" id="zoom-in" class="btn btn-default"><i class="fa fa-search-plus"></i></button>
+                      <button type="button" id="zoom-out" class="btn btn-default"><i class="fa fa-search-minus"></i></button>
+                      <button type="button" id="center-workflow" class="btn btn-default"><i class="fa fa-arrows"></i></button>
+                      <button type="button" id="delete-selected" class="btn btn-danger"><i class="fa fa-trash"></i></button>
+                    </div>
+                    <div id="workflow-canvas" class="grid-stack"></div>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" name="workflow_json" id="workflow-json" value="{{ workflow_json }}" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Node Configuration Modal -->
+  <div class="modal fade" id="node-config-modal" tabindex="-1" role="dialog" aria-labelledby="node-config-modal-label">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="node-config-modal-label">{{ text_configure_node }}</h4>
+        </div>
+        <div class="modal-body">
+          <div id="node-config-content">
+            <!-- Dynamic content will be loaded here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+          <button type="button" class="btn btn-primary" id="save-node-config">{{ button_save }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.nodes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-item {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: move;
+  background-color: #f9f9f9;
+  transition: all 0.2s;
+}
+
+.node-item:hover {
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.workflow-canvas-container {
+  position: relative;
+  height: 600px;
+  border: 1px solid #ddd;
+  background-color: #fcfcfc;
+  background-image: radial-gradient(#e5e5e5 1px, transparent 0);
+  background-size: 20px 20px;
+  overflow: hidden;
+}
+
+.workflow-toolbar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+}
+
+.grid-stack {
+  height: 100%;
+}
+
+.grid-stack-item-content {
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.node-title {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.node-body {
+  font-size: 12px;
+}
+
+/* Node Types Styling */
+.trigger-node .grid-stack-item-content {
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+}
+
+.approval-node .grid-stack-item-content {
+  background-color: #e8f5e9;
+  border: 1px solid #a5d6a7;
+}
+
+.condition-node .grid-stack-item-content {
+  background-color: #fff3e0;
+  border: 1px solid #ffcc80;
+}
+
+.email-node .grid-stack-item-content {
+  background-color: #f3e5f5;
+  border: 1px solid #ce93d8;
+}
+
+.notification-node .grid-stack-item-content {
+  background-color: #e8eaf6;
+  border: 1px solid #9fa8da;
+}
+
+.task-node .grid-stack-item-content {
+  background-color: #e0f7fa;
+  border: 1px solid #80deea;
+}
+
+.delay-node .grid-stack-item-content {
+  background-color: #fce4ec;
+  border: 1px solid #f48fb1;
+}
+
+.webhook-node .grid-stack-item-content {
+  background-color: #f1f8e9;
+  border: 1px solid #c5e1a5;
+}
+
+.function-node .grid-stack-item-content {
+  background-color: #eceff1;
+  border: 1px solid #b0bec5;
+}
+
+/* Connection Lines */
+.workflow-connection {
+  stroke: #888;
+  stroke-width: 2px;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+
+.workflow-connection-active {
+  stroke: #3498db;
+  stroke-width: 3px;
+}
+
+/* Zoom Controls */
+.workflow-zoom-controls {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 100;
+}
+</style>
+
+<script type="text/javascript"><!--
+$(document).ready(function() {
+  // Initialize Gridstack
+  var grid = $('.grid-stack').gridstack({
+    cellHeight: 80,
+    verticalMargin: 20,
+    resizable: {
+      handles: 'e, se, s, sw, w'
+    }
+  }).data('gridstack');
+  
+  // Handle escalation options display
+  $('input[name="escalation_enabled"]').on('change', function() {
+    if ($(this).val() == '1') {
+      $('#escalation-days-container').show();
+    } else {
+      $('#escalation-days-container').hide();
+    }
+  });
+  
+  // Load existing workflow from JSON if available
+  if ($('#workflow-json').val()) {
+    try {
+      var workflowData = JSON.parse($('#workflow-json').val());
+      loadWorkflow(workflowData, grid);
+    } catch (e) {
+      console.error('Error loading workflow data:', e);
+    }
+  }
+  
+  // Make sidebar nodes draggable
+  $('.node-item').draggable({
+    helper: 'clone',
+    handle: '.node-item',
+    cursor: 'move',
+    appendTo: 'body',
+    revert: 'invalid',
+    zIndex: 1000,
+    start: function(event, ui) {
+      ui.helper.addClass('dragging');
+    },
+    stop: function(event, ui) {
+      ui.helper.removeClass('dragging');
+    }
+  });
+  
+  // Make canvas droppable for nodes
+  $('#workflow-canvas').droppable({
+    accept: '.node-item',
+    drop: function(event, ui) {
+      var nodeType = ui.draggable.attr('data-node-type');
+      var offset = $(this).offset();
+      var x = Math.round((ui.offset.left - offset.left) / 80); // 80 is cellHeight
+      var y = Math.round((ui.offset.top - offset.top) / 100); // 100 is approximate gridstack cell height+margin
+      
+      // Add new node to grid
+      addNode(grid, nodeType, x, y);
+    }
+  });
+  
+  // Toolbar buttons
+  $('#zoom-in').on('click', function() {
+    zoomWorkflow(0.1);
+  });
+  
+  $('#zoom-out').on('click', function() {
+    zoomWorkflow(-0.1);
+  });
+  
+  $('#center-workflow').on('click', function() {
+    resetWorkflowView();
+  });
+  
+  $('#delete-selected').on('click', function() {
+    deleteSelectedNodes(grid);
+  });
+  
+  // Save workflow button
+  $('#button-save').on('click', function() {
+    saveWorkflow(grid);
+    $('#form-workflow').submit();
+  });
+  
+  // Handle node configuration
+  $(document).on('click', '.node-configure', function() {
+    var nodeId = $(this).closest('.grid-stack-item').attr('data-node-id');
+    openNodeConfig(nodeId);
+  });
+  
+  $('#save-node-config').on('click', function() {
+    saveNodeConfig();
+  });
+  
+  // Initialize connections
+  initializeConnections();
+});
+
+// Function to add a new node to the grid
+function addNode(grid, nodeType, x, y) {
+  var nodeId = 'node-' + Date.now();
+  var nodeTitle = getNodeTitle(nodeType);
+  var nodeHtml = '<div class="grid-stack-item-content ' + nodeType + '-node">' +
+                   '<div class="node-header">' +
+                     '<div class="node-title">' + nodeTitle + '</div>' +
+                     '<div class="node-actions">' +
+                       '<button type="button" class="btn btn-xs btn-info node-configure"><i class="fa fa-cog"></i></button>' +
+                     '</div>' +
+                   '</div>' +
+                   '<div class="node-body">' +
+                     '<p>{{ text_click_to_configure }}</p>' +
+                   '</div>' +
+                 '</div>';
+  
+  var width = getNodeWidth(nodeType);
+  var height = getNodeHeight(nodeType);
+  
+  grid.addWidget($('<div></div>').attr('data-node-id', nodeId).attr('data-node-type', nodeType), x, y, width, height, false, null, null, null, null, nodeId);
+  $('#' + nodeId).html(nodeHtml);
+  
+  // Add connection points
+  addConnectionPoints(nodeId, nodeType);
+  
+  // Select newly added node
+  selectNode(nodeId);
+  
+  // Open config dialog for the new node
+  openNodeConfig(nodeId);
+}
+
+// Function to get node title based on type
+function getNodeTitle(nodeType) {
+  switch(nodeType) {
+    case 'trigger': return '{{ text_trigger }}';
+    case 'approval': return '{{ text_approval }}';
+    case 'condition': return '{{ text_condition }}';
+    case 'email': return '{{ text_email }}';
+    case 'notification': return '{{ text_notification }}';
+    case 'task': return '{{ text_task }}';
+    case 'delay': return '{{ text_delay }}';
+    case 'webhook': return '{{ text_webhook }}';
+    case 'function': return '{{ text_function }}';
+    default: return '{{ text_node }}';
+  }
+}
+
+// Function to get node width based on type
+function getNodeWidth(nodeType) {
+  switch(nodeType) {
+    case 'condition': return 4;
+    default: return 3;
+  }
+}
+
+// Function to get node height based on type
+function getNodeHeight(nodeType) {
+  switch(nodeType) {
+    case 'function': return 3;
+    default: return 2;
+  }
+}
+
+// Function to add connection points to nodes
+function addConnectionPoints(nodeId, nodeType) {
+  // Implement connection points for each node type
+  // This will create visual elements to connect nodes
+}
+
+// Function to select a node
+function selectNode(nodeId) {
+  $('.grid-stack-item').removeClass('selected');
+  $('[data-node-id="' + nodeId + '"]').addClass('selected');
+}
+
+// Function to open node configuration dialog
+function openNodeConfig(nodeId) {
+  var nodeType = $('[data-node-id="' + nodeId + '"]').attr('data-node-type');
+  $('#node-config-modal-label').text('{{ text_configure }} ' + getNodeTitle(nodeType));
+  
+  // Load configuration form based on node type
+  $.ajax({
+    url: 'index.php?route=workflow/visual_editor/getNodeConfig&user_token={{ user_token }}',
+    type: 'POST',
+    data: { node_id: nodeId, node_type: nodeType },
+    dataType: 'html',
+    success: function(html) {
+      $('#node-config-content').html(html);
+      $('#node-config-modal').modal('show');
+    }
+  });
+}
+
+// Function to save node configuration
+function saveNodeConfig() {
+  var nodeId = $('#node-config-form').attr('data-node-id');
+  var formData = $('#node-config-form').serialize();
+  
+  $.ajax({
+    url: 'index.php?route=workflow/visual_editor/saveNodeConfig&user_token={{ user_token }}',
+    type: 'POST',
+    data: formData,
+    dataType: 'json',
+    success: function(json) {
+      if (json.success) {
+        // Update node UI with new configuration
+        updateNodeUI(nodeId, json.data);
+        $('#node-config-modal').modal('hide');
+      } else {
+        alert(json.error);
+      }
+    }
+  });
+}
+
+// Function to update node UI with configuration
+function updateNodeUI(nodeId, configData) {
+  var $node = $('[data-node-id="' + nodeId + '"]');
+  $node.find('.node-title').text(configData.name || getNodeTitle($node.attr('data-node-type')));
+  
+  var nodeBody = '';
+  if (configData.description) {
+    nodeBody += '<p>' + configData.description + '</p>';
+  }
+  
+  // Add type-specific configuration display
+  switch($node.attr('data-node-type')) {
+    case 'approval':
+      nodeBody += '<div><strong>{{ text_approver }}:</strong> ' + configData.approver_name + '</div>';
+      break;
+    case 'email':
+      nodeBody += '<div><strong>{{ text_recipient }}:</strong> ' + configData.recipient + '</div>';
+      break;
+    // Add more types here
+  }
+  
+  $node.find('.node-body').html(nodeBody);
+}
+
+// Function to initialize connections between nodes
+function initializeConnections() {
+  // Implement drawing connections between nodes
+  // This will draw SVG paths connecting nodes
+}
+
+// Zoom in/out the workflow canvas
+function zoomWorkflow(factor) {
+  // Implement zoom functionality
+}
+
+// Reset workflow view (center and reset zoom)
+function resetWorkflowView() {
+  // Reset pan and zoom
+}
+
+// Delete selected nodes
+function deleteSelectedNodes(grid) {
+  $('.grid-stack-item.selected').each(function() {
+    grid.removeWidget(this);
+  });
+}
+
+// Load workflow from JSON data
+function loadWorkflow(workflowData, grid) {
+  // Clear existing nodes
+  grid.removeAll();
+  
+  // Add nodes from data
+  if (workflowData.nodes) {
+    workflowData.nodes.forEach(function(node) {
+      var el = $('<div></div>')
+        .attr('data-node-id', node.id)
+        .attr('data-node-type', node.type);
+      
+      grid.addWidget(el, node.x, node.y, node.width, node.height);
+      
+      var nodeHtml = '<div class="grid-stack-item-content ' + node.type + '-node">' +
+                     '<div class="node-header">' +
+                       '<div class="node-title">' + (node.name || getNodeTitle(node.type)) + '</div>' +
+                       '<div class="node-actions">' +
+                         '<button type="button" class="btn btn-xs btn-info node-configure"><i class="fa fa-cog"></i></button>' +
+                       '</div>' +
+                     '</div>' +
+                     '<div class="node-body">';
+      
+      // Add type-specific configuration display
+      if (node.config) {
+        if (node.config.description) {
+          nodeHtml += '<p>' + node.config.description + '</p>';
+        }
+        
+        switch(node.type) {
+          case 'approval':
+            nodeHtml += '<div><strong>{{ text_approver }}:</strong> ' + (node.config.approver_name || '') + '</div>';
+            break;
+          case 'email':
+            nodeHtml += '<div><strong>{{ text_recipient }}:</strong> ' + (node.config.recipient || '') + '</div>';
+            break;
+          // Add more types here
+        }
+      } else {
+        nodeHtml += '<p>{{ text_click_to_configure }}</p>';
+      }
+      
+      nodeHtml += '</div></div>';
+      $('#' + node.id).html(nodeHtml);
+      
+      // Add connection points
+      addConnectionPoints(node.id, node.type);
+    });
+  }
+  
+  // Draw connections after all nodes are added
+  if (workflowData.connections) {
+    // Implement drawing connections from data
+  }
+}
+
+// Save workflow to JSON
+function saveWorkflow(grid) {
+  var nodes = [];
+  var connections = [];
+  
+  // Collect nodes data
+  $('.grid-stack-item').each(function() {
+    var $node = $(this);
+    var nodeId = $node.attr('data-node-id');
+    var nodeType = $node.attr('data-node-type');
+    var gridstackNode = grid.grid.nodes.find(function(n) {
+      return n.el && $(n.el).attr('data-node-id') === nodeId;
+    });
+    
+    if (gridstackNode) {
+      nodes.push({
+        id: nodeId,
+        type: nodeType,
+        name: $node.find('.node-title').text(),
+        x: gridstackNode.x,
+        y: gridstackNode.y,
+        width: gridstackNode.width,
+        height: gridstackNode.height,
+        config: $node.data('config') || {}
+      });
+    }
+  });
+  
+  // Collect connections data
+  // Implement collecting connections between nodes
+  
+  // Save to hidden field
+  $('#workflow-json').val(JSON.stringify({
+    nodes: nodes,
+    connections: connections
+  }));
+}
+//--></script>
+{{ footer }} 

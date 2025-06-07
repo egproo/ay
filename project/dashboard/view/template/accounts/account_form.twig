@@ -1,0 +1,149 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-account" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-account" class="form-horizontal">
+                     <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-parent">{{ entry_parent }}</label>
+                <div class="col-sm-4">
+                  <input type="text" name="parent_id" value="{{ parent_id }}" placeholder="{{ entry_parent }}" id="input-parent" class="form-control"  />
+                  {% if error_parent %}
+                  <div class="text-danger">{{ error_parent }}</div>
+                  {% endif %}
+                </div>
+              </div>
+      
+              
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-account-code">{{ entry_account_code }}</label>
+                <div class="col-sm-4">
+                  <input type="text" name="account_code" value="{{ account_code }}" placeholder="{{ entry_account_code }}" id="input-account-code" class="form-control" />
+                  {% if error_parent %}
+                  <div class="text-danger">{{ error_account_code }}</div>
+                  {% endif %}
+                </div>
+              </div>
+			 <div class="form-group">
+			  <label class="col-sm-2 control-label" for="input-account-type">{{ entry_account_type }}</label>
+			  <div class="col-sm-10">
+				<select name="account_type" id="input-account-type" class="form-control">
+				  <option value="debit" {{ account_type == 'debit' ? 'selected' : '' }}>{{ text_debit }}</option>
+				  <option value="credit" {{ account_type == 'credit' ? 'selected' : '' }}>{{ text_credit }}</option>
+				</select>
+			  </div>
+			</div>
+             
+            <div class="tab-pane active">
+              <ul class="nav nav-tabs" id="language">
+                {% for language in languages %}
+                <li><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}" /> {{ language.name }}</a></li>
+                {% endfor %}
+              </ul>
+              <div class="tab-content">
+                {% for language in languages %}
+                <div class="tab-pane" id="language{{ language.language_id }}">
+                  <div class="form-group required">
+                    <label class="col-sm-2 control-label" for="input-name{{ language.language_id }}">{{ entry_name }}</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="account_description[{{ language.language_id }}][name]" value="{{ account_description[language.language_id] ? account_description[language.language_id].name }}" placeholder="{{ entry_name }}" id="input-name{{ language.language_id }}" class="form-control" />
+                      {% if error_name[language.language_id] %}
+                      <div class="text-danger">{{ error_name[language.language_id] }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                </div>
+                {% endfor %}
+
+
+
+              
+              </div>
+
+
+          </div>
+        <input type="hidden" name="status" value="1" id="input-status" class="form-control" />
+
+        </form>
+      </div>
+  </div>
+  <link href="view/javascript/codemirror/lib/codemirror.css" rel="stylesheet" />
+  <link href="view/javascript/codemirror/theme/monokai.css" rel="stylesheet" />
+  <script type="text/javascript" src="view/javascript/codemirror/lib/codemirror.js"></script> 
+  <script type="text/javascript" src="view/javascript/codemirror/lib/xml.js"></script> 
+  <script type="text/javascript" src="view/javascript/codemirror/lib/formatting.js"></script> 
+  
+  <script type="text/javascript" src="view/javascript/summernote/summernote.min.js"></script>
+  <link href="view/javascript/summernote/summernote.min.css" rel="stylesheet" />
+  <script type="text/javascript" src="view/javascript/summernote/summernote-image-attributes.js"></script>
+  <script type="text/javascript" src="view/javascript/summernote/opencart.js"></script>
+  
+  <script type="text/javascript"><!--
+$('input[name=\'path\']').autocomplete({
+	'source': function(request, response) {
+		$.ajax({
+			url: 'index.php?route=accounts/account/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+			dataType: 'json',
+			success: function(json) {
+				json.unshift({
+					account_id: 0,
+					name: '{{ text_none }}'
+				});
+
+				response($.map(json, function(item) {
+					return {
+						label: item['name'],
+						value: item['account_id']
+					}
+				}));
+			}
+		});
+	},
+	'select': function(item) {
+		$('input[name=\'path\']').val(item['label']);
+		$('input[name=\'parent_id\']').val(item['value']);
+	}
+});
+
+
+
+//--></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#input-account-code').change(function() {
+        var accountCode = $(this).val();
+        var parentId = 0; // القيمة الافتراضية للوالد هي 0
+
+        if (accountCode.length > 1) {
+            // إذا كان طول كود الحساب أكثر من رقم واحد، نقوم بأخذ الرقم من جهة اليسار بعد طرح واحد
+            parentId = accountCode.substring(0, accountCode.length - 1);
+        }
+
+        $('#input-parent').val(parentId); // تحديث قيمة parent_id تلقائيًا
+    });
+});
+</script>
+
+  <script type="text/javascript"><!--
+$('#language a:first').tab('show');
+//--></script></div>
+{{ footer }}

@@ -1,0 +1,428 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                {% if can_add %}
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-add-receipt">
+                    <i class="fa fa-plus"></i> {{ button_add }}
+                </button>
+                {% endif %}
+                <button type="button" class="btn btn-default" onclick="loadReceipts();">
+                    <i class="fa fa-refresh"></i> {{ text_refresh_list }}
+                </button>
+            </div>
+            <h1>{{ heading_title }}</h1>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible">
+            <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success alert-dismissible">
+            <i class="fa fa-check-circle"></i> {{ success }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endif %}
+
+        <!-- لوحة الإحصائيات -->
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ text_receipt_total }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <h3 id="stat-total-receipts">{{ stats.total_receipts }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-warning">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ text_pending_receipts }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <h3 id="stat-pending-receipts">{{ stats.pending_receipts }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ text_received_receipts }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <h3 id="stat-received-receipts">{{ stats.received_receipts }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{ text_partially_received }}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <h3 id="stat-partial-receipts">{{ stats.partial_receipts }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فلاتر البحث -->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ text_receipt_number }}</label>
+                        <div class="col-sm-4">
+                            <input type="text" name="filter_receipt_number" class="form-control" />
+                        </div>
+                        <label class="col-sm-2 control-label">{{ text_po_number }}</label>
+                        <div class="col-sm-4">
+                            <input type="text" name="filter_po_number" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ text_date_start }}</label>
+                        <div class="col-sm-4">
+                            <input type="date" name="filter_date_start" class="form-control" />
+                        </div>
+                        <label class="col-sm-2 control-label">{{ text_date_end }}</label>
+                        <div class="col-sm-4">
+                            <input type="date" name="filter_date_end" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">{{ text_status }}</label>
+                        <div class="col-sm-4">
+                            <select name="filter_status" class="form-control">
+                                <option value="">{{ text_all_status }}</option>
+                                <option value="pending">{{ text_status_pending }}</option>
+                                <option value="received">{{ text_status_received }}</option>
+                                <option value="partially_received">{{ text_status_partial }}</option>
+                                <option value="cancelled">{{ text_status_cancelled }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول سندات الاستلام -->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table id="table-receipts" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ column_receipt_number }}</th>
+                                <th>{{ column_po_number }}</th>
+                                <th>{{ column_receipt_date }}</th>
+                                <th>{{ column_branch }}</th>
+                                <th>{{ column_status }}</th>
+                                <th>{{ column_quality_status }}</th>
+                                <th style="width: 200px;">{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- سيتم ملؤها عبر AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="text-right"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال إضافة سند استلام جديد -->
+<div id="modal-add-receipt" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ text_add }}</h4>
+            </div>
+            <div class="modal-body">
+                <!-- سيتم تحميل نموذج الإضافة هنا -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال تعديل سند استلام -->
+<div id="modal-edit-receipt" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- سيتم تحميل نموذج التعديل هنا -->
+        </div>
+    </div>
+</div>
+
+<!-- مودال فحص الجودة -->
+<div id="modal-quality-check" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- سيتم تحميل نموذج فحص الجودة هنا -->
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+// Global variables
+var user_token = '{{ user_token }}';
+var currentPage = 1;
+var language = {
+    text_no_results: '{{ text_no_results }}',
+    text_confirm_complete: '{{ text_confirm_complete }}',
+    text_confirm_delete: '{{ text_confirm_delete }}',
+    text_confirm_approve: '{{ text_confirm_approve }}',
+    text_confirm_bulk_complete: '{{ text_confirm_bulk_complete }}',
+    text_confirm_bulk_delete: '{{ text_confirm_bulk_delete }}',
+    text_select_status: '{{ text_select_status }}',
+    text_select_branch: '{{ text_select_branch }}',
+    text_refresh_list: '{{ text_refresh_list }}',
+    error_no_selection: '{{ error_no_selection }}',
+    error_select_action: '{{ error_select_action }}',
+    error_loading_data: '{{ error_loading_data }}',
+    error_completing_receipt: '{{ error_completing_receipt }}'
+};
+
+// Permissions
+window.can_add = {{ can_add ? 'true' : 'false' }};
+window.can_edit = {{ can_edit ? 'true' : 'false' }};
+window.can_delete = {{ can_delete ? 'true' : 'false' }};
+window.can_complete = {{ can_complete ? 'true' : 'false' }};
+window.can_quality_check = {{ can_quality_check ? 'true' : 'false' }};
+</script>
+
+<script src="view/javascript/purchase/goods_receipt_list.js"></script>
+
+<script type="text/javascript">
+// تحميل البيانات عند تحميل الصفحة
+$(document).ready(function() {
+    loadReceipts();
+});
+
+// فلترة مباشرة
+$('input[name=\'filter_receipt_number\'], input[name=\'filter_po_number\'], input[name=\'filter_date_start\'], input[name=\'filter_date_end\'], select[name=\'filter_status\']').on('input change', function() {
+    loadReceipts();
+});
+/**
+ * تحميل سندات الاستلام
+ */
+function loadReceipts(page) {
+    showLoading();
+    page = page || 1;
+
+    $.ajax({
+        url: 'index.php?route=purchase/goods_receipt/ajaxList&user_token=' + user_token,
+        type: 'get',
+        dataType: 'json',
+        data: {
+            filter_receipt_number: $('input[name=\'filter_receipt_number\']').val(),
+            filter_po_number: $('input[name=\'filter_po_number\']').val(),
+            filter_date_start: $('input[name=\'filter_date_start\']').val(),
+            filter_date_end: $('input[name=\'filter_date_end\']').val(),
+            filter_status: $('select[name=\'filter_status\']').val(),
+            page: page,
+            limit: 20
+        },
+        success: function(json) {
+            // تحديث الإحصائيات
+            $('#stat-total-receipts').text(json.stats.total_receipts);
+            $('#stat-pending-receipts').text(json.stats.pending_receipts);
+            $('#stat-received-receipts').text(json.stats.received_receipts);
+            $('#stat-partial-receipts').text(json.stats.partial_receipts);
+
+            // إفراغ وملء الجدول
+            var html = '';
+            if (json.receipts && json.receipts.length) {
+                $.each(json.receipts, function(i, item) {
+                    html += '<tr>';
+                    html += '<td>' + item.receipt_number + '</td>';
+                    html += '<td>' + item.po_number + '</td>';
+                    html += '<td>' + item.receipt_date + '</td>';
+                    html += '<td>' + item.branch_name + '</td>';
+                    html += '<td><span class="label label-' + getStatusClass(item.status) + '">' + item.status + '</span></td>';
+                    html += '<td>' + getQualityStatus(item) + '</td>';
+                    html += '<td class="text-right">';
+
+                    // أزرار الإجراءات
+                    html += '<div class="btn-group">';
+
+                    if (item.can_edit) {
+                        html += '<button type="button" class="btn btn-sm btn-primary" onclick="editReceipt(' + item.goods_receipt_id + ');">';
+                        html += '<i class="fa fa-pencil"></i></button>';
+                    }
+
+                    if (item.can_complete) {
+                        html += '<button type="button" class="btn btn-sm btn-success" onclick="completeReceipt(' + item.goods_receipt_id + ');">';
+                        html += '<i class="fa fa-check"></i></button>';
+                    }
+
+                    if (item.can_quality_check) {
+                        html += '<button type="button" class="btn btn-sm btn-info" onclick="qualityCheck(' + item.goods_receipt_id + ');">';
+                        html += '<i class="fa fa-flask"></i></button>';
+                    }
+
+                    // زر عرض التفاصيل
+                    html += '<button type="button" class="btn btn-sm btn-default" onclick="viewDetails(' + item.goods_receipt_id + ');">';
+                    html += '<i class="fa fa-eye"></i></button>';
+
+                    html += '</div>';
+                    html += '</td>';
+                    html += '</tr>';
+                });
+            } else {
+                html = '<tr><td colspan="7" class="text-center">{{ text_no_results }}</td></tr>';
+            }
+
+            $('#table-receipts tbody').html(html);
+            $('#pagination').html(json.pagination);
+
+        },
+        error: function(xhr, status, error) {
+            showError('{{ error_loading_data }}');
+        },
+        complete: function() {
+            hideLoading();
+        }
+    });
+}
+
+/**
+ * فتح نموذج إضافة سند جديد
+ */
+function openAddModal() {
+    $('#modal-add-receipt .modal-body').load('index.php?route=purchase/goods_receipt/getAddForm&user_token=' + user_token, function() {
+        initializeAddForm();
+        $('#modal-add-receipt').modal('show');
+    });
+}
+
+/**
+ * فتح نموذج تعديل سند
+ */
+function editReceipt(receipt_id) {
+    $('#modal-edit-receipt .modal-content').load('index.php?route=purchase/goods_receipt/getEditForm&user_token=' + user_token + '&goods_receipt_id=' + receipt_id, function() {
+        initializeEditForm();
+        $('#modal-edit-receipt').modal('show');
+    });
+}
+
+/**
+ * إكمال سند الاستلام
+ */
+function completeReceipt(receipt_id) {
+    if (confirm('{{ text_confirm_complete }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/goods_receipt/ajaxComplete&user_token=' + user_token,
+            type: 'post',
+            dataType: 'json',
+            data: { goods_receipt_id: receipt_id },
+            success: function(json) {
+                if (json.error) {
+                    showError(json.error);
+                }
+                if (json.success) {
+                    showSuccess(json.success);
+                    loadReceipts();
+                }
+            },
+            error: function(xhr, status, error) {
+                showError('{{ error_completing_receipt }}');
+            }
+        });
+    }
+}
+
+/**
+ * فتح نموذج فحص الجودة
+ */
+function qualityCheck(receipt_id) {
+    $('#modal-quality-check .modal-content').load('index.php?route=purchase/goods_receipt/getQualityForm&user_token=' + user_token + '&goods_receipt_id=' + receipt_id, function() {
+        initializeQualityForm();
+        $('#modal-quality-check').modal('show');
+    });
+}
+
+/**
+ * عرض تفاصيل السند
+ */
+function viewDetails(receipt_id) {
+    window.location = 'index.php?route=purchase/goods_receipt/view&user_token=' + user_token + '&goods_receipt_id=' + receipt_id;
+}
+
+/**
+ * دوال مساعدة
+ */
+function getStatusClass(status) {
+    switch(status) {
+        case 'pending': return 'warning';
+        case 'received': return 'success';
+        case 'partially_received': return 'info';
+        case 'cancelled': return 'danger';
+        default: return 'default';
+    }
+}
+
+function getQualityStatus(item) {
+    if (!item.quality_check_required) {
+        return '<span class="text-muted">{{ text_not_required }}</span>';
+    }
+    if (!item.quality_checked_by) {
+        return '<span class="label label-warning">{{ text_pending_check }}</span>';
+    }
+    if (item.quality_status === 'passed') {
+        return '<span class="label label-success">{{ text_quality_passed }}</span>';
+    }
+    if (item.quality_status === 'failed') {
+        return '<span class="label label-danger">{{ text_quality_failed }}</span>';
+    }
+    return '<span class="label label-info">{{ text_quality_partial }}</span>';
+}
+
+function showLoading() {
+    $('#loading-overlay').show();
+}
+
+function hideLoading() {
+    $('#loading-overlay').hide();
+}
+
+function showSuccess(message) {
+    $.notify({
+        message: message
+    },{
+        type: 'success',
+        placement: { from: 'top', align: 'center' }
+    });
+}
+
+function showError(message) {
+    $.notify({
+        message: message
+    },{
+        type: 'danger',
+        placement: { from: 'top', align: 'center' }
+    });
+}
+</script>
+
+{{ footer }}

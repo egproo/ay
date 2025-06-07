@@ -1,0 +1,279 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                {% if can_modify %}
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_add_transaction }}" class="btn btn-primary" onclick="location = '{{ add_transaction_url }}'">
+                    <i class="fas fa-plus"></i> {{ button_add_transaction }}
+                </button>
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_reconcile }}" class="btn btn-warning" onclick="location = '{{ reconcile_url }}'">
+                    <i class="fas fa-balance-scale"></i> {{ button_reconcile }}
+                </button>
+                {% endif %}
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light" onclick="location = '{{ back }}'">
+                    <i class="fas fa-reply"></i>
+                </button>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        {% if success %}
+        <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- معلومات الحساب البنكي -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-info-circle"></i> {{ text_bank_info }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{ entry_account_name }}</label>
+                            <div class="col-sm-8">
+                                <div class="form-control-plaintext fw-bold">{{ bank_info.account_name }}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{ entry_bank_name }}</label>
+                            <div class="col-sm-8">
+                                <div class="form-control-plaintext">{{ bank_info.bank_name }}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{ entry_account_number }}</label>
+                            <div class="col-sm-8">
+                                <div class="form-control-plaintext">{{ bank_info.account_number }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{ entry_currency }}</label>
+                            <div class="col-sm-8">
+                                <div class="form-control-plaintext">{{ bank_info.currency }}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{ entry_balance }}</label>
+                            <div class="col-sm-8">
+                                <div class="form-control-plaintext text-{{ bank_info.current_balance >= 0 ? 'success' : 'danger' }} fw-bold">{{ bank_info.current_balance }}</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">{{ entry_type }}</label>
+                            <div class="col-sm-8">
+                                <div class="form-control-plaintext">{{ bank_info.account_type }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- حركات الحساب -->
+        <div class="card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-exchange-alt"></i> {{ text_transactions }}</h4>
+                <div class="float-end">
+                    <button type="button" class="btn btn-light btn-sm" id="btn-filter-transactions">
+                        <i class="fas fa-filter"></i> {{ button_filter }}
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="collapse mb-3" id="transaction-filters">
+                    <div class="card card-body bg-light">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">{{ entry_date_from }}</label>
+                                    <input type="date" name="filter_date_from" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">{{ entry_date_to }}</label>
+                                    <input type="date" name="filter_date_to" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">{{ entry_type }}</label>
+                                    <select name="filter_type" class="form-select form-select-sm">
+                                        <option value="">{{ text_all }}</option>
+                                        <option value="deposit">{{ text_deposit }}</option>
+                                        <option value="withdraw">{{ text_withdraw }}</option>
+                                        <option value="transfer_in">{{ text_transfer_in }}</option>
+                                        <option value="transfer_out">{{ text_transfer_out }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">{{ entry_reference }}</label>
+                                    <input type="text" name="filter_reference" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="table-transactions">
+                        <thead>
+                            <tr>
+                                <th>{{ column_date }}</th>
+                                <th>{{ column_type }}</th>
+                                <th class="text-end">{{ column_amount }}</th>
+                                <th>{{ column_reference }}</th>
+                                <th>{{ column_description }}</th>
+                                <th>{{ column_created_by }}</th>
+                                <th class="text-end">{{ column_balance }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if bank_transactions %}
+                            {% set running_balance = bank_info.current_balance %}
+                            {% for transaction in bank_transactions %}
+                            <tr>
+                                <td>{{ transaction.transaction_date }}</td>
+                                <td>
+                                    {% if transaction.transaction_type == 'deposit' or transaction.transaction_type == 'transfer_in' %}
+                                    <span class="badge bg-success">{{ text_deposit }}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ text_withdraw }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end fw-bold {{ transaction.transaction_type in ['deposit', 'transfer_in'] ? 'text-success' : 'text-danger' }}">{{ transaction.amount }}</td>
+                                <td>{{ transaction.reference }}</td>
+                                <td>{{ transaction.description }}</td>
+                                <td>{{ transaction.created_by }}</td>
+                                <td class="text-end fw-bold">{{ running_balance }}</td>
+                            </tr>
+                            {% set running_balance = running_balance - (transaction.transaction_type in ['deposit', 'transfer_in'] ? transaction.amount : -transaction.amount) %}
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- التسويات البنكية -->
+        <div class="card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-balance-scale"></i> {{ text_reconciliations }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="table-reconciliations">
+                        <thead>
+                            <tr>
+                                <th>{{ column_statement_date }}</th>
+                                <th class="text-end">{{ column_opening_balance }}</th>
+                                <th class="text-end">{{ column_closing_balance }}</th>
+                                <th class="text-end">{{ column_system_balance }}</th>
+                                <th class="text-end">{{ column_difference }}</th>
+                                <th class="text-center">{{ column_status }}</th>
+                                <th>{{ column_created_by }}</th>
+                                <th class="text-end">{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if reconciliations %}
+                            {% for reconciliation in reconciliations %}
+                            <tr>
+                                <td>{{ reconciliation.statement_date }}</td>
+                                <td class="text-end">{{ reconciliation.statement_opening_balance }}</td>
+                                <td class="text-end">{{ reconciliation.statement_closing_balance }}</td>
+                                <td class="text-end">{{ reconciliation.system_closing_balance }}</td>
+                                <td class="text-end fw-bold {{ reconciliation.difference == 0 ? 'text-success' : 'text-danger' }}">{{ reconciliation.difference }}</td>
+                                <td class="text-center">
+                                    {% if reconciliation.status == 'closed' %}
+                                    <span class="badge bg-success">{{ text_closed }}</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ text_open }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ reconciliation.created_by }}</td>
+                                <td class="text-end">
+                                    {% if reconciliation.status == 'open' and can_modify %}
+                                    <div class="btn-group">
+                                        <a href="{{ reconciliation.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-sm btn-primary"><i class="fas fa-pencil-alt"></i></a>
+                                        <button type="button" data-reconciliation-id="{{ reconciliation.reconciliation_id }}" data-bs-toggle="tooltip" title="{{ button_close }}" class="btn btn-sm btn-success btn-close-reconciliation"><i class="fas fa-check"></i></button>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="8">{{ text_no_results }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+<script type="text/javascript">
+$('#btn-filter-transactions').on('click', function() {
+    $('#transaction-filters').collapse('toggle');
+});
+
+$('#table-transactions').DataTable({
+    'order': [[0, 'desc']],
+    'pageLength': 25,
+    'stateSave': true
+});
+
+$('#table-reconciliations').DataTable({
+    'order': [[0, 'desc']],
+    'pageLength': 10,
+    'stateSave': true
+});
+
+$('.btn-close-reconciliation').on('click', function() {
+    var reconciliationId = $(this).data('reconciliation-id');
+    if (confirm('{{ text_confirm_close }}')) {
+        $.ajax({
+            url: 'index.php?route=finance/bank/closeReconciliation&user_token={{ user_token }}',
+            type: 'POST',
+            data: { reconciliation_id: reconciliationId },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    location.reload();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+});
+</script>
+    </div>
+</div>
+{{ footer }}

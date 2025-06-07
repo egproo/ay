@@ -1,0 +1,530 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-stocktake" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fas fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_stocktake_form }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-pencil-alt"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form id="form-stocktake" action="{{ action }}" method="post">
+          <ul class="nav nav-tabs">
+            <li class="nav-item"><a href="#tab-general" data-bs-toggle="tab" class="nav-link active">{{ text_stocktake_details }}</a></li>
+            <li class="nav-item"><a href="#tab-products" data-bs-toggle="tab" class="nav-link">{{ text_products }}</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab-general">
+              <div class="row mb-3">
+                <label for="input-reference" class="col-sm-2 col-form-label">{{ entry_reference }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="reference" value="{{ reference }}" placeholder="{{ entry_reference }}" id="input-reference" class="form-control"/>
+                  {% if error_reference %}
+                    <div class="invalid-feedback d-block">{{ error_reference }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-branch" class="col-sm-2 col-form-label">{{ entry_branch }}</label>
+                <div class="col-sm-10">
+                  <select name="branch_id" id="input-branch" class="form-select" {% if stocktake_id %}disabled{% endif %}>
+                    <option value="">{{ text_select }}</option>
+                    {% for branch in branches %}
+                      <option value="{{ branch.branch_id }}" {% if branch.branch_id == branch_id %}selected{% endif %}>{{ branch.name }}</option>
+                    {% endfor %}
+                  </select>
+                  {% if stocktake_id %}
+                    <input type="hidden" name="branch_id" value="{{ branch_id }}"/>
+                  {% endif %}
+                  {% if error_branch %}
+                    <div class="invalid-feedback d-block">{{ error_branch }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-stocktake-date" class="col-sm-2 col-form-label">{{ entry_stocktake_date }}</label>
+                <div class="col-sm-10">
+                  <input type="date" name="stocktake_date" value="{{ stocktake_date }}" id="input-stocktake-date" class="form-control"/>
+                  {% if error_stocktake_date %}
+                    <div class="invalid-feedback d-block">{{ error_stocktake_date }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-type" class="col-sm-2 col-form-label">{{ entry_type }}</label>
+                <div class="col-sm-10">
+                  <select name="type" id="input-type" class="form-select" {% if stocktake_id %}disabled{% endif %}>
+                    <option value="">{{ text_select }}</option>
+                    <option value="full" {% if type == 'full' %}selected{% endif %}>{{ text_type_full }}</option>
+                    <option value="partial" {% if type == 'partial' %}selected{% endif %}>{{ text_type_partial }}</option>
+                    <option value="spot" {% if type == 'spot' %}selected{% endif %}>{{ text_type_spot }}</option>
+                    <option value="cycle" {% if type == 'cycle' %}selected{% endif %}>{{ text_type_cycle }}</option>
+                  </select>
+                  {% if stocktake_id %}
+                    <input type="hidden" name="type" value="{{ type }}"/>
+                  {% endif %}
+                  {% if error_type %}
+                    <div class="invalid-feedback d-block">{{ error_type }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-status" class="col-sm-2 col-form-label">{{ entry_status }}</label>
+                <div class="col-sm-10">
+                  <select name="status" id="input-status" class="form-select">
+                    <option value="draft" {% if status == 'draft' %}selected{% endif %}>{{ text_status_draft }}</option>
+                    <option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>{{ text_status_in_progress }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-notes" class="col-sm-2 col-form-label">{{ entry_notes }}</label>
+                <div class="col-sm-10">
+                  <textarea name="notes" rows="5" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-products">
+              <div class="row mb-3">
+                <div class="col-sm-12">
+                  <div class="card">
+                    <div class="card-header">
+                      <div class="float-end">
+                        <button type="button" id="button-add-product" class="btn btn-primary"><i class="fas fa-plus"></i> {{ button_add_product }}</button>
+                        <button type="button" id="button-add-all-products" class="btn btn-success"><i class="fas fa-list"></i> {{ text_add_all_products }}</button>
+                        <button type="button" id="button-import" class="btn btn-info"><i class="fas fa-upload"></i> {{ button_import }}</button>
+                      </div>
+                      <h5 class="mb-0">{{ text_stocktake_products }}</h5>
+                    </div>
+                    <div class="card-body">
+                      <div class="table-responsive">
+                        <table id="products" class="table table-bordered table-hover">
+                          <thead>
+                            <tr>
+                              <td class="text-start">{{ column_product }}</td>
+                              <td class="text-start">{{ column_model }}</td>
+                              <td class="text-start">{{ column_sku }}</td>
+                              <td class="text-start">{{ column_unit }}</td>
+                              <td class="text-end">{{ column_expected_quantity }}</td>
+                              <td class="text-end">{{ column_counted_quantity }}</td>
+                              <td class="text-end">{{ column_variance_quantity }}</td>
+                              <td class="text-start">{{ column_notes }}</td>
+                              <td class="text-end">{{ column_action }}</td>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% if products %}
+                              {% for product_row, product in products %}
+                                <tr id="product-row{{ product_row }}">
+                                  <td class="text-start">{{ product.product_name }}
+                                    <input type="hidden" name="products[{{ product_row }}][product_id]" value="{{ product.product_id }}"/>
+                                  </td>
+                                  <td class="text-start">{{ product.model }}</td>
+                                  <td class="text-start">{{ product.sku }}</td>
+                                  <td class="text-start">{{ product.unit_name }}
+                                    <input type="hidden" name="products[{{ product_row }}][unit_id]" value="{{ product.unit_id }}"/>
+                                  </td>
+                                  <td class="text-end">
+                                    <input type="number" name="products[{{ product_row }}][expected_quantity]" value="{{ product.expected_quantity }}" placeholder="{{ entry_expected_quantity }}" class="form-control text-end" step="0.0001" min="0" readonly/>
+                                  </td>
+                                  <td class="text-end">
+                                    <input type="number" name="products[{{ product_row }}][counted_quantity]" value="{{ product.counted_quantity }}" placeholder="{{ entry_counted_quantity }}" class="form-control text-end counted-quantity" step="0.0001" min="0"/>
+                                  </td>
+                                  <td class="text-end variance-quantity">
+                                    {{ product.variance_quantity }}
+                                    <input type="hidden" name="products[{{ product_row }}][variance_quantity]" value="{{ product.variance_quantity }}"/>
+                                  </td>
+                                  <td class="text-start">
+                                    <input type="text" name="products[{{ product_row }}][notes]" value="{{ product.notes }}" placeholder="{{ entry_notes }}" class="form-control"/>
+                                  </td>
+                                  <td class="text-end">
+                                    <button type="button" onclick="$('#product-row{{ product_row }}').remove();" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                  </td>
+                                </tr>
+                              {% endfor %}
+                            {% endif %}
+                          </tbody>
+                        </table>
+                      </div>
+                      {% if error_products %}
+                        <div class="invalid-feedback d-block">{{ error_products }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for adding products -->
+<div class="modal fade" id="modal-product" tabindex="-1" role="dialog" aria-labelledby="modal-product-title" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-product-title">{{ button_add_product }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="input-modal-category" class="form-label">{{ entry_category }}</label>
+          <select id="input-modal-category" class="form-select">
+            <option value="0">{{ text_all_status }}</option>
+            {% for category in categories %}
+              <option value="{{ category.category_id }}">{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="input-modal-product" class="form-label">{{ entry_product }}</label>
+          <input type="text" id="input-modal-product" class="form-control" placeholder="{{ entry_product }}"/>
+        </div>
+        <div class="table-responsive">
+          <table id="modal-products" class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'modal_selected\']').prop('checked', $(this).prop('checked'));" class="form-check-input"/></td>
+                <td class="text-start">{{ column_product }}</td>
+                <td class="text-start">{{ column_model }}</td>
+                <td class="text-start">{{ column_sku }}</td>
+                <td class="text-start">{{ column_unit }}</td>
+                <td class="text-end">{{ column_expected_quantity }}</td>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" id="button-add-selected-products" class="btn btn-primary">{{ text_add_selected_products }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for importing products -->
+<div class="modal fade" id="modal-import" tabindex="-1" role="dialog" aria-labelledby="modal-import-title" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-import-title">{{ button_import }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ text_import_instructions }}</p>
+        <div class="mb-3">
+          <a href="{{ download_template }}" class="btn btn-info">{{ text_download_template }}</a>
+        </div>
+        <div class="mb-3">
+          <label for="input-import-file" class="form-label">{{ text_upload_file }}</label>
+          <input type="file" id="input-import-file" class="form-control" accept=".xlsx, .xls, .csv"/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" id="button-import-file" class="btn btn-primary">{{ button_import }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// Variables
+var product_row = {{ product_row }};
+
+// Calculate variance when counted quantity changes
+$(document).on('change', '.counted-quantity', function() {
+    var row = $(this).closest('tr');
+    var expected = parseFloat(row.find('input[name$="[expected_quantity]"]').val()) || 0;
+    var counted = parseFloat($(this).val()) || 0;
+    var variance = counted - expected;
+    
+    row.find('.variance-quantity').text(variance.toFixed(4));
+    row.find('input[name$="[variance_quantity]"]').val(variance.toFixed(4));
+    
+    if (variance < 0) {
+        row.find('.variance-quantity').addClass('text-danger').removeClass('text-success');
+    } else if (variance > 0) {
+        row.find('.variance-quantity').addClass('text-success').removeClass('text-danger');
+    } else {
+        row.find('.variance-quantity').removeClass('text-success').removeClass('text-danger');
+    }
+});
+
+// Add product button
+$('#button-add-product').on('click', function() {
+    var branch_id = $('#input-branch').val();
+    
+    if (!branch_id) {
+        alert('{{ error_branch }}');
+        return;
+    }
+    
+    // Load products for the selected branch
+    $.ajax({
+        url: 'index.php?route=inventory/stocktake/getAvailableProducts&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            branch_id: branch_id,
+            category_id: 0
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-add-product').prop('disabled', true);
+            $('#button-add-product').html('<i class="fas fa-spinner fa-spin"></i>');
+            $('#modal-products tbody').html('<tr><td colspan="6" class="text-center">{{ text_loading_products }}</td></tr>');
+        },
+        complete: function() {
+            $('#button-add-product').prop('disabled', false);
+            $('#button-add-product').html('<i class="fas fa-plus"></i> {{ button_add_product }}');
+        },
+        success: function(json) {
+            if (json.products && json.products.length > 0) {
+                var html = '';
+                
+                for (var i = 0; i < json.products.length; i++) {
+                    var product = json.products[i];
+                    
+                    html += '<tr>';
+                    html += '  <td class="text-center"><input type="checkbox" name="modal_selected[]" value="' + product.product_id + '_' + product.unit_id + '" class="form-check-input"/></td>';
+                    html += '  <td class="text-start">' + product.name + '</td>';
+                    html += '  <td class="text-start">' + product.model + '</td>';
+                    html += '  <td class="text-start">' + product.sku + '</td>';
+                    html += '  <td class="text-start">' + product.unit_name + '</td>';
+                    html += '  <td class="text-end">' + product.quantity + '</td>';
+                    html += '</tr>';
+                }
+                
+                $('#modal-products tbody').html(html);
+            } else {
+                $('#modal-products tbody').html('<tr><td colspan="6" class="text-center">{{ text_no_products }}</td></tr>');
+            }
+            
+            $('#modal-product').modal('show');
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// Add selected products
+$('#button-add-selected-products').on('click', function() {
+    var branch_id = $('#input-branch').val();
+    var selected = $('input[name="modal_selected[]"]:checked');
+    
+    if (selected.length === 0) {
+        return;
+    }
+    
+    var product_unit_ids = [];
+    
+    selected.each(function() {
+        product_unit_ids.push($(this).val());
+    });
+    
+    $.ajax({
+        url: 'index.php?route=inventory/stocktake/getSelectedProducts&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            branch_id: branch_id,
+            product_unit_ids: product_unit_ids
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-add-selected-products').prop('disabled', true);
+            $('#button-add-selected-products').html('<i class="fas fa-spinner fa-spin"></i>');
+        },
+        complete: function() {
+            $('#button-add-selected-products').prop('disabled', false);
+            $('#button-add-selected-products').html('{{ text_add_selected_products }}');
+        },
+        success: function(json) {
+            if (json.products) {
+                for (var i = 0; i < json.products.length; i++) {
+                    var product = json.products[i];
+                    
+                    // Check if product already exists
+                    var exists = false;
+                    $('input[name^="products"][name$="[product_id]"]').each(function() {
+                        if ($(this).val() == product.product_id) {
+                            var unit_id = $(this).closest('tr').find('input[name$="[unit_id]"]').val();
+                            if (unit_id == product.unit_id) {
+                                exists = true;
+                                return false;
+                            }
+                        }
+                    });
+                    
+                    if (!exists) {
+                        addProduct(product);
+                    }
+                }
+                
+                $('#modal-product').modal('hide');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// Add all products
+$('#button-add-all-products').on('click', function() {
+    var branch_id = $('#input-branch').val();
+    
+    if (!branch_id) {
+        alert('{{ error_branch }}');
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?route=inventory/stocktake/getAvailableProducts&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            branch_id: branch_id,
+            category_id: 0
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-add-all-products').prop('disabled', true);
+            $('#button-add-all-products').html('<i class="fas fa-spinner fa-spin"></i>');
+        },
+        complete: function() {
+            $('#button-add-all-products').prop('disabled', false);
+            $('#button-add-all-products').html('<i class="fas fa-list"></i> {{ text_add_all_products }}');
+        },
+        success: function(json) {
+            if (json.products) {
+                for (var i = 0; i < json.products.length; i++) {
+                    var product = json.products[i];
+                    
+                    // Check if product already exists
+                    var exists = false;
+                    $('input[name^="products"][name$="[product_id]"]').each(function() {
+                        if ($(this).val() == product.product_id) {
+                            var unit_id = $(this).closest('tr').find('input[name$="[unit_id]"]').val();
+                            if (unit_id == product.unit_id) {
+                                exists = true;
+                                return false;
+                            }
+                        }
+                    });
+                    
+                    if (!exists) {
+                        addProduct(product);
+                    }
+                }
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// Function to add product to the table
+function addProduct(product) {
+    html = '<tr id="product-row' + product_row + '">';
+    html += '  <td class="text-start">' + product.name;
+    html += '    <input type="hidden" name="products[' + product_row + '][product_id]" value="' + product.product_id + '"/>';
+    html += '  </td>';
+    html += '  <td class="text-start">' + product.model + '</td>';
+    html += '  <td class="text-start">' + product.sku + '</td>';
+    html += '  <td class="text-start">' + product.unit_name;
+    html += '    <input type="hidden" name="products[' + product_row + '][unit_id]" value="' + product.unit_id + '"/>';
+    html += '  </td>';
+    html += '  <td class="text-end">';
+    html += '    <input type="number" name="products[' + product_row + '][expected_quantity]" value="' + product.quantity + '" placeholder="{{ entry_expected_quantity }}" class="form-control text-end" step="0.0001" min="0" readonly/>';
+    html += '  </td>';
+    html += '  <td class="text-end">';
+    html += '    <input type="number" name="products[' + product_row + '][counted_quantity]" value="' + product.quantity + '" placeholder="{{ entry_counted_quantity }}" class="form-control text-end counted-quantity" step="0.0001" min="0"/>';
+    html += '  </td>';
+    html += '  <td class="text-end variance-quantity">0.0000';
+    html += '    <input type="hidden" name="products[' + product_row + '][variance_quantity]" value="0.0000"/>';
+    html += '  </td>';
+    html += '  <td class="text-start">';
+    html += '    <input type="text" name="products[' + product_row + '][notes]" value="" placeholder="{{ entry_notes }}" class="form-control"/>';
+    html += '  </td>';
+    html += '  <td class="text-end">';
+    html += '    <button type="button" onclick="$(\'#product-row' + product_row + '\').remove();" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>';
+    html += '  </td>';
+    html += '</tr>';
+
+    $('#products tbody').append(html);
+
+    product_row++;
+}
+
+// Import button
+$('#button-import').on('click', function() {
+    $('#modal-import').modal('show');
+});
+
+// Import file
+$('#button-import-file').on('click', function() {
+    var file = $('#input-import-file')[0].files[0];
+    
+    if (!file) {
+        alert('{{ error_import_file }}');
+        return;
+    }
+    
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('stocktake_id', '{{ stocktake_id }}');
+    
+    $.ajax({
+        url: 'index.php?route=inventory/stocktake/import&user_token={{ user_token }}',
+        type: 'post',
+        data: formData,
+        dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        beforeSend: function() {
+            $('#button-import-file').prop('disabled', true);
+            $('#button-import-file').html('<i class="fas fa-spinner fa-spin"></i>');
+        },
+        complete: function() {
+            $('#button-import-file').prop('disabled', false);
+            $('#button-import-file').html('{{ button_import }}');
+        },
+        success: function(json) {
+            if (json.success) {
+                $('#modal-import').modal('hide');
+                location.reload();
+            } else if (json.error) {
+                alert(json.error);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+</script>
+{{ footer }}

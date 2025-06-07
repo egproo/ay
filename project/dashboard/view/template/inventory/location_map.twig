@@ -1,0 +1,610 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="تحديث الخريطة" class="btn btn-primary" onclick="refreshMap()">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <button type="button" data-toggle="tooltip" title="البحث عن موقع" class="btn btn-info" data-toggle="modal" data-target="#search-modal">
+          <i class="fa fa-search"></i>
+        </button>
+        <button type="button" data-toggle="tooltip" title="إضافة موقع جديد" class="btn btn-success" onclick="addLocationOnMap()">
+          <i class="fa fa-plus"></i>
+        </button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - {{ text_location_map }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <div class="row">
+      <!-- الخريطة الرئيسية -->
+      <div class="col-md-9">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-map"></i> خريطة المواقع التفاعلية
+              <div class="pull-right">
+                <div class="btn-group btn-group-xs">
+                  <button type="button" class="btn btn-default" onclick="changeMapView('satellite')">
+                    <i class="fa fa-globe"></i> قمر صناعي
+                  </button>
+                  <button type="button" class="btn btn-default" onclick="changeMapView('roadmap')">
+                    <i class="fa fa-road"></i> خريطة
+                  </button>
+                  <button type="button" class="btn btn-default" onclick="changeMapView('hybrid')">
+                    <i class="fa fa-layer-group"></i> مختلط
+                  </button>
+                </div>
+              </div>
+            </h3>
+          </div>
+          <div class="panel-body" style="padding: 0;">
+            <div id="main-map" style="height: 600px; width: 100%;"></div>
+          </div>
+          <div class="panel-footer">
+            <div class="row">
+              <div class="col-md-6">
+                <small class="text-muted">
+                  <i class="fa fa-info-circle"></i> انقر على العلامات لعرض تفاصيل الموقع
+                </small>
+              </div>
+              <div class="col-md-6 text-right">
+                <small class="text-muted">
+                  إجمالي المواقع: <strong>{{ locations|length }}</strong>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- الشريط الجانبي -->
+      <div class="col-md-3">
+        <!-- فلاتر الخريطة -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-filter"></i> فلاتر الخريطة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label>نوع الموقع:</label>
+              <select id="location-type-filter" class="form-control" onchange="filterLocations()">
+                <option value="">جميع الأنواع</option>
+                <option value="warehouse">مستودع</option>
+                <option value="zone">منطقة</option>
+                <option value="aisle">ممر</option>
+                <option value="rack">رف</option>
+                <option value="shelf">رفة</option>
+                <option value="bin">صندوق</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>الفرع:</label>
+              <select id="branch-filter" class="form-control" onchange="filterLocations()">
+                <option value="">جميع الفروع</option>
+                {% for location in locations %}
+                {% if location.branch_name %}
+                <option value="{{ location.branch_name }}">{{ location.branch_name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>حالة الإشغال:</label>
+              <select id="occupancy-filter" class="form-control" onchange="filterLocations()">
+                <option value="">جميع الحالات</option>
+                <option value="empty">فارغ</option>
+                <option value="low">منخفض</option>
+                <option value="medium">متوسط</option>
+                <option value="high">عالي</option>
+                <option value="full">ممتلئ</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" id="show-inactive" onchange="filterLocations()">
+                  عرض المواقع المعطلة
+                </label>
+              </div>
+            </div>
+            
+            <button type="button" class="btn btn-primary btn-block" onclick="resetFilters()">
+              <i class="fa fa-refresh"></i> إعادة تعيين الفلاتر
+            </button>
+          </div>
+        </div>
+        
+        <!-- قائمة المواقع -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-list"></i> قائمة المواقع
+            </h3>
+          </div>
+          <div class="panel-body" style="max-height: 300px; overflow-y: auto;">
+            <div id="locations-list">
+              {% for location in locations %}
+              <div class="location-item" data-location-id="{{ location.location_id }}" data-type="{{ location.location_type }}" data-branch="{{ location.branch_name }}" data-occupancy="{{ location.occupancy_status }}">
+                <div class="media">
+                  <div class="media-left">
+                    <span class="label label-primary">{{ location.location_code }}</span>
+                  </div>
+                  <div class="media-body">
+                    <h6 class="media-heading">{{ location.name }}</h6>
+                    <small class="text-muted">{{ location.location_type }} - {{ location.branch_name ?: 'غير محدد' }}</small>
+                    <br>
+                    <small class="text-info">
+                      <i class="fa fa-map-marker"></i> 
+                      {{ location.gps_latitude|number_format(4) }}, {{ location.gps_longitude|number_format(4) }}
+                    </small>
+                  </div>
+                  <div class="media-right">
+                    <button type="button" class="btn btn-xs btn-info" onclick="focusOnLocation({{ location.gps_latitude }}, {{ location.gps_longitude }}, '{{ location.name }}')">
+                      <i class="fa fa-crosshairs"></i>
+                    </button>
+                  </div>
+                </div>
+                <hr style="margin: 8px 0;">
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <!-- إحصائيات سريعة -->
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bar-chart"></i> إحصائيات سريعة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="total-locations">{{ locations|length }}</h4>
+                  <small>إجمالي المواقع</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="active-locations">{{ locations|filter(l => l.is_active)|length }}</h4>
+                  <small>المواقع المفعلة</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row" style="margin-top: 10px;">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="with-gps">{{ locations|filter(l => l.gps_latitude and l.gps_longitude)|length }}</h4>
+                  <small>مع GPS</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 id="without-gps">{{ locations|filter(l => not l.gps_latitude or not l.gps_longitude)|length }}</h4>
+                  <small>بدون GPS</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- أدوات الخريطة -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-cogs"></i> أدوات الخريطة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="btn-group-vertical btn-block">
+              <button type="button" class="btn btn-default btn-sm" onclick="centerMap()">
+                <i class="fa fa-crosshairs"></i> توسيط الخريطة
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fitAllLocations()">
+                <i class="fa fa-expand"></i> عرض جميع المواقع
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="toggleClustering()">
+                <i class="fa fa-group"></i> تجميع المواقع
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="measureDistance()">
+                <i class="fa fa-ruler"></i> قياس المسافة
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="exportMap()">
+                <i class="fa fa-download"></i> تصدير الخريطة
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة البحث -->
+<div class="modal fade" id="search-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-search"></i> البحث عن موقع</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>البحث بالاسم أو الكود:</label>
+          <input type="text" id="search-input" class="form-control" placeholder="اكتب اسم الموقع أو الكود..." />
+        </div>
+        
+        <div class="form-group">
+          <label>البحث بالإحداثيات:</label>
+          <div class="row">
+            <div class="col-md-6">
+              <input type="number" id="search-lat" class="form-control" placeholder="خط العرض" step="0.000001" />
+            </div>
+            <div class="col-md-6">
+              <input type="number" id="search-lng" class="form-control" placeholder="خط الطول" step="0.000001" />
+            </div>
+          </div>
+        </div>
+        
+        <div id="search-results" style="max-height: 200px; overflow-y: auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="performSearch()">
+          <i class="fa fa-search"></i> بحث
+        </button>
+        <button type="button" class="btn btn-info" onclick="searchByCoordinates()">
+          <i class="fa fa-map-marker"></i> بحث بالإحداثيات
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة تفاصيل الموقع -->
+<div class="modal fade" id="location-details-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-info-circle"></i> تفاصيل الموقع</h4>
+      </div>
+      <div class="modal-body">
+        <div id="location-details-content">
+          <!-- سيتم ملء المحتوى ديناميكياً -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="edit-location-btn">
+          <i class="fa fa-edit"></i> تعديل
+        </button>
+        <button type="button" class="btn btn-info" id="view-location-btn">
+          <i class="fa fa-eye"></i> عرض التفاصيل
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.location-item {
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.location-item:hover {
+  background-color: #f5f5f5;
+}
+
+.location-item.active {
+  background-color: #d9edf7;
+  border: 1px solid #bce8f1;
+}
+
+.media {
+  margin: 0;
+}
+
+.media-heading {
+  margin: 0 0 2px 0;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+#main-map {
+  border-radius: 0;
+}
+
+.map-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+
+.location-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.marker-warehouse { background-color: #337ab7; }
+.marker-zone { background-color: #5cb85c; }
+.marker-aisle { background-color: #f0ad4e; }
+.marker-rack { background-color: #d9534f; }
+.marker-shelf { background-color: #5bc0de; }
+.marker-bin { background-color: #9b59b6; }
+.marker-default { background-color: #777; }
+</style>
+
+<script type="text/javascript">
+var map;
+var markers = [];
+var infoWindow;
+var clusterer;
+var measurementPath = [];
+var measurementPolyline;
+
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+    initializeMap();
+    loadLocationMarkers();
+    
+    // البحث المباشر
+    $('#search-input').on('input', function() {
+        if ($(this).val().length >= 2) {
+            performSearch();
+        }
+    });
+});
+
+function initializeMap() {
+    // محاكاة خريطة Google Maps
+    $('#main-map').html(`
+        <div style="position: relative; width: 100%; height: 100%; background: linear-gradient(45deg, #e3f2fd, #f3e5f5); display: flex; align-items: center; justify-content: center;">
+            <div style="text-align: center;">
+                <i class="fa fa-map fa-4x text-primary" style="margin-bottom: 20px;"></i>
+                <h3>خريطة المواقع التفاعلية</h3>
+                <p class="text-muted">عرض جميع المواقع مع إحداثيات GPS</p>
+                <div style="margin-top: 20px;">
+                    <span class="label label-primary" style="margin: 5px;">مستودع</span>
+                    <span class="label label-success" style="margin: 5px;">منطقة</span>
+                    <span class="label label-warning" style="margin: 5px;">ممر</span>
+                    <span class="label label-danger" style="margin: 5px;">رف</span>
+                    <span class="label label-info" style="margin: 5px;">رفة</span>
+                    <span class="label label-default" style="margin: 5px;">صندوق</span>
+                </div>
+            </div>
+        </div>
+    `);
+}
+
+function loadLocationMarkers() {
+    // محاكاة تحميل العلامات على الخريطة
+    var locationsData = {{ locations|json_encode|raw }};
+    
+    locationsData.forEach(function(location, index) {
+        if (location.gps_latitude && location.gps_longitude) {
+            // محاكاة إضافة علامة على الخريطة
+            setTimeout(function() {
+                addLocationMarker(location);
+            }, index * 100);
+        }
+    });
+}
+
+function addLocationMarker(location) {
+    // محاكاة إضافة علامة
+    console.log('Adding marker for:', location.name, location.gps_latitude, location.gps_longitude);
+}
+
+function focusOnLocation(lat, lng, name) {
+    // تركيز الخريطة على موقع محدد
+    showNotification('تم التركيز على الموقع: ' + name, 'success');
+    
+    // تمييز العنصر في القائمة
+    $('.location-item').removeClass('active');
+    $('.location-item').each(function() {
+        if ($(this).find('.media-heading').text() === name) {
+            $(this).addClass('active');
+        }
+    });
+}
+
+function filterLocations() {
+    var typeFilter = $('#location-type-filter').val();
+    var branchFilter = $('#branch-filter').val();
+    var occupancyFilter = $('#occupancy-filter').val();
+    var showInactive = $('#show-inactive').is(':checked');
+    
+    var visibleCount = 0;
+    
+    $('.location-item').each(function() {
+        var show = true;
+        
+        if (typeFilter && $(this).data('type') !== typeFilter) {
+            show = false;
+        }
+        
+        if (branchFilter && $(this).data('branch') !== branchFilter) {
+            show = false;
+        }
+        
+        if (occupancyFilter && $(this).data('occupancy') !== occupancyFilter) {
+            show = false;
+        }
+        
+        if (show) {
+            $(this).show();
+            visibleCount++;
+        } else {
+            $(this).hide();
+        }
+    });
+    
+    $('#total-locations').text(visibleCount);
+    showNotification('تم تطبيق الفلاتر - ' + visibleCount + ' موقع ظاهر', 'info');
+}
+
+function resetFilters() {
+    $('#location-type-filter').val('');
+    $('#branch-filter').val('');
+    $('#occupancy-filter').val('');
+    $('#show-inactive').prop('checked', false);
+    
+    $('.location-item').show();
+    $('#total-locations').text($('.location-item').length);
+    
+    showNotification('تم إعادة تعيين الفلاتر', 'success');
+}
+
+function performSearch() {
+    var searchTerm = $('#search-input').val().toLowerCase();
+    var results = [];
+    
+    $('.location-item').each(function() {
+        var name = $(this).find('.media-heading').text().toLowerCase();
+        var code = $(this).find('.label').text().toLowerCase();
+        
+        if (name.includes(searchTerm) || code.includes(searchTerm)) {
+            results.push({
+                element: this,
+                name: $(this).find('.media-heading').text(),
+                code: $(this).find('.label').text()
+            });
+        }
+    });
+    
+    displaySearchResults(results);
+}
+
+function searchByCoordinates() {
+    var lat = parseFloat($('#search-lat').val());
+    var lng = parseFloat($('#search-lng').val());
+    
+    if (isNaN(lat) || isNaN(lng)) {
+        alert('يرجى إدخال إحداثيات صحيحة');
+        return;
+    }
+    
+    // محاكاة البحث بالإحداثيات
+    showNotification('البحث عن المواقع القريبة من: ' + lat + ', ' + lng, 'info');
+    $('#search-modal').modal('hide');
+}
+
+function displaySearchResults(results) {
+    var html = '';
+    
+    if (results.length === 0) {
+        html = '<div class="alert alert-info">لا توجد نتائج للبحث</div>';
+    } else {
+        html = '<h6>نتائج البحث (' + results.length + '):</h6>';
+        results.forEach(function(result) {
+            html += '<div class="search-result-item" onclick="selectSearchResult(\'' + result.name + '\')">';
+            html += '<strong>' + result.name + '</strong> (' + result.code + ')';
+            html += '</div>';
+        });
+    }
+    
+    $('#search-results').html(html);
+}
+
+function selectSearchResult(name) {
+    $('#search-modal').modal('hide');
+    
+    $('.location-item').each(function() {
+        if ($(this).find('.media-heading').text() === name) {
+            $(this).click();
+            $(this)[0].scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+}
+
+function changeMapView(type) {
+    showNotification('تم تغيير عرض الخريطة إلى: ' + type, 'info');
+}
+
+function refreshMap() {
+    showNotification('تم تحديث الخريطة', 'success');
+    loadLocationMarkers();
+}
+
+function centerMap() {
+    showNotification('تم توسيط الخريطة', 'info');
+}
+
+function fitAllLocations() {
+    showNotification('تم عرض جميع المواقع', 'info');
+}
+
+function toggleClustering() {
+    showNotification('تم تبديل تجميع المواقع', 'info');
+}
+
+function measureDistance() {
+    showNotification('انقر على نقطتين على الخريطة لقياس المسافة', 'info');
+}
+
+function exportMap() {
+    showNotification('سيتم تصدير الخريطة قريباً', 'success');
+}
+
+function addLocationOnMap() {
+    showNotification('انقر على الخريطة لإضافة موقع جديد', 'info');
+}
+
+function showNotification(message, type) {
+    var alertClass = type === 'success' ? 'alert-success' : type === 'info' ? 'alert-info' : 'alert-danger';
+    var icon = type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle';
+    
+    var notification = $('<div class="alert ' + alertClass + ' alert-dismissible" style="position: fixed; top: 70px; right: 20px; z-index: 9999; min-width: 300px;"><i class="fa ' + icon + '"></i> ' + message + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+    
+    $('body').append(notification);
+    
+    setTimeout(function() {
+        notification.fadeOut(function() { notification.remove(); });
+    }, 4000);
+}
+
+// النقر على عنصر في القائمة
+$(document).on('click', '.location-item', function() {
+    $('.location-item').removeClass('active');
+    $(this).addClass('active');
+    
+    var locationName = $(this).find('.media-heading').text();
+    showNotification('تم اختيار الموقع: ' + locationName, 'info');
+});
+</script>
+
+{{ footer }}

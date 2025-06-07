@@ -1,0 +1,310 @@
+/**
+ * نظام أيم ERP: أنماط CSS للمساعد الذكي
+ * هذا الملف يوفر التنسيقات الخاصة بواجهة المساعد الذكي
+ */
+
+/* تنسيقات عامة للمساعد الذكي */
+.ai-chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.ai-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f9f9f9;
+}
+
+.ai-chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-track {
+  background: #f9f9f9;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 6px;
+}
+
+.ai-chat-input {
+  padding: 10px;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+}
+
+.ai-chat-input .input-group {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.ai-chat-input input {
+  border-radius: 24px 0 0 24px;
+  border: 1px solid #ddd;
+  padding: 10px 15px;
+  height: 46px;
+}
+
+.ai-chat-input .btn {
+  border-radius: 0 24px 24px 0;
+  padding: 10px 20px;
+  height: 46px;
+}
+
+/* تنسيقات الرسائل */
+.message {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-content {
+  display: flex;
+  max-width: 80%;
+}
+
+.message.user {
+  align-items: flex-end;
+}
+
+.message.user .message-content {
+  flex-direction: row-reverse;
+  margin-left: auto;
+}
+
+.message.assistant .message-content {
+  margin-right: auto;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.message.user .message-avatar {
+  background-color: #007bff;
+  color: white;
+}
+
+.message.assistant .message-avatar {
+  background-color: #28a745;
+  color: white;
+}
+
+.message-text {
+  padding: 10px 15px;
+  border-radius: 18px;
+  position: relative;
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message.user .message-text {
+  background-color: #007bff;
+  color: white;
+  border-top-right-radius: 0;
+}
+
+.message.assistant .message-text {
+  background-color: #e9ecef;
+  color: #212529;
+  border-top-left-radius: 0;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 5px;
+  align-self: flex-end;
+}
+
+.message.user .message-time {
+  margin-right: 10px;
+}
+
+.message.assistant .message-time {
+  margin-left: 10px;
+  align-self: flex-start;
+}
+
+/* مؤشر الكتابة */
+.typing {
+  opacity: 0.7;
+}
+
+.typing-dots {
+  display: flex;
+}
+
+.typing-dots span {
+  width: 8px;
+  height: 8px;
+  margin: 0 2px;
+  background-color: #6c757d;
+  border-radius: 50%;
+  display: inline-block;
+  animation: typing 1.4s infinite ease-in-out both;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* الاقتراحات السريعة */
+.ai-suggestions {
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion-item {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: #f0f0f0;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.suggestion-item:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* معلومات المساعد */
+.ai-info {
+  font-size: 14px;
+}
+
+.ai-access-info ul {
+  list-style: none;
+  padding-left: 10px;
+  margin-top: 5px;
+}
+
+.ai-access-info li {
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.ai-access-info li i {
+  margin-right: 5px;
+  width: 16px;
+  text-align: center;
+}
+
+/* تنسيقات الإعدادات */
+.ai-settings-container {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* تنسيقات متوافقة مع الهاتف المحمول */
+@media (max-width: 768px) {
+  .ai-chat-container {
+    height: 500px;
+  }
+  
+  .message-content {
+    max-width: 90%;
+  }
+  
+  .message-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+  
+  .message-text {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}
+
+/* تنسيقات للوضع الليلي (يمكن تفعيلها عبر JavaScript) */
+.dark-mode .ai-chat-container {
+  background-color: #2d2d2d;
+  border-color: #444;
+}
+
+.dark-mode .ai-chat-messages {
+  scrollbar-color: #555 #2d2d2d;
+}
+
+.dark-mode .ai-chat-messages::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+.dark-mode .ai-chat-messages::-webkit-scrollbar-thumb {
+  background-color: #555;
+}
+
+.dark-mode .ai-chat-input {
+  background-color: #333;
+  border-top-color: #444;
+}
+
+.dark-mode .ai-chat-input input {
+  background-color: #333;
+  border-color: #444;
+  color: #fff;
+}
+
+.dark-mode .message.assistant .message-text {
+  background-color: #444;
+  color: #fff;
+}
+
+.dark-mode .message-time {
+  color: #aaa;
+}
+
+.dark-mode .suggestion-item {
+  background-color: #444;
+  border-color: #555;
+  color: #fff;
+}
+
+.dark-mode .suggestion-item:hover {
+  background-color: #555;
+}

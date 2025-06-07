@@ -1,0 +1,1861 @@
+<!-- هياكل مودالز العرض السريع -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quickViewModalLabel">عرض سريع للمنتج</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+      </div>
+      <div class="modal-body">
+        <div id="quickViewContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- مودال خيارات الباقات للعرض السريع -->
+<div class="modal fade" id="qvOptionModal" tabindex="-1" aria-labelledby="qvOptionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="qvOptionModalLabel">تخصيص خيارات الباقة</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+      </div>
+      <div class="modal-body">
+        <div id="qv-bundle-options-container"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+        <button type="button" class="btn btn-primary" id="qv-save-bundle-options">حفظ الخيارات</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* أنماط العرض السريع - منفصلة عن صفحة المنتج */
+#quickViewModal {
+  z-index: 1060;
+}
+
+#quickViewModal .modal-dialog {
+  max-width: 90%;
+  margin: 1.75rem auto;
+}
+
+#quickViewModal .modal-content {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+#quickViewModal .modal-body {
+  padding: 0;
+  overflow-x: hidden;
+}
+
+#qvOptionModal {
+  z-index: 1070;
+}
+
+#qvOptionModal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* أنماط عامة للعرض السريع */
+#qv-product-quickview {
+  font-family: inherit;
+  direction: inherit;
+}
+
+#qv-product-quickview .qv-product-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f1740;
+  margin-bottom: 15px;
+}
+
+/* منطقة الصور */
+.qv-image.magnific-popup {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* سلايدر الصور */
+.qv-mySwiperx {
+  margin-bottom: 35px !important;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.qv-mySwiperx .swiper-slide img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.qv-mySwiperx .swiper-button-next,
+.qv-mySwiperx .swiper-button-prev {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  margin-top: -15px;
+}
+
+.qv-mySwiperx .swiper-button-next:after,
+.qv-mySwiperx .swiper-button-prev:after {
+  font-size: 16px !important;
+  color: #fff !important;
+}
+
+.qv-image-count {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 8px;
+  border-radius: 15px;
+  font-size: 12px;
+  z-index: 5;
+}
+
+/* المفضلة */
+.qv-addwishlist {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.qv-addwishlist:hover {
+  transform: scale(1.1);
+}
+
+/* منطقة الأسعار */
+.qv-price-section {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+  position: relative;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.qv-price-section.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.qv-price-section.loading:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  border-radius: 50%;
+  animation: qv-spin 1s linear infinite;
+}
+
+@keyframes qv-spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.qv-current-price {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #28a745;
+  margin: 0;
+}
+
+.qv-old-price {
+  text-decoration: line-through;
+  color: #6c757d;
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.qv-saving-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #dc3545;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transform: rotate(5deg);
+  animation: qv-badgePulse 2s infinite;
+}
+
+@keyframes qv-badgePulse {
+  0% { transform: rotate(5deg) scale(1); }
+  50% { transform: rotate(5deg) scale(1.05); }
+  100% { transform: rotate(5deg) scale(1); }
+}
+
+/* منطقة الكمية */
+.qv-quantity-section {
+  margin-bottom: 1.5rem;
+}
+
+.qv-number-spinner {
+  display: flex;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.qv-number-spinner .btn {
+  padding: 0.5rem 0.8rem;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+
+.qv-number-spinner .btn:hover {
+  background: #e9ecef;
+}
+
+.qv-number-spinner input {
+  text-align: center;
+  border-left: none;
+  border-right: none;
+  background: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+/* منطقة الخصومات */
+.qv-discount-container {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.qv-discount-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.qv-discount-card {
+  position: relative;
+  background: #fff;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.qv-discount-card:hover {
+  transform: translateY(-5px);
+  border-color: #ffc107;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.qv-discount-card.active {
+  border-color: #28a745;
+  background: #28a745;
+  color: #ffffff;
+}
+
+.qv-progress {
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.qv-progress-bar {
+  background: #28a745;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.qv-progress-bar-active {
+  background: #ffffff !important;
+}
+
+/* منطقة الباقات */
+.qv-bundle-offer-section {
+  margin-bottom: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.qv-bundle-offer-item {
+  position: relative;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 15px;
+  background: white;
+}
+
+.qv-bundle-total-info {
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
+}
+
+.qv-bundle-item-chosen-options {
+  background-color: #f0f8ff;
+  border-left: 3px solid #007bff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.qv-bundle-item-chosen-options ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.qv-bundle-item-chosen-options li {
+  padding: 2px 0;
+}
+
+.qv-bundle-saving-badge {
+  position: absolute !important;
+  bottom: 28px !important;
+  right: 10px !important;
+  background: #dc3545;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transform: rotate(5deg);
+  animation: qv-badgePulse 2s infinite;
+}
+
+/* زر الإضافة للسلة */
+#qv-button-cart {
+  background: #f99f1e;
+  border: none;
+  color: #000;
+  padding: 0.8rem 1.2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+#qv-button-cart:hover {
+  background: #e5a100 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(52,152,219,0.3);
+}
+
+/* منطقة الوصف */
+.qv-description-section {
+  margin-top: 15px;
+}
+
+.qv-description-content {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* دعم RTL */
+html[dir="rtl"] .qv-saving-badge {
+  left: 10px !important;
+  right: auto !important;
+}
+
+html[dir="ltr"] .qv-saving-badge {
+  right: 10px !important;
+  left: auto !important;
+}
+
+html[dir="ltr"] .qv-bundle-saving-badge {
+  right: 10px !important;
+  left: auto !important;
+}
+
+html[dir="rtl"] .qv-bundle-saving-badge {
+  left: 10px !important;
+  right: auto !important;
+}
+
+html[dir="rtl"] .qv-bundle-item-chosen-options {
+  border-left: none;
+  border-right: 3px solid #007bff;
+}
+
+html[dir="rtl"] .qv-next-discount-alert {
+  border-left: none;
+  border-right: 4px solid #ffc107;
+}
+
+/* تحسينات للأجهزة المحمولة */
+@media (max-width: 767.98px) {
+  #quickViewModal .modal-dialog {
+    margin: 0.5rem auto;
+    max-width: 95%;
+  }
+  
+  .qv-product-title {
+    font-size: 1.25rem;
+  }
+  
+  .qv-current-price {
+    font-size: 1.5rem;
+  }
+  
+  .qv-mySwiperx .swiper-button-next,
+  .qv-mySwiperx .swiper-button-prev {
+    width: 25px !important;
+    height: 25px !important;
+  }
+  
+  .qv-mySwiperx .swiper-button-next:after,
+  .qv-mySwiperx .swiper-button-prev:after {
+    font-size: 12px !important;
+  }
+  
+  .qv-bundle-total-info {
+    font-size: 0.875rem;
+  }
+  
+  .qv-discount-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+/**
+ * نظام العرض السريع للمنتجات - منفصل تماماً عن صفحة المنتج
+ */
+/**
+ * نظام العرض السريع للمنتجات - منفصل تماماً عن صفحة المنتج
+ */
+var QuickView = (function() {
+  // المتغيرات الداخلية بدلاً من window
+  var currentBundleId = null;
+  var bundleModalSaved = false;
+  var selectedBundleOptions = {};
+
+  // Inicialización del módulo
+  function init() {
+    // Inicializar el slider de imágenes
+    var qvSwiper = new Swiper(".qv-mySwiperx", {
+      effect: "slide",
+      grabCursor: true,
+      autoplay: {
+        delay: 12000,
+        disableOnInteraction: false,
+      },
+      lazy: {
+        loadPrevNext: true,
+      },
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+      on: {
+        slideChange: function () {
+          var current = this.realIndex + 1;
+          var total = this.slides.length;
+          $('.qv-mySwiperx .qv-image-count .qv-current-slide').text(current);
+          $('.qv-mySwiperx .qv-image-count .qv-total-slides').text(total);
+        },
+      },
+    });
+
+    // Manejar envío del formulario
+    $('#qv-form-product').on('submit', function(e) {
+      e.preventDefault();
+      qvAddToCart();
+    });
+
+    // Configurar event listeners para la cantidad
+    $('.qv-number-spinner button').on('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      var btn = $(this);
+      var spinner = btn.closest('.qv-number-spinner');
+      var input = spinner.find('input');
+      var min = parseInt(input.attr('min')) || 1;
+      var max = parseInt(input.attr('max')) || Infinity;
+      var oldValue = parseInt(input.val()) || min;
+      var newVal = oldValue;
+
+      if (btn.attr('data-dir') === 'up') {
+        newVal = Math.min(oldValue + 1, max);
+      } else {
+        newVal = Math.max(oldValue - 1, min);
+      }
+
+      input.val(newVal);
+      $('#qv-quantity-slider').val(newVal);
+      qvUpdatePrice();
+    });
+
+    // Manejar clic en tarjetas de descuento
+    $('.qv-discount-container').on('click', '.qv-discount-card', function(e) {
+      e.preventDefault(); 
+      e.stopPropagation(); 
+
+      var buyQuantity = $(this).data('buy-quantity');
+      $('#qv-input-quantity').val(buyQuantity);
+      $('#qv-quantity-slider').val(buyQuantity);
+      qvUpdatePrice();
+    });
+
+    // Configurar slider de cantidad
+    $('#qv-quantity-slider').on('input change', function() {
+      var quantity = parseInt($(this).val());
+      $('#qv-input-quantity').val(quantity);
+      qvUpdatePrice();
+    });
+
+    // Configurar input de cantidad
+    $('#qv-input-quantity').on('input change', function() {
+      var quantity = parseInt($(this).val());
+      $('#qv-quantity-slider').val(quantity);
+      qvUpdatePrice();
+    });
+
+    // Manejar cambios en opciones
+    $(document).on('change', '#qv-input-quantity, #qv-input-unit, [name^="option["]', function() {
+      qvUpdatePrice();
+    });
+
+    // Inicializar eventos de bundle
+    initBundleEvents();
+
+    // Inicializar tooltips y opciones
+    qvInitializeOptions();
+    qvSetupTooltips();
+
+    // Manejar añadir a favoritos
+    $(document).on('click', '.qv-wishlist i', function() {
+      var product_id = $('#qv-input-product-id').val();
+      qvAddToWishlist(product_id);
+    });
+  }
+
+  // Inicializar eventos relacionados con bundles
+  function initBundleEvents() {
+    // Manejar el cambio en checkboxes de bundle
+    $('.qv-bundle-select-checkbox').off('change').on('change', function() {
+      const bundleId = $(this).val();
+
+      if ($(this).is(':checked')) {
+        // Marcar que no se ha guardado aún
+        bundleModalSaved = false;
+        // Guardar ID del bundle actual
+        currentBundleId = bundleId;
+        // Cargar opciones
+        qvLoadBundleOptions(bundleId);
+        // Manejar cierre del modal
+        $('#qvOptionModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
+          if (!bundleModalSaved) {
+            $(`.qv-bundle-select-checkbox[value="${bundleId}"]`).prop('checked', false);
+            if (selectedBundleOptions[bundleId]) {
+              delete selectedBundleOptions[bundleId];
+            }
+            qvUpdatePrice();
+          }
+        });
+      } else {
+        if (selectedBundleOptions[bundleId]) {
+          delete selectedBundleOptions[bundleId];
+        }
+        qvUpdatePrice();
+      }
+    });
+
+    // Abrir opciones de bundle al hacer clic en el botón
+    $(document).on('click', '.qv-open-bundle-options', function() {
+      var bundleId = $(this).data('bundle-id');
+      currentBundleId = bundleId;
+      qvLoadBundleOptions(bundleId);
+    });
+
+    // Guardar opciones de bundle
+    $(document).on('click', '#qv-save-bundle-options', function() {
+      qvSaveBundleSelection();
+      bundleModalSaved = true;
+
+      const modalEl = document.getElementById('qvOptionModal');
+      const bsModal = bootstrap.Modal.getInstance(modalEl);
+      if (bsModal) {
+        bsModal.hide();
+      } else {
+        console.warn('No bootstrap.Modal instance found for #qvOptionModal');
+      }
+    });
+  }
+
+  // Función para añadir a lista de deseos
+  function qvAddToWishlist(product_id) {
+    $.ajax({
+      url: 'index.php?route=account/wishlist/swpid&language=ar',
+      data: 'product_id=' + product_id,
+      type: "post",
+      cache: false,
+      success: function(json) {
+        $('.alert-dismissible').remove();
+        if (json['redirect']) {
+          location = json['redirect'].replaceAll('&amp;', '&');
+        }
+        if (typeof json['error'] == 'string') {
+          $('#qv-alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        }
+        if (typeof json['error'] == 'object') {
+          if (json['error']['warning']) {
+            $('#qv-alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error']['warning'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+          }
+          for (var key in json['error']) {
+            $('#qv-input-' + key.replaceAll('_', '-')).addClass('is-invalid');
+            $('#qv-error-' + key.replaceAll('_', '-')).html(json['error'][key]).addClass('d-block');
+          }
+        }
+        if (json['success']) {
+          $('#qv-alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+          $('.qv-wishlist').find("i").toggleClass("fa-solid fa-regular");
+        }
+        setTimeout(function() {
+          $('#qv-alert').html('');
+          $('.alert-dismissible').remove();
+        }, 3000);
+      }
+    });
+  }
+
+  // Animación al añadir al carrito
+  function qvAnimateAddToCart() {
+    var cart = $('.cart-icon');
+    var imgtodrag = $('.qv-mySwiperx .swiper-slide img').eq(0);
+
+    if (imgtodrag.length && cart.length) {
+      var imgclone = imgtodrag.clone()
+        .offset({
+          top: imgtodrag.offset().top,
+          left: imgtodrag.offset().left
+        })
+        .css({
+          'opacity': '0.8',
+          'position': 'absolute',
+          'height': '150px',
+          'width': '150px',
+          'z-index': '1000',
+          'border-radius': '50%',
+          'object-fit': 'cover'
+        })
+        .appendTo($('body'))
+        .animate({
+          'top': cart.offset().top + 10,
+          'left': cart.offset().left + 10,
+          'width': 75,
+          'height': 75
+        }, 1000, 'easeInOutExpo');
+
+      imgclone.animate({
+        'width': 0,
+        'height': 0
+      }, function () {
+        $(this).detach();
+      });
+    }
+  }
+
+  // Añadir al carrito
+  function qvAddToCart() {
+    var formData = $('#qv-form-product').serializeArray();
+    var data = {};
+
+    $.each(formData, function() {
+      if (this.name.includes('option[')) {
+        var optionMatch = this.name.match(/option\[(\d+)\](\[\])?/);
+        if (optionMatch) {
+          var optionId = optionMatch[1];
+          var isArray = optionMatch[2] === '[]';
+          if (isArray) {
+            if (!data['options']) data['options'] = {};
+            if (!data['options'][optionId]) data['options'][optionId] = [];
+            data['options'][optionId].push(this.value);
+          } else {
+            if (!data['options']) data['options'] = {};
+            data['options'][optionId] = this.value;
+          }
+        }
+      } else {
+        data[this.name] = this.value;
+      }
+    });
+
+    var quantity = parseInt(data['quantity']);
+    if (isNaN(quantity) || quantity < parseInt($('#qv-input-quantity').attr('min'))) {
+      qvShowNotification('error', text_invalid_quantity);
+      return;
+    }
+    data['quantity'] = quantity;
+    data['bundle_products'] = qvGetBundleProducts(); 
+    data['bundle_options'] = selectedBundleOptions || {};
+
+    $.ajax({
+      url: 'index.php?route=checkout/cart/add',
+      type: 'post',
+      data: data,
+      dataType: 'json',
+      beforeSend: function() {
+        $('#qv-button-cart').prop('disabled', true);
+      },
+      complete: function() {
+        $('#qv-button-cart').prop('disabled', false);
+      },
+      success: function(json) {
+        $('#qv-form-product').find('.is-invalid').removeClass('is-invalid');
+        $('#qv-form-product').find('.invalid-feedback').removeClass('d-block');
+        $('.alert-dismissible').remove();
+
+        if (json['error']) {
+          for (var key in json['error']) {
+            $('#qv-input-' + key.replace(/_/g, '-')).addClass('is-invalid');
+            $('#qv-error-' + key.replace(/_/g, '-')).html(json['error'][key]).addClass('d-block');
+          }
+        }
+
+        if (json['success']) {
+          $('#qv-alert').prepend('<div class="alert alert-success alert-dismissible fade show"><i class="fa-solid fa-circle-check me-2"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+          $('#header-cart').load('index.php?route=common/cart/info');
+          $('#carttotalproductscount').load('index.php?route=common/cart/info2');
+          $("#side-header-cart").load('index.php?route=common/cart3/info');
+
+          qvAnimateAddToCart();
+
+          setTimeout(function(){
+            $('.alert-dismissible').remove();
+          }, 5000);   
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        qvShowNotification('error', text_error);
+      }
+    });
+  }
+
+  // Obtener productos de bundle
+  function qvGetBundleProducts() {
+    let bundleProducts = [];
+
+    $('.qv-bundle-select-checkbox:checked').each(function() {
+      let bundleId = $(this).val();
+      let $bundleItem = $(this).closest('.qv-bundle-offer-item');
+
+      $bundleItem.find('tr').each(function() {
+        let productId = $(this).data('product-id');
+        if (!productId) {
+          return;
+        }
+
+        let quantity = 1; 
+        let unitId = $(this).data('unit-id');
+        let isFree = $(this).find('.badge.bg-info').length > 0 ? 1 : 0;
+
+        let itemOptions = {};
+        if (selectedBundleOptions[bundleId] && selectedBundleOptions[bundleId][productId]) {
+          itemOptions = selectedBundleOptions[bundleId][productId];
+        }
+
+        bundleProducts.push({
+          product_id: productId,
+          quantity: quantity,
+          unit_id: unitId,
+          is_free: isFree,
+          options: itemOptions
+        });
+      });
+    });
+
+    return bundleProducts;
+  }
+
+  // Actualizar opciones del producto
+  function qvUpdateOptions(options, selectedValues = {}) {
+    console.log('[qvUpdateOptions] START');
+    console.log('options:', options);
+    console.log('selectedValues:', selectedValues);
+
+    const optionsContainer = $('#qv-options-container');
+    optionsContainer.empty();
+
+    options.forEach((option, idxOption) => {
+      console.log(`\n[qvUpdateOptions] Processing option index=${idxOption}, product_option_id=${option.product_option_id}, type=${option.type}, name=${option.name}`);
+
+      const pid = option.product_option_id;
+      const userSelected = selectedValues[pid];
+      console.log('userSelected for this option:', userSelected);
+
+      let optionHtml = '';
+      const requiredClass = option.required ? ' required' : '';
+
+      function computeCostPrefix(val) {
+        let cost = parseFloat(val.price) || 0;
+        if (val.price_prefix === '-') {
+          cost = cost * -1;
+        } else if (val.price_prefix === '=') {
+          cost = -999999;
+        }
+        return cost;
+      }
+
+      if (option.type === 'select') {
+        let autoSelectedValueId = null;
+
+        if (typeof userSelected === 'undefined' || userSelected === '' || userSelected === null) {
+          let minCost = Infinity;
+          option.product_option_value.forEach((val) => {
+            const c = computeCostPrefix(val);
+            if (c < minCost) {
+              minCost = c;
+              autoSelectedValueId = val.product_option_value_id;
+            }
+          });
+          console.log('[qvUpdateOptions] (SELECT) autoSelectedValueId =', autoSelectedValueId, ' minCost=', minCost);
+        }
+
+        const finalSelected = (autoSelectedValueId && !userSelected)
+          ? autoSelectedValueId
+          : userSelected;
+
+        console.log('[qvUpdateOptions] (SELECT) finalSelected=', finalSelected);
+
+        const selectHtml = option.product_option_value.map((val) => {
+          const isSelected = (finalSelected == val.product_option_value_id) ? 'selected' : '';
+          return `
+            <option value="${val.product_option_value_id}" ${isSelected}>
+              ${val.name}
+              ${val.price ? '(' + val.price_prefix + val.price + ')' : ''}
+            </option>`;
+        }).join('');
+
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label for="qv-input-option-${pid}" class="form-label">${option.name}</label>
+            <select name="option[${pid}]" id="qv-input-option-${pid}" class="form-select">
+              ${selectHtml}
+            </select>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+      else if (option.type === 'radio') {
+        let autoSelectedValueId = null;
+
+        if (typeof userSelected === 'undefined' || userSelected === '' || userSelected === null) {
+          let minCost = Infinity;
+          option.product_option_value.forEach((val) => {
+            const c = computeCostPrefix(val);
+            if (c < minCost) {
+              minCost = c;
+              autoSelectedValueId = val.product_option_value_id;
+            }
+          });
+          console.log('[qvUpdateOptions] (RADIO) autoSelectedValueId=', autoSelectedValueId, ' minCost=', minCost);
+        }
+
+        const finalSelected = (autoSelectedValueId && !userSelected)
+          ? autoSelectedValueId
+          : userSelected;
+
+        console.log('[qvUpdateOptions] (RADIO) finalSelected=', finalSelected);
+
+        const radioHtml = option.product_option_value.map((val) => {
+          const isChecked = (finalSelected == val.product_option_value_id) ? 'checked' : '';
+          return `
+            <div class="form-check">
+              <input type="radio"
+                     name="option[${pid}]"
+                     value="${val.product_option_value_id}"
+                     id="qv-input-option-value-${val.product_option_value_id}"
+                     class="form-check-input"
+                     ${isChecked} />
+              <label for="qv-input-option-value-${val.product_option_value_id}" class="form-check-label">
+                ${val.name}
+                ${val.price ? '(' + val.price_prefix + val.price + ')' : ''}
+              </label>
+            </div>
+          `;
+        }).join('');
+
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label class="form-label">${option.name}</label>
+            <div id="qv-input-option-${pid}">
+              ${radioHtml}
+            </div>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+      else if (option.type === 'checkbox') {
+        const userSelectedArr = Array.isArray(userSelected) ? userSelected : [];
+        console.log('[qvUpdateOptions] (CHECKBOX) userSelectedArr=', userSelectedArr);
+
+        const checkHtml = option.product_option_value.map((val) => {
+          const isChecked = userSelectedArr.includes(val.product_option_value_id) ? 'checked' : '';
+          return `
+            <div class="form-check">
+              <input type="checkbox"
+                     name="option[${pid}][]"
+                     value="${val.product_option_value_id}"
+                     id="qv-input-option-value-${val.product_option_value_id}"
+                     class="form-check-input"
+                     ${isChecked} />
+              <label for="qv-input-option-value-${val.product_option_value_id}" class="form-check-label">
+                ${val.name}
+                ${val.price ? '(' + val.price_prefix + val.price + ')' : ''}
+              </label>
+            </div>
+          `;
+        }).join('');
+
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label class="form-label">${option.name}</label>
+            <div id="qv-input-option-${pid}">
+              ${checkHtml}
+            </div>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+      else if (option.type === 'text') {
+        const val = (typeof userSelected === 'string') ? userSelected : '';
+        console.log('[qvUpdateOptions] (TEXT) val=', val);
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label for="qv-input-option-${pid}" class="form-label">${option.name}</label>
+            <input type="text"
+                   name="option[${pid}]"
+                   value="${val}"
+                   placeholder="${option.name}"
+                   id="qv-input-option-${pid}"
+                   class="form-control"/>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+      else if (option.type === 'textarea') {
+        const val = (typeof userSelected === 'string') ? userSelected : '';
+        console.log('[qvUpdateOptions] (TEXTAREA) val=', val);
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label for="qv-input-option-${pid}" class="form-label">${option.name}</label>
+            <textarea name="option[${pid}]"
+                      rows="5"
+                      placeholder="${option.name}"
+                      id="qv-input-option-${pid}"
+                      class="form-control">${val}</textarea>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+      else if (option.type === 'date') {
+        const val = (typeof userSelected === 'string') ? userSelected : '';
+        console.log('[qvUpdateOptions] (DATE) val=', val);
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label for="qv-input-option-${pid}" class="form-label">${option.name}</label>
+            <input type="date"
+                   name="option[${pid}]"
+                   value="${val}"
+                   id="qv-input-option-${pid}"
+                   class="form-control"/>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+      else if (option.type === 'time') {
+        const val = (typeof userSelected === 'string') ? userSelected : '';
+        console.log('[qvUpdateOptions] (TIME) val=', val);
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label for="qv-input-option-${pid}" class="form-label">${option.name}</label>
+            <input type="time"
+                   name="option[${pid}]"
+                   value="${val}"
+                   id="qv-input-option-${pid}"
+                   class="form-control"/>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+      else if (option.type === 'datetime') {
+        const val = (typeof userSelected === 'string') ? userSelected : '';
+        console.log('[qvUpdateOptions] (DATETIME) val=', val);
+        optionHtml = `
+          <div class="mb-3${requiredClass}">
+            <label for="qv-input-option-${pid}" class="form-label">${option.name}</label>
+            <input type="datetime-local"
+                   name="option[${pid}]"
+                   value="${val}"
+                   id="qv-input-option-${pid}"
+                   class="form-control"/>
+            <div id="qv-error-option-${pid}" class="invalid-feedback"></div>
+          </div>
+        `;
+      }
+
+      optionsContainer.append(optionHtml);
+    });
+
+    optionsContainer.find('select, input, textarea').on('change', function() {
+      console.log('[qvUpdateOptions] => An option changed. Will call qvUpdatePrice()...');
+      qvUpdatePrice();
+    });
+
+    console.log('[qvUpdateOptions] END.\n');
+  }
+
+  // Obtener bundles seleccionados
+  function qvGatherSelectedBundles() {
+    let selected = [];
+    $('.qv-bundle-select-checkbox:checked').each(function() {
+      selected.push($(this).val());
+    });
+    return selected;
+  }
+
+  // Recopilar opciones seleccionadas
+  function qvGatherSelectedOptions() {
+    var options = {};
+    $('#qv-form-product [name^="option["]').each(function() {
+      var name = $(this).attr('name');
+      var optionMatch = name.match(/option\[(\d+)\](\[\])?/);
+      if (optionMatch) {
+        var optionId = optionMatch[1];
+        var isArray = optionMatch[2] === '[]';
+        if ($(this).is(':checkbox')) {
+          if ($(this).is(':checked')) {
+            if (!options[optionId]) options[optionId] = [];
+            options[optionId].push($(this).val());
+          }
+        } else if ($(this).is(':radio')) {
+          if ($(this).is(':checked')) {
+            options[optionId] = $(this).val();
+          }
+        } else if ($(this).is('select')) {
+          options[optionId] = $(this).val();
+        } else {
+          options[optionId] = $(this).val();
+        }
+      }
+    });
+    return options;
+  }
+
+  // Actualizar precio
+  function qvUpdatePrice() {
+    let requestData = {
+      product_id: $('#qv-form-product #qv-input-product-id').val(),
+      unit_id: $('#qv-input-unit').val(),
+      quantity: $('#qv-input-quantity').val(),
+      options: qvGatherSelectedOptions(),
+      selected_bundles: qvGatherSelectedBundles(),
+      bundle_options: selectedBundleOptions || {}
+    };
+
+    console.log('[qvUpdatePrice] Data to send => ', requestData);
+
+    $.ajax({
+      url: 'index.php?route=product/product/getUnitPrice',
+      type: 'post',
+      data: requestData,
+      dataType: 'json',
+      beforeSend: function() {
+        $('.qv-price-section').addClass('loading');
+      },
+      complete: function() {
+        $('.qv-price-section').removeClass('loading');
+      },
+      success: function(json) {
+        console.log('[qvUpdatePrice] Response => ', json);
+        if (json.success) {
+           // (1) تحديث سعر المنتج الرئيسي
+        qvUpdatePriceDisplay(json.price_data);
+
+        // (2) تحديث حدود الكمية
+        qvUpdateQuantityLimits(json.quantity_data);
+
+        // (3) تحديث خصومات الكمية
+        qvUpdateDiscountDisplay(
+          json.quantity_data.current,
+          json.product_quantity_discounts,
+          json.next_discount
+        );
+
+        // (4) في حال رجعت خيارات ديناميكية
+        if (json.options) {
+          qvUpdateOptions(json.options, json.selected_values);
+        }
+        
+          // Actualizar opciones de productos en bundles
+        $('.qv-bundle-item-chosen-options').empty(); 
+        if (json.bundle_data && json.bundle_data.selected_bundles) {
+          json.bundle_data.selected_bundles.forEach((bundle) => {
+            if (bundle.items && bundle.items.length > 0) {
+              bundle.items.forEach((item) => {
+                let $qvoptionsContainer = $('.qv-bundle-item-chosen-options[data-bundle-id="' + bundle.bundle_id + '"][data-product-id="' + item.product_id + '"]');
+                if (!$qvoptionsContainer.length) return;
+
+                if (item.selected_options && item.selected_options.length > 0) {
+                  let html = '<ul class="m-0 p-0" style="list-style: none;">';
+                  item.selected_options.forEach(opt => {
+                    html += `
+                      <li>
+                        <strong>${opt.option_name}:</strong>
+                        <span>${opt.option_value}</span>
+                        ${opt.formatted_price
+                          ? '<small class="text-muted ms-1">(' + opt.formatted_price + ')</small>'
+                          : ''
+                        }
+                      </li>
+                    `;
+                  });
+                  html += '</ul>';
+                  $qvoptionsContainer.html(html);
+                } else {
+                  $qvoptionsContainer.html('');
+                }
+              });
+            }
+          });
+        }
+
+          // Actualizar precios de bundles
+if (json.bundles && json.bundles.length > 0) {
+  json.bundles.forEach(function(bundle) {
+    const $bundleItem = $('.qv-bundle-offer-item[data-bundle-id="' + bundle.bundle_id + '"]');
+    if (!$bundleItem.length) return;
+
+    // تحدّث إجمالي الباقة
+    $bundleItem.find('.qv-final-bundle-total').text(bundle.total_price);
+    $bundleItem.find('.qv-final-bundle-original-total').text(bundle.original_price);
+
+    if (bundle.savings && bundle.savings !== 'false') {
+      $bundleItem.find('.qv-bundle-saving-badge')
+                 .text(bundle.savings_percentage + '%')
+                 .show();
+      $bundleItem.find('.qv-js-bundle-saving').text(bundle.savings);
+    } else {
+      $bundleItem.find('.qv-bundle-saving-badge').hide();
+      $bundleItem.find('.qv-js-bundle-saving').text('');
+    }
+
+    // تحدّث كل عنصر بالباقة
+    if (bundle.items && bundle.items.length > 0) {
+      bundle.items.forEach(function(bItem) {
+        let $row = $bundleItem.find('.qv-bundle-item-row[data-product-id="' + bItem.product_id + '"]');
+        
+        // لو المنتج مجاني
+        if (bItem.is_free) {
+          // ...
+        } else {
+          // حدّث السعر النهائي
+          $row.find('.qv-js-bundle-item-final').text(bItem.line_total_with_tax_formatted);
+        }
+      });
+    }
+  });
+}
+
+        }
+      },
+error: function(xhr, ajaxOptions, thrownError) {
+        console.error(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        qvShowNotification('error', text_error);
+      }
+    });
+  }
+
+  // Actualizar límites de cantidad
+  function qvUpdateQuantityLimits(quantityData) {
+    $('#qv-quantity-slider').attr('min', quantityData.minimum);
+    $('#qv-quantity-slider').attr('max', quantityData.maximum);
+    $('#qv-input-quantity').attr('min', quantityData.minimum);
+    $('#qv-input-quantity').attr('max', quantityData.maximum);
+  }
+
+  // Actualizar visualización de precios
+  function qvUpdatePriceDisplay(data) {
+    $('#qv-total-saving-box').hide();
+    $('#qv-special-box').hide();
+    $('#qv-price-box').hide();
+    $('.qv-saving-badge').hide();
+
+    if (data.special_price && data.unit_price.special) {
+      $('#qv-old-price-value').html(data.unit_price.price_formatted).show();
+      $('#qv-special-price-value').html(data.unit_price.special_formatted).show();
+      $('.qv-saving-badge').html('-' + data.unit_price.discount_percentage + '%').show();
+      $('#qv-special-box').show();
+      $('#qv-price-box').hide();      
+      $('#qv-price-value').hide();
+      $('.qv-saving-badge').show();
+
+      if(data.savings.amount > 0){
+        $('#qv-formatted_savings').html(data.savings.formatted).show();
+        $('#qv-total-saving-box').show();
+      } else {
+        $('#qv-total-saving-box').hide();
+      }
+      $('#qv-tax_amount_formatted').html(data.tax_amount.formatted).show();
+    } else {
+      $('#qv-price-box').show();      
+      $('#qv-total-saving-box').hide();
+      $('#qv-special-box').hide();
+      $('.qv-saving-badge').hide();
+      $('#qv-old-price-value').hide();
+      $('#qv-special-price-value').hide();
+      $('#qv-price-value').html(data.current_price.formatted).show();
+      $('#qv-tax_amount_formatted').html(data.tax_amount.formatted).show();
+    }
+  }
+  
+  // Actualizar visualización de descuentos
+  function qvUpdateDiscountDisplay(currentQuantity, productQuantityDiscounts, nextDiscount) {
+    if (!productQuantityDiscounts || productQuantityDiscounts.length === 0) {
+      $('.qv-discount-container').hide();
+      return;
+    } else {
+      $('.qv-discount-container').show();
+    }
+
+    const filteredDiscounts = productQuantityDiscounts.reduce((acc, discount) => {
+      if (!acc[discount.buy_quantity] || qvGetDiscountValue(discount) > qvGetDiscountValue(acc[discount.buy_quantity])) {
+        acc[discount.buy_quantity] = discount;
+      }
+      return acc;
+    }, {});
+
+    const sortedDiscounts = Object.values(filteredDiscounts).sort((a, b) => a.buy_quantity - b.buy_quantity);
+
+    const discountContainer = $('.qv-discount-grid');
+    discountContainer.empty(); 
+
+    sortedDiscounts.forEach(discount => {
+      const isActive = currentQuantity === discount.buy_quantity;
+      const isEligible = currentQuantity < discount.buy_quantity;
+
+      let discountLabel = '';
+      let discountIcon = '';
+      if (discount.type === 'buy_x_get_y') {
+        discountIcon = '<i class="fa-solid fa-gift text-blue-600 me-2"></i>';
+        discountLabel = `شراء ${discount.buy_quantity} والحصول على ${discount.get_quantity} مجانًا`;
+      } else if (discount.type === 'buy_x_get_discount') {
+        discountIcon = '<i class="fa-solid fa-percent text-purple-600 me-2"></i>';
+        discountLabel = `شراء ${discount.buy_quantity} والحصول على خصم ${discount.discount_value}%`;
+      }
+
+      const progressPercentage = isEligible ? Math.min((currentQuantity / discount.buy_quantity) * 100, 100) : 100;
+
+      const discountCard = `
+        <div data-discount-id="${discount.discount_id}" data-buy-quantity="${discount.buy_quantity}" class="qv-discount-card ${isActive ? 'active bg-success text-white' : 'bg-gray-100 text-dark'} rounded-lg p-3 shadow-sm">
+          <div class="discount-header flex justify-between items-center mb-2">
+            ${discountIcon}
+            <span class="font-semibold">${discountLabel}</span>
+          </div>
+          <div class="progress mb-2">
+            <div class="progress-bar ${isActive ? 'progress-bar-active' : ''}" style="width: ${progressPercentage}%;"></div>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>اطلب: ${discount.buy_quantity} قطعة</span>
+            ${isEligible ? `<span>حاليا: ${currentQuantity} ويتبقى ${discount.buy_quantity - currentQuantity}</span>` : ''}
+          </div>
+        </div>
+      `;
+      discountContainer.append(discountCard);
+    });
+
+    if (nextDiscount) {
+      const unitsNeeded = nextDiscount.buy_quantity - currentQuantity;
+      if (unitsNeeded > 0) {
+        $('.qv-next-discount-alert').html(`
+          <i class="fa-solid fa-info-circle me-2"></i>
+          اشتري ${unitsNeeded} وحدة إضافية لفتح الخصم التالي!
+        `).show();
+      } else {
+        $('.qv-next-discount-alert').hide();
+      }
+    } else {
+      $('.qv-next-discount-alert').hide();
+    }
+
+    $('.qv-progress-bar-active').css('background', '#ffffff');
+  }
+
+  // Obtener valor de descuento
+  function qvGetDiscountValue(discount) {
+    if (discount.type === 'buy_x_get_y') {
+      return discount.get_quantity;
+    } else if (discount.type === 'buy_x_get_discount') {
+      return discount.discount_value;
+    }
+    return 0;
+  }
+
+  // Cargar opciones de bundle
+  function qvLoadBundleOptions(bundleId) {
+    $.ajax({
+      url: 'index.php?route=product/product/getBundleOptions',
+      type: 'GET',
+      data: { bundle_id: bundleId },
+      dataType: 'json',
+      beforeSend: function() {
+        $('#qv-bundle-options-container').html('<p>جاري التحميل ..</p>');
+      },
+      success: function(json) {
+        if (json.success) {
+          var bundleOptionsHtml = '';
+          json.bundle_products.forEach(function(product) {
+            bundleOptionsHtml += `
+              <div class="qv-bundle-product mb-4" data-product-id="${product.product_id}">
+                <h5>${product.name}</h5>
+                <input type="hidden" name="qv_bundle_product_id[]" value="${product.product_id}"/>
+                ${product.options && product.options.length > 0 ? qvRenderProductOptions(product) : '<p>لا توجد خيارات</p>'}
+              </div>
+            `;
+          });
+          $('#qv-bundle-options-container').html(bundleOptionsHtml);
+          
+          // Mostrar el modal de opciones
+          $('#qvOptionModal').modal('show');
+        } else if (json.error) {
+          console.error('Error loading bundle options:', json.error);
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error loading bundle options:', error);
+      }
+    });
+  }
+
+  // Renderizar opciones del producto
+  function qvRenderProductOptions(product) {
+    var optionsHtml = '';
+    if (product.options && product.options.length > 0) {
+      product.options.forEach(function(option) {
+        optionsHtml += qvBuildOptionHtml(option, `qv_bundle_option[${product.product_id}][${option.product_option_id}]`);
+      });
+    }
+    return optionsHtml;
+  }
+
+  // Construir HTML de opciones
+  function qvBuildOptionHtml(option, optionName) {
+    var optionHtml = '';
+    
+    if (option.type === 'select') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label for="${optionName}" class="form-label">${option.name}</label>
+          <select name="${optionName}" id="${optionName}" class="form-select">
+            ${option.product_option_value.map(value => `
+              <option value="${value.product_option_value_id}">${value.name} ${value.price ? `(${value.price_prefix}${value.price})` : ''}</option>
+            `).join('')}
+          </select>
+        </div>`;
+    } else if (option.type === 'radio') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label class="form-label">${option.name}</label>
+          <div>
+            ${option.product_option_value.map(value => `
+              <div class="form-check">
+                <input type="radio" name="${optionName}" value="${value.product_option_value_id}" id="${optionName}-${value.product_option_value_id}" class="form-check-input"/>
+                <label for="${optionName}-${value.product_option_value_id}" class="form-check-label">
+                  ${value.name} ${value.price ? `(${value.price_prefix}${value.price})` : ''}
+                </label>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    } else if (option.type === 'checkbox') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label class="form-label">${option.name}</label>
+          <div>
+            ${option.product_option_value.map(value => `
+              <div class="form-check">
+                <input type="checkbox" name="${optionName}[]" value="${value.product_option_value_id}" id="${optionName}-${value.product_option_value_id}" class="form-check-input"/>
+                <label for="${optionName}-${value.product_option_value_id}" class="form-check-label">
+                  ${value.name} ${value.price ? `(${value.price_prefix}${value.price})` : ''}
+                </label>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    } else if (option.type === 'text') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label for="${optionName}" class="form-label">${option.name}</label>
+          <input type="text" name="${optionName}" value="" placeholder="${option.name}" id="${optionName}" class="form-control"/>
+        </div>`;
+    } else if (option.type === 'textarea') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label for="${optionName}" class="form-label">${option.name}</label>
+          <textarea name="${optionName}" rows="3" placeholder="${option.name}" id="${optionName}" class="form-control"></textarea>
+        </div>`;
+    } else if (option.type === 'date') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label for="${optionName}" class="form-label">${option.name}</label>
+          <input type="date" name="${optionName}" value="" id="${optionName}" class="form-control"/>
+        </div>`;
+    } else if (option.type === 'time') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label for="${optionName}" class="form-label">${option.name}</label>
+          <input type="time" name="${optionName}" value="" id="${optionName}" class="form-control"/>
+        </div>`;
+    } else if (option.type === 'datetime') {
+      optionHtml += `
+        <div class="mb-3${option.required ? ' required' : ''}">
+          <label for="${optionName}" class="form-label">${option.name}</label>
+          <input type="datetime-local" name="${optionName}" value="" id="${optionName}" class="form-control"/>
+        </div>`;
+    }
+
+    return optionHtml;
+  }
+
+
+  // Guardar selección de bundle
+  function qvSaveBundleSelection() {
+    if (!selectedBundleOptions) {
+      selectedBundleOptions = {};
+    }
+
+    const bundleId = currentBundleId; 
+    if (!bundleId) return;
+
+    if (!selectedBundleOptions[bundleId]) {
+      selectedBundleOptions[bundleId] = {};
+    }
+
+    $('#qv-bundle-options-container .qv-bundle-product').each(function() {
+      const productId = $(this).data('product-id');
+      if (!productId) return;
+
+      let productOptions = {};
+
+      $(this).find('select, input, textarea').each(function() {
+        const name = $(this).attr('name'); 
+        const match = name.match(/\[(\d+)\]$/);
+        if (match) {
+          let productOptionId = match[1];
+          if ($(this).is(':checkbox')) {
+            if ($(this).is(':checked')) {
+              if (!productOptions[productOptionId]) {
+                productOptions[productOptionId] = [];
+              }
+              productOptions[productOptionId].push($(this).val());
+            }
+          } else if ($(this).is(':radio')) {
+            if ($(this).is(':checked')) {
+              productOptions[productOptionId] = $(this).val();
+            }
+          } else {
+            productOptions[productOptionId] = $(this).val();
+          }
+        }
+      });
+
+      selectedBundleOptions[bundleId][productId] = productOptions;
+      console.log('Bundle options saved:', selectedBundleOptions);
+    });
+
+    qvUpdatePrice();
+  }
+
+  // Mostrar notificación
+  function qvShowNotification(type, message) {
+    var alertClass = type === 'success' ? 'alert-success' : 
+                    type === 'error' ? 'alert-danger' : 
+                    'alert-warning';
+    
+    var alert = $('<div class="alert ' + alertClass + ' alert-dismissible fade show">' +
+                  '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                  message +
+                  '</div>');
+                  
+    $('#qv-alert').prepend(alert);
+    
+    setTimeout(function() {
+      alert.alert('close');
+    }, 5000);
+  }
+
+  // Inicializar opciones
+  function qvInitializeOptions() {
+    $('#qv-product-quickview .required').each(function() {
+      var option = $(this);
+      if (option.find('select').length) {
+        var select = option.find('select');
+        if (select.find('option').length > 1) {
+          select.find('option').eq(1).prop('selected', true);
+        }
+      } else if (option.find('input[type="radio"]').length) {
+        option.find('input[type="radio"]').first().prop('checked', true);
+      }
+    });
+
+    var initialQuantity = parseInt($('#qv-input-quantity').val());
+    $('#qv-quantity-slider').val(initialQuantity);
+    qvUpdatePrice();
+  }
+
+  // Configurar tooltips
+  function qvSetupTooltips() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('#qv-product-quickview [data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('#qv-product-quickview [data-bs-toggle="popover"]'));
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+      return new bootstrap.Popover(popoverTriggerEl);
+    });
+  }
+
+  // API pública
+  return {
+    init: init,
+    updatePrice: qvUpdatePrice,
+    loadBundleOptions: qvLoadBundleOptions,
+    saveBundleSelection: qvSaveBundleSelection,
+    getBundleOptions: function() {
+      return selectedBundleOptions;
+    },
+    getCurrentBundleId: function() {
+      return currentBundleId;
+    }
+  };
+})();
+
+// Inicializar QuickView cuando el documento esté listo
+$(document).ready(function() {
+  // Inicializar el módulo solo si existe el contenedor
+  if ($('#qv-product-quickview').length) {
+    QuickView.init();
+  }
+  
+  // Manejar el clic en botones de vista rápida en la página
+  $(document).on('click', '.quick-view-btn, .quick-view-trigger', function(e) {
+    e.preventDefault();
+    var productId = $(this).data('product-id');
+    
+    if (productId) {
+      $.ajax({
+        url: 'index.php?route=product/product/quickview&product_id=' + productId,
+        type: 'GET',
+        beforeSend: function() {
+          $('#quickViewModal').modal('show');
+          $('#quickViewModal .modal-body').html('<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+        },
+        success: function(response) {
+          $('#quickViewModal .modal-body').html(response);
+          QuickView.init();
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+          console.error('Error loading quick view:', thrownError);
+          $('#quickViewModal .modal-body').html('<div class="alert alert-danger">Error loading product information.</div>');
+        }
+      });
+    }
+  });
+
+  // Manejar click en el botón de wishlist dentro del quick view
+  $(document).on('click', '.qv-addwishlist', function() {
+    var product_id = $(this).closest('.qv-wishlist').find('input[name="product_id"]').val();
+    $.ajax({
+      url: 'index.php?route=account/wishlist/swpid&language=ar',
+      data: 'product_id=' + product_id,
+      type: "post",
+      cache: false,
+      success: function(json) {
+        $('.alert-dismissible').remove();
+        if (json['redirect']) {
+          location = json['redirect'].replaceAll('&amp;', '&');
+        }
+        if (typeof json['error'] == 'string') {
+          $('#qv-alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        }
+        if (typeof json['error'] == 'object') {
+          if (json['error']['warning']) {
+            $('#qv-alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error']['warning'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+          }
+        }
+        if (json['success']) {
+          $('#qv-alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+          $('.qv-addwishlist').toggleClass("fa-solid fa-regular");
+        }
+        setTimeout(function() {
+          $('#qv-alert').html('');
+          $('.alert-dismissible').remove();
+        }, 3000);
+      }
+    });
+  });
+});
+
+
+// Inicializar QuickView cuando el documento esté listo
+$(document).ready(function() {
+ // Inicializar el módulo solo si existe el contenedor
+ if ($('#qv-product-quickview').length) {
+   QuickView.init();
+ }
+ 
+ // Manejar el clic en botones de vista rápida en la página
+ $(document).on('click', '.quick-view-btn, .quick-view-trigger', function(e) {
+   e.preventDefault();
+   var productId = $(this).data('product-id');
+   
+   if (productId) {
+     $.ajax({
+       url: 'index.php?route=product/product/quickview&product_id=' + productId,
+       type: 'GET',
+       beforeSend: function() {
+         $('#quickViewModal').modal('show');
+         $('#quickViewModal .modal-body').html('<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+       },
+       success: function(response) {
+         $('#quickViewModal .modal-body').html(response);
+         QuickView.init();
+       },
+       error: function(xhr, ajaxOptions, thrownError) {
+         console.error('Error loading quick view:', thrownError);
+         $('#quickViewModal .modal-body').html('<div class="alert alert-danger">Error loading product information.</div>');
+       }
+     });
+   }
+ });
+
+ // Manejar click en el botón de wishlist dentro del quick view
+ $(document).on('click', '.qv-addwishlist', function() {
+   var product_id = $(this).closest('.qv-wishlist').find('input[name="product_id"]').val();
+   $.ajax({
+     url: 'index.php?route=account/wishlist/swpid&language=ar',
+     data: 'product_id=' + product_id,
+     type: "post",
+     cache: false,
+     success: function(json) {
+       $('.alert-dismissible').remove();
+       if (json['redirect']) {
+         location = json['redirect'].replaceAll('&amp;', '&');
+       }
+       if (typeof json['error'] == 'string') {
+         $('#qv-alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+       }
+       if (typeof json['error'] == 'object') {
+         if (json['error']['warning']) {
+           $('#qv-alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error']['warning'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+         }
+       }
+       if (json['success']) {
+         $('#qv-alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+         $('.qv-addwishlist').toggleClass("fa-solid fa-regular");
+       }
+       setTimeout(function() {
+         $('#qv-alert').html('');
+         $('.alert-dismissible').remove();
+       }, 3000);
+     }
+   });
+ });
+});
+
+// Inicializar QuickView cuando el documento esté listo
+$(document).ready(function() {
+  // Inicializar el módulo solo si existe el contenedor
+  if ($(QuickView.selectors?.modal).length) {
+    QuickView.init();
+  }
+  
+  // Manejar el clic en botones de vista rápida en la página
+  $(document).on('click', '.quick-view-btn, .quick-view-trigger', function(e) {
+    e.preventDefault();
+    var productId = $(this).data('product-id');
+    
+    if (productId) {
+      $.ajax({
+        url: 'index.php?route=product/product/quickview&product_id=' + productId,
+        type: 'GET',
+        beforeSend: function() {
+          $('#quickViewModal').modal('show');
+          $('#quickViewModal .modal-body').html('<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+        },
+        success: function(response) {
+          $('#quickViewModal .modal-body').html(response);
+          QuickView.init();
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+          console.error('Error loading quick view:', thrownError);
+          $('#quickViewModal .modal-body').html('<div class="alert alert-danger">Error loading product information.</div>');
+        }
+      });
+    }
+  });
+});
+
+</script>
+
+ 
+  <span style="margin-inline-start:5px;margin-bottom: -16px;display: block;z-index: 99999;position: absolute;bottom: 110px;right:15px" title="الرجوع للأعلى" id="backtotop"><i style="cursor: pointer;color:#f99f1e;font-size:35px;margin-inline-start: 30px;" class="fa-sharp fa-solid fa-circle-up"></i></span>
+
+</main>
+<footer style="border-top: 2px solid #131921; background-color: #131921;position: relative;margin-top:20px">
+  <i title="إظهار واخفاء أسفل الموقع" style="cursor:pointer;margin: 0 auto; display: block; text-align: center; font-size: 30px; animation: bounce 1.5s ease-in-out infinite alternate; margin-top: 0px" class="collapsible fa-sharp fa-solid fa-angles-up"></i>
+
+  <div class="container" style="display: none;">
+    <div class="row">
+      {% if informations %}
+        <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+          <h5 class="text-center">{{ text_information }}</h5>
+          <ul class="list-unstyled text-center">
+            {% for information in informations %}
+              <li><a href="{{ information.href }}">{{ information.title }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+        <h5 class="text-center">{{ text_service }}</h5>
+        <ul class="list-unstyled text-center">
+          <li><a href="{{ contact }}">{{ text_contact }}</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+        <h5 class="text-center">{{ text_extra }}</h5>
+        <ul class="list-unstyled text-center">
+          {% if affiliate %}
+            <li><a href="{{ affiliate }}">{{ text_affiliate }}</a></li>
+          {% endif %}
+          <li><a href="{{ wishlist }}">{{ text_wishlist }}</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3 col-md-3 col-sm-6 col-6">
+        <h5 class="text-center">{{ text_account }}</h5>
+        <ul class="list-unstyled text-center">
+          <li><a href="{{ account }}">{{ text_account }}</a></li>
+          <li><a href="{{ order }}">{{ text_order }}</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="text-center col-lg-6 col-md-6 col-sm-6 col-12">
+        <a title="instagram" class="btn iconsocial btn-floating" style="background-color: #ac2bac; border-radius: 50%; margin-left: 10px; margin-right: 10px" href="https://www.instagram.com/th3pcom" role="button"><i style="color: #fff" class="fab fa-instagram"></i></a>
+        <a title="tiktok" class="btn iconsocial btn-floating" style="background-color: #000000; border-radius: 50%; margin-left: 10px; margin-right: 10px" href="https://www.tiktok.com/th3pcom" role="button"><i style="color: #fff" class="fab fa-tiktok"></i></a>
+        <a title="threads" class="btn iconsocial btn-floating" style="background-color: #000000; border-radius: 50%; margin-left: 10px; margin-right: 10px" href="https://www.threads.net/@th3pcom" role="button"><img width="16" height="19" src="image/catalog/threads.webp" alt="threeds"></a>
+        <a title="twitter" class="btn iconsocial btn-floating" style="background-color: #0f8acd; border-radius: 50%; margin-left: 10px; margin-right: 10px" href="https://twitter.com/th3pcom" role="button"><i style="color: #fff" class="fab fa-twitter"></i></a>
+        <a title="facebook" class="btn iconsocial btn-floating" style="background-color: #3b5998; border-radius: 50%; margin-left: 10px; margin-right: 10px" href="https://www.facebook.com/th3pcom" role="button"><i style="color: #fff" class="fab fa-facebook"></i></a>
+      </div>
+      <div class="text-center col-lg-6 col-md-6 col-sm-6 col-12" style="font-size:11px;">
+        {{ powered }}
+      </div>
+    </div>
+  </div>
+</footer>
+
+{{ cookie }}
+<script src="{{ bootstrap }}" type="text/javascript"></script>
+{% for script in scripts %}
+  <script src="{{ script.href }}" type="text/javascript"></script>
+{% endfor %}
+<script type="text/javascript">
+  var coll = document.getElementsByClassName("collapsible");
+  var i;
+
+  for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      this.classList.toggle("fa-angles-up");
+      this.classList.toggle("fa-angles-down");
+
+      var content = this.nextElementSibling;
+      if (content.style.display === "block") {
+        content.style.display = "none";
+  var btn = $('#backtotop');
+       var footer = $('footer');
+     
+    btn.css('bottom', '110px');         
+        var objDiv = document.getElementById("footer");
+        objDiv.scrollTop = objDiv.scrollHeight;      
+      } else {
+        content.style.display = "block";
+    var btn = $('#backtotop');
+    var footer = $('footer');
+    var footerHeight = footer.outerHeight();
+    var btnBottom = footerHeight + 0; // تعديل القيمة حسب الحاجة
+    btn.css('bottom', btnBottom + 'px');         
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+    });
+  }  
+
+  var btn = $('#backtotop');
+    var footer = $('footer');
+
+  $(window).scroll(function() {
+  var btn = $('#backtotop');
+    var footer = $('footer');      
+    if ($(window).scrollTop() > 300) {
+      btn.addClass('show');
+    } else {
+      btn.removeClass('show');
+    }
+    var btn = $('#backtotop');
+    var footer = $('footer');
+    var footerHeight = footer.outerHeight();
+    var btnBottom = footerHeight + 0;    
+    btn.css('bottom', btnBottom + 'px');         
+    
+  });
+
+  btn.on('click', function(e) {
+    e.preventDefault();
+    $('html, body').animate({scrollTop:0}, '800');
+  });
+</script>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "q9pabj480y");
+</script>
+
+</body>
+</html>

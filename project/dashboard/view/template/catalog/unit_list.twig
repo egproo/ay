@@ -1,0 +1,528 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        {% if can_add %}
+        <button type="button" id="button-add" class="btn btn-primary" onclick="UnitManager.addUnit();"><i class="fa fa-plus"></i> {{ button_add }}</button>
+        {% endif %}
+        {% if can_delete %}
+        <button type="button" id="button-delete" class="btn btn-danger" onclick="UnitManager.deleteSelected();"><i class="fa fa-trash-o"></i> {{ button_delete }}</button>
+        {% endif %}
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <!-- فلاتر البحث -->
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-code">{{ column_code }}</label>
+                <input type="text" name="filter_code" value="" placeholder="{{ column_code }}" id="input-code" class="form-control" />
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-name-en">{{ column_desc_en }}</label>
+                <input type="text" name="filter_name_en" value="" placeholder="{{ column_desc_en }}" id="input-name-en" class="form-control" />
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-name-ar">{{ column_desc_ar }}</label>
+                <input type="text" name="filter_name_ar" value="" placeholder="{{ column_desc_ar }}" id="input-name-ar" class="form-control" />
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <button type="button" id="button-clear-filter" class="btn btn-default pull-right"><i class="fa fa-eraser"></i> {{ button_clear }}</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- جدول وحدات القياس -->
+        <form id="form-unit" method="post">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">
+                    <a href="#" class="sort-by" data-sort="code">{{ column_code }}</a>
+                  </td>
+                  <td class="text-left">
+                    <a href="#" class="sort-by" data-sort="desc_en">{{ column_desc_en }}</a>
+                  </td>
+                  <td class="text-left">
+                    <a href="#" class="sort-by" data-sort="desc_ar">{{ column_desc_ar }}</a>
+                  </td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody id="unit-list">
+                <!-- سيتم تحميل البيانات عبر AJAX -->
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left" id="pagination-container"></div>
+          <div class="col-sm-6 text-right" id="results-info"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة منبثقة للإضافة/التعديل -->
+<div class="modal fade" id="unit-modal" tabindex="-1" role="dialog" aria-labelledby="unit-modal-label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="unit-modal-label">{{ text_add }}</h4>
+      </div>
+      <div class="modal-body">
+        <!-- سيتم تحميل محتوى النموذج هنا عبر AJAX -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- طبقة التحميل -->
+<div id="loading-overlay">
+  <div class="loading-spinner">
+    <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+    <span class="sr-only">{{ text_loading }}</span>
+  </div>
+</div>
+
+<script type="text/javascript">
+/**
+ * UnitManager - مدير وحدات القياس
+ * يتعامل مع جميع وظائف وحدات القياس: إضافة، تعديل، حذف، وتصفية
+ */
+var UnitManager = {
+  user_token: '{{ user_token }}',
+  sort: 'code',
+  order: 'ASC',
+  page: 1,
+  
+  /**
+   * تهيئة المدير
+   */
+  init: function() {
+    // تحميل البيانات الأولية
+    this.loadUnits();
+    
+    // إعداد معالجات الأحداث
+    this.setupEventHandlers();
+    
+    // تهيئة tooltips
+    $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+  },
+  
+  /**
+   * إعداد معالجات الأحداث
+   */
+  setupEventHandlers: function() {
+    var self = this;
+    
+    // تصفية فورية عند تغيير قيم الفلاتر
+    $('#input-code, #input-name-en, #input-name-ar').on('keyup', function() {
+      self.loadUnits();
+    });
+    
+    // زر مسح الفلاتر
+    $('#button-clear-filter').on('click', function() {
+      $('#input-code, #input-name-en, #input-name-ar').val('');
+      self.loadUnits();
+    });
+    
+    // فرز الجدول
+    $('.sort-by').on('click', function(e) {
+      e.preventDefault();
+      
+      var sort = $(this).data('sort');
+      
+      if (self.sort == sort) {
+        self.order = (self.order == 'ASC') ? 'DESC' : 'ASC';
+      } else {
+        self.sort = sort;
+        self.order = 'ASC';
+      }
+      
+      self.loadUnits();
+    });
+  },
+  
+  /**
+   * إظهار طبقة التحميل
+   */
+  showLoading: function() {
+    $('#loading-overlay').fadeIn(200);
+  },
+  
+  /**
+   * إخفاء طبقة التحميل
+   */
+  hideLoading: function() {
+    $('#loading-overlay').fadeOut(200);
+  },
+  
+  /**
+   * تحميل قائمة وحدات القياس مع تطبيق الفلاتر والترتيب
+   */
+  loadUnits: function() {
+    this.showLoading();
+    
+    $.ajax({
+      url: 'index.php?route=catalog/unit/list&user_token=' + this.user_token,
+      type: 'GET',
+      data: {
+        filter_code: $('#input-code').val(),
+        filter_name_en: $('#input-name-en').val(),
+        filter_name_ar: $('#input-name-ar').val(),
+        sort: this.sort,
+        order: this.order,
+        page: this.page
+      },
+      dataType: 'json',
+      success: function(json) {
+        if (json.error) {
+          toastr.error(json.error);
+          UnitManager.hideLoading();
+          return;
+        }
+        
+        UnitManager.renderUnits(json);
+        UnitManager.hideLoading();
+      },
+      error: function(xhr, status, error) {
+        toastr.error('حدث خطأ أثناء تحميل البيانات');
+        UnitManager.hideLoading();
+      }
+    });
+  },
+  
+  /**
+   * عرض وحدات القياس في الجدول
+   * @param {object} json - بيانات JSON التي تحتوي على قائمة الوحدات
+   */
+  renderUnits: function(json) {
+    var html = '';
+    
+    if (json.units && json.units.length > 0) {
+      for (var i = 0; i < json.units.length; i++) {
+        var unit = json.units[i];
+        html += '<tr>';
+        html += '  <td class="text-center"><input type="checkbox" name="selected[]" value="' + unit.unit_id + '" /></td>';
+        html += '  <td class="text-left">' + unit.code + '</td>';
+        html += '  <td class="text-left">' + unit.desc_en + '</td>';
+        html += '  <td class="text-left">' + (unit.desc_ar || '') + '</td>';
+        html += '  <td class="text-right">';
+        html += '    <div class="btn-group" role="group">';
+        
+        {% if can_edit %}
+        html += '      <button type="button" class="btn btn-primary btn-sm" onclick="UnitManager.editUnit(' + unit.unit_id + ');" data-toggle="tooltip" title="{{ button_edit }}"><i class="fa fa-pencil"></i></button>';
+        {% endif %}
+        
+        {% if can_delete %}
+        html += '      <button type="button" class="btn btn-danger btn-sm" onclick="UnitManager.deleteUnit(' + unit.unit_id + ');" data-toggle="tooltip" title="{{ button_delete }}"><i class="fa fa-trash-o"></i></button>';
+        {% endif %}
+        
+        html += '    </div>';
+        html += '  </td>';
+        html += '</tr>';
+      }
+    } else {
+      html += '<tr>';
+      html += '  <td class="text-center" colspan="5">{{ text_no_results }}</td>';
+      html += '</tr>';
+    }
+    
+    $('#unit-list').html(html);
+    $('#pagination-container').html(json.pagination);
+    $('#results-info').html(json.results);
+    
+    // إعادة تهيئة tooltips بعد تحديث البيانات
+    $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+    
+    // تحديث روابط الترقيم
+    $('#pagination-container a').on('click', function(e) {
+      e.preventDefault();
+      
+      UnitManager.page = parseInt($(this).attr('href').match(/page=(\d+)/)[1]);
+      UnitManager.loadUnits();
+    });
+    
+    // تحديث مؤشرات الترتيب
+    $('.sort-by').each(function() {
+      $(this).removeClass('asc desc');
+      
+      if ($(this).data('sort') == UnitManager.sort) {
+        $(this).addClass(UnitManager.order.toLowerCase());
+      }
+    });
+  },
+  
+  /**
+   * فتح نافذة إضافة وحدة قياس جديدة
+   */
+  addUnit: function() {
+    this.showLoading();
+    
+    // تهيئة النافذة
+    $('#unit-modal-label').text('{{ text_add }}');
+    
+    // تحميل محتوى النموذج
+    $('#unit-modal .modal-body').load('index.php?route=catalog/unit/form&user_token=' + this.user_token, function() {
+      $('#unit-modal').modal('show');
+      UnitManager.hideLoading();
+      
+      // إعداد معالج الإرسال
+      $('#form-unit-modal').on('submit', function(e) {
+        e.preventDefault();
+        UnitManager.saveUnit($(this), 'add');
+      });
+    });
+  },
+  
+  /**
+   * فتح نافذة تعديل وحدة قياس
+   * @param {number} unit_id - معرف وحدة القياس
+   */
+  editUnit: function(unit_id) {
+    this.showLoading();
+    
+    // تهيئة النافذة
+    $('#unit-modal-label').text('{{ text_edit }}');
+    
+    // تحميل محتوى النموذج
+    $('#unit-modal .modal-body').load('index.php?route=catalog/unit/form&user_token=' + this.user_token + '&unit_id=' + unit_id, function() {
+      $('#unit-modal').modal('show');
+      UnitManager.hideLoading();
+      
+      // إعداد معالج الإرسال
+      $('#form-unit-modal').on('submit', function(e) {
+        e.preventDefault();
+        UnitManager.saveUnit($(this), 'edit', unit_id);
+      });
+    });
+  },
+  
+  /**
+   * حفظ بيانات وحدة القياس
+   * @param {object} $form - عنصر jQuery للنموذج
+   * @param {string} action - الإجراء (add أو edit)
+   * @param {number} unit_id - معرف وحدة القياس (للتعديل فقط)
+   */
+  saveUnit: function($form, action, unit_id) {
+    this.showLoading();
+    
+    var url = 'index.php?route=catalog/unit/' + action;
+    
+    if (action === 'edit' && unit_id) {
+      url += '&unit_id=' + unit_id;
+    }
+    
+    url += '&user_token=' + this.user_token;
+    
+    $.ajax({
+      url: url,
+      type: 'POST',
+      data: $form.serialize(),
+      dataType: 'json',
+      success: function(json) {
+        if (json.error) {
+          // عرض رسائل الخطأ
+          if (json.error.warning) {
+            $('#unit-modal .alert-danger').remove();
+            $('#unit-modal .modal-body').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + json.error.warning + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+          }
+          
+          if (json.error.code) {
+            $('#input-code').after('<div class="text-danger">' + json.error.code + '</div>');
+            $('#input-code').closest('.form-group').addClass('has-error');
+          }
+          
+          if (json.error.desc_en) {
+            $('#input-desc-en').after('<div class="text-danger">' + json.error.desc_en + '</div>');
+            $('#input-desc-en').closest('.form-group').addClass('has-error');
+          }
+        }
+        
+        if (json.success) {
+          // إغلاق النافذة وتحديث القائمة
+          $('#unit-modal').modal('hide');
+          
+          toastr.success(json.success);
+          
+          // تحديث القائمة بعد الإضافة/التعديل
+          UnitManager.loadUnits();
+        }
+        
+        UnitManager.hideLoading();
+      },
+      error: function(xhr, status, error) {
+        toastr.error('حدث خطأ أثناء حفظ البيانات');
+        UnitManager.hideLoading();
+      }
+    });
+  },
+  
+  /**
+   * حذف وحدة قياس محددة
+   * @param {number} unit_id - معرف وحدة القياس
+   */
+  deleteUnit: function(unit_id) {
+    this.confirmDelete([unit_id]);
+  },
+  
+  /**
+   * حذف وحدات القياس المحددة
+   */
+  deleteSelected: function() {
+    var selected = [];
+    
+    $('input[name="selected[]"]:checked').each(function() {
+      selected.push($(this).val());
+    });
+    
+    if (selected.length > 0) {
+      this.confirmDelete(selected);
+    } else {
+      toastr.warning('{{ text_no_selected }}');
+    }
+  },
+  
+  /**
+   * تأكيد حذف وحدات القياس
+   * @param {array} selected - مصفوفة معرفات وحدات القياس المراد حذفها
+   */
+  confirmDelete: function(selected) {
+    if (confirm('{{ text_confirm }}')) {
+      this.showLoading();
+      
+      $.ajax({
+        url: 'index.php?route=catalog/unit/delete&user_token=' + this.user_token,
+        type: 'POST',
+        data: { selected: selected },
+        dataType: 'json',
+        success: function(json) {
+          if (json.error) {
+            toastr.error(json.error);
+          }
+          
+          if (json.success) {
+            toastr.success(json.success);
+            
+            // تحديث القائمة بعد الحذف
+            UnitManager.loadUnits();
+          }
+          
+          UnitManager.hideLoading();
+        },
+        error: function(xhr, status, error) {
+          toastr.error('حدث خطأ أثناء حذف البيانات');
+          UnitManager.hideLoading();
+        }
+      });
+    }
+  }
+};
+
+// تهيئة المدير عند جاهزية المستند
+$(document).ready(function() {
+  UnitManager.init();
+});
+</script>
+
+<style type="text/css">
+/* طبقة التحميل */
+#loading-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+/* أنماط العمود الأيمن لجدول القائمة */
+.table .text-right .btn-group {
+  min-width: 68px;
+}
+
+/* أنماط روابط الترتيب */
+.sort-by {
+  color: #23527c;
+  text-decoration: none;
+  position: relative;
+  padding-right: 12px;
+}
+
+.sort-by:hover {
+  text-decoration: underline;
+}
+
+.sort-by:after {
+  content: "\f0dc";
+  font-family: FontAwesome;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.sort-by.asc:after {
+  content: "\f0de";
+}
+
+.sort-by.desc:after {
+  content: "\f0dd";
+}
+
+/* تنسيق مربعات البحث */
+.well .form-group {
+  margin-bottom: 10px;
+}
+
+.well .control-label {
+  font-weight: 600;
+}
+
+.well #button-clear-filter {
+  margin-top: 10px;
+}
+
+/* أنماط النافذة المنبثقة */
+#unit-modal .modal-body {
+  padding: 20px;
+}
+</style>
+
+{{ footer }}

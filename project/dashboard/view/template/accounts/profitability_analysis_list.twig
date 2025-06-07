@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    font-size:14px;
+}
+th {
+    background:#eee;
+    text-align:left;
+}
+.value-right {
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_profitability_analysis }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<tr><th>{{ text_revenue }}</th><td class="value-right">{{ revenue }}</td></tr>
+<tr><th>{{ text_cogs }}</th><td class="value-right">{{ cogs }}</td></tr>
+<tr><th>{{ text_gross_profit }}</th><td class="value-right">{{ gross_profit }}</td></tr>
+<tr><th>{{ text_operating_expenses }}</th><td class="value-right">{{ operating_expenses }}</td></tr>
+<tr><th>{{ text_operating_profit }}</th><td class="value-right">{{ operating_profit }}</td></tr>
+<tr><th>{{ text_other_expenses }}</th><td class="value-right">{{ other_expenses }}</td></tr>
+<tr><th>{{ text_net_profit }}</th><td class="value-right">{{ net_profit }}</td></tr>
+</table>
+
+<h3>Margins</h3>
+<table>
+<tr><th>{{ text_gross_margin }}</th><td class="value-right">{{ gross_margin }}</td></tr>
+<tr><th>{{ text_operating_margin }}</th><td class="value-right">{{ operating_margin }}</td></tr>
+<tr><th>{{ text_net_margin }}</th><td class="value-right">{{ net_margin }}</td></tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

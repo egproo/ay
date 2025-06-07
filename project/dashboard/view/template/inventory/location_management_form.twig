@@ -1,0 +1,983 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-location" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i>
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- النموذج الأساسي -->
+      <div class="col-md-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-edit"></i> {{ text_form }}</h3>
+          </div>
+          <div class="panel-body">
+            <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-location" class="form-horizontal">
+
+              <!-- معلومات الموقع الأساسية -->
+              <fieldset>
+                <legend>معلومات الموقع الأساسية</legend>
+
+                <div class="form-group required">
+                  <label class="col-sm-3 control-label" for="input-name">{{ entry_name }}</label>
+                  <div class="col-sm-9">
+                    <input type="text" name="location_description[1][name]" value="{{ location_description[1].name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" required />
+                    {% if error_name %}
+                    <div class="text-danger">{{ error_name }}</div>
+                    {% endif %}
+                    <small class="help-block">{{ help_name }}</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-description">{{ entry_description }}</label>
+                  <div class="col-sm-9">
+                    <textarea name="location_description[1][description]" rows="3" placeholder="{{ entry_description }}" id="input-description" class="form-control">{{ location_description[1].description }}</textarea>
+                    <small class="help-block">{{ help_description }}</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-location-code">{{ entry_location_code }}</label>
+                  <div class="col-sm-9">
+                    <div class="input-group">
+                      <input type="text" name="location_code" value="{{ location_code }}" placeholder="{{ entry_location_code }}" id="input-location-code" class="form-control" />
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-info" onclick="generateLocationCode()">
+                          <i class="fa fa-magic"></i> إنشاء تلقائي
+                        </button>
+                      </span>
+                    </div>
+                    <small class="help-block">{{ help_location_code }}</small>
+                  </div>
+                </div>
+
+                <div class="form-group required">
+                  <label class="col-sm-3 control-label" for="input-location-type">{{ entry_location_type }}</label>
+                  <div class="col-sm-9">
+                    <select name="location_type" id="input-location-type" class="form-control" required>
+                      <option value="">{{ text_select }}</option>
+                      {% for type_key, type_name in location_types %}
+                      <option value="{{ type_key }}"{% if type_key == location_type %} selected="selected"{% endif %}>{{ type_name }}</option>
+                      {% endfor %}
+                    </select>
+                    {% if error_location_type %}
+                    <div class="text-danger">{{ error_location_type }}</div>
+                    {% endif %}
+                    <small class="help-block">{{ help_location_type }}</small>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- التسلسل الهرمي والتنظيم -->
+              <fieldset>
+                <legend>التسلسل الهرمي والتنظيم</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-parent-location">{{ entry_parent_location }}</label>
+                  <div class="col-sm-9">
+                    <select name="parent_location_id" id="input-parent-location" class="form-control">
+                      <option value="">{{ text_none }}</option>
+                      {% for parent_location in parent_locations %}
+                      <option value="{{ parent_location.location_id }}"{% if parent_location.location_id == parent_location_id %} selected="selected"{% endif %}>{{ parent_location.name }} ({{ parent_location.location_code }})</option>
+                      {% endfor %}
+                    </select>
+                    <small class="help-block">{{ help_parent_location }}</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-branch">{{ entry_branch }}</label>
+                  <div class="col-sm-9">
+                    <select name="branch_id" id="input-branch" class="form-control">
+                      <option value="">{{ text_none }}</option>
+                      {% for branch in branches %}
+                      <option value="{{ branch.branch_id }}"{% if branch.branch_id == branch_id %} selected="selected"{% endif %}>{{ branch.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <small class="help-block">{{ help_branch }}</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-warehouse">{{ entry_warehouse }}</label>
+                  <div class="col-sm-9">
+                    <select name="warehouse_id" id="input-warehouse" class="form-control">
+                      <option value="">{{ text_none }}</option>
+                      {% for warehouse in warehouses %}
+                      <option value="{{ warehouse.warehouse_id }}"{% if warehouse.warehouse_id == warehouse_id %} selected="selected"{% endif %}>{{ warehouse.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <small class="help-block">{{ help_warehouse }}</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-zone">{{ entry_zone }}</label>
+                  <div class="col-sm-9">
+                    <select name="zone_id" id="input-zone" class="form-control">
+                      <option value="">{{ text_none }}</option>
+                      {% for zone in zones %}
+                      <option value="{{ zone.zone_id }}"{% if zone.zone_id == zone_id %} selected="selected"{% endif %}>{{ zone.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <small class="help-block">{{ help_zone }}</small>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- العنوان التفصيلي -->
+              <fieldset>
+                <legend>العنوان التفصيلي</legend>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-aisle">{{ entry_aisle }}</label>
+                      <div class="col-sm-6">
+                        <input type="text" name="aisle" value="{{ aisle }}" placeholder="{{ entry_aisle }}" id="input-aisle" class="form-control" />
+                        <small class="help-block">{{ help_aisle }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-rack">{{ entry_rack }}</label>
+                      <div class="col-sm-6">
+                        <input type="text" name="rack" value="{{ rack }}" placeholder="{{ entry_rack }}" id="input-rack" class="form-control" />
+                        <small class="help-block">{{ help_rack }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-shelf">{{ entry_shelf }}</label>
+                      <div class="col-sm-6">
+                        <input type="text" name="shelf" value="{{ shelf }}" placeholder="{{ entry_shelf }}" id="input-shelf" class="form-control" />
+                        <small class="help-block">{{ help_shelf }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-bin">{{ entry_bin }}</label>
+                      <div class="col-sm-6">
+                        <input type="text" name="bin" value="{{ bin }}" placeholder="{{ entry_bin }}" id="input-bin" class="form-control" />
+                        <small class="help-block">{{ help_bin }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- الباركود و QR Code -->
+              <fieldset>
+                <legend>الباركود و QR Code</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-barcode">{{ entry_barcode }}</label>
+                  <div class="col-sm-9">
+                    <div class="input-group">
+                      <input type="text" name="barcode" value="{{ barcode }}" placeholder="{{ entry_barcode }}" id="input-barcode" class="form-control" />
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#barcode-scanner-modal">
+                          <i class="fa fa-camera"></i> مسح
+                        </button>
+                      </span>
+                    </div>
+                    <small class="help-block">{{ help_barcode }}</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-3 control-label" for="input-qr-code">{{ entry_qr_code }}</label>
+                  <div class="col-sm-9">
+                    <div class="input-group">
+                      <input type="text" name="qr_code" value="{{ qr_code }}" placeholder="{{ entry_qr_code }}" id="input-qr-code" class="form-control" readonly />
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-success" onclick="generateQRCode()">
+                          <i class="fa fa-qrcode"></i> إنشاء
+                        </button>
+                      </span>
+                    </div>
+                    <small class="help-block">{{ help_qr_code }}</small>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- معلومات السعة -->
+              <fieldset>
+                <legend>معلومات السعة</legend>
+
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="col-sm-12 control-label" for="input-capacity-weight">{{ entry_capacity_weight }}</label>
+                      <div class="col-sm-12">
+                        <div class="input-group">
+                          <input type="number" name="capacity_weight" value="{{ capacity_weight }}" placeholder="0.00" id="input-capacity-weight" class="form-control" step="0.01" min="0" />
+                          <span class="input-group-addon">كجم</span>
+                        </div>
+                        <small class="help-block">{{ help_capacity_weight }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="col-sm-12 control-label" for="input-capacity-volume">{{ entry_capacity_volume }}</label>
+                      <div class="col-sm-12">
+                        <div class="input-group">
+                          <input type="number" name="capacity_volume" value="{{ capacity_volume }}" placeholder="0.00" id="input-capacity-volume" class="form-control" step="0.01" min="0" />
+                          <span class="input-group-addon">لتر</span>
+                        </div>
+                        <small class="help-block">{{ help_capacity_volume }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="col-sm-12 control-label" for="input-capacity-units">{{ entry_capacity_units }}</label>
+                      <div class="col-sm-12">
+                        <div class="input-group">
+                          <input type="number" name="capacity_units" value="{{ capacity_units }}" placeholder="0" id="input-capacity-units" class="form-control" min="0" />
+                          <span class="input-group-addon">وحدة</span>
+                        </div>
+                        <small class="help-block">{{ help_capacity_units }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- الظروف البيئية -->
+              <fieldset>
+                <legend>الظروف البيئية</legend>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label">{{ entry_temperature_min }}</label>
+                      <div class="col-sm-6">
+                        <div class="input-group">
+                          <input type="number" name="temperature_min" value="{{ temperature_min }}" placeholder="-20" id="input-temperature-min" class="form-control" step="0.1" />
+                          <span class="input-group-addon">°م</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label">{{ entry_temperature_max }}</label>
+                      <div class="col-sm-6">
+                        <div class="input-group">
+                          <input type="number" name="temperature_max" value="{{ temperature_max }}" placeholder="40" id="input-temperature-max" class="form-control" step="0.1" />
+                          <span class="input-group-addon">°م</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label">{{ entry_humidity_min }}</label>
+                      <div class="col-sm-6">
+                        <div class="input-group">
+                          <input type="number" name="humidity_min" value="{{ humidity_min }}" placeholder="0" id="input-humidity-min" class="form-control" step="0.1" min="0" max="100" />
+                          <span class="input-group-addon">%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label">{{ entry_humidity_max }}</label>
+                      <div class="col-sm-6">
+                        <div class="input-group">
+                          <input type="number" name="humidity_max" value="{{ humidity_max }}" placeholder="100" id="input-humidity-max" class="form-control" step="0.1" min="0" max="100" />
+                          <span class="input-group-addon">%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <small class="help-block">{{ help_temperature_range }} | {{ help_humidity_range }}</small>
+              </fieldset>
+
+              <!-- إحداثيات GPS -->
+              <fieldset>
+                <legend>إحداثيات GPS</legend>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-gps-latitude">{{ entry_gps_latitude }}</label>
+                      <div class="col-sm-6">
+                        <div class="input-group">
+                          <input type="number" name="gps_latitude" value="{{ gps_latitude }}" placeholder="30.0444" id="input-gps-latitude" class="form-control" step="0.000001" min="-90" max="90" />
+                          <span class="input-group-btn">
+                            <button type="button" class="btn btn-info" onclick="getCurrentLocation()">
+                              <i class="fa fa-crosshairs"></i>
+                            </button>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-gps-longitude">{{ entry_gps_longitude }}</label>
+                      <div class="col-sm-6">
+                        <input type="number" name="gps_longitude" value="{{ gps_longitude }}" placeholder="31.2357" id="input-gps-longitude" class="form-control" step="0.000001" min="-180" max="180" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="col-sm-12">
+                    <button type="button" class="btn btn-success btn-block" data-toggle="modal" data-target="#map-modal">
+                      <i class="fa fa-map-marker"></i> اختيار الموقع من الخريطة
+                    </button>
+                    <small class="help-block">{{ help_gps_coordinates }}</small>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- الإعدادات التشغيلية -->
+              <fieldset>
+                <legend>الإعدادات التشغيلية</legend>
+
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" name="is_active" value="1"{% if is_active or is_active == '' %} checked="checked"{% endif %} />
+                          {{ entry_is_active }}
+                        </label>
+                        <small class="help-block">{{ help_is_active }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" name="is_pickable" value="1"{% if is_pickable or is_pickable == '' %} checked="checked"{% endif %} />
+                          {{ entry_is_pickable }}
+                        </label>
+                        <small class="help-block">{{ help_is_pickable }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" name="is_receivable" value="1"{% if is_receivable or is_receivable == '' %} checked="checked"{% endif %} />
+                          {{ entry_is_receivable }}
+                        </label>
+                        <small class="help-block">{{ help_is_receivable }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" name="is_countable" value="1"{% if is_countable or is_countable == '' %} checked="checked"{% endif %} />
+                          {{ entry_is_countable }}
+                        </label>
+                        <small class="help-block">{{ help_is_countable }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-priority-level">{{ entry_priority_level }}</label>
+                      <div class="col-sm-6">
+                        <select name="priority_level" id="input-priority-level" class="form-control">
+                          <option value="1"{% if priority_level == '1' %} selected="selected"{% endif %}>1 - منخفضة</option>
+                          <option value="2"{% if priority_level == '2' or priority_level == '' %} selected="selected"{% endif %}>2 - عادية</option>
+                          <option value="3"{% if priority_level == '3' %} selected="selected"{% endif %}>3 - عالية</option>
+                          <option value="4"{% if priority_level == '4' %} selected="selected"{% endif %}>4 - حرجة</option>
+                          <option value="5"{% if priority_level == '5' %} selected="selected"{% endif %}>5 - طارئة</option>
+                        </select>
+                        <small class="help-block">{{ help_priority_level }}</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-sm-6 control-label" for="input-sort-order">{{ entry_sort_order }}</label>
+                      <div class="col-sm-6">
+                        <input type="number" name="sort_order" value="{{ sort_order ?: 0 }}" placeholder="0" id="input-sort-order" class="form-control" />
+                        <small class="help-block">{{ help_sort_order }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- الشريط الجانبي -->
+      <div class="col-md-4">
+        <!-- معاينة الموقع -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-eye"></i> معاينة الموقع</h3>
+          </div>
+          <div class="panel-body">
+            <div id="location-preview">
+              <div class="text-center text-muted">
+                <i class="fa fa-map-marker fa-3x"></i>
+                <p>أدخل بيانات الموقع لرؤية المعاينة</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- أنواع المواقع الشائعة -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-star"></i> أنواع المواقع الشائعة</h3>
+          </div>
+          <div class="panel-body">
+            <div class="btn-group-vertical btn-block">
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonLocation('مستودع رئيسي', 'warehouse', 'WH001')">
+                <i class="fa fa-building"></i> مستودع رئيسي
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonLocation('منطقة تخزين', 'zone', 'ZN001')">
+                <i class="fa fa-square"></i> منطقة تخزين
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonLocation('ممر A', 'aisle', 'AI001')">
+                <i class="fa fa-arrows-h"></i> ممر
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonLocation('رف 001', 'rack', 'RK001')">
+                <i class="fa fa-th-large"></i> رف
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonLocation('صندوق 001', 'bin', 'BN001')">
+                <i class="fa fa-cube"></i> صندوق
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- نصائح -->
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-lightbulb-o"></i> نصائح مهمة</h3>
+          </div>
+          <div class="panel-body">
+            <ul class="list-unstyled">
+              <li><i class="fa fa-check text-success"></i> استخدم أكواد واضحة ومنطقية</li>
+              <li><i class="fa fa-check text-success"></i> حدد نوع الموقع بدقة</li>
+              <li><i class="fa fa-check text-success"></i> أدخل السعة الصحيحة</li>
+              <li><i class="fa fa-check text-success"></i> استخدم GPS للمواقع الكبيرة</li>
+              <li><i class="fa fa-check text-success"></i> اختبر الباركود قبل الحفظ</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة خريطة GPS -->
+<div class="modal fade" id="map-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-map-marker"></i> اختيار الموقع من الخريطة</h4>
+      </div>
+      <div class="modal-body">
+        <div id="gps-map" style="height: 400px; border: 1px solid #ddd;"></div>
+        <br>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>خط العرض:</label>
+              <input type="text" id="map-latitude" class="form-control" readonly />
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>خط الطول:</label>
+              <input type="text" id="map-longitude" class="form-control" readonly />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" onclick="useSelectedLocation()">استخدام هذا الموقع</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة ماسح الباركود -->
+<div class="modal fade" id="barcode-scanner-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-camera"></i> ماسح الباركود</h4>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <video id="barcode-video" width="100%" height="300" style="border: 1px solid #ddd; display: none;"></video>
+          <div id="barcode-scanner-placeholder" style="height: 300px; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; background: #f5f5f5;">
+            <div class="text-center">
+              <i class="fa fa-camera fa-3x text-muted"></i>
+              <p class="text-muted">انقر على "تشغيل الكاميرا" لبدء المسح</p>
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="form-group">
+          <label>الباركود المكتشف:</label>
+          <input type="text" id="scanned-barcode" class="form-control" readonly />
+        </div>
+        <div class="text-center">
+          <button type="button" id="start-camera-btn" class="btn btn-primary" onclick="startBarcodeScanner()">
+            <i class="fa fa-camera"></i> تشغيل الكاميرا
+          </button>
+          <button type="button" id="stop-camera-btn" class="btn btn-danger" onclick="stopBarcodeScanner()" style="display: none;">
+            <i class="fa fa-stop"></i> إيقاف الكاميرا
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" onclick="useScannedBarcode()">استخدام الباركود</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+fieldset {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+fieldset legend {
+  width: auto;
+  padding: 0 10px;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.location-preview-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  background: #f9f9f9;
+}
+
+.location-hierarchy {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.capacity-indicator {
+  height: 20px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 5px 0;
+}
+
+.capacity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+  transition: width 0.3s ease;
+}
+
+.environmental-conditions {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+}
+
+.condition-item {
+  text-align: center;
+  flex: 1;
+}
+
+.condition-value {
+  font-weight: bold;
+  color: #007bff;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تحديث المعاينة عند تغيير البيانات
+    $('input, select, textarea').on('input change', updateLocationPreview);
+
+    // تحديث المعاينة الأولية
+    updateLocationPreview();
+
+    // تحديث الكود التلقائي عند تغيير النوع
+    $('#input-location-type').change(function() {
+        if (!$('#input-location-code').val()) {
+            generateLocationCode();
+        }
+    });
+
+    // تحديث QR Code عند تغيير الكود
+    $('#input-location-code').on('input', function() {
+        if ($(this).val()) {
+            $('#input-qr-code').val('LOC' + $(this).val());
+        }
+    });
+
+    // التحقق من صحة نطاق درجة الحرارة
+    $('#input-temperature-min, #input-temperature-max').on('input', function() {
+        validateTemperatureRange();
+    });
+
+    // التحقق من صحة نطاق الرطوبة
+    $('#input-humidity-min, #input-humidity-max').on('input', function() {
+        validateHumidityRange();
+    });
+});
+
+function updateLocationPreview() {
+    var name = $('#input-name').val();
+    var code = $('#input-location-code').val();
+    var type = $('#input-location-type option:selected').text();
+    var aisle = $('#input-aisle').val();
+    var rack = $('#input-rack').val();
+    var shelf = $('#input-shelf').val();
+    var bin = $('#input-bin').val();
+    var capacityUnits = $('#input-capacity-units').val() || 0;
+    var currentUnits = $('#input-current-units').val() || 0;
+    var tempMin = $('#input-temperature-min').val();
+    var tempMax = $('#input-temperature-max').val();
+    var humidityMin = $('#input-humidity-min').val();
+    var humidityMax = $('#input-humidity-max').val();
+
+    if (name && code) {
+        var html = '<div class="location-preview-card">';
+
+        // العنوان
+        html += '<h4><i class="fa fa-map-marker text-primary"></i> ' + name + '</h4>';
+        html += '<p><strong>الكود:</strong> <span class="label label-info">' + code + '</span></p>';
+        html += '<p><strong>النوع:</strong> <span class="label label-primary">' + type + '</span></p>';
+
+        // العنوان التفصيلي
+        var address = [];
+        if (aisle) address.push('ممر: ' + aisle);
+        if (rack) address.push('رف: ' + rack);
+        if (shelf) address.push('رفة: ' + shelf);
+        if (bin) address.push('صندوق: ' + bin);
+
+        if (address.length > 0) {
+            html += '<div class="location-hierarchy">' + address.join(' | ') + '</div>';
+        }
+
+        // مؤشر السعة
+        if (capacityUnits > 0) {
+            var usagePercentage = Math.min((currentUnits / capacityUnits) * 100, 100);
+            html += '<div class="capacity-info">';
+            html += '<strong>السعة:</strong> ' + currentUnits + ' / ' + capacityUnits + ' وحدة (' + usagePercentage.toFixed(1) + '%)';
+            html += '<div class="capacity-indicator">';
+            html += '<div class="capacity-fill" style="width: ' + usagePercentage + '%"></div>';
+            html += '</div>';
+            html += '</div>';
+        }
+
+        // الظروف البيئية
+        if (tempMin || tempMax || humidityMin || humidityMax) {
+            html += '<div class="environmental-conditions">';
+            if (tempMin || tempMax) {
+                html += '<div class="condition-item">';
+                html += '<div class="condition-value">' + (tempMin || '?') + '°م - ' + (tempMax || '?') + '°م</div>';
+                html += '<small>درجة الحرارة</small>';
+                html += '</div>';
+            }
+            if (humidityMin || humidityMax) {
+                html += '<div class="condition-item">';
+                html += '<div class="condition-value">' + (humidityMin || '?') + '% - ' + (humidityMax || '?') + '%</div>';
+                html += '<small>الرطوبة</small>';
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+
+        html += '</div>';
+        $('#location-preview').html(html);
+    } else {
+        $('#location-preview').html('<div class="text-center text-muted"><i class="fa fa-map-marker fa-3x"></i><p>أدخل بيانات الموقع لرؤية المعاينة</p></div>');
+    }
+}
+
+function fillCommonLocation(name, type, code) {
+    $('#input-name').val(name);
+    $('#input-location-type').val(type);
+    $('#input-location-code').val(code);
+    $('#input-qr-code').val('LOC' + code);
+    updateLocationPreview();
+}
+
+function generateLocationCode() {
+    var type = $('#input-location-type').val();
+    var branch = $('#input-branch option:selected').text();
+
+    if (!type) {
+        alert('يرجى اختيار نوع الموقع أولاً');
+        return;
+    }
+
+    var prefix = '';
+    switch (type) {
+        case 'warehouse': prefix = 'WH'; break;
+        case 'zone': prefix = 'ZN'; break;
+        case 'aisle': prefix = 'AI'; break;
+        case 'rack': prefix = 'RK'; break;
+        case 'shelf': prefix = 'SH'; break;
+        case 'bin': prefix = 'BN'; break;
+        default: prefix = 'LC';
+    }
+
+    // إضافة رقم عشوائي
+    var randomNum = Math.floor(Math.random() * 9000) + 1000;
+    var code = prefix + randomNum;
+
+    $('#input-location-code').val(code);
+    $('#input-qr-code').val('LOC' + code);
+    updateLocationPreview();
+}
+
+function generateQRCode() {
+    var code = $('#input-location-code').val();
+    if (!code) {
+        alert('يرجى إدخال كود الموقع أولاً');
+        return;
+    }
+
+    $('#input-qr-code').val('LOC' + code);
+    showNotification('تم إنشاء QR Code بنجاح', 'success');
+}
+
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            $('#input-gps-latitude').val(position.coords.latitude.toFixed(6));
+            $('#input-gps-longitude').val(position.coords.longitude.toFixed(6));
+            showNotification('تم الحصول على الموقع بنجاح', 'success');
+            updateLocationPreview();
+        }, function(error) {
+            var errorMsg = '';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMsg = 'تم رفض طلب الموقع من قبل المستخدم';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMsg = 'معلومات الموقع غير متاحة';
+                    break;
+                case error.TIMEOUT:
+                    errorMsg = 'انتهت مهلة طلب الموقع';
+                    break;
+                default:
+                    errorMsg = 'خطأ غير معروف في الحصول على الموقع';
+                    break;
+            }
+            alert(errorMsg);
+        });
+    } else {
+        alert('المتصفح لا يدعم خدمة تحديد الموقع');
+    }
+}
+
+function useSelectedLocation() {
+    var lat = $('#map-latitude').val();
+    var lng = $('#map-longitude').val();
+
+    if (lat && lng) {
+        $('#input-gps-latitude').val(lat);
+        $('#input-gps-longitude').val(lng);
+        $('#map-modal').modal('hide');
+        showNotification('تم تحديد الموقع بنجاح', 'success');
+        updateLocationPreview();
+    } else {
+        alert('يرجى اختيار موقع على الخريطة');
+    }
+}
+
+function startBarcodeScanner() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                var video = document.getElementById('barcode-video');
+                video.srcObject = stream;
+                video.play();
+
+                $('#barcode-scanner-placeholder').hide();
+                $('#barcode-video').show();
+                $('#start-camera-btn').hide();
+                $('#stop-camera-btn').show();
+
+                // هنا يمكن إضافة مكتبة مسح الباركود مثل QuaggaJS
+                // محاكاة مسح الباركود
+                setTimeout(function() {
+                    var mockBarcode = 'LOC' + Math.floor(Math.random() * 900000 + 100000);
+                    $('#scanned-barcode').val(mockBarcode);
+                    showNotification('تم اكتشاف باركود', 'success');
+                }, 3000);
+            })
+            .catch(function(error) {
+                alert('خطأ في الوصول للكاميرا: ' + error.message);
+            });
+    } else {
+        alert('المتصفح لا يدعم الكاميرا');
+    }
+}
+
+function stopBarcodeScanner() {
+    var video = document.getElementById('barcode-video');
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+
+    $('#barcode-video').hide();
+    $('#barcode-scanner-placeholder').show();
+    $('#start-camera-btn').show();
+    $('#stop-camera-btn').hide();
+}
+
+function useScannedBarcode() {
+    var barcode = $('#scanned-barcode').val();
+    if (barcode) {
+        $('#input-barcode').val(barcode);
+        $('#barcode-scanner-modal').modal('hide');
+        stopBarcodeScanner();
+        showNotification('تم استخدام الباركود', 'success');
+    } else {
+        alert('لم يتم اكتشاف أي باركود');
+    }
+}
+
+function validateTemperatureRange() {
+    var min = parseFloat($('#input-temperature-min').val());
+    var max = parseFloat($('#input-temperature-max').val());
+
+    if (!isNaN(min) && !isNaN(max) && min >= max) {
+        $('#input-temperature-max').addClass('has-error');
+        showNotification('أعلى درجة حرارة يجب أن تكون أكبر من أدنى درجة حرارة', 'error');
+    } else {
+        $('#input-temperature-max').removeClass('has-error');
+    }
+}
+
+function validateHumidityRange() {
+    var min = parseFloat($('#input-humidity-min').val());
+    var max = parseFloat($('#input-humidity-max').val());
+
+    if (!isNaN(min) && !isNaN(max) && min >= max) {
+        $('#input-humidity-max').addClass('has-error');
+        showNotification('أعلى رطوبة يجب أن تكون أكبر من أدنى رطوبة', 'error');
+    } else {
+        $('#input-humidity-max').removeClass('has-error');
+    }
+}
+
+function showNotification(message, type) {
+    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+    var notification = $('<div class="alert ' + alertClass + ' alert-dismissible" style="position: fixed; top: 70px; right: 20px; z-index: 9999; min-width: 300px;"><i class="fa ' + icon + '"></i> ' + message + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+
+    $('body').append(notification);
+
+    setTimeout(function() {
+        notification.fadeOut(function() { notification.remove(); });
+    }, 5000);
+}
+
+// تحميل خريطة GPS عند فتح النافذة
+$('#map-modal').on('shown.bs.modal', function() {
+    // هنا يمكن تحميل خريطة حقيقية باستخدام Google Maps أو OpenStreetMap
+    $('#gps-map').html('<div class="text-center" style="padding: 150px 0;"><i class="fa fa-map fa-4x text-info"></i><br><br><h4>خريطة تفاعلية</h4><p>انقر على الخريطة لاختيار الموقع</p></div>');
+
+    // محاكاة اختيار موقع
+    $('#gps-map').click(function(e) {
+        var rect = this.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var y = e.clientY - rect.top;
+
+        // تحويل إحداثيات الشاشة إلى GPS (محاكاة)
+        var lat = (30.0444 + (y / rect.height - 0.5) * 0.1).toFixed(6);
+        var lng = (31.2357 + (x / rect.width - 0.5) * 0.1).toFixed(6);
+
+        $('#map-latitude').val(lat);
+        $('#map-longitude').val(lng);
+
+        showNotification('تم اختيار الموقع: ' + lat + ', ' + lng, 'success');
+    });
+});
+
+// إغلاق الكاميرا عند إغلاق النافذة
+$('#barcode-scanner-modal').on('hidden.bs.modal', function() {
+    stopBarcodeScanner();
+});
+</script>
+
+{{ footer }}

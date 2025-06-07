@@ -1,0 +1,482 @@
+{{ header }}{{ column_left }}
+
+<!-- CSS مخصص لدليل الحسابات -->
+<style>
+.account-tree {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.account-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.3s;
+}
+
+.account-item:hover {
+    background-color: #f8f9fa;
+}
+
+.account-level-0 { padding-right: 0px; font-weight: bold; color: #2c3e50; }
+.account-level-1 { padding-right: 20px; font-weight: 600; color: #34495e; }
+.account-level-2 { padding-right: 40px; color: #5a6c7d; }
+.account-level-3 { padding-right: 60px; color: #7f8c8d; }
+.account-level-4 { padding-right: 80px; color: #95a5a6; }
+
+.account-code {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #e74c3c;
+    margin-left: 10px;
+}
+
+.account-balance {
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.account-balance.negative {
+    color: #e74c3c;
+}
+
+.account-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.account-type-asset { background-color: #3498db; color: white; }
+.account-type-liability { background-color: #e74c3c; color: white; }
+.account-type-equity { background-color: #9b59b6; color: white; }
+.account-type-revenue { background-color: #27ae60; color: white; }
+.account-type-expense { background-color: #f39c12; color: white; }
+
+.toolbar {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+}
+
+.view-toggle {
+    margin-left: 10px;
+}
+
+.export-dropdown {
+    margin-right: 10px;
+}
+
+.search-box {
+    max-width: 300px;
+    margin-right: 15px;
+}
+
+.stats-cards {
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.stat-card h3 {
+    margin: 0;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.stat-card p {
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+}
+
+@media print {
+    .toolbar, .pagination, .btn, .checkbox {
+        display: none !important;
+    }
+    
+    .account-item {
+        page-break-inside: avoid;
+    }
+}
+</style>
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <div class="btn-group">
+                    <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> {{ button_add }}
+                    </a>
+                    <button type="button" data-bs-toggle="dropdown" class="btn btn-primary dropdown-toggle dropdown-toggle-split">
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="{{ tree_view }}">
+                            <i class="fa fa-sitemap"></i> {{ text_tree_view }}
+                        </a>
+                        <a class="dropdown-item" href="{{ import }}">
+                            <i class="fa fa-upload"></i> {{ text_import }}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{{ print }}">
+                            <i class="fa fa-print"></i> {{ text_print }}
+                        </a>
+                        <div class="dropdown-submenu">
+                            <a class="dropdown-item dropdown-toggle" href="#">
+                                <i class="fa fa-download"></i> {{ text_export }}
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{{ export }}&format=excel">
+                                    <i class="fa fa-file-excel-o"></i> Excel
+                                </a>
+                                <a class="dropdown-item" href="{{ export }}&format=pdf">
+                                    <i class="fa fa-file-pdf-o"></i> PDF
+                                </a>
+                                <a class="dropdown-item" href="{{ export }}&format=csv">
+                                    <i class="fa fa-file-text-o"></i> CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-account').submit() : false;">
+                    <i class="fa fa-trash-o"></i>
+                </button>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item">
+                    <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- إحصائيات سريعة -->
+        <div class="row stats-cards">
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                    <h3>{{ total_assets }}</h3>
+                    <p>{{ text_total_assets }}</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                    <h3>{{ total_liabilities }}</h3>
+                    <p>{{ text_total_liabilities }}</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-card" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+                    <h3>{{ total_equity }}</h3>
+                    <p>{{ text_total_equity }}</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-card" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%);">
+                    <h3>{{ total_revenue }}</h3>
+                    <p>{{ text_total_revenue }}</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                    <h3>{{ total_expenses }}</h3>
+                    <p>{{ text_total_expenses }}</p>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="stat-card" style="background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);">
+                    <h3>{{ total_accounts }}</h3>
+                    <p>{{ text_total_accounts }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- شريط الأدوات -->
+        <div class="toolbar">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group search-box">
+                        <input type="text" class="form-control" placeholder="{{ text_search_accounts }}" id="account-search">
+                        <button class="btn btn-outline-secondary" type="button" id="search-btn">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group view-toggle" role="group">
+                        <input type="radio" class="btn-check" name="view-type" id="list-view" value="list" checked>
+                        <label class="btn btn-outline-primary" for="list-view">
+                            <i class="fa fa-list"></i> {{ text_list_view }}
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="view-type" id="tree-view" value="tree">
+                        <label class="btn btn-outline-primary" for="tree-view">
+                            <i class="fa fa-sitemap"></i> {{ text_tree_view }}
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="view-type" id="card-view" value="card">
+                        <label class="btn btn-outline-primary" for="card-view">
+                            <i class="fa fa-th-large"></i> {{ text_card_view }}
+                        </label>
+                    </div>
+                    
+                    <div class="btn-group ms-2">
+                        <select class="form-select" id="account-type-filter">
+                            <option value="">{{ text_all_types }}</option>
+                            <option value="asset">{{ text_assets }}</option>
+                            <option value="liability">{{ text_liabilities }}</option>
+                            <option value="equity">{{ text_equity }}</option>
+                            <option value="revenue">{{ text_revenue }}</option>
+                            <option value="expense">{{ text_expenses }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible">
+            <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success alert-dismissible">
+            <i class="fa fa-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- جدول الحسابات -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa fa-list"></i> {{ text_list }}
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-bs-toggle="collapse" data-bs-target="#accounts-table">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body collapse show" id="accounts-table">
+                <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-account">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <td style="width: 1px;" class="text-center">
+                                        <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ sort_account_code }}" class="text-white text-decoration-none">
+                                            {{ column_account_code }}
+                                            {% if sort == 'account_code' %}
+                                                <i class="fa fa-sort-{{ order|lower == 'asc' ? 'up' : 'down' }}"></i>
+                                            {% endif %}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{{ sort_name }}" class="text-white text-decoration-none">
+                                            {{ column_account_name }}
+                                            {% if sort == 'name' %}
+                                                <i class="fa fa-sort-{{ order|lower == 'asc' ? 'up' : 'down' }}"></i>
+                                            {% endif %}
+                                        </a>
+                                    </td>
+                                    <td class="text-center">{{ column_account_type }}</td>
+                                    <td class="text-center">{{ column_current_balance }}</td>
+                                    <td class="text-center">{{ column_status }}</td>
+                                    <td class="text-center">{{ column_action }}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for account in accounts %}
+                                <tr class="account-item account-level-{{ account.level|default(0) }}" data-account-type="{{ account.account_type }}">
+                                    <td class="text-center">
+                                        {% if account.selected %}
+                                        <input type="checkbox" name="selected[]" value="{{ account.account_id }}" checked="checked" />
+                                        {% else %}
+                                        <input type="checkbox" name="selected[]" value="{{ account.account_id }}" />
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="account-code">{{ account.account_code }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if account.is_parent %}
+                                                <i class="fa fa-folder text-warning me-2"></i>
+                                            {% else %}
+                                                <i class="fa fa-file-text-o text-info me-2"></i>
+                                            {% endif %}
+                                            <span>{{ account.name }}</span>
+                                            {% if account.description %}
+                                                <small class="text-muted ms-2">({{ account.description }})</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="account-type-badge account-type-{{ account.account_type }}">
+                                            {{ account.account_type_text }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="account-balance {{ account.current_balance < 0 ? 'negative' : '' }}">
+                                            {{ account.current_balance_formatted }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if account.is_active %}
+                                            <span class="badge bg-success">{{ text_enabled }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ text_disabled }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="{{ account.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-sm">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
+                                            <a href="{{ account.statement }}" data-bs-toggle="tooltip" title="{{ button_statement }}" class="btn btn-info btn-sm">
+                                                <i class="fa fa-file-text"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteAccount({{ account.account_id }})" data-bs-toggle="tooltip" title="{{ button_delete }}">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+                
+                <div class="row">
+                    <div class="col-sm-6 text-start">{{ pagination }}</div>
+                    <div class="col-sm-6 text-end">{{ results }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript متقدم -->
+<script>
+$(document).ready(function() {
+    // البحث المباشر
+    $('#account-search').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('.account-item').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    // فلترة حسب نوع الحساب
+    $('#account-type-filter').on('change', function() {
+        var selectedType = $(this).val();
+        if (selectedType === '') {
+            $('.account-item').show();
+        } else {
+            $('.account-item').hide();
+            $('.account-item[data-account-type="' + selectedType + '"]').show();
+        }
+    });
+
+    // تبديل طرق العرض
+    $('input[name="view-type"]').on('change', function() {
+        var viewType = $(this).val();
+        switch(viewType) {
+            case 'tree':
+                window.location.href = '{{ tree_view }}';
+                break;
+            case 'card':
+                toggleCardView();
+                break;
+            default:
+                toggleListView();
+        }
+    });
+
+    // تفعيل التلميحات
+    $('[data-bs-toggle="tooltip"]').tooltip();
+
+    // تحديث الأرصدة كل 30 ثانية
+    setInterval(function() {
+        updateAccountBalances();
+    }, 30000);
+});
+
+function deleteAccount(accountId) {
+    if (confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+            url: '{{ delete }}',
+            type: 'POST',
+            data: {selected: [accountId]},
+            success: function(response) {
+                location.reload();
+            }
+        });
+    }
+}
+
+function toggleCardView() {
+    // تنفيذ عرض البطاقات
+    $('.table-responsive').hide();
+    // إضافة عرض البطاقات هنا
+}
+
+function toggleListView() {
+    $('.table-responsive').show();
+    // إخفاء عرض البطاقات
+}
+
+function updateAccountBalances() {
+    $.ajax({
+        url: '{{ update_balances }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            $.each(data, function(accountId, balance) {
+                $('.account-balance[data-account-id="' + accountId + '"]').text(balance);
+            });
+        }
+    });
+}
+
+// طباعة الصفحة
+function printPage() {
+    window.print();
+}
+
+// تصدير البيانات
+function exportData(format) {
+    window.location.href = '{{ export }}&format=' + format;
+}
+</script>
+
+{{ footer }}

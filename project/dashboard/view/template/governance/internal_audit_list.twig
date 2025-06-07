@@ -1,0 +1,327 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible">
+        <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible">
+        <i class="fa fa-check-circle"></i> {{ success }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-check-square"></i> {{ text_list }}
+        </h3>
+      </div>
+      <div class="panel-body">
+
+        <!-- Filters -->
+        <form id="form-filter" class="form-inline" style="margin-bottom:15px;">
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_status">{{ entry_status }}</label>
+            <select id="filter_status" class="form-control" style="margin-left:5px;">
+              <option value="">{{ text_all_statuses }}</option>
+              <option value="scheduled">{{ text_scheduled }}</option>
+              <option value="in_progress">{{ text_in_progress }}</option>
+              <option value="completed">{{ text_completed }}</option>
+              <option value="cancelled">{{ text_cancelled }}</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_date_start">{{ text_date_start }}</label>
+            <input type="date" id="filter_date_start" class="form-control" style="margin-left:5px;" />
+          </div>
+
+          <div class="form-group" style="margin-right:10px;">
+            <label for="filter_date_end">{{ text_date_end }}</label>
+            <input type="date" id="filter_date_end" class="form-control" style="margin-left:5px;" />
+          </div>
+
+          <button type="button" id="btn-filter" class="btn btn-primary" style="margin-left:10px;">
+            <i class="fa fa-filter"></i> {{ button_filter }}
+          </button>
+
+          {% if can_add %}
+          <button type="button" id="btn-add" class="btn btn-success" style="margin-left:20px;">
+            <i class="fa fa-plus"></i> {{ button_add }}
+          </button>
+          {% endif %}
+        </form>
+        <!-- /Filters -->
+
+        <!-- Table -->
+        <table id="table-audit" class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_audit_id }}</th>
+              <th>{{ column_audit_subject }}</th>
+              <th>{{ column_scheduled_date }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_auditor }}</th>
+              <th>{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <!-- /Table -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Add/Edit -->
+<div class="modal fade" id="modalAudit" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="formAudit">
+        <div class="modal-header">
+          <h4 class="modal-title">{{ text_modal_add }}</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <input type="hidden" name="audit_id" id="audit_id" />
+
+          <div class="form-group">
+            <label for="audit_subject">{{ entry_audit_subject }} <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="audit_subject" id="audit_subject" required />
+          </div>
+
+          <!-- نوع التدقيق (اختياري) -->
+          <div class="form-group">
+            <label for="audit_type">نوع التدقيق</label>
+            <input type="text" class="form-control" name="audit_type" id="audit_type" placeholder="مثلاً: مالي, تشغيلي..." />
+          </div>
+
+          <div class="form-group">
+            <label for="description">{{ entry_description }}</label>
+            <textarea class="form-control" name="description" id="description" rows="2"></textarea>
+          </div>
+
+          <!-- لا يوجد حقل لاختيار المدقق: هو تلقائي من user->getId() -->
+
+          <div class="form-group">
+            <label for="scheduled_date">{{ entry_scheduled_date }}</label>
+            <input type="date" class="form-control" name="scheduled_date" id="scheduled_date_input" />
+          </div>
+
+          <div class="form-group">
+            <label for="completion_date">{{ entry_completion_date }}</label>
+            <input type="date" class="form-control" name="completion_date" id="completion_date_input" />
+          </div>
+
+          <div class="form-group">
+            <label for="findings">{{ entry_findings }}</label>
+            <textarea class="form-control" name="findings" id="findings" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="recommendations">{{ entry_recommendations }}</label>
+            <textarea class="form-control" name="recommendations" id="recommendations" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="status_input">{{ entry_status }}</label>
+            <select class="form-control" name="status" id="status_input">
+              <option value="scheduled">{{ text_scheduled }}</option>
+              <option value="in_progress">{{ text_in_progress }}</option>
+              <option value="completed">{{ text_completed }}</option>
+              <option value="cancelled">{{ text_cancelled }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> {{ button_save }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function($){
+  'use strict';
+
+  let tableAudit;
+
+  $(document).ready(function(){
+
+    tableAudit = $('#table-audit').DataTable({
+      processing: true,
+      serverSide: false,
+      ajax: {
+        url: "index.php?route=governance/internal_audit/ajaxList&user_token={{ user_token }}",
+        type: "POST",
+        data: function(d){
+          d.filter_status = $('#filter_status').val();
+          d.filter_date_start = $('#filter_date_start').val();
+          d.filter_date_end   = $('#filter_date_end').val();
+        },
+        dataSrc: function(json){
+          if(json.error) {
+            toastr.error(json.error);
+            return [];
+          }
+          return json.data;
+        }
+      },
+      columns: [
+        { data: 'audit_id' },
+        { data: 'audit_subject' },
+        { data: 'scheduled_date' },
+        { data: 'status' },
+        { data: 'auditor_name' },
+        {
+          data: null,
+          orderable: false,
+          render: function(data,type,row){
+            let btns = '';
+            {% if can_edit %}
+              btns += `<button class="btn btn-sm btn-info btn-edit mr-2" data-id="${row.audit_id}">
+                         <i class="fa fa-pencil"></i> {{ button_edit }}
+                       </button>`;
+            {% endif %}
+            {% if can_delete %}
+              btns += `<button class="btn btn-sm btn-danger btn-delete" data-id="${row.audit_id}">
+                         <i class="fa fa-trash"></i> {{ button_delete }}
+                       </button>`;
+            {% endif %}
+            return btns;
+          }
+        }
+      ]
+    });
+
+    // فلترة
+    $('#btn-filter').on('click', function(){
+      tableAudit.ajax.reload();
+    });
+
+    // إضافة
+    $('#btn-add').on('click', function(){
+      clearForm();
+      $('#audit_id').val('');
+      $('#modalAudit .modal-title').text('{{ text_modal_add }}');
+      $('#modalAudit').modal('show');
+    });
+
+    // تعديل
+    $('#table-audit').on('click','.btn-edit',function(){
+      let aid = $(this).data('id');
+      editAudit(aid);
+    });
+
+    // حذف
+    $('#table-audit').on('click','.btn-delete',function(){
+      let aid = $(this).data('id');
+      if(confirm('{{ text_confirm_delete }}')){
+        $.ajax({
+          url: "index.php?route=governance/internal_audit/ajaxDelete&user_token={{ user_token }}",
+          type: "POST",
+          data: {audit_id:aid},
+          dataType: "json",
+          success: function(json){
+            if(json.error) {
+              toastr.error(json.error);
+            } else {
+              toastr.success(json.success);
+              tableAudit.ajax.reload(null,false);
+            }
+          }
+        });
+      }
+    });
+
+    // حفظ (Add/Edit)
+    $('#formAudit').on('submit',function(e){
+      e.preventDefault();
+      let formData = $(this).serializeArray();
+      let aid = $('#audit_id').val();
+      let urlPost = (aid === '')
+        ? "index.php?route=governance/internal_audit/ajaxAdd&user_token={{ user_token }}"
+        : "index.php?route=governance/internal_audit/ajaxEdit&user_token={{ user_token }}";
+
+      $.ajax({
+        url: urlPost,
+        type:"POST",
+        data: formData,
+        dataType:"json",
+        success:function(json){
+          if(json.error){
+            toastr.error(json.error);
+          } else {
+            toastr.success(json.success);
+            $('#modalAudit').modal('hide');
+            tableAudit.ajax.reload(null,false);
+          }
+        },
+        error:function(xhr, status, err){
+          toastr.error("{{ error_request_failed }}" + err);
+        }
+      });
+    });
+
+  }); //end doc ready
+
+  function editAudit(audit_id){
+    $.ajax({
+      url:"index.php?route=governance/internal_audit/getOne&user_token={{ user_token }}",
+      type:"POST",
+      data:{audit_id},
+      dataType:"json",
+      success:function(json){
+        if(json.error){
+          toastr.error(json.error);
+        } else if(json.success){
+          let r = json.data;
+          clearForm();
+          $('#audit_id').val(r.audit_id);
+          $('#audit_subject').val(r.audit_subject);
+          $('#audit_type').val(r.audit_type||'');
+          $('#description').val(r.description);
+          $('#scheduled_date_input').val(r.scheduled_date||'');
+          $('#completion_date_input').val(r.completion_date||'');
+          $('#findings').val(r.findings);
+          $('#recommendations').val(r.recommendations);
+          $('#status_input').val(r.status);
+
+          $('#modalAudit .modal-title').text('{{ text_modal_edit }} #'+r.audit_id);
+          $('#modalAudit').modal('show');
+        }
+      }
+    });
+  }
+
+  function clearForm(){
+    $('#formAudit')[0].reset();
+    $('#audit_id').val('');
+  }
+
+})(jQuery);
+</script>
+
+{{ footer }}

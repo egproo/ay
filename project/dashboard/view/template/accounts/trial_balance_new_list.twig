@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:center;
+}
+th {
+    background:#eee;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_trial_balance_new }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_account_code }}</th>
+    <th>{{ text_account_name }}</th>
+    <th>{{ text_opening_balance_debit }}</th>
+    <th>{{ text_opening_balance_credit }}</th>
+    <th>{{ text_period_debit }}</th>
+    <th>{{ text_period_credit }}</th>
+    <th>{{ text_closing_balance_debit }}</th>
+    <th>{{ text_closing_balance_credit }}</th>
+</tr>
+</thead>
+<tbody>
+{% for account in accounts %}
+<tr>
+    <td>{{ account.account_code }}</td>
+    <td>{{ account.name }}</td>
+    <td>{{ account.opening_balance_debit_formatted }}</td>
+    <td>{{ account.opening_balance_credit_formatted }}</td>
+    <td>{{ account.total_debit_formatted }}</td>
+    <td>{{ account.total_credit_formatted }}</td>
+    <td>{{ account.closing_balance_debit_formatted }}</td>
+    <td>{{ account.closing_balance_credit_formatted }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td colspan="2">{{ text_total }}</td>
+    <td>{{ sums.opening_balance_debit_formatted }}</td>
+    <td>{{ sums.opening_balance_credit_formatted }}</td>
+    <td>{{ sums.total_debit_formatted }}</td>
+    <td>{{ sums.total_credit_formatted }}</td>
+    <td>{{ sums.closing_balance_debit_formatted }}</td>
+    <td>{{ sums.closing_balance_credit_formatted }}</td>
+</tr>
+</tbody>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

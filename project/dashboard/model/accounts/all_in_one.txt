@@ -1,0 +1,2101 @@
+======================
+File: ./sales_analysis.php
+======================
+<?php
+class ModelAccountsSalesAnalysis extends Model {
+    public function getSalesAnalysisData($date_start, $date_end) {
+        $currency_code = $this->config->get('config_currency');
+
+        // نفترض أن حالات الطلب المسددة أو المكتملة هي التي تحتسب في المبيعات. 
+        // مثلاً نعتبر order_status_id=5 يعني الطلب مكتمل/مدفوع.
+        $completed_status = 5;
+
+        // استعلام لجلب المبيعات حسب المنتج
+        $sql = "SELECT op.product_id, pd.name AS product_name,
+                       SUM(op.quantity) AS total_quantity,
+                       SUM(op.total) AS total_sales,
+                       (SUM(op.total)/SUM(op.quantity)) AS avg_price
+                FROM " . DB_PREFIX . "order_product op
+                LEFT JOIN " . DB_PREFIX . "product_description pd ON (op.product_id = pd.product_id AND pd.language_id=".(int)$this->config->get('config_language_id').")
+                LEFT JOIN " . DB_PREFIX . "order o ON (op.order_id = o.order_id)
+                WHERE o.order_status_id = '" . (int)$completed_status . "'
+                AND o.date_added BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "'
+                GROUP BY op.product_id
+                ORDER BY total_sales DESC";
+
+        $query = $this->db->query($sql);
+        $products = $query->rows;
+
+        $results = [];
+        $total_sales = 0.0;
+
+        foreach ($products as $p) {
+            $sales_amount = (float)$p['total_sales'];
+            $total_sales += $sales_amount;
+
+            $results[] = [
+                'product_id' => $p['product_id'],
+                'product_name' => $p['product_name'],
+                'total_quantity' => (int)$p['total_quantity'],
+                'total_sales' => $this->currency->format($sales_amount, $currency_code),
+                'avg_price' => $this->currency->format((float)$p['avg_price'], $currency_code)
+            ];
+        }
+
+        return [
+            'products' => $results,
+            'total_sales' => $this->currency->format($total_sales, $currency_code)
+        ];
+    }
+}
+
+
+
+======================
+File: ./balance_sheet.php
+======================
+<?php
+class ModelAccountsBalanceSheet extends Model {
+    public function getBalanceSheetData($date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // نريد الرصيد الختامي عند التاريخ المحدد (date_end)
+        // الرصيد الختامي = الأرصدة حتى date_end
+        // مشابه لما في trial_balance لكن نستخدم date_end فقط.
+        $sql = "SELECT a.account_code, a.account_type, ad.name,
+                   COALESCE(SUM(CASE WHEN j.thedate <= '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS closing_balance
+                FROM `" . DB_PREFIX . "accounts` a
+                LEFT JOIN `" . DB_PREFIX . "account_description` ad ON (a.account_id = ad.account_id AND ad.language_id = '" . (int)$language_id . "')
+                LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                GROUP BY a.account_code, a.account_type, ad.name
+                ORDER BY a.account_code ASC";
+
+        $query = $this->db->query($sql);
+        $accounts = $query->rows;
+
+        $assets = [];
+        $liabilities = [];
+        $equity = [];
+
+        $total_assets = 0;
+        $total_liabilities = 0;
+        $total_equity = 0;
+
+        foreach ($accounts as $acc) {
+            $code = (string)$acc['account_code'];
+            $cb = (float)$acc['closing_balance'];
+
+            if ($this->isAsset($code)) {
+                // الأصول مدينة بطبيعتها. إذا كان الرصيد موجب => أصول، إذا سالب => يحتاج مراجعة.
+                // لكن نفترض أنها تظهر موجبة في الوضع الطبيعي.
+                $value = $cb;
+                $total_assets += $value;
+                $assets[] = [
+                    'account_code' => $acc['account_code'],
+                    'name' => $acc['name'],
+                    'amount' => $this->currency->format($value, $currency_code)
+                ];
+            } elseif ($this->isLiability($code)) {
+                // الالتزامات دائنة بطبيعتها، إذا الرصيد موجب => نعتبره في جانب الالتزامات.
+                // إذا ظهر سالب نعتبر أنه بالعكس لكن عادة سيكون موجب للالتزام.
+                $value = ($cb < 0) ? abs($cb) : $cb; 
+                // في الواقع الالتزام لو الحساب دائــن طبيعي وطلع cb موجب معناه رصيد دائن.
+                // لو cb موجب و الحساب أصلاً التزام، طبيعي يكون دائن => حسناً.
+                // نريد إظهاره كمبلغ موجب.
+                // إذا كان cb موجب وحساب التزام يعني (cb) مدين بقيمته => هذا عكس الطبيعة، 
+                // لكن سنبقيه بسيط، ونظهر القيمة المطلقة.
+                
+                // لمزيد من الدقة: الالتزامات يجب أن تكون رصيدها النهائي دائن (cb سلبي إذا فكرنا بعرض المدين والدائن).
+                // في ميزان المراجعة الصافي لو cb سلبي يعني دائن. 
+                // هنا cb إيجابي يعني الحساب زاد بالمدين. 
+                // لكن لن ندخل بتعقيد إضافي: نعرض abs(cb) فقط.
+                
+                $value = ($cb < 0) ? abs($cb) : $cb;
+                $total_liabilities += $value;
+                $liabilities[] = [
+                    'account_code' => $acc['account_code'],
+                    'name' => $acc['name'],
+                    'amount' => $this->currency->format($value, $currency_code)
+                ];
+            } elseif ($this->isEquity($code)) {
+                // حقوق الملكية في العادة لها طبيعة دائنة.
+                // لو cb سالب فهذا يعني عكس الطبيعة، سنأخذ القيمة المطلقة.
+                $value = ($cb < 0) ? abs($cb) : $cb;
+                $total_equity += $value;
+                $equity[] = [
+                    'account_code' => $acc['account_code'],
+                    'name' => $acc['name'],
+                    'amount' => $this->currency->format($value, $currency_code)
+                ];
+            } else {
+                // ليس أصول ولا التزامات ولا حقوق ملكية => تجاهل
+                continue;
+            }
+        }
+
+        $total_assets_formatted = $this->currency->format($total_assets, $currency_code);
+        $total_liabilities_formatted = $this->currency->format($total_liabilities, $currency_code);
+        $total_equity_formatted = $this->currency->format($total_equity, $currency_code);
+
+        $total_liabilities_equity = $total_liabilities + $total_equity;
+        $total_liabilities_equity_formatted = $this->currency->format($total_liabilities_equity, $currency_code);
+
+        return [
+            'assets' => $assets,
+            'liabilities' => $liabilities,
+            'equity' => $equity,
+            'total_assets' => $total_assets_formatted,
+            'total_liabilities' => $total_liabilities_formatted,
+            'total_equity' => $total_equity_formatted,
+            'total_liabilities_equity' => $total_liabilities_equity_formatted
+        ];
+    }
+
+    private function isAsset($code) {
+        return (substr($code, 0, 1) == '1');
+    }
+
+    private function isLiability($code) {
+        return (substr($code, 0, 1) == '2');
+    }
+
+    private function isEquity($code) {
+        return (substr($code, 0, 1) == '3');
+    }
+}
+
+
+
+======================
+File: ./fixed_assets_report.php
+======================
+<?php
+class ModelAccountsFixedAssetsReport extends Model {
+    public function getFixedAssetsReportData($date_start, $date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // جلب الأصول من الجدول
+        $sql = "SELECT asset_id, asset_code, name, purchase_date, purchase_value, current_value, depreciation_method, useful_life, salvage_value 
+                FROM " . DB_PREFIX . "fixed_assets
+                WHERE status = 'active' 
+                ORDER BY asset_code ASC";
+
+        $query = $this->db->query($sql);
+        $assets = $query->rows;
+
+        $results = [];
+        $total_depreciation = 0.0;
+
+        $start_ts = strtotime($date_start);
+        $end_ts = strtotime($date_end);
+        $days_in_period = ($end_ts - $start_ts)/(60*60*24) + 1; // +1 لتضمين آخر يوم مثلاً
+
+        foreach ($assets as $a) {
+            $purchase_value = (float)$a['purchase_value'];
+            $salvage_value = (float)$a['salvage_value'];
+            $useful_life = (int)$a['useful_life'];
+            $method = $a['depreciation_method']; // نفترض "straight_line"
+            
+            // نفترض الاهلاك يومي على القسط الثابت
+            // إهلاك يومي = (purchase_value - salvage_value) / (useful_life * 365)
+            $depreciable_amount = max(0, $purchase_value - $salvage_value);
+            $daily_depreciation = $useful_life > 0 ? ($depreciable_amount / ($useful_life * 365)) : 0;
+            $period_depreciation = $daily_depreciation * $days_in_period;
+            
+            $total_depreciation += $period_depreciation;
+
+            // القيمة الدفترية الحالية بعد الفترة = current_value - period_depreciation (تقريباً)
+            $new_current_value = (float)$a['current_value'] - $period_depreciation;
+            if ($new_current_value < 0) {
+                $new_current_value = 0;
+            }
+
+            $results[] = [
+                'asset_code' => $a['asset_code'],
+                'name' => $a['name'],
+                'purchase_date' => $a['purchase_date'],
+                'purchase_value' => $this->currency->format($purchase_value, $currency_code),
+                'current_value' => $this->currency->format((float)$a['current_value'], $currency_code),
+                'method' => $method,
+                'useful_life' => $useful_life,
+                'salvage_value' => $this->currency->format($salvage_value, $currency_code),
+                'period_depreciation' => $this->currency->format($period_depreciation, $currency_code),
+                'new_current_value' => $this->currency->format($new_current_value, $currency_code)
+            ];
+        }
+
+        return [
+            'assets' => $results,
+            'total_depreciation' => $this->currency->format($total_depreciation, $currency_code)
+        ];
+    }
+}
+
+
+
+======================
+File: ./income_statement.php
+======================
+<?php
+class ModelAccountsIncomeStatement extends Model {
+    public function getIncomeStatementData($date_start, $date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+        
+        // نحضر الحركة خلال الفترة فقط
+        $sql = "SELECT a.account_code, a.account_type, ad.name,
+                   COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS period_movement
+                FROM `" . DB_PREFIX . "accounts` a
+                LEFT JOIN `" . DB_PREFIX . "account_description` ad ON (a.account_id = ad.account_id AND ad.language_id = '" . $language_id . "')
+                LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                GROUP BY a.account_code, a.account_type, ad.name
+                ORDER BY a.account_code ASC";
+
+        $query = $this->db->query($sql);
+        $accounts = $query->rows;
+
+        $revenues = [];
+        $expenses = [];
+
+        $total_revenues = 0;
+        $total_expenses = 0;
+
+        // تحديد الحسابات الإيرادية والمصروفاتية بناءً على رقم الحساب 
+        // (إذا كان يبدأ بـ4 => إيرادات ، يبدأ بـ5 => مصروفات)
+        foreach ($accounts as $acc) {
+            $code = (string)$acc['account_code'];
+            $movement = (float)$acc['period_movement'];
+
+            if ($this->isRevenueAccount($code)) {
+                // الإيرادات تظهر كحسابات دائنة، إذا كان movement موجب فهذا يعني إضافة للإيراد
+                // إذا كان سالب، فهو تخفيض في الإيراد (حالات نادرة).
+                // سنعتبر أي قيمة موجبة هي إيراد، وسالبة تعني عكس قيود.
+                $rev = $movement < 0 ? -$movement : $movement;
+                $total_revenues += $rev;
+
+                $acc['formatted_amount'] = $this->currency->format($rev, $currency_code);
+                $acc['type'] = 'revenue';
+                $accounts_list = &$revenues;
+            } elseif ($this->isExpenseAccount($code)) {
+                // المصروفات حسابات مدينة، إذا كان الـ movement موجب => مصروف
+                // إذا كان سالب => تخفيض المصروف.
+                $exp = $movement > 0 ? $movement : (-$movement); // نجعلها موجبة دائماً مع اعتبار الحركة
+                $total_expenses += $exp;
+
+                $acc['formatted_amount'] = $this->currency->format($exp, $currency_code);
+                $acc['type'] = 'expense';
+                $accounts_list = &$expenses;
+            } else {
+                // ليست إيرادات ولا مصروفات => نتجاهلها (ليست مطلوبة بقائمة الدخل)
+                continue;
+            }
+
+            $accounts_list[] = [
+                'account_code' => $acc['account_code'],
+                'name'         => $acc['name'],
+                'amount'       => $acc['formatted_amount']
+            ];
+        }
+
+        $net_income = $total_revenues - $total_expenses;
+
+        return [
+            'revenues'        => $revenues,
+            'expenses'        => $expenses,
+            'total_revenues'  => $this->currency->format($total_revenues, $currency_code),
+            'total_expenses'  => $this->currency->format($total_expenses, $currency_code),
+            'net_income'      => $this->currency->format($net_income, $currency_code)
+        ];
+    }
+
+    private function isRevenueAccount($code) {
+        // نفترض أن كل الحسابات التي تبدأ بـ4 هي إيرادات
+        return (substr($code, 0, 1) == '5');
+    }
+
+    private function isExpenseAccount($code) {
+        // نفترض أن كل الحسابات التي تبدأ بـ5 هي مصروفات
+        return (substr($code, 0, 1) == '4');
+    }
+}
+
+
+
+======================
+File: ./trial_balance_new.php
+======================
+<?php
+class ModelAccountsTrialBalanceNew extends Model {
+    public function getMinAccountCode() {
+        $query = $this->db->query("SELECT MIN(account_code) AS min_code FROM " . DB_PREFIX . "accounts");
+        return $query->row['min_code'];
+    }
+    
+    public function getMaxAccountCode() {
+        $query = $this->db->query("SELECT MAX(account_code) AS max_code FROM " . DB_PREFIX . "accounts");
+        return $query->row['max_code'];
+    }
+    
+    public function getAccountRangeData($date_start, $date_end, $account_start, $account_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // هذا الاستعلام يحسب الأرصدة الافتتاحية والحركة خلال الفترة ثم ينتج الأرصدة الختامية
+        $sql = "SELECT a.account_code, a.parent_id, a.account_type, ad.name,
+                   COALESCE(SUM(CASE WHEN j.thedate < '" . $this->db->escape($date_start) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS opening_balance,
+                   COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS period_movement
+                FROM `" . DB_PREFIX . "accounts` a
+                LEFT JOIN `" . DB_PREFIX . "account_description` ad ON (a.account_id = ad.account_id AND ad.language_id = '" . (int)$language_id . "')
+                LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                WHERE a.account_code BETWEEN '" . (int)$account_start . "' AND '" . (int)$account_end . "'
+                GROUP BY a.account_code, a.parent_id, a.account_type, ad.name
+                ORDER BY a.account_code ASC";
+
+        $query = $this->db->query($sql);
+        $accounts = $query->rows;
+
+        $accountsHierarchy = [];
+        $rootAccounts = [];
+
+        // بناء هيكلية شجرية للحسابات
+        foreach ($accounts as $acc) {
+            $acc['children'] = [];
+            $accountsHierarchy[$acc['account_code']] = $acc;
+        }
+
+        foreach ($accounts as $acc) {
+            $code = $acc['account_code'];
+            $pcode = $acc['parent_id'];
+            if ($pcode == 0) {
+                $rootAccounts[] = &$accountsHierarchy[$code];
+            } else {
+                if (isset($accountsHierarchy[$pcode])) {
+                    $accountsHierarchy[$pcode]['children'][] = &$accountsHierarchy[$code];
+                }
+            }
+        }
+
+        $this->aggregateBalances($rootAccounts);
+        $this->finalizeClosingBalance($rootAccounts);
+
+        $formattedAccounts = [];
+        $sums = [
+            'opening_balance_debit' => 0, 'opening_balance_credit' => 0,
+            'total_debit' => 0, 'total_credit' => 0,
+            'closing_balance_debit' => 0, 'closing_balance_credit' => 0
+        ];
+
+        foreach ($accountsHierarchy as $acc) {
+            $formatted = $this->formatAccountData($acc, $currency_code);
+            $formattedAccounts[] = $formatted;
+            if ($acc['parent_id'] == 0) {
+                $this->updateSums($acc, $sums);
+            }
+        }
+
+        foreach ($sums as $key => $value) {
+            $sums[$key . '_formatted'] = $this->currency->format((float)$value, $currency_code);
+        }
+
+        return [
+            'accounts' => $formattedAccounts,
+            'sums' => $sums
+        ];
+    }
+
+    private function aggregateBalances(&$accounts) {
+        foreach ($accounts as &$acc) {
+            if (!empty($acc['children'])) {
+                $this->aggregateBalances($acc['children']);
+                foreach ($acc['children'] as $child) {
+                    $acc['opening_balance'] += $child['opening_balance'];
+                    $acc['period_movement'] += $child['period_movement'];
+                }
+            }
+        }
+    }
+
+    private function finalizeClosingBalance(&$accounts) {
+        foreach ($accounts as &$acc) {
+            if ($acc['account_type'] == 'debit') {
+                $acc['closing_balance'] = $acc['opening_balance'] + $acc['period_movement'];
+            } else {
+                $acc['closing_balance'] = $acc['opening_balance'] - $acc['period_movement'];
+            }
+
+            if (!empty($acc['children'])) {
+                $this->finalizeClosingBalance($acc['children']);
+            }
+        }
+    }
+
+    private function formatAccountData($acc, $currency_code) {
+        $ob_debit = $ob_credit = $cb_debit = $cb_credit = 0.0;
+
+        $opening_balance = (float)$acc['opening_balance'];
+        $period_movement = (float)$acc['period_movement'];
+        $closing_balance = (float)$acc['closing_balance'];
+
+        if ($opening_balance >= 0) {
+            $ob_debit = $opening_balance;
+        } else {
+            $ob_credit = abs($opening_balance);
+        }
+
+        $total_debit = max(0, $period_movement);
+        $total_credit = max(0, -$period_movement);
+
+        if ($closing_balance >= 0) {
+            $cb_debit = $closing_balance;
+        } else {
+            $cb_credit = abs($closing_balance);
+        }
+
+        return [
+            'account_code' => $acc['account_code'],
+            'name' => $acc['name'],
+            'opening_balance_debit_formatted' => $this->currency->format((float)$ob_debit, $currency_code),
+            'opening_balance_credit_formatted' => $this->currency->format((float)$ob_credit, $currency_code),
+            'total_debit_formatted' => $this->currency->format((float)$total_debit, $currency_code),
+            'total_credit_formatted' => $this->currency->format((float)$total_credit, $currency_code),
+            'closing_balance_debit_formatted' => $this->currency->format((float)$cb_debit, $currency_code),
+            'closing_balance_credit_formatted' => $this->currency->format((float)$cb_credit, $currency_code),
+            'opening_balance_debit' => $ob_debit,
+            'opening_balance_credit' => $ob_credit,
+            'total_debit' => $total_debit,
+            'total_credit' => $total_credit,
+            'closing_balance_debit' => $cb_debit,
+            'closing_balance_credit' => $cb_credit,
+            'closing_balance' => $closing_balance
+        ];
+    }
+
+    private function updateSums($acc, &$sums) {
+        $ob = (float)$acc['opening_balance'];
+        $pm = (float)$acc['period_movement'];
+        $cb = (float)$acc['closing_balance'];
+
+        $sums['opening_balance_debit'] += $ob >= 0 ? $ob : 0;
+        $sums['opening_balance_credit'] += $ob < 0 ? abs($ob) : 0;
+        $sums['total_debit'] += max(0, $pm);
+        $sums['total_credit'] += max(0, -$pm);
+        $sums['closing_balance_debit'] += $cb >= 0 ? $cb : 0;
+        $sums['closing_balance_credit'] += $cb < 0 ? abs($cb) : 0;
+    }
+}
+
+
+
+======================
+File: ./tax_return.php
+======================
+<?php
+class ModelAccountsTaxReturn extends Model {
+    public function getTaxReturnData($date_start, $date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // معدل الضريبة
+        $tax_rate = (float)$this->config->get('config_tax_rate') ?: 22.5;
+
+        // بادئة الحسابات غير القابلة للخصم
+        $non_deductible_prefix = $this->config->get('config_non_deductible_accounts_prefix') ?: '59';
+        // بادئة الحسابات المعفاة
+        $exempt_prefix = $this->config->get('config_exempt_income_accounts_prefix') ?: '49';
+
+        // 1. الحصول على صافي الربح المحاسبي من قائمة الدخل:
+        // سنفترض وجود طريقة سهلة لجلب صافي الربح (مثلاً من قاعدة البيانات 
+        // أو سنحسب سريعاً من الحسابات 4 (الإيرادات) و5 (المصروفات))
+
+        // إجمالي الإيرادات
+        $sql_revenue = "SELECT 
+                            COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' 
+                                    AND j.is_cancelled=0 THEN (CASE WHEN je.is_debit=1 THEN je.amount ELSE -je.amount END) ELSE 0 END),0) AS rev
+                        FROM `" . DB_PREFIX . "accounts` a
+                        LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                        LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                        WHERE a.account_code LIKE '4%'"; // الإيرادات تبدأ بـ4
+
+        $query_rev = $this->db->query($sql_revenue);
+        $total_revenue = (float)$query_rev->row['rev'];
+
+        // إجمالي المصروفات
+        $sql_expenses = "SELECT 
+                            COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' 
+                                    AND j.is_cancelled=0 THEN (CASE WHEN je.is_debit=1 THEN je.amount ELSE -je.amount END) ELSE 0 END),0) AS exp
+                        FROM `" . DB_PREFIX . "accounts` a
+                        LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                        LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                        WHERE a.account_code LIKE '5%'"; // المصروفات تبدأ بـ5
+
+        $query_exp = $this->db->query($sql_expenses);
+        $total_expenses = (float)$query_exp->row['exp'];
+
+        $accounting_profit = $total_revenue - $total_expenses;
+
+        // 2. إضافة المصروفات غير القابلة للخصم
+        $sql_non_deductible = "SELECT 
+                                COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' 
+                                        AND j.is_cancelled=0 THEN (CASE WHEN je.is_debit=1 THEN je.amount ELSE -je.amount END) ELSE 0 END),0) AS nd
+                              FROM `" . DB_PREFIX . "accounts` a
+                              LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                              LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                              WHERE a.account_code LIKE '" . $this->db->escape($non_deductible_prefix) . "%'";
+
+        $query_nd = $this->db->query($sql_non_deductible);
+        $non_deductible = (float)$query_nd->row['nd'];
+
+        // 3. طرح الدخل المعفى
+        $sql_exempt = "SELECT 
+                            COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' 
+                                    AND j.is_cancelled=0 THEN (CASE WHEN je.is_debit=1 THEN je.amount ELSE -je.amount END) ELSE 0 END),0) AS ex
+                       FROM `" . DB_PREFIX . "accounts` a
+                       LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                       LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                       WHERE a.account_code LIKE '" . $this->db->escape($exempt_prefix) . "%'";
+
+        $query_ex = $this->db->query($sql_exempt);
+        $exempt_income = (float)$query_ex->row['ex'];
+
+        // الربح الضريبي
+        $taxable_profit = $accounting_profit + $non_deductible - $exempt_income;
+
+        // الضريبة المستحقة
+        $tax_due = $taxable_profit * ($tax_rate / 100);
+
+        return [
+            'accounting_profit' => $this->currency->format($accounting_profit, $currency_code),
+            'non_deductible' => $this->currency->format($non_deductible, $currency_code),
+            'exempt_income' => $this->currency->format($exempt_income, $currency_code),
+            'taxable_profit' => $this->currency->format($taxable_profit, $currency_code),
+            'tax_rate' => $tax_rate,
+            'tax_due' => $this->currency->format($tax_due, $currency_code)
+        ];
+    }
+}
+
+
+
+======================
+File: ./trial_balance.php
+======================
+<?php
+class ModelAccountsTrialBalance extends Model {
+    public function getMinAccountCode() {
+        $query = $this->db->query("SELECT MIN(account_code) AS min_code FROM " . DB_PREFIX . "accounts");
+        return $query->row['min_code'];
+    }
+    
+    public function getMaxAccountCode() {
+        $query = $this->db->query("SELECT MAX(account_code) AS max_code FROM " . DB_PREFIX . "accounts");
+        return $query->row['max_code'];
+    }
+    
+    public function getAccountRangeData($date_start, $date_end, $account_start, $account_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        $sql = "SELECT a.account_code, a.parent_id, a.account_type, ad.name,
+                   COALESCE(SUM(CASE WHEN j.thedate < '" . $this->db->escape($date_start) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS opening_balance,
+                   COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS period_movement
+                FROM `" . DB_PREFIX . "accounts` a
+                LEFT JOIN `" . DB_PREFIX . "account_description` ad ON (a.account_id = ad.account_id AND ad.language_id = '" . (int)$language_id . "')
+                LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                WHERE a.account_code BETWEEN '" . (int)$account_start . "' AND '" . (int)$account_end . "'
+                GROUP BY a.account_code, a.parent_id, a.account_type, ad.name
+                ORDER BY a.account_code ASC";
+
+        $query = $this->db->query($sql);
+        $accounts = $query->rows;
+
+        $accountsHierarchy = [];
+        $rootAccounts = [];
+
+        // فهرسة بالحساب code
+        foreach ($accounts as $acc) {
+            $acc['children'] = [];
+            $accountsHierarchy[$acc['account_code']] = $acc;
+        }
+
+        // بناء الشجرة
+        foreach ($accounts as $acc) {
+            $code = $acc['account_code'];
+            $pcode = $acc['parent_id'];
+            if ($pcode == 0) {
+                // حساب جذري
+                $rootAccounts[] = &$accountsHierarchy[$code];
+            } else {
+                // حساب فرعي
+                if (isset($accountsHierarchy[$pcode])) {
+                    $accountsHierarchy[$pcode]['children'][] = &$accountsHierarchy[$code];
+                }
+            }
+        }
+
+        // تجميع الأرصدة
+        $this->aggregateBalances($rootAccounts);
+
+        // حساب الرصيد الختامي بناءً على account_type
+        $this->finalizeClosingBalance($rootAccounts);
+
+        // تنسيق البيانات
+        $formattedAccounts = [];
+        $sums = [
+            'opening_balance_debit' => 0, 'opening_balance_credit' => 0,
+            'total_debit' => 0, 'total_credit' => 0,
+            'closing_balance_debit' => 0, 'closing_balance_credit' => 0
+        ];
+
+        foreach ($accountsHierarchy as $acc) {
+            $formatted = $this->formatAccountData($acc, $currency_code);
+            $formattedAccounts[] = $formatted;
+            if ($acc['parent_id'] == 0) {
+                $this->updateSums($acc, $sums);
+            }
+        }
+
+        foreach ($sums as $key => $value) {
+            $sums[$key . '_formatted'] = $this->currency->format((float)$value, $currency_code);
+        }
+
+        return [
+            'accounts' => $formattedAccounts,
+            'sums' => $sums
+        ];
+    }
+
+    private function aggregateBalances(&$accounts) {
+        foreach ($accounts as &$acc) {
+            if (!empty($acc['children'])) {
+                $this->aggregateBalances($acc['children']);
+                foreach ($acc['children'] as $child) {
+                    $acc['opening_balance'] += $child['opening_balance'];
+                    $acc['period_movement'] += $child['period_movement'];
+                }
+            }
+        }
+    }
+
+    private function finalizeClosingBalance(&$accounts) {
+        foreach ($accounts as &$acc) {
+            if ($acc['account_type'] == 'debit') {
+                $acc['closing_balance'] = $acc['opening_balance'] + $acc['period_movement'];
+            } else {
+                // حساب دائــــن
+                $acc['closing_balance'] = $acc['opening_balance'] - $acc['period_movement'];
+            }
+
+            if (!empty($acc['children'])) {
+                $this->finalizeClosingBalance($acc['children']);
+            }
+        }
+    }
+
+    private function formatAccountData($acc, $currency_code) {
+        $ob_debit = $ob_credit = $cb_debit = $cb_credit = 0.0;
+
+        $opening_balance = (float)$acc['opening_balance'];
+        $period_movement = (float)$acc['period_movement'];
+        $closing_balance = (float)$acc['closing_balance'];
+
+        if ($opening_balance >= 0) {
+            $ob_debit = $opening_balance;
+        } else {
+            $ob_credit = abs($opening_balance);
+        }
+
+        $total_debit = max(0, $period_movement);
+        $total_credit = max(0, -$period_movement);
+
+        if ($closing_balance >= 0) {
+            $cb_debit = $closing_balance;
+        } else {
+            $cb_credit = abs($closing_balance);
+        }
+
+        return [
+            'account_code' => $acc['account_code'],
+            'name' => $acc['name'],
+            'opening_balance_debit_formatted' => $this->currency->format((float)$ob_debit, $currency_code),
+            'opening_balance_credit_formatted' => $this->currency->format((float)$ob_credit, $currency_code),
+            'total_debit_formatted' => $this->currency->format((float)$total_debit, $currency_code),
+            'total_credit_formatted' => $this->currency->format((float)$total_credit, $currency_code),
+            'closing_balance_debit_formatted' => $this->currency->format((float)$cb_debit, $currency_code),
+            'closing_balance_credit_formatted' => $this->currency->format((float)$cb_credit, $currency_code),
+            'opening_balance_debit' => $ob_debit,
+            'opening_balance_credit' => $ob_credit,
+            'total_debit' => $total_debit,
+            'total_credit' => $total_credit,
+            'closing_balance_debit' => $cb_debit,
+            'closing_balance_credit' => $cb_credit,
+            'closing_balance' => $closing_balance
+        ];
+    }
+
+    private function updateSums($acc, &$sums) {
+        $ob = (float)$acc['opening_balance'];
+        $pm = (float)$acc['period_movement'];
+        $cb = (float)$acc['closing_balance'];
+
+        $sums['opening_balance_debit'] += $ob >= 0 ? $ob : 0;
+        $sums['opening_balance_credit'] += $ob < 0 ? abs($ob) : 0;
+        $sums['total_debit'] += max(0, $pm);
+        $sums['total_credit'] += max(0, -$pm);
+        $sums['closing_balance_debit'] += $cb >= 0 ? $cb : 0;
+        $sums['closing_balance_credit'] += $cb < 0 ? abs($cb) : 0;
+    }
+}
+
+
+
+======================
+File: ./fixed_assets.php
+======================
+<?php
+class ModelAccountsFixedAssets extends Model {
+    public function getFixedAssetsData($date_end) {
+        $currency_code = $this->config->get('config_currency');
+
+        // نفترض الأصول الثابتة تحت حسابات 111xx
+        $assets = $this->getBalanceAt('111', $date_end);
+        // مجمع الإهلاك تحت حسابات 112xx
+        $accum_depr = $this->getBalanceAt('112', $date_end);
+        $net_value = $assets - $accum_depr;
+
+        return [
+            'assets' => $this->currency->format($assets, $currency_code),
+            'accum_depr' => $this->currency->format($accum_depr, $currency_code),
+            'net_value' => $this->currency->format($net_value, $currency_code)
+        ];
+    }
+
+    private function getBalanceAt($prefix, $date) {
+        $sql = "SELECT COALESCE(SUM(CASE WHEN je.is_debit=1 THEN je.amount ELSE -je.amount END),0) AS bal
+                FROM " . DB_PREFIX . "journal_entries je
+                LEFT JOIN " . DB_PREFIX . "journals j ON (je.journal_id=j.journal_id)
+                LEFT JOIN " . DB_PREFIX . "accounts a ON (je.account_code=a.account_code)
+                WHERE a.account_code LIKE '".$this->db->escape($prefix)."%'
+                AND j.thedate < '".$this->db->escape($date)."'
+                AND j.is_cancelled=0";
+        $q = $this->db->query($sql);
+        return (float)$q->row['bal'];
+    }
+}
+
+
+
+
+======================
+File: ./statementaccount.php
+======================
+<?php
+class ModelAccountsStatementaccount extends Model {
+
+    private function getRelatedAccountCodes($parent_code) {
+        $account_codes = [];
+        $this->getAccountCodesRecursive($parent_code, $account_codes);
+        error_log('Final account codes: ' . json_encode($account_codes));
+        return $account_codes;
+    }
+    
+    private function getAccountCodesRecursive($account_code, &$account_codes) {
+        if (!in_array($account_code, $account_codes)) {
+            array_push($account_codes, $account_code);
+        }
+        $result = $this->db->query("SELECT account_code FROM `" . DB_PREFIX . "accounts` WHERE parent_id = '" . $this->db->escape($account_code) . "'");
+        error_log('Querying children of ' . $account_code . ': ' . json_encode($result));
+    
+        if ($result->num_rows > 0) {
+            foreach ($result->rows as $row) {
+                $this->getAccountCodesRecursive($row['account_code'], $account_codes);
+            }
+        }
+    }
+
+
+    public function getOpeningBalance($account_code, $date_start) {
+        if (!$date_start) {
+            $date_start = '0000-00-00';
+        }
+        $account_codes = $this->getRelatedAccountCodes($account_code);
+        $inQuery = implode("','", $account_codes);
+        $sql = "SELECT SUM(je.amount) AS opening_balance FROM `" . DB_PREFIX . "journal_entries` je
+                JOIN `" . DB_PREFIX . "journals` j ON je.journal_id = j.journal_id
+                WHERE je.account_code IN ('" . $this->db->escape($inQuery) . "') AND j.thedate < '" . $this->db->escape($date_start) . "'";
+        $query = $this->db->query($sql);
+        return $query->row['opening_balance'] ?? 0;
+    }
+
+    public function getClosingBalance($account_code, $date_end) {
+        if (!$date_end) {
+            $date_end = date('Y-m-d');
+        }
+        $account_codes = $this->getRelatedAccountCodes($account_code);
+        $inQuery = implode("','", $account_codes);
+        $sql = "SELECT SUM(je.amount) AS closing_balance FROM `" . DB_PREFIX . "journal_entries` je
+                JOIN `" . DB_PREFIX . "journals` j ON je.journal_id = j.journal_id
+                WHERE je.account_code IN ('" . $this->db->escape($inQuery) . "') AND j.thedate <= '" . $this->db->escape($date_end) . "'";
+        $query = $this->db->query($sql);
+        return $query->row['closing_balance'] ?? 0;
+    }
+
+    public function getAccountTransactions($account_code, $date_start, $date_end) {
+        if (!$date_start) {
+            $date_start = '0000-00-00';
+        }
+        if (!$date_end) {
+            $date_end = date('Y-m-d');
+        }
+        $account_codes = $this->getRelatedAccountCodes($account_code);
+    //    $inQuery = implode("','", $account_codes);
+// استعلام لجلب المعاملات بناءً على الحسابات والتواريخ
+$sql = "SELECT j.journal_id,j.thedate, j.description, je.account_code, je.amount, je.is_debit FROM `" . DB_PREFIX . "journal_entries` je
+        JOIN `" . DB_PREFIX . "journals` j ON je.journal_id = j.journal_id
+        WHERE je.account_code IN ('" . implode("','", $account_codes) . "') 
+        AND j.thedate BETWEEN '" . $date_start . "' AND '" . $date_end . "' 
+        ORDER BY j.thedate";
+$transactions = $this->db->query($sql)->rows;
+
+        return $transactions;
+    }
+
+     public function getAccountsRange($account_start, $account_end, $date_start, $date_end) {
+            $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "accounts`
+                                       WHERE account_code BETWEEN '" . $this->db->escape($account_start) . "' 
+                                       AND '" . $this->db->escape($account_end) . "'");
+            $accounts = $query->rows;
+    
+            foreach ($accounts as $key => $account) {
+                
+                $account_info = $this->getAccount($account['account_code']);
+                $accounts[$key]['account_code'] = $account_info['account_code'];
+                $accounts[$key]['name'] = $account_info['name'];
+                $account_code = $account['account_code'];
+                $opening_balance = $this->getOpeningBalance($account_code, $date_start);
+                $closing_balance = $this->getClosingBalance($account_code, $date_end);
+                $transactions = $this->getAccountTransactions($account_code, $date_start, $date_end);   
+                $balance = $opening_balance;
+                $total_debit = 0;
+                $total_credit = 0;
+                foreach ($transactions as &$transaction) {
+                    $transaction['journal_url_edit'] = $this->url->link('accounts/journal/edit', 'user_token=' . $this->session->data['user_token']. '&journal_id=' . (int)$transaction['journal_id']);
+                    $balance += ($transaction['is_debit'] ? $transaction['amount'] : -$transaction['amount']);
+                    $transaction['amount_formatted'] = $this->currency->format($transaction['amount'], $this->config->get('config_currency'));
+                    $transaction['balance_formatted'] = $this->currency->format($balance, $this->config->get('config_currency'));
+                    if ($transaction['is_debit']) {
+                        $total_debit += $transaction['amount'];
+                    } else {
+                        $total_credit += $transaction['amount'];
+                    }
+                }
+        
+                $accounts[$key]['transactions'] = $transactions;
+                $accounts[$key]['opening_balance'] = $opening_balance;
+                $accounts[$key]['closing_balance'] = $closing_balance;
+                $accounts[$key]['opening_balance_formatted'] = $this->currency->format($opening_balance, $this->config->get('config_currency'));
+                $accounts[$key]['closing_balance_formatted'] = $this->currency->format($closing_balance, $this->config->get('config_currency'));                
+                $accounts[$key]['total_debit'] = $this->currency->format($total_debit, $this->config->get('config_currency'));
+                $accounts[$key]['total_credit'] = $this->currency->format($total_credit, $this->config->get('config_currency'));
+                $accounts[$key]['accountname'] = $account_info['name'] . ' (' . $account_code . ')';
+            }
+    
+
+
+        
+    
+            return $accounts;
+        }
+
+
+
+    public function getAccount($account_code) {
+        $query = $this->db->query("SELECT a.account_id, ad.name, a.account_code, a.status, a.parent_id FROM `" . DB_PREFIX . "accounts` a
+                                   LEFT JOIN `" . DB_PREFIX . "account_description` ad ON a.account_id = ad.account_id
+                                   WHERE a.account_code = '" . $this->db->escape($account_code) . "' AND ad.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+        return $query->row;
+    }
+}
+
+
+
+======================
+File: ./inventory_valuation.php
+======================
+<?php
+class ModelAccountsInventoryValuation extends Model {
+    public function getInventoryValuationData($date_start, $date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // أولاً: جلب قائمة المنتجات مع المتوسط والاسم
+        $sql_products = "SELECT p.product_id, pd.name, p.average_cost
+                         FROM " . DB_PREFIX . "product p
+                         LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id AND pd.language_id=".(int)$language_id.")
+                         WHERE p.status=1";
+
+        $query_p = $this->db->query($sql_products);
+        $products = $query_p->rows;
+
+        // سنحتاج الحصول على الكمية الافتتاحية لكل منتج قبل date_start
+        // والكمية الختامية عند date_end
+        // والحركات خلال الفترة
+        // نفترض جدول `cod_product_inventory` يسجل الرصيد الفعلي الحالي، 
+        // وجدول `cod_product_movement` يسجل الحركات (type: purchase, sale, transfer_in, transfer_out)
+
+        $results = [];
+        $total_value = 0.0;
+
+        foreach ($products as $prod) {
+            $product_id = (int)$prod['product_id'];
+
+            // الكمية الافتتاحية: هي الرصيد قبل date_start
+            $sql_opening = "SELECT COALESCE(SUM(CASE WHEN m.type IN('purchase','transfer_in') THEN m.quantity 
+                                                     WHEN m.type IN('sale','transfer_out') THEN -m.quantity ELSE 0 END),0) AS opening_qty
+                            FROM " . DB_PREFIX . "product_movement m
+                            WHERE m.product_id = '" . $product_id . "' 
+                            AND m.date_added < '" . $this->db->escape($date_start) . "'";
+            $q_open = $this->db->query($sql_opening);
+            $opening_qty = (float)$q_open->row['opening_qty'];
+
+            // الحركات خلال الفترة
+            $sql_period = "SELECT 
+                            COALESCE(SUM(CASE WHEN m.type='purchase' THEN m.quantity ELSE 0 END),0) as total_purchases,
+                            COALESCE(SUM(CASE WHEN m.type='transfer_in' THEN m.quantity ELSE 0 END),0) as total_transfers_in,
+                            COALESCE(SUM(CASE WHEN m.type='sale' THEN m.quantity ELSE 0 END),0) as total_sales,
+                            COALESCE(SUM(CASE WHEN m.type='transfer_out' THEN m.quantity ELSE 0 END),0) as total_transfers_out
+                           FROM " . DB_PREFIX . "product_movement m
+                           WHERE m.product_id = '" . $product_id . "'
+                           AND m.date_added BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "'";
+
+            $q_period = $this->db->query($sql_period);
+            $purchases = (float)$q_period->row['total_purchases'];
+            $transfers_in = (float)$q_period->row['total_transfers_in'];
+            $sales = (float)$q_period->row['total_sales'];
+            $transfers_out = (float)$q_period->row['total_transfers_out'];
+
+            // الكمية الختامية = الكمية الافتتاحية + الوارد - الصادر
+            // الوارد = مشتريات + تحويلات داخلية
+            // الصادر = مبيعات + تحويلات خارجية
+            $in_qty = $purchases + $transfers_in;
+            $out_qty = $sales + $transfers_out;
+            $closing_qty = $opening_qty + $in_qty - $out_qty;
+
+            // قيمة المخزون النهائي
+            $average_cost = (float)$prod['average_cost'];
+            $inventory_value = $closing_qty * $average_cost;
+            $total_value += $inventory_value;
+
+            $results[] = [
+                'product_id' => $product_id,
+                'product_name' => $prod['name'],
+                'opening_qty' => $opening_qty,
+                'in_qty' => $in_qty,
+                'out_qty' => $out_qty,
+                'closing_qty' => $closing_qty,
+                'average_cost' => $this->currency->format($average_cost, $currency_code),
+                'inventory_value' => $this->currency->format($inventory_value, $currency_code)
+            ];
+        }
+
+        return [
+            'products' => $results,
+            'total_value' => $this->currency->format($total_value, $currency_code)
+        ];
+    }
+}
+
+
+======================
+File: ./chartaccount.php
+======================
+<?php
+class ModelAccountsChartaccount extends Model {
+	public function addAccount($data) {
+		$this->db->query("INSERT INTO " . DB_PREFIX . "accounts SET  account_type  = '" . $this->db->escape($data['account_type ']) . "', account_code = '" . $this->db->escape($data['account_code']) . "', parent_id = '" . (int)$data['parent_id'] . "', status = '" . (int)$data['status'] . "', date_modified = NOW(), date_added = NOW()");
+
+		$account_id = $this->db->getLastId();
+
+		foreach ($data['account_description'] as $language_id => $value) {
+			$this->db->query("INSERT INTO " . DB_PREFIX . "account_description SET account_id = '" . (int)$account_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");
+		}
+
+
+		$this->cache->delete('account');
+
+		return $account_id;
+	} 
+	
+
+
+/*
+	public function getAccountsToEntry() {
+		$query = $this->db->query("SELECT account_id, account_code,account_type , name, account_type FROM " . DB_PREFIX . "accounts");
+
+		return $query->rows;
+	}	
+	*/
+
+	public function editAccount($account_id, $data) {
+		$this->db->query("UPDATE " . DB_PREFIX . "accounts SET account_type  = '" . $this->db->escape($data['account_type ']) . "', account_code = '" . $this->db->escape($data['account_code']) . "', parent_id = '" . (int)$data['parent_id'] . "', status = '" . (int)$data['status'] . "', date_modified = NOW() WHERE account_id = '" . (int)$account_id . "'");
+
+		$this->db->query("DELETE FROM " . DB_PREFIX . "account_description WHERE account_id = '" . (int)$account_id . "'");
+
+		foreach ($data['account_description'] as $language_id => $value) {
+			$this->db->query("INSERT INTO " . DB_PREFIX . "account_description SET account_id = '" . (int)$account_id . "', language_id = '" . (int)$language_id . "', name = '" . $this->db->escape($value['name']) . "'");
+		}
+
+
+		$this->cache->delete('account');
+	}
+
+	public function deleteAccount($account_id) {
+		$this->db->query("DELETE FROM " . DB_PREFIX . "accounts WHERE account_id = '" . (int)$account_id . "'");
+		$this->db->query("DELETE FROM " . DB_PREFIX . "account_description WHERE account_id = '" . (int)$account_id . "'");
+		$this->cache->delete('account');
+	}
+
+	public function getAccount($account_id) {
+		$query = $this->db->query("SELECT DISTINCT * FROM " . DB_PREFIX . "accounts a LEFT JOIN " . DB_PREFIX . "account_description ad ON (a.account_id = ad.account_id) WHERE a.account_id = '" . (int)$account_id . "' AND ad.language_id = '" . (int)$this->config->get('config_language_id') . "'");
+		
+		return $query->row;
+	}
+	public function getAccountsToEntry($data = array()) {
+		$sql = "SELECT a.account_id, ad.name, a.account_code,a.account_type,a.status, a.parent_id,CONCAT(a.account_code, '00000000000') as accc  FROM " . DB_PREFIX . "accounts a LEFT JOIN " . DB_PREFIX . "account_description ad ON (a.account_id = ad.account_id) WHERE LENGTH(a.account_code) > '0' AND ad.language_id = '" . (int)$this->config->get('config_language_id') . "'";
+
+		if (!empty($data['filter_name'])) {
+			$sql .= " AND ad.name LIKE '%" . $this->db->escape($data['filter_name']) . "%'";
+		}
+
+		$sql .= " GROUP BY a.account_id";
+
+		$sort_data = array(
+			'name',
+			'account_code'
+		);
+
+		if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {
+			$sql .= " ORDER BY " . $data['sort'];
+		} else {
+			$sql .= " ORDER BY account_code";
+		}
+
+		if (isset($data['order']) && ($data['order'] == 'DESC')) {
+			$sql .= " DESC";
+		} else {
+			$sql .= " ASC";
+		}
+
+		if (isset($data['start']) || isset($data['limit'])) {
+			if ($data['start'] < 0) {
+				$data['start'] = 0;
+			}
+
+				$data['limit'] = 20000;
+
+			$sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
+		}
+
+		$query = $this->db->query($sql);
+
+		return $query->rows;
+	}
+	public function getAccounts($data = array()) {
+		$sql = "SELECT a.account_id, ad.name, a.account_code,a.account_type,a.status, a.parent_id,CONCAT(a.account_code, '00000000000') as accc FROM " . DB_PREFIX . "accounts a LEFT JOIN " . DB_PREFIX . "account_description ad ON (a.account_id = ad.account_id) WHERE ad.language_id = '" . (int)$this->config->get('config_language_id') . "'";
+
+		if (!empty($data['filter_name'])) {
+			$sql .= " AND ad.name LIKE '%" . $this->db->escape($data['filter_name']) . "%'";
+		}
+
+		$sql .= " GROUP BY a.account_id";
+
+		$sort_data = array(
+			'name',
+			'account_code'
+		);
+
+		$sql .= " ORDER BY accc";
+		
+
+		$sql .= " ASC";
+
+
+		if (isset($data['start']) || isset($data['limit'])) {
+			if ($data['start'] < 0) {
+				$data['start'] = 0;
+			}
+
+				$data['limit'] = 20000;
+
+			$sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
+		}
+
+		$query = $this->db->query($sql);
+
+		return $query->rows;
+	}
+	
+    public function getAllAccounts($data = array()) {
+        $sql = "SELECT a.account_id, a.account_code,a.account_type,a.status,a.parent_id, GROUP_CONCAT(ad.name SEPARATOR '|') AS names, GROUP_CONCAT(ad.language_id SEPARATOR '|') AS language_ids FROM " . DB_PREFIX . "accounts a LEFT JOIN " . DB_PREFIX . "account_description ad ON (a.account_id = ad.account_id) GROUP BY a.account_id";
+    
+        $query = $this->db->query($sql);
+        $accounts = array();
+        foreach ($query->rows as $row) {
+            $names = explode('|', $row['names']);
+            $language_ids = explode('|', $row['language_ids']);
+            $name_data = array_combine($language_ids, $names);
+            $accounts[] = array(
+                'account_id' => $row['account_id'],
+                'parent_id' => $row['parent_id'],
+                'status' => $row['status'],
+                'account_type' => $row['account_type'],                
+                'account_code' => $row['account_code'],
+                'names' => $name_data
+            );
+        }
+        return $accounts;
+    }
+
+
+public function getAllAccountsList() {
+    // احصل على اللغة الحالية
+    $language_id = (int)$this->config->get('config_language_id');
+    
+    // تعديل الاستعلام ليرجع الاسم باللغة الحالية فقط
+    $sql = "SELECT a.account_id, a.account_code, a.account_type, a.status, a.parent_id, ad.name 
+            FROM " . DB_PREFIX . "accounts a 
+            LEFT JOIN " . DB_PREFIX . "account_description ad ON (a.account_id = ad.account_id) 
+            WHERE ad.language_id = '" . $language_id . "' 
+            GROUP BY a.account_id";
+
+    $query = $this->db->query($sql);
+    $accounts = array();
+
+    foreach ($query->rows as $row) {
+        $accounts[] = array(
+            'account_id'   => $row['account_id'],
+            'parent_id'    => $row['parent_id'],
+            'status'       => $row['status'],
+            'account_type' => $row['account_type'],                
+            'account_code' => $row['account_code'],
+            'name'         => $row['name'] // إرجاع اسم واحد فقط
+        );
+    }
+
+    return $accounts;
+}
+
+	public function getAccountDescriptions($account_id) {
+		$account_description_data = array();
+
+		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "account_description WHERE account_id = '" . (int)$account_id . "'");
+
+		foreach ($query->rows as $result) {
+			$account_description_data[$result['language_id']] = array(
+				'name'             => $result['name']
+			);
+		}
+
+		return $account_description_data;
+	}
+
+	public function getTotalAccounts() {
+		$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "accounts");
+
+		return $query->row['total'];
+	}
+	
+	
+}
+
+
+======================
+File: ./vat_report.php
+======================
+<?php
+class ModelAccountsVatReport extends Model {
+    public function getVatReportData($date_start, $date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // حسابات ضريبة المبيعات
+        $sales_prefix = $this->config->get('config_vat_sales_account_prefix') ?: '4110'; 
+        // حسابات ضريبة المشتريات
+        $purchases_prefix = $this->config->get('config_vat_purchases_account_prefix') ?: '5110';
+
+        // اجمالي ضريبة المبيعات خلال الفترة
+        $sql_sales = "SELECT 
+                        COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                        THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS vat_sales
+                      FROM `" . DB_PREFIX . "accounts` a
+                      LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                      LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                      WHERE a.account_code LIKE '" . $this->db->escape($sales_prefix) . "%'";
+
+        $query_sales = $this->db->query($sql_sales);
+        $vat_sales = (float)$query_sales->row['vat_sales'];
+
+        // اجمالي ضريبة المشتريات خلال الفترة
+        $sql_purchases = "SELECT 
+                            COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                            THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS vat_purchases
+                          FROM `" . DB_PREFIX . "accounts` a
+                          LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                          LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                          WHERE a.account_code LIKE '" . $this->db->escape($purchases_prefix) . "%'";
+
+        $query_purchases = $this->db->query($sql_purchases);
+        $vat_purchases = (float)$query_purchases->row['vat_purchases'];
+
+        // صافي الضريبة المستحقة = ضريبة المبيعات - ضريبة المشتريات
+        $net_vat = $vat_sales - $vat_purchases;
+
+        return [
+            'vat_sales' => $this->currency->format($vat_sales, $currency_code),
+            'vat_purchases' => $this->currency->format($vat_purchases, $currency_code),
+            'net_vat' => $this->currency->format($net_vat, $currency_code)
+        ];
+    }
+}
+
+
+
+======================
+File: ./cash_flow.php
+======================
+<?php
+class ModelAccountsCashFlow extends Model {
+    public function getCashFlowData($date_start, $date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // سنحضر الحركة النقدية خلال الفترة
+        // نفترض أن كل القيود النقدية موجودة في نفس السجلات. 
+        // قد تحتاج لتصفية فقط الحسابات النقدية (مثل حساب البنك، الصندوق) لتحديد التدفق الحقيقي.
+        // في الواقع، قائمة التدفقات النقدية معقدة وقد تحتاج لتحويل قائمة الدخل إلى تدفقات (Direct or Indirect Method).
+        // هنا سنفترض الطريقة المباشرة (Direct Method) بالاعتماد على حسابات قبض وصرف نقدية.
+        
+        // ملاحظة: لإعداد تقرير التدفق النقدي بدقة، نحتاج معرفة أي قيود أثرت على النقد وما لم يؤثر.
+        // لنفترض أن جميع الحسابات التي تمس حسابات النقدية (صندوق/بنك) قد سجلت في journal_entries وسيتم استخلاصها.
+        // سنحتاج لتحديد الحسابات النقدية (مثل الحسابات التي تبدأ برقم 1...الخ) 
+        // لنقل أن الحسابات النقدية تبدا برقم "10" مثلا، وكل قيد يؤثر على حساب يبدأ بـ10 يعتبر تدفق نقدي.
+
+        // في واقع الأمر، إعداد قائمة التدفقات النقدية يتطلب تعرف على الحسابات النقدية:
+        // سنضيف افتراض: 
+        // - إعداد بالإعدادات باسم "config_cash_accounts_prefix" لتحديد بادئة حسابات النقدية. 
+        // لنفترض أنه "10" مثلاً (أو "101" لحساب الصندوق والبنوك).
+        // إذا احتجت: "اضف بالاعدادات تحديد بادئة الحسابات النقدية".
+        
+        $cash_prefix = $this->config->get('config_cash_accounts_prefix') ?: '10'; // لو غير محدد في الإعدادات، نفترض "10"
+
+        // الاستعلام:
+        // نحضر من journal_entries الحركة خلال الفترة لكل الحسابات النقدية.
+        // ثم نصنف الحركة حسب حساب الطرف الآخر لمعرفة إن كان تشغيلي أو استثماري أو تمويلي.
+        $sql = "SELECT a.account_code, a.account_type, ad.name,
+                   COALESCE(SUM(CASE WHEN j.thedate BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS period_movement
+                FROM `" . DB_PREFIX . "accounts` a
+                LEFT JOIN `" . DB_PREFIX . "account_description` ad ON (a.account_id = ad.account_id AND ad.language_id = '" . (int)$language_id . "')
+                LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                GROUP BY a.account_code, a.account_type, ad.name
+                ORDER BY a.account_code ASC";
+
+        $query = $this->db->query($sql);
+        $accounts = $query->rows;
+
+        $operating = [];
+        $investing = [];
+        $financing = [];
+
+        $total_operating = 0;
+        $total_investing = 0;
+        $total_financing = 0;
+
+        foreach ($accounts as $acc) {
+            $code = (string)$acc['account_code'];
+            $movement = (float)$acc['period_movement'];
+
+            if ($movement == 0) continue; // حساب لم يتحرك في الفترة
+
+            // نصنف الحساب بناء على وظيفة:
+            if ($this->isOperating($code)) {
+                // التدفق التشغيلي غالباً إيرادات ومصروفات تشغيلية 
+                $value = $movement;
+                $total_operating += $value;
+                $operating[] = [
+                    'account_code' => $acc['account_code'],
+                    'name' => $acc['name'],
+                    'amount' => $this->currency->format($value, $currency_code)
+                ];
+            } elseif ($this->isInvesting($code)) {
+                // تدفق استثماري (شراء/بيع أصول طويلة الأجل)
+                $value = $movement;
+                $total_investing += $value;
+                $investing[] = [
+                    'account_code' => $acc['account_code'],
+                    'name' => $acc['name'],
+                    'amount' => $this->currency->format($value, $currency_code)
+                ];
+            } elseif ($this->isFinancing($code)) {
+                // تدفق تمويلي (قروض، رأس مال)
+                $value = $movement;
+                $total_financing += $value;
+                $financing[] = [
+                    'account_code' => $acc['account_code'],
+                    'name' => $acc['name'],
+                    'amount' => $this->currency->format($value, $currency_code)
+                ];
+            }
+        }
+
+        $total_operating_formatted = $this->currency->format($total_operating, $currency_code);
+        $total_investing_formatted = $this->currency->format($total_investing, $currency_code);
+        $total_financing_formatted = $this->currency->format($total_financing, $currency_code);
+
+        $net_change = $total_operating + $total_investing + $total_financing;
+        $net_change_formatted = $this->currency->format($net_change, $currency_code);
+
+        return [
+            'operating' => $operating,
+            'investing' => $investing,
+            'financing' => $financing,
+            'total_operating' => $total_operating_formatted,
+            'total_investing' => $total_investing_formatted,
+            'total_financing' => $total_financing_formatted,
+            'net_change' => $net_change_formatted
+        ];
+    }
+
+    private function isOperating($code) {
+        // افتراض: الإيرادات (4) والمصروفات (5) والأنشطة اليومية تصنف تشغيلية.
+        // يمكنك إضافة إعدادات لتحديد الحسابات التشغيلية.
+        return (substr($code, 0, 1) == '4' || substr($code, 0, 1) == '5');
+    }
+
+    private function isInvesting($code) {
+        // افتراض: الحسابات التي تمثل أصول ثابتة طويلة الأجل (مثلاً تبدأ بـ"15" أو "16") استثمارية
+        // يمكنك إضافة إعداد في الإعدادات لتحديد بادئة الحسابات الاستثمارية.
+        // مؤقتاً نفترض: أي حساب يبدأ بـ"1" (الأصول) باستثناء النقدية يعتبر استثماري.
+        // تحتاج ضبط أدق في الواقع.
+        return (substr($code, 0, 1) == '1' && $code != '10'); 
+    }
+
+    private function isFinancing($code) {
+        // افتراض: الحسابات التي تبدأ بـ2 (التزامات) و3 (حقوق) فيها التمويل.
+        // يمكنك إضافة إعدادات أدق.
+        return (substr($code, 0, 1) == '2' || substr($code, 0, 1) == '3');
+    }
+}
+
+
+
+======================
+File: ./purchase_analysis.php
+======================
+<?php
+class ModelAccountsPurchaseAnalysis extends Model {
+    public function getPurchaseAnalysisData($date_start, $date_end) {
+        $currency_code = $this->config->get('config_currency');
+
+        // استعلام لجلب المشتريات لكل مورد
+        // نفترض وجود عمود vendor_id في جدول أوامر الشراء (cod_purchase_order)، وعلاقة مع جدول supplier.
+        $sql = "SELECT p.vendor_id, s.firstname, s.lastname, s.company, 
+                       COUNT(p.po_id) AS po_count,
+                       COALESCE(SUM(p.total_amount),0) AS total_purchases,
+                       AVG(p.total_amount) AS avg_po
+                FROM " . DB_PREFIX . "purchase_order p
+                LEFT JOIN " . DB_PREFIX . "supplier s ON (p.vendor_id = s.supplier_id)
+                WHERE p.order_date BETWEEN '" . $this->db->escape($date_start) . "' AND '" . $this->db->escape($date_end) . "'
+                AND p.status IN ('approved','completed') 
+                GROUP BY p.vendor_id
+                ORDER BY total_purchases DESC";
+
+        // نفترض أن حالات الشراء 'approved','completed' تعني تم تنفيذ المشتريات.
+        // إذا أردت تخصيص حالات معينة يمكن "إضافة بالإعدادات".
+
+        $query = $this->db->query($sql);
+        $vendors = $query->rows;
+
+        $results = [];
+        $total_purchases = 0.0;
+
+        foreach ($vendors as $v) {
+            $name = trim($v['company']) != '' ? $v['company'] : ($v['firstname'] . ' ' . $v['lastname']);
+            $purchase_amount = (float)$v['total_purchases'];
+            $total_purchases += $purchase_amount;
+
+            $results[] = [
+                'vendor_id' => $v['vendor_id'],
+                'vendor_name' => $name,
+                'po_count' => (int)$v['po_count'],
+                'total_purchases' => $this->currency->format($purchase_amount, $currency_code),
+                'avg_po' => $this->currency->format((float)$v['avg_po'], $currency_code)
+            ];
+        }
+
+        return [
+            'vendors' => $results,
+            'total_purchases' => $this->currency->format($total_purchases, $currency_code)
+        ];
+    }
+}
+
+
+
+======================
+File: ./changes_in_equity.php
+======================
+<?php
+class ModelAccountsChangesInEquity extends Model {
+    public function getChangesInEquityData($date_start, $date_end) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $currency_code = $this->config->get('config_currency');
+
+        // نحضر الأرصدة الافتتاحية لحقوق الملكية: الأرصدة قبل date_start
+        // والأرصدة الختامية: الأرصدة حتى date_end
+        // الفرق يعطينا الحركة.
+        
+        // الأرصدة الافتتاحية:
+        $sql_opening = "SELECT a.account_code, ad.name,
+                   COALESCE(SUM(CASE WHEN j.thedate < '" . $this->db->escape($date_start) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS opening_balance
+                FROM `" . DB_PREFIX . "accounts` a
+                LEFT JOIN `" . DB_PREFIX . "account_description` ad ON (a.account_id = ad.account_id AND ad.language_id = '" . (int)$language_id . "')
+                LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                WHERE a.account_code LIKE '3%' 
+                GROUP BY a.account_code, ad.name
+                ORDER BY a.account_code ASC";
+        
+        $query_opening = $this->db->query($sql_opening);
+        $opening_accounts = $query_opening->rows;
+        
+        // الأرصدة الختامية:
+        $sql_closing = "SELECT a.account_code,
+                   COALESCE(SUM(CASE WHEN j.thedate <= '" . $this->db->escape($date_end) . "' AND j.is_cancelled = 0 
+                                     THEN (CASE WHEN je.is_debit = 1 THEN je.amount ELSE -je.amount END) ELSE 0 END), 0) AS closing_balance
+                FROM `" . DB_PREFIX . "accounts` a
+                LEFT JOIN `" . DB_PREFIX . "journal_entries` je ON (je.account_code = a.account_code)
+                LEFT JOIN `" . DB_PREFIX . "journals` j ON (je.journal_id = j.journal_id)
+                WHERE a.account_code LIKE '3%' 
+                GROUP BY a.account_code
+                ORDER BY a.account_code ASC";
+        
+        $query_closing = $this->db->query($sql_closing);
+        $closing_accounts = $query_closing->rows;
+
+        // فهرسة للإغلاق حسب code
+        $closing_index = [];
+        foreach ($closing_accounts as $c) {
+            $closing_index[$c['account_code']] = $c['closing_balance'];
+        }
+
+        // الآن يمكننا حساب حركة الفترة والرصيد الختامي.
+        $results = [];
+        $total_opening = 0;
+        $total_closing = 0;
+        $total_movement = 0;
+
+        foreach ($opening_accounts as $op) {
+            $code = $op['account_code'];
+            $opening = (float)$op['opening_balance'];
+            $closing = isset($closing_index[$code]) ? (float)$closing_index[$code] : 0.0;
+            $movement = $closing - $opening;
+            
+            $total_opening += $opening;
+            $total_closing += $closing;
+            $total_movement += $movement;
+
+            $results[] = [
+                'account_code' => $code,
+                'name' => $op['name'],
+                'opening_formatted' => $this->currency->format($opening, $currency_code),
+                'movement_formatted' => $this->currency->format($movement, $currency_code),
+                'closing_formatted' => $this->currency->format($closing, $currency_code),
+                'opening' => $opening,
+                'movement' => $movement,
+                'closing' => $closing
+            ];
+        }
+
+        $total_opening_formatted = $this->currency->format($total_opening, $currency_code);
+        $total_movement_formatted = $this->currency->format($total_movement, $currency_code);
+        $total_closing_formatted = $this->currency->format($total_closing, $currency_code);
+
+        return [
+            'accounts' => $results,
+            'total_opening' => $total_opening_formatted,
+            'total_movement' => $total_movement_formatted,
+            'total_closing' => $total_closing_formatted
+        ];
+    }
+}
+
+
+
+======================
+File: ./journal.php
+======================
+<?php
+class ModelAccountsJournal extends Model {
+
+//اضافة قيد معكوس    
+public function addReverseJournal($journal_id) {
+    $journal = $this->getJournal($journal_id);
+    if (!$journal || $journal['is_cancelled']) {
+        return false; // القيد الأصلي غير موجود أو ملغى بالفعل
+    }
+    $entries = $this->getJournalEntries($journal_id);
+
+    // إعداد بيانات القيد المعكوس
+    $reverse_data = array(
+        'thedate' => date('Y-m-d'),
+        'refnum' => 'Cancellation of ' . $journal['refnum'],
+        'description' => 'Cancellation of journal ID ' . $journal_id,
+        'added_by' => $this->user->getUserName(),
+        'entries' => array(
+            'debit' => $entries['credit'],
+            'credit' => $entries['debit']
+        ),
+        'attachments' => array()
+    );
+
+    if ($this->addJournal($reverse_data)) {
+        // تحديث القيد الأصلي بأنه تم إلغاؤه
+        $this->db->query("UPDATE `" . DB_PREFIX . "journals` SET is_cancelled = 1, cancelled_by = '" . $this->db->escape($this->user->getUserName()) . "' WHERE journal_id = '" . (int)$journal_id . "'");
+        return true;
+    }
+    return false;
+}
+
+public function cancelJournal($journal_id) {
+    $journal = $this->getJournal($journal_id);
+    
+    if (!$journal || $journal['is_cancelled']) {
+        return false; // القيد الأصلي غير موجود أو ملغى بالفعل
+    }
+    $this->db->query("UPDATE `" . DB_PREFIX . "journals` SET cancelled_date=NOW(),is_cancelled = 1, cancelled_by = '" . $this->db->escape($this->user->getUserName()) . "' WHERE journal_id = '" . (int)$journal_id . "'");
+    return true;
+}
+
+public function getTotalJournals($data = array()) {
+    $sql = "SELECT COUNT(*) AS total FROM `" . DB_PREFIX . "journals` j WHERE 1";
+
+    if (isset($data['include_cancelled']) && $data['include_cancelled']=='1') {
+        $sql .= " AND j.is_cancelled >= 0";
+    }else{
+        $sql .= " AND j.is_cancelled = 0";
+    }
+    
+//$data['include_cancelled']
+
+    if (!empty($data['filter_date_start'])) {
+        $sql .= " AND DATE(j.thedate) >= '" . $this->db->escape($data['filter_date_start']) . "'";
+    }
+
+    if (!empty($data['filter_date_end'])) {
+        $sql .= " AND DATE(j.thedate) <= '" . $this->db->escape($data['filter_date_end']) . "'";
+    }
+
+    if (!empty($data['filter_journal_id'])) {
+        $sql .= " AND j.journal_id = '" . (int)$data['filter_journal_id'] . "'";
+    }
+
+    if (!empty($data['filter_description'])) {
+        $sql .= " AND j.description LIKE '%" . $this->db->escape($data['filter_description']) . "%'";
+    }
+
+    $query = $this->db->query($sql);
+    return $query->row['total'];
+}
+
+    // Function to add a new journal entry
+public function addJournal($data) {
+    error_log("Attempting to insert: " . json_encode($data));
+
+    $result = $this->db->query("INSERT INTO `" . DB_PREFIX . "journals` SET 
+        thedate = '" . $this->db->escape($data['thedate']) . "',
+        refnum = '" . $this->db->escape($data['refnum']) . "',
+        entrytype = 1,
+        description = '" . $this->db->escape($data['description']) . "', 
+        added_by = '" . $this->db->escape($data['added_by']) . "',
+        created_at = NOW()");
+    $journal_id = $this->db->getLastId();
+
+    if ($journal_id) {
+        // Save entries
+        foreach ($data['entries'] as $type => $entries) {
+            foreach ($entries as $entry) {
+                $is_debit = ($type == 'debit') ? 1 : 0; // تحديد ما إذا كان القيد مدين أو دائن
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "journal_entries` SET 
+                    journal_id = '" . (int)$journal_id . "', 
+                    account_code = '" . $this->db->escape($entry['account_code']) . "', 
+                    amount = '" . (float)$entry['amount'] . "', 
+                    is_debit = '" . (int)$is_debit . "'");
+            }
+        }
+        
+        // Manage attachments
+        if(!empty($data['attachments'])){
+            $attachments = $data['attachments'];
+            // محفوظة في مجلد dashboard
+            $attachments_dir = 'image/catalog/attachments/' . $journal_id;
+            
+            if (!is_dir($attachments_dir) && !mkdir($attachments_dir, 0755, true)) {
+                error_log("Failed to create directory: " . $attachments_dir);
+                return false; // Exit if unable to create directory
+            }
+            
+            // Process each attachment
+            for ($i = 0; $i < count($attachments['name']); $i++) {
+                if ($attachments['error'][$i] == 0) { // Check for upload error
+                    $timestamp = date('YmdHis');
+                    $file_name = basename($attachments['name'][$i]);
+                    $new_file_name = $timestamp . "_" . $file_name;
+                    $file_path = $attachments_dir . '/' . $new_file_name;
+            
+                    if (move_uploaded_file($attachments['tmp_name'][$i], $file_path)) {
+                        $this->db->query("INSERT INTO `" . DB_PREFIX . "journal_attachments` SET 
+                            journal_id = '" . (int)$journal_id . "', 
+                            file_name = '" . $this->db->escape($new_file_name) . "', 
+                            file_path = '" . $this->db->escape($file_path) . "'");
+                    } else {
+                        error_log("Failed to move uploaded file: " . $file_name);
+                    }
+                } else {
+                    error_log("Upload error for file: " . $attachments['name'][$i] . " with error code: " . $attachments['error'][$i]);
+                }
+            }
+        }
+        
+        return $journal_id;
+    } else {
+        error_log("Failed to insert journal: " . $this->db->displayError());
+    }
+}
+
+  // Function to get a single attachment by its ID
+    public function getAttachmentById($attachment_id) {
+        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "journal_attachments` WHERE attachment_id = '" . (int)$attachment_id . "'");
+        return $query->row;  // returns the attachment row if found
+    }
+
+    // Function to delete a single attachment by its ID
+    public function deleteAttachmentById($attachment_id) {
+        $attachment = $this->getAttachmentById($attachment_id);
+        if ($attachment) {
+            $file_path = $attachment['file_path'];
+            if (file_exists($file_path)) {
+                unlink($file_path);  // Delete the file from the file system
+                $this->db->query("DELETE FROM `" . DB_PREFIX . "journal_attachments` WHERE attachment_id = '" . (int)$attachment_id . "'");
+                return true;
+            }
+        }
+        return false;
+    }
+    
+
+    
+    // Function to edit an existing journal entry
+    public function editJournal($journal_id, $data) {
+        $this->db->query("UPDATE `" . DB_PREFIX . "journals` SET 
+            thedate = '" . $this->db->escape($data['thedate']) . "',
+            refnum = '" . $this->db->escape($data['refnum']) . "',
+            entrytype = 1,
+            description = '" . $this->db->escape($data['description']) . "', 
+            last_edit_by = '" . $this->db->escape($data['last_edit_by']) . "',
+            updated_at = NOW() 
+            WHERE journal_id = '" . (int)$journal_id . "'");
+    
+        // Update entries
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = '" . (int)$journal_id . "'");
+
+  foreach ($data['entries'] as $type => $entries) {
+            foreach ($entries as $entry) {
+                $is_debit = ($type == 'debit') ? 1 : 0; // تحديد ما إذا كان القيد مدين أو دائن
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "journal_entries` SET 
+                    journal_id = '" . (int)$journal_id . "', 
+                    account_code = '" . $this->db->escape($entry['account_code']) . "', 
+                    amount = '" . (float)$entry['amount'] . "', 
+                    is_debit = '" . (int)$is_debit . "'");
+            }
+        }
+
+        // Manage attachments
+        // اصبح الحذف بالاجاكس
+        //$this->db->query("DELETE FROM `" . DB_PREFIX . "journal_attachments` WHERE journal_id = '" . (int)$journal_id . "'");
+
+        $attachments = $data['attachments'];
+        // محفوظة في مجلد dashboard
+        $attachments_dir = 'image/catalog/attachments/' . $journal_id;
+        
+        if (!is_dir($attachments_dir) && !mkdir($attachments_dir, 0755, true)) {
+            error_log("Failed to create directory: " . $attachments_dir);
+            return false; // Exit if unable to create directory
+        }
+        
+        // Process each attachment
+        for ($i = 0; $i < count($attachments['name']); $i++) {
+            if ($attachments['error'][$i] == 0) { // Check for upload error
+                $timestamp = date('YmdHis');
+                $file_name = basename($attachments['name'][$i]);
+                $new_file_name = $timestamp . "_" . $file_name;
+                $file_path = $attachments_dir . '/' . $new_file_name;
+        
+                if (move_uploaded_file($attachments['tmp_name'][$i], $file_path)) {
+                    $this->db->query("INSERT INTO `" . DB_PREFIX . "journal_attachments` SET 
+                        journal_id = '" . (int)$journal_id . "', 
+                        file_name = '" . $this->db->escape($new_file_name) . "', 
+                        file_path = '" . $this->db->escape($file_path) . "'");
+                } else {
+                    error_log("Failed to move uploaded file: " . $file_name);
+                }
+            } else {
+                error_log("Upload error for file: " . $attachments['name'][$i] . " with error code: " . $attachments['error'][$i]);
+            }
+        }
+        
+}
+    
+
+    
+
+    // Function to delete a journal entry
+    public function deleteJournal($journal_id) {
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "journal_attachments` WHERE journal_id = '" . (int)$journal_id . "'");
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = '" . (int)$journal_id . "'");
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "journals` WHERE journal_id = '" . (int)$journal_id . "'");
+    }
+
+    // Function to get journal entry by ID
+    public function getJournal($journal_id) {
+        $journal_data = array();
+    
+        // Fetch main journal data
+        $query = $this->db->query("SELECT *,
+            (SELECT SUM(amount) FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = '" . (int)$journal_id . "' AND is_debit = '1') AS total_debit,
+            (SELECT SUM(amount) FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = '" . (int)$journal_id . "' AND is_debit = '0') AS total_credit
+            FROM `" . DB_PREFIX . "journals` WHERE journal_id = '" . (int)$journal_id . "'");
+    
+        if ($query->num_rows) {
+            $journal_data = $query->row;
+    
+            // Fetch journal entries
+            $entries_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = '" . (int)$journal_id . "' ORDER BY is_debit DESC");
+            $journal_data['entries'] = $entries_query->rows;
+    
+            // Fetch attachments
+            $attachments_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "journal_attachments` WHERE journal_id = '" . (int)$journal_id . "'");
+            $journal_data['attachments'] = array();
+            foreach ($attachments_query->rows as $attachment) {
+                $journal_data['attachments'][] = array(
+                    'file_name' => $attachment['file_name'],
+                    'file_path' => $attachment['file_path']
+                );
+            }
+    
+            // Add total debit and total credit to journal data
+            $journal_data['total_debit'] = (float)$journal_data['total_debit'];
+            $journal_data['total_credit'] = (float)$journal_data['total_credit'];
+    
+            // Check if the journal is balanced
+            $journal_data['is_balanced'] = ($journal_data['total_debit'] === $journal_data['total_credit']);
+        }
+    
+        return $journal_data;
+    }
+
+
+    
+    
+    public function getJournalEntries($journal_id) {
+        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = '" . (int)$journal_id . "'");
+        $entries = $query->rows;
+    
+        $formattedEntries = [
+            'debit' => [],
+            'credit' => []
+        ];
+    
+        foreach ($entries as $entry) {
+            if ((int)$entry['is_debit'] === 1) {
+                $formattedEntries['debit'][] = $entry;
+            } else {
+                $formattedEntries['credit'][] = $entry;
+            }
+        }
+    
+        // Re-index arrays to ensure they are numeric arrays
+        $formattedEntries['debit'] = array_values($formattedEntries['debit']);
+        $formattedEntries['credit'] = array_values($formattedEntries['credit']);
+    
+        return $formattedEntries;
+    }
+    
+    
+    public function getAttachments($journal_id) {
+        $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "journal_attachments` WHERE journal_id = '" . (int)$journal_id . "'");
+        return $query->rows;
+    }
+
+
+    // Function to get list of accounts
+    public function getAccounts($data = array()) {
+        $sql = "SELECT a.account_id, ad.name, a.account_code, a.status, a.parent_id FROM " . DB_PREFIX . "accounts a LEFT JOIN " . DB_PREFIX . "account_description ad ON (a.account_id = ad.account_id) WHERE ad.language_id = '" . (int)$this->config->get('config_language_id') . "'";
+    
+        if (!empty($data['filter_name'])) {
+            $sql .= " AND ad.name LIKE '%" . $this->db->escape($data['filter_name']) . "%'";
+        }
+    
+        $sql .= " ORDER BY " . (isset($data['sort']) ? $data['sort'] : 'ad.name') . " " . (isset($data['order']) && $data['order'] == 'DESC' ? 'DESC' : 'ASC');
+        $sql .= " LIMIT " . (isset($data['start']) ? (int)$data['start'] : 0) . ", " . (isset($data['limit']) ? (int)$data['limit'] : 3000);
+    
+        $query = $this->db->query($sql);
+        return $query->rows;
+    }
+
+    public function getJournals($data = array()) {
+        $sql = "SELECT j.*, 
+                       (SELECT SUM(amount) FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = j.journal_id AND is_debit = 1) as total_debit,
+                       (SELECT SUM(amount) FROM `" . DB_PREFIX . "journal_entries` WHERE journal_id = j.journal_id AND is_debit = 0) as total_credit
+                FROM `" . DB_PREFIX . "journals` j";
+    
+        $where = [];
+    
+        // تحديد ما إذا كان يجب تضمين القيود الملغاة أم لا
+        if (isset($data['include_cancelled']) && $data['include_cancelled'] == 1) {
+            $where[] = "j.is_cancelled >= 0 ";
+        }else{
+            $where[] = "j.is_cancelled = 0 ";
+        }
+        
+        if (!empty($data['filter_date_start'])) {
+            $where[] = "DATE(j.thedate) >= '" . $this->db->escape($data['filter_date_start']) . "'";
+        }
+        if (!empty($data['filter_date_end'])) {
+            $where[] = "DATE(j.thedate) <= '" . $this->db->escape($data['filter_date_end']) . "'";
+        }
+        if (!empty($data['filter_journal_id'])) {
+            $where[] = "j.journal_id = '" . (int)$data['filter_journal_id'] . "'";
+        }
+        if (!empty($data['filter_description'])) {
+            $where[] = "j.description LIKE '%" . $this->db->escape($data['filter_description']) . "%'";
+        }
+  
+        if ($where) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+    
+        $sql .= " GROUP BY j.journal_id ORDER BY j.thedate DESC";
+       if (isset($data['start']) && isset($data['limit'])) {
+        $sql .= " LIMIT " . (int)$data['start'] . "," . (int)$data['limit'];
+       }
+        $query = $this->db->query($sql);
+        $results = $query->rows;
+    
+        foreach ($results as &$result) {
+            $result['is_balanced'] = ((float)$result['total_debit'] === (float)$result['total_credit']);
+        }
+    
+        return $results;
+    }
+
+
+
+
+}
+
+
+
+======================
+File: ./annual_tax.php
+======================
+<?php
+class ModelAccountsAnnualTax extends Model {
+    public function getAnnualTaxData($year) {
+        $currency_code = $this->config->get('config_currency');
+
+        $date_start = $year . '-01-01';
+        $date_end = $year . '-12-31';
+
+        // نفترض أن جميع الحسابات الضريبية (دخل) تبدأ بـ 24xx و 25xx
+        $total_taxes = $this->getSumForAccounts('24', $date_start, $date_end) + $this->getSumForAccounts('25', $date_start, $date_end);
+
+        return [
+            'year' => $year,
+            'total_taxes' => $this->currency->format($total_taxes, $currency_code)
+        ];
+    }
+
+    private function getSumForAccounts($prefix, $date_start, $date_end) {
+        $sql = "SELECT COALESCE(SUM(CASE WHEN je.is_debit=1 THEN je.amount ELSE -je.amount END),0) AS sum_amount
+                FROM " . DB_PREFIX . "journal_entries je
+                LEFT JOIN " . DB_PREFIX . "journals j ON (je.journal_id=j.journal_id)
+                LEFT JOIN " . DB_PREFIX . "accounts a ON (je.account_code=a.account_code)
+                WHERE a.account_code LIKE '".$this->db->escape($prefix)."%'
+                AND j.thedate BETWEEN '".$this->db->escape($date_start)."' AND '".$this->db->escape($date_end)."'
+                AND j.is_cancelled=0";
+        $q = $this->db->query($sql);
+        return (float)$q->row['sum_amount'];
+    }
+}
+
+
+
+======================
+File: ./profitability_analysis.php
+======================
+<?php
+class ModelAccountsProfitabilityAnalysis extends Model {
+    public function getProfitabilityData($date_start, $date_end) {
+        $currency_code = $this->config->get('config_currency');
+
+        // إيرادات المبيعات (نفترض جميع الإيرادات 4xxx)
+        $revenue = $this->getSumForAccounts('4', $date_start, $date_end);
+
+        // تكلفة المبيعات (مثلا 41xx أو 42xx حسب تصميم الحسابات، نفترض 42xx)
+        $cogs = $this->getSumForAccounts('42', $date_start, $date_end);
+
+        // المصاريف التشغيلية (نفترض 43xx و44xx)
+        $operating_expenses = $this->getSumForAccounts('43', $date_start, $date_end) + $this->getSumForAccounts('44', $date_start, $date_end);
+
+        // الربح الإجمالي = المبيعات - تكلفة المبيعات
+        $gross_profit = $revenue - $cogs;
+        // الربح التشغيلي = الربح الإجمالي - المصاريف التشغيلية
+        $operating_profit = $gross_profit - $operating_expenses;
+
+        // المصاريف الأخرى مثل الفوائد والضرائب (نفترض 45xx)
+        $other_expenses = $this->getSumForAccounts('45', $date_start, $date_end);
+
+        // صافي الربح = الربح التشغيلي - المصاريف الأخرى
+        $net_profit = $operating_profit - $other_expenses;
+
+        // حساب الهوامش
+        $gross_margin = ($revenue != 0) ? ($gross_profit / $revenue) * 100 : 0;
+        $operating_margin = ($revenue != 0) ? ($operating_profit / $revenue) * 100 : 0;
+        $net_margin = ($revenue != 0) ? ($net_profit / $revenue) * 100 : 0;
+
+        return [
+            'revenue' => $this->currency->format($revenue, $currency_code),
+            'cogs' => $this->currency->format($cogs, $currency_code),
+            'operating_expenses' => $this->currency->format($operating_expenses, $currency_code),
+            'gross_profit' => $this->currency->format($gross_profit, $currency_code),
+            'operating_profit' => $this->currency->format($operating_profit, $currency_code),
+            'other_expenses' => $this->currency->format($other_expenses, $currency_code),
+            'net_profit' => $this->currency->format($net_profit, $currency_code),
+            'gross_margin' => number_format($gross_margin, 2) . '%',
+            'operating_margin' => number_format($operating_margin, 2) . '%',
+            'net_margin' => number_format($net_margin, 2) . '%',
+        ];
+    }
+
+    private function getSumForAccounts($prefix, $date_start, $date_end) {
+        $sql = "SELECT COALESCE(SUM(CASE WHEN je.is_debit=1 THEN je.amount ELSE -je.amount END),0) AS sum_amount
+                FROM " . DB_PREFIX . "journal_entries je
+                LEFT JOIN " . DB_PREFIX . "journals j ON (je.journal_id=j.journal_id)
+                LEFT JOIN " . DB_PREFIX . "accounts a ON (je.account_code=a.account_code)
+                WHERE a.account_code LIKE '".$this->db->escape($prefix)."%'
+                AND j.thedate BETWEEN '".$this->db->escape($date_start)."' AND '".$this->db->escape($date_end)."'
+                AND j.is_cancelled=0";
+        $q = $this->db->query($sql);
+        return (float)$q->row['sum_amount'];
+    }
+}
+
+
+
+======================
+File: ./aging_report.php
+======================
+<?php
+class ModelAccountsAgingReport extends Model {
+    public function getAgingReportData($date_end) {
+        $currency_code = $this->config->get('config_currency');
+
+        // الحالة المسددة بالكامل نفترضها 5 (يمكن ضبطها عبر الإعدادات لو أردت)
+        $paid_status = 5;
+
+        // استعلام لجلب الطلبات غير المسددة بالكامل حتى تاريخه
+        // نفترض أن كل طلب له customer_id, total, date_added, order_status_id
+        $sql = "SELECT o.customer_id, CONCAT(c.firstname, ' ', c.lastname) AS customer_name, o.total, o.date_added, DATEDIFF('" . $this->db->escape($date_end) . "', o.date_added) AS days_overdue
+                FROM " . DB_PREFIX . "order o
+                LEFT JOIN " . DB_PREFIX . "customer c ON (o.customer_id=c.customer_id)
+                WHERE o.order_status_id <> '" . (int)$paid_status . "' 
+                AND o.date_added <= '" . $this->db->escape($date_end) . "'";
+
+        $query = $this->db->query($sql);
+        $orders = $query->rows;
+
+        // سنصنف حسب الشرائح: 0-30، 31-60، 61-90، >90
+        $buckets = [
+            '0-30' => 0.0,
+            '31-60' => 0.0,
+            '61-90' => 0.0,
+            '>90' => 0.0
+        ];
+
+        // سنجمع أيضاً حسب العميل لإظهار تفصيل
+        $customers_data = [];
+
+        foreach ($orders as $o) {
+            $days = (int)$o['days_overdue'];
+            $amount = (float)$o['total'];
+            $customer_name = $o['customer_name'] ?: 'Unknown';
+
+            // تحديد الشريحة
+            if ($days <= 30) {
+                $bucket = '0-30';
+            } elseif ($days <= 60) {
+                $bucket = '31-60';
+            } elseif ($days <= 90) {
+                $bucket = '61-90';
+            } else {
+                $bucket = '>90';
+            }
+
+            $buckets[$bucket] += $amount;
+
+            // تجميع بالعميل
+            if (!isset($customers_data[$o['customer_id']])) {
+                $customers_data[$o['customer_id']] = [
+                    'customer_name' => $customer_name,
+                    '0-30' => 0.0,
+                    '31-60' => 0.0,
+                    '61-90' => 0.0,
+                    '>90' => 0.0
+                ];
+            }
+            $customers_data[$o['customer_id']][$bucket] += $amount;
+        }
+
+        // تنسيق الأرقام
+        foreach ($buckets as $k => &$v) {
+            $v = $this->currency->format($v, $currency_code);
+        }
+
+        foreach ($customers_data as $cid => &$cdata) {
+            foreach (['0-30','31-60','61-90','>90'] as $bk) {
+                $cdata[$bk] = $this->currency->format($cdata[$bk], $currency_code);
+            }
+        }
+
+        return [
+            'buckets' => $buckets,
+            'customers_data' => $customers_data
+        ];
+    }
+}
+
+

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+}
+th {
+    background:#eee;
+}
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+}
+.summary {
+    margin-top:20px;
+}
+.summary td {
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_balance_sheet }}</h2>
+<p>{{ text_as_of }}: {{ end_date }}</p>
+
+<div class="section-title">{{ text_assets }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for a in assets %}
+<tr>
+    <td>{{ a.name }} ({{ a.account_code }})</td>
+    <td>{{ a.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_assets }}</strong></td>
+    <td><strong>{{ total_assets }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_liabilities }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for l in liabilities %}
+<tr>
+    <td>{{ l.name }} ({{ l.account_code }})</td>
+    <td>{{ l.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_liabilities }}</strong></td>
+    <td><strong>{{ total_liabilities }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="section-title">{{ text_equity }}</div>
+<table>
+<thead>
+<tr><th>{{ text_account_name }}</th><th>{{ text_amount }}</th></tr>
+</thead>
+<tbody>
+{% for e in equity %}
+<tr>
+    <td>{{ e.name }} ({{ e.account_code }})</td>
+    <td>{{ e.amount }}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><strong>{{ text_total_equity }}</strong></td>
+    <td><strong>{{ total_equity }}</strong></td>
+</tr>
+</tbody>
+</table>
+
+<table class="summary">
+<tr>
+    <td><strong>{{ text_total_liabilities_equity }}</strong></td>
+    <td><strong>{{ total_liabilities_equity }}</strong></td>
+</tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

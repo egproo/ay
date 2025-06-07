@@ -1,0 +1,236 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-movement').toggleClass('d-none');" class="btn btn-light d-md-none d-lg-none"><i class="fas fa-filter"></i></button>
+        <a href="{{ export }}" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-success"><i class="fas fa-file-excel"></i></a>
+      </div>
+      <h1>{{ heading_movement }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <div id="filter-movement" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ button_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-product" class="form-label">{{ entry_product }}</label>
+              <input type="text" name="filter_product" value="{{ filter_product }}" placeholder="{{ entry_product }}" id="input-product" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-branch" class="form-label">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-select">
+                <option value="">{{ text_all_status }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_branch %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-start" class="form-label">{{ entry_date_start }}</label>
+              <input type="date" name="filter_date_start" value="{{ filter_date_start }}" id="input-date-start" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-end" class="form-label">{{ entry_date_end }}</label>
+              <input type="date" name="filter_date_end" value="{{ filter_date_end }}" id="input-date-end" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-movement-type" class="form-label">{{ entry_movement_type }}</label>
+              <select name="filter_movement_type" id="input-movement-type" class="form-select">
+                {% for key, value in movement_types %}
+                  <option value="{{ key }}" {% if key == filter_movement_type %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-group" class="form-label">{{ entry_group }}</label>
+              <select name="filter_group" id="input-group" class="form-select">
+                {% for key, value in groups %}
+                  <option value="{{ key }}" {% if key == filter_group %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card mb-3">
+          <div class="card-header"><i class="fas fa-chart-line"></i> {{ text_movement_chart }}</div>
+          <div class="card-body">
+            <canvas id="movementChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+        
+        <div class="card mb-3">
+          <div class="card-header"><i class="fas fa-info-circle"></i> {{ text_movement_summary }}</div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card bg-success text-white">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ text_total_in }}</h5>
+                    <p class="card-text fs-4">{{ total_in }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card bg-danger text-white">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ text_total_out }}</h5>
+                    <p class="card-text fs-4">{{ total_out }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card bg-primary text-white">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ text_total_balance }}</h5>
+                    <p class="card-text fs-4">{{ total_balance }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header"><i class="fas fa-list"></i> {{ heading_movement }}</div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-start">{{ column_date }}</td>
+                    <td class="text-start">{{ column_product }}</td>
+                    <td class="text-start">{{ column_branch }}</td>
+                    <td class="text-end">{{ column_quantity_in }}</td>
+                    <td class="text-end">{{ column_quantity_out }}</td>
+                    <td class="text-end">{{ column_balance }}</td>
+                    <td class="text-start">{{ column_unit }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if movements %}
+                    {% for movement in movements %}
+                      <tr>
+                        <td class="text-start">{{ movement.date }}</td>
+                        <td class="text-start">{{ movement.product_name }}</td>
+                        <td class="text-start">{{ movement.branch_name }}</td>
+                        <td class="text-end">{{ movement.quantity_in }}</td>
+                        <td class="text-end">{{ movement.quantity_out }}</td>
+                        <td class="text-end">{{ movement.balance }}</td>
+                        <td class="text-start">{{ movement.unit_name }}</td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+// تهيئة الرسم البياني
+var ctx = document.getElementById('movementChart').getContext('2d');
+var movementChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ chart_labels|json_encode|raw }},
+        datasets: [
+            {
+                label: '{{ column_quantity_in }}',
+                data: {{ chart_in_data|json_encode|raw }},
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                fill: true
+            },
+            {
+                label: '{{ column_quantity_out }}',
+                data: {{ chart_out_data|json_encode|raw }},
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1,
+                fill: true
+            },
+            {
+                label: '{{ column_balance }}',
+                data: {{ chart_balance_data|json_encode|raw }},
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                fill: false
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// فلتر البيانات
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=report/inventory_trends/movementAnalysis&user_token={{ user_token }}';
+
+    var filter_product = $('#input-product').val();
+    if (filter_product) {
+        url += '&filter_product=' + encodeURIComponent(filter_product);
+    }
+
+    var filter_branch = $('#input-branch').val();
+    if (filter_branch) {
+        url += '&filter_branch=' + encodeURIComponent(filter_branch);
+    }
+
+    var filter_date_start = $('#input-date-start').val();
+    if (filter_date_start) {
+        url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+    }
+
+    var filter_date_end = $('#input-date-end').val();
+    if (filter_date_end) {
+        url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+    }
+
+    var filter_movement_type = $('#input-movement-type').val();
+    if (filter_movement_type) {
+        url += '&filter_movement_type=' + encodeURIComponent(filter_movement_type);
+    }
+
+    var filter_group = $('#input-group').val();
+    if (filter_group) {
+        url += '&filter_group=' + encodeURIComponent(filter_group);
+    }
+
+    location = url;
+});
+</script>
+{{ footer }}

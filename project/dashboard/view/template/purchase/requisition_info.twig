@@ -1,0 +1,391 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+    <style>
+        .status-label {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+        .status-draft {
+            background-color: #777;
+        }
+        .status-pending {
+            background-color: #f0ad4e;
+        }
+        .status-approved {
+            background-color: #5cb85c;
+        }
+        .status-rejected {
+            background-color: #d9534f;
+        }
+        .status-cancelled {
+            background-color: #777;
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            color: white;
+            font-size: 12px;
+        }
+        .priority-low {
+            background-color: #5bc0de;
+        }
+        .priority-medium {
+            background-color: #f0ad4e;
+        }
+        .priority-high {
+            background-color: #d9534f;
+        }
+        .priority-urgent {
+            background-color: #d9534f;
+            font-weight: bold;
+        }
+        
+        .info-section {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .action-buttons {
+            margin-bottom: 20px;
+        }
+        
+        .action-buttons .btn {
+            margin-right: 5px;
+        }
+        
+        [dir="rtl"] .action-buttons .btn {
+            margin-right: 0;
+            margin-left: 5px;
+        }
+        
+        .table-items th {
+            background-color: #f5f5f5;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            min-width: 150px;
+        }
+        
+        @media print {
+            .action-buttons, #header, #column-left, .breadcrumb, .page-header, .footer {
+                display: none;
+            }
+            #content {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+        }
+    </style>
+    
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right action-buttons">
+                <a href="{{ back }}" class="btn btn-default">
+                    <i class="fa fa-arrow-left"></i> {{ button_back }}
+                </a>
+                
+                <a href="{{ print }}" target="_blank" class="btn btn-info">
+                    <i class="fa fa-print"></i> {{ button_print }}
+                </a>
+                
+                {% if can_edit %}
+                <a href="javascript:void(0)" onclick="openEditModal({{ requisition.requisition_id }})" class="btn btn-primary">
+                    <i class="fa fa-pencil"></i> {{ button_edit }}
+                </a>
+                {% endif %}
+                
+                {% if can_approve %}
+                <a href="javascript:void(0)" onclick="approveRequisition({{ requisition.requisition_id }})" class="btn btn-success">
+                    <i class="fa fa-check"></i> {{ button_approve }}
+                </a>
+                {% endif %}
+                
+                {% if can_reject %}
+                <a href="javascript:void(0)" onclick="openRejectModal({{ requisition.requisition_id }})" class="btn btn-warning">
+                    <i class="fa fa-times"></i> {{ button_reject }}
+                </a>
+                {% endif %}
+                
+                {% if can_add_quotation %}
+                <a href="index.php?route=purchase/quotation/add&user_token={{ user_token }}&requisition_id={{ requisition.requisition_id }}" class="btn btn-primary">
+                    <i class="fa fa-money"></i> {{ button_add_quotation }}
+                </a>
+                {% endif %}
+            </div>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_requisition_details }}</h3>
+            </div>
+            <div class="panel-body">
+                <!-- معلومات الطلب -->
+                <div class="info-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ column_requisition_id }}:</div>
+                                <div class="col-md-7">{{ requisition.requisition_id }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ column_req_number }}:</div>
+                                <div class="col-md-7">{{ requisition.req_number }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ column_branch }}:</div>
+                                <div class="col-md-7">{{ requisition.branch_name }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ column_user_groups }}:</div>
+                                <div class="col-md-7">{{ requisition.user_group_name }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ column_user }}:</div>
+                                <div class="col-md-7">{{ requisition.user_fullname }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ column_status }}:</div>
+                                <div class="col-md-7">
+                                    <span class="status-label status-{{ requisition.status }}">
+                                        {{ formatted_status }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ column_date_added }}:</div>
+                                <div class="col-md-7">{{ formatted_date_added }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ entry_required_date }}:</div>
+                                <div class="col-md-7">{{ formatted_required_date }}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-5 detail-label">{{ entry_priority }}:</div>
+                                <div class="col-md-7">
+                                    <span class="priority-badge priority-{{ requisition.priority }}">
+                                        {{ requisition.priority }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if requisition.notes %}
+                    <div class="row" style="margin-top: 15px;">
+                        <div class="col-md-12">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">{{ entry_notes }}</div>
+                                <div class="panel-body">{{ requisition.notes }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- بنود الطلب -->
+                <h4><i class="fa fa-list"></i> {{ text_requisition_items }}</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-items">
+                        <thead>
+                            <tr>
+                                <th>{{ column_product }}</th>
+                                <th>{{ column_model }}</th>
+                                <th>{{ column_quantity }}</th>
+                                <th>{{ column_unit }}</th>
+                                <th>{{ column_location }}</th>
+                                <th>{{ column_description }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in requisition_items %}
+                            <tr>
+                                <td>{{ item.product_name }}</td>
+                                <td>{{ item.model }}</td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td>{{ item.unit_name }}</td>
+                                <td>{{ item.location }}</td>
+                                <td>{{ item.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- تاريخ الطلب -->
+                <h4><i class="fa fa-history"></i> {{ text_requisition_history }}</h4>
+                <div id="history-container">
+                    <div class="text-center">
+                        <button type="button" class="btn btn-info" onclick="loadHistory()">
+                            <i class="fa fa-refresh"></i> {{ text_load_history }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- مودال رفض الطلب -->
+<div id="modal-reject" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modalReject" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="form-reject">
+                <input type="hidden" name="requisition_id" id="reject-requisition-id" value="{{ requisition.requisition_id }}">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+                    <h4 class="modal-title">{{ text_reject_requisition }}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="reject-reason">{{ text_reject_reason }}</label>
+                        <textarea class="form-control" id="reject-reason" name="reason" rows="5" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{ text_close }}</button>
+                    <button type="submit" class="btn btn-danger">{{ button_reject }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- مودال تعديل طلب الشراء -->
+<div id="modal-edit-requisition" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modalEditReq" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- سيتم ملؤه بـ AJAX -->
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // تحميل تاريخ الطلب
+    function loadHistory() {
+        $.ajax({
+            url: 'index.php?route=purchase/requisition/ajaxGetRequisitionHistory&user_token={{ user_token }}&requisition_id={{ requisition.requisition_id }}',
+            type: 'get',
+            dataType: 'html',
+            beforeSend: function() {
+                $('#history-container').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            },
+            success: function(html) {
+                $('#history-container').html(html);
+            },
+            error: function() {
+                $('#history-container').html('<div class="alert alert-danger">{{ error_loading_history }}</div>');
+            }
+        });
+    }
+    
+    // اعتماد الطلب
+    function approveRequisition(id) {
+        if(confirm('{{ text_confirm_approve }}')) {
+            $.ajax({
+                url: 'index.php?route=purchase/requisition/ajaxApprove&user_token={{ user_token }}&requisition_id=' + id,
+                type: 'post',
+                dataType: 'json',
+                beforeSend: function() {
+                    $('body').append('<div id="loading-overlay" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8); align-items: center; justify-content: center; z-index: 9999;"><div id="loading-spinner" style="border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; animation: spin 2s linear infinite;"></div></div>');
+                },
+                success: function(json) {
+                    if(json.error) {
+                        alert(json.error);
+                    }
+                    if(json.success) {
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    alert('{{ error_approving }}');
+                },
+                complete: function() {
+                    $('#loading-overlay').remove();
+                }
+            });
+        }
+    }
+    
+    // رفض الطلب
+    $('#form-reject').on('submit', function(e) {
+        e.preventDefault();
+        
+        var $btn = $(this).find('button[type="submit"]');
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_processing }}');
+        
+        $.ajax({
+            url: 'index.php?route=purchase/requisition/ajaxReject&user_token={{ user_token }}',
+            type: 'post',
+            dataType: 'json',
+            data: $(this).serialize(),
+            success: function(json) {
+                if(json.error) {
+                    alert(json.error);
+                }
+                if(json.success) {
+                    $('#modal-reject').modal('hide');
+                    location.reload();
+                }
+            },
+            error: function() {
+                alert('{{ error_rejecting }}');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('{{ button_reject }}');
+            }
+        });
+    });
+    
+    // فتح مودال الرفض
+    function openRejectModal(id) {
+        $('#reject-requisition-id').val(id);
+        $('#modal-reject').modal('show');
+    }
+    
+    // فتح مودال التعديل
+    function openEditModal(requisition_id) {
+        $.ajax({
+            url: 'index.php?route=purchase/requisition/ajaxGetRequisitionForm&user_token={{ user_token }}&requisition_id=' + requisition_id,
+            type: 'get',
+            dataType: 'html',
+            beforeSend: function() {
+                $('#modal-edit-requisition .modal-content').html('<div class="modal-body text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            },
+            success: function(html) {
+                $('#modal-edit-requisition .modal-content').html(html);
+                $('#modal-edit-requisition').modal('show');
+            },
+            error: function() {
+                alert('{{ error_loading_form }}');
+            }
+        });
+    }
+    
+    // تحميل التاريخ عند تحميل الصفحة
+    $(document).ready(function() {
+        loadHistory();
+    });
+</script>
+
+{{ footer }}

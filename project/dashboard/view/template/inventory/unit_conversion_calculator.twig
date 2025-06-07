@@ -1,0 +1,497 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - {{ text_conversion_calculator }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <div class="row">
+      <!-- حاسبة التحويل الرئيسية -->
+      <div class="col-md-8">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-calculator"></i> حاسبة تحويل الوحدات التفاعلية
+            </h3>
+          </div>
+          <div class="panel-body">
+            <form id="conversion-form" class="form-horizontal">
+              
+              <!-- اختيار نوع الوحدة -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label">نوع الوحدة</label>
+                <div class="col-sm-9">
+                  <select id="unit-type-filter" class="form-control">
+                    <option value="">جميع الأنواع</option>
+                    {% for type_key, type_name in unit_types %}
+                    <option value="{{ type_key }}">{{ type_name }}</option>
+                    {% endfor %}
+                  </select>
+                  <small class="help-block">اختر نوع الوحدة لتصفية الخيارات المتاحة</small>
+                </div>
+              </div>
+              
+              <hr>
+              
+              <!-- الكمية المراد تحويلها -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="input-quantity">{{ text_quantity }}</label>
+                <div class="col-sm-9">
+                  <div class="input-group">
+                    <input type="number" id="input-quantity" class="form-control input-lg" value="1" step="0.000001" min="0" />
+                    <span class="input-group-addon">
+                      <i class="fa fa-hashtag"></i>
+                    </span>
+                  </div>
+                  <small class="help-block">{{ text_enter_quantity }}</small>
+                </div>
+              </div>
+              
+              <!-- الوحدة المصدر -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="from-unit">{{ text_from_unit }}</label>
+                <div class="col-sm-9">
+                  <select id="from-unit" class="form-control input-lg">
+                    <option value="">{{ text_select_units }}</option>
+                    {% for unit in units %}
+                    <option value="{{ unit.unit_id }}" data-type="{{ unit.unit_type }}" data-symbol="{{ unit.symbol }}">
+                      {{ unit.name }} ({{ unit.symbol }}) - {{ unit.unit_type_text }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              
+              <!-- زر التبديل -->
+              <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                  <button type="button" class="btn btn-warning btn-block" onclick="swapUnits()">
+                    <i class="fa fa-exchange fa-lg"></i> تبديل الوحدات
+                  </button>
+                </div>
+              </div>
+              
+              <!-- الوحدة المستهدفة -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="to-unit">{{ text_to_unit }}</label>
+                <div class="col-sm-9">
+                  <select id="to-unit" class="form-control input-lg">
+                    <option value="">{{ text_select_units }}</option>
+                    {% for unit in units %}
+                    <option value="{{ unit.unit_id }}" data-type="{{ unit.unit_type }}" data-symbol="{{ unit.symbol }}">
+                      {{ unit.name }} ({{ unit.symbol }}) - {{ unit.unit_type_text }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              
+              <!-- زر الحساب -->
+              <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                  <button type="button" class="btn btn-success btn-lg btn-block" onclick="calculateConversion()">
+                    <i class="fa fa-calculator"></i> {{ button_calculate }}
+                  </button>
+                </div>
+              </div>
+              
+              <!-- النتيجة -->
+              <div id="conversion-result" class="form-group" style="display: none;">
+                <div class="col-sm-offset-3 col-sm-9">
+                  <div class="alert alert-success alert-lg">
+                    <h4 class="text-center">
+                      <i class="fa fa-check-circle"></i> {{ text_conversion_result }}
+                    </h4>
+                    <div class="text-center" style="font-size: 18px; margin: 15px 0;">
+                      <span id="result-display"></span>
+                    </div>
+                    <div class="text-center">
+                      <small class="text-muted">
+                        <strong>معامل التحويل:</strong> <span id="conversion-factor"></span>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- الشريط الجانبي -->
+      <div class="col-md-4">
+        
+        <!-- التحويلات السريعة -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bolt"></i> التحويلات السريعة
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="btn-group-vertical btn-block">
+              <button type="button" class="btn btn-default btn-sm" onclick="quickConversion('weight', 'كيلوجرام', 'جرام', 1000)">
+                1 كيلوجرام = 1000 جرام
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="quickConversion('weight', 'طن', 'كيلوجرام', 1000)">
+                1 طن = 1000 كيلوجرام
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="quickConversion('volume', 'لتر', 'مليلتر', 1000)">
+                1 لتر = 1000 مليلتر
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="quickConversion('quantity', 'دستة', 'قطعة', 12)">
+                1 دستة = 12 قطعة
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="quickConversion('quantity', 'كرتونة', 'قطعة', 24)">
+                1 كرتونة = 24 قطعة
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- تاريخ التحويلات -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-history"></i> آخر التحويلات
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div id="conversion-history">
+              <div class="text-center text-muted">
+                <i class="fa fa-history fa-2x"></i>
+                <p>لا توجد تحويلات سابقة</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- نصائح -->
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-lightbulb-o"></i> نصائح للاستخدام
+            </h3>
+          </div>
+          <div class="panel-body">
+            <ul class="list-unstyled">
+              <li><i class="fa fa-check text-success"></i> يمكن التحويل فقط بين وحدات من نفس النوع</li>
+              <li><i class="fa fa-check text-success"></i> استخدم فلتر النوع لتسهيل البحث</li>
+              <li><i class="fa fa-check text-success"></i> النتائج تظهر بدقة 6 خانات عشرية</li>
+              <li><i class="fa fa-check text-success"></i> يمكن تبديل الوحدات بسهولة</li>
+              <li><i class="fa fa-check text-success"></i> التحويلات السريعة للوحدات الشائعة</li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- إحصائيات -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bar-chart"></i> إحصائيات النظام
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4>{{ units|length }}</h4>
+                  <small>إجمالي الوحدات</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4>{{ unit_types|length }}</h4>
+                  <small>أنواع الوحدات</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.alert-lg {
+  padding: 20px;
+  font-size: 16px;
+}
+
+.input-lg {
+  font-size: 16px;
+  height: 50px;
+}
+
+.btn-block {
+  margin-bottom: 5px;
+}
+
+.conversion-history-item {
+  padding: 8px;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.conversion-history-item:hover {
+  background-color: #e9e9e9;
+  cursor: pointer;
+}
+
+.quick-conversion-btn {
+  text-align: left;
+  font-size: 12px;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تفعيل التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // فلترة الوحدات حسب النوع
+    $('#unit-type-filter').change(function() {
+        var selectedType = $(this).val();
+        filterUnitsByType(selectedType);
+    });
+    
+    // تحديث تلقائي عند تغيير الكمية
+    $('#input-quantity').on('input', function() {
+        if ($('#from-unit').val() && $('#to-unit').val()) {
+            calculateConversion();
+        }
+    });
+    
+    // تحديث تلقائي عند تغيير الوحدات
+    $('#from-unit, #to-unit').change(function() {
+        if ($('#input-quantity').val() && $('#from-unit').val() && $('#to-unit').val()) {
+            calculateConversion();
+        }
+    });
+    
+    // تحميل تاريخ التحويلات من localStorage
+    loadConversionHistory();
+});
+
+function filterUnitsByType(type) {
+    $('#from-unit option, #to-unit option').each(function() {
+        var unitType = $(this).data('type');
+        
+        if (type === '' || unitType === type || $(this).val() === '') {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+    
+    // إعادة تعيين الاختيارات إذا لم تعد متاحة
+    if (type !== '') {
+        var fromUnitType = $('#from-unit option:selected').data('type');
+        var toUnitType = $('#to-unit option:selected').data('type');
+        
+        if (fromUnitType && fromUnitType !== type) {
+            $('#from-unit').val('');
+        }
+        
+        if (toUnitType && toUnitType !== type) {
+            $('#to-unit').val('');
+        }
+    }
+}
+
+function swapUnits() {
+    var fromUnit = $('#from-unit').val();
+    var toUnit = $('#to-unit').val();
+    
+    $('#from-unit').val(toUnit);
+    $('#to-unit').val(fromUnit);
+    
+    // إعادة حساب التحويل إذا كانت البيانات متوفرة
+    if (fromUnit && toUnit && $('#input-quantity').val()) {
+        calculateConversion();
+    }
+}
+
+function calculateConversion() {
+    var quantity = parseFloat($('#input-quantity').val());
+    var fromUnitId = $('#from-unit').val();
+    var toUnitId = $('#to-unit').val();
+    
+    // التحقق من صحة البيانات
+    if (!quantity || quantity <= 0) {
+        alert('يرجى إدخال كمية صحيحة');
+        return;
+    }
+    
+    if (!fromUnitId) {
+        alert('يرجى اختيار الوحدة المصدر');
+        return;
+    }
+    
+    if (!toUnitId) {
+        alert('يرجى اختيار الوحدة المستهدفة');
+        return;
+    }
+    
+    if (fromUnitId === toUnitId) {
+        displayResult(quantity, quantity, 1);
+        return;
+    }
+    
+    // التحقق من نوع الوحدات
+    var fromUnitType = $('#from-unit option:selected').data('type');
+    var toUnitType = $('#to-unit option:selected').data('type');
+    
+    if (fromUnitType !== toUnitType) {
+        alert('لا يمكن التحويل بين أنواع وحدات مختلفة');
+        return;
+    }
+    
+    // إجراء التحويل عبر AJAX
+    $.ajax({
+        url: '{{ calculate_url }}',
+        type: 'GET',
+        data: {
+            quantity: quantity,
+            from_unit_id: fromUnitId,
+            to_unit_id: toUnitId
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#conversion-result').hide();
+            // إظهار مؤشر التحميل
+        },
+        success: function(data) {
+            var factor = data.result / quantity;
+            displayResult(quantity, data.result, factor);
+            
+            // حفظ في تاريخ التحويلات
+            saveToHistory(quantity, fromUnitId, toUnitId, data.result);
+        },
+        error: function() {
+            alert('خطأ في حساب التحويل');
+        }
+    });
+}
+
+function displayResult(inputQuantity, result, factor) {
+    var fromSymbol = $('#from-unit option:selected').data('symbol');
+    var toSymbol = $('#to-unit option:selected').data('symbol');
+    
+    var resultText = inputQuantity.toLocaleString() + ' ' + fromSymbol + ' = ' + 
+                    result.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 6}) + ' ' + toSymbol;
+    
+    $('#result-display').html('<strong>' + resultText + '</strong>');
+    $('#conversion-factor').text(factor.toFixed(6));
+    $('#conversion-result').fadeIn();
+}
+
+function quickConversion(type, fromUnit, toUnit, factor) {
+    // تعيين نوع الوحدة
+    $('#unit-type-filter').val(type).trigger('change');
+    
+    // البحث عن الوحدات وتعيينها
+    $('#from-unit option').each(function() {
+        if ($(this).text().includes(fromUnit)) {
+            $('#from-unit').val($(this).val());
+            return false;
+        }
+    });
+    
+    $('#to-unit option').each(function() {
+        if ($(this).text().includes(toUnit)) {
+            $('#to-unit').val($(this).val());
+            return false;
+        }
+    });
+    
+    // تعيين الكمية وحساب النتيجة
+    $('#input-quantity').val(1);
+    displayResult(1, factor, factor);
+}
+
+function saveToHistory(quantity, fromUnitId, toUnitId, result) {
+    var fromText = $('#from-unit option:selected').text();
+    var toText = $('#to-unit option:selected').text();
+    var fromSymbol = $('#from-unit option:selected').data('symbol');
+    var toSymbol = $('#to-unit option:selected').data('symbol');
+    
+    var historyItem = {
+        timestamp: new Date().toLocaleString(),
+        quantity: quantity,
+        fromUnit: fromText,
+        toUnit: toText,
+        fromSymbol: fromSymbol,
+        toSymbol: toSymbol,
+        result: result,
+        fromUnitId: fromUnitId,
+        toUnitId: toUnitId
+    };
+    
+    var history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+    history.unshift(historyItem);
+    
+    // الاحتفاظ بآخر 10 تحويلات فقط
+    if (history.length > 10) {
+        history = history.slice(0, 10);
+    }
+    
+    localStorage.setItem('conversionHistory', JSON.stringify(history));
+    loadConversionHistory();
+}
+
+function loadConversionHistory() {
+    var history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+    var historyHtml = '';
+    
+    if (history.length === 0) {
+        historyHtml = '<div class="text-center text-muted"><i class="fa fa-history fa-2x"></i><p>لا توجد تحويلات سابقة</p></div>';
+    } else {
+        history.forEach(function(item, index) {
+            historyHtml += '<div class="conversion-history-item" onclick="repeatConversion(' + index + ')">';
+            historyHtml += '<strong>' + item.quantity + ' ' + item.fromSymbol + ' = ' + 
+                          item.result.toFixed(4) + ' ' + item.toSymbol + '</strong><br>';
+            historyHtml += '<small class="text-muted">' + item.timestamp + '</small>';
+            historyHtml += '</div>';
+        });
+    }
+    
+    $('#conversion-history').html(historyHtml);
+}
+
+function repeatConversion(index) {
+    var history = JSON.parse(localStorage.getItem('conversionHistory') || '[]');
+    var item = history[index];
+    
+    if (item) {
+        $('#input-quantity').val(item.quantity);
+        $('#from-unit').val(item.fromUnitId);
+        $('#to-unit').val(item.toUnitId);
+        
+        // تحديث فلتر النوع
+        var fromUnitType = $('#from-unit option:selected').data('type');
+        $('#unit-type-filter').val(fromUnitType).trigger('change');
+        
+        calculateConversion();
+    }
+}
+</script>
+
+{{ footer }}

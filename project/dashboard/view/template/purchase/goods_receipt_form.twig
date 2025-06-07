@@ -1,0 +1,267 @@
+{% extends 'common/header.twig' %}
+
+{% block content %}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <h1>{{ text_goods_receipt_form }}</h1>
+            <div class="pull-right">
+                <button type="button" id="button-save" class="btn btn-primary">
+                    <i class="fa fa-save"></i> {{ button_save }}
+                </button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    <i class="fa fa-reply"></i> {{ button_cancel }}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+            <div class="alert alert-danger alert-dismissible">
+                <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success alert-dismissible">
+                <i class="fa fa-check-circle"></i> {{ success }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        {% endif %}
+        <form id="form-goods-receipt" enctype="multipart/form-data">
+            <input type="hidden" name="goods_receipt_id" id="goods-receipt-id" value="{{ goods_receipt_id }}">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label" for="input-po">{{ entry_purchase_order }}</label>
+                        <select name="po_id" id="input-po" class="form-control select2" required>
+                            <option value="">{{ text_select }}</option>
+                            {% for po in purchase_orders %}
+                                <option value="{{ po.po_id }}" {% if po.po_id == selected_po_id %}selected{% endif %}>
+                                    {{ po.po_number }} - {{ po.supplier_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="input-receipt-number">{{ entry_receipt_number }}</label>
+                        <input type="text" name="receipt_number" value="{{ receipt_number }}" placeholder="{{ entry_receipt_number }}" id="input-receipt-number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="input-receipt-date">{{ entry_receipt_date }}</label>
+                        <input type="text" name="receipt_date" value="{{ receipt_date }}" placeholder="{{ entry_receipt_date }}" id="input-receipt-date" class="form-control date" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label" for="input-branch">{{ entry_branch }}</label>
+                        <select name="branch_id" id="input-branch" class="form-control select2" required>
+                            <option value="">{{ text_select }}</option>
+                            {% for branch in branches %}
+                                <option value="{{ branch.branch_id }}" {% if branch.branch_id == selected_branch_id %}selected{% endif %}>
+                                    {{ branch.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label" for="input-notes">{{ entry_notes }}</label>
+                        <textarea name="notes" placeholder="{{ entry_notes }}" id="input-notes" class="form-control" rows="3">{{ notes }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <h4>{{ text_products }}</h4>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>{{ column_product }}</th>
+                        <th>{{ column_quantity }}</th>
+                        <th>{{ column_unit }}</th>
+                        <th>{{ column_serial_number }}</th>
+                        <th>{{ column_expiry_date }}</th>
+                        <th>{{ column_quality_result }}</th>
+                        <th>{{ column_description }}</th>
+                        <th>{{ column_action }}</th>
+                    </tr>
+                </thead>
+                <tbody id="goods-receipt-items">
+                    {% for item in goods_receipt_items %}
+                        <tr>
+                            <td>
+                                <input type="text" name="products[]" class="form-control product-barcode" value="{{ item.product_name }}" placeholder="{{ entry_product }}" required>
+                            </td>
+                            <td>
+                                <input type="number" name="quantities[]" class="form-control" step="0.0001" value="{{ item.quantity }}" required>
+                            </td>
+                            <td>
+                                <select name="units[]" class="form-control select2" required>
+                                    <option value="">{{ text_select }}</option>
+                                    {% for unit in units %}
+                                        <option value="{{ unit.unit_id }}" {% if unit.unit_id == item.unit_id %}selected{% endif %}>
+                                            {{ unit.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="serial_numbers[]" class="form-control" value="{{ item.serial_number }}">
+                            </td>
+                            <td>
+                                <input type="text" name="expiry_dates[]" class="form-control date" value="{{ item.expiry_date }}" placeholder="{{ entry_expiry_date }}">
+                            </td>
+                            <td>
+                                <select name="quality_results[]" class="form-control select2">
+                                    <option value="">{{ text_select }}</option>
+                                    <option value="passed" {% if item.quality_result == 'passed' %}selected{% endif %}>{{ text_passed }}</option>
+                                    <option value="failed" {% if item.quality_result == 'failed' %}selected{% endif %}>{{ text_failed }}</option>
+                                    <option value="partial" {% if item.quality_result == 'partial' %}selected{% endif %}>{{ text_partial }}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="descriptions[]" class="form-control" value="{{ item.description }}">
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm button-remove"><i class="fa fa-trash-o"></i></button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% if goods_receipt_items|length == 0 %}
+                        <tr>
+                            <td colspan="8" class="text-center">{{ text_no_items }}</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="8">
+                            <button type="button" id="button-add-item" class="btn btn-primary">
+                                <i class="fa fa-plus"></i> {{ button_add_item }}
+                            </button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </form>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script type="text/javascript">
+    $(document).ready(function() {
+        // تفعيل Select2
+        $('.select2').select2();
+
+        // تفعيل Datepicker
+        $('.date').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true
+        });
+
+        // حفظ أو تحديث استلام بضائع
+        $('#button-save').on('click', function() {
+            $.ajax({
+                url: '{{ save_goods_receipt_url }}',
+                type: 'post',
+                data: $('#form-goods-receipt').serialize(),
+                dataType: 'json',
+                success: function(json) {
+                    if (json['error']) {
+                        $('#alert-goods-receipt').html('<div class="alert alert-danger">' + json['error'] + '</div>').show();
+                        toastr.error(json['error']);
+                    }
+                    if (json['success']) {
+                        $('#alert-goods-receipt').html('<div class="alert alert-success">' + json['success'] + '</div>').show();
+                        toastr.success(json['success']);
+                        setTimeout(function() {
+                            window.location.href = '{{ goods_receipt_list_url }}';
+                        }, 2000);
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+            });
+        });
+
+        // إضافة عنصر جديد للاستلام
+        $('#button-add-item').on('click', function() {
+            addGoodsReceiptItem({});
+        });
+
+        // دالة لإضافة عنصر للاستلام
+        function addGoodsReceiptItem(item) {
+            var html = '<tr>';
+            html += '<td><input type="text" name="products[]" class="form-control product-barcode" value="' + (item.product_name ? item.product_name : '') + '" placeholder="{{ entry_product }}" required></td>';
+            html += '<td><input type="number" name="quantities[]" class="form-control" step="0.0001" value="' + (item.quantity ? item.quantity : '') + '" required></td>';
+            html += '<td><select name="units[]" class="form-control select2" required>';
+            html += '<option value="">{{ text_select }}</option>';
+            {% for unit in units %}
+                html += '<option value="{{ unit.unit_id }}">{{ unit.name }}</option>';
+            {% endfor %}
+            html += '</select></td>';
+            html += '<td><input type="text" name="serial_numbers[]" class="form-control" value="' + (item.serial_number ? item.serial_number : '') + '"></td>';
+            html += '<td><input type="text" name="expiry_dates[]" class="form-control date" value="' + (item.expiry_date ? item.expiry_date : '') + '" placeholder="{{ entry_expiry_date }}"></td>';
+            html += '<td><select name="quality_results[]" class="form-control select2">';
+            html += '<option value="">{{ text_select }}</option>';
+            html += '<option value="passed">' + '{{ text_passed }}' + '</option>';
+            html += '<option value="failed">' + '{{ text_failed }}' + '</option>';
+            html += '<option value="partial">' + '{{ text_partial }}' + '</option>';
+            html += '</select></td>';
+            html += '<td><input type="text" name="descriptions[]" class="form-control" value="' + (item.description ? item.description : '') + '"></td>';
+            html += '<td><button type="button" class="btn btn-danger btn-sm button-remove"><i class="fa fa-trash-o"></i></button></td>';
+            html += '</tr>';
+            $('#goods-receipt-items').append(html);
+            $('.select2').select2();
+            $('.date').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true
+            });
+        }
+
+        // إزالة عنصر من الاستلام
+        $('#goods-receipt-items').on('click', '.button-remove', function() {
+            $(this).closest('tr').remove();
+        });
+
+        // حساب السعر الإجمالي تلقائيًا
+        $('#goods-receipt-items').on('input', 'input[name="unit_prices[]"], input[name="tax_rates[]"], input[name="discount_rates[]"], input[name="quantities[]"]', function() {
+            var row = $(this).closest('tr');
+            var quantity = parseFloat(row.find('input[name="quantities[]"]').val()) || 0;
+            var unit_price = parseFloat(row.find('input[name="unit_prices[]"]').val()) || 0;
+            var tax_rate = parseFloat(row.find('input[name="tax_rates[]"]').val()) || 0;
+            var discount_rate = parseFloat(row.find('input[name="discount_rates[]"]').val()) || 0;
+
+            var total_price = (quantity * unit_price) + ((quantity * unit_price) * (tax_rate / 100)) - ((quantity * unit_price) * (discount_rate / 100));
+            row.find('input[name="total_prices[]"]').val(total_price.toFixed(2));
+        });
+
+        // دعم مسح الباركود
+        $('#goods-receipt-items').on('keypress', '.product-barcode', function(e) {
+            if (e.which == 13) { // مفتاح Enter
+                e.preventDefault();
+                var barcode = $(this).val();
+                var row = $(this).closest('tr');
+                $.ajax({
+                    url: '{{ get_product_by_barcode_url }}',
+                    type: 'get',
+                    data: { barcode: barcode },
+                    dataType: 'json',
+                    success: function(json) {
+                        if (json['product']) {
+                            row.find('input[name="products[]"]').val(json['product'].name);
+                            row.find('select[name="units[]"]').val(json['product'].unit_id).trigger('change');
+                            row.find('input[name="serial_numbers[]"]').focus();
+                        } else {
+                            toastr.error('{{ text_product_not_found }}');
+                        }
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

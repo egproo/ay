@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<base href="{{ base }}" />
+<style type="text/css">
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #000;
+    margin: 0;
+    padding: 20px;
+}
+
+@media print {
+    body {
+        padding: 0;
+    }
+}
+
+@page {
+    size: A4;
+    margin: 10mm;
+}
+
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.pull-right {
+    float: right;
+}
+
+.pull-left {
+    float: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.header img {
+    max-height: 100px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin: 10px 0;
+    text-align: center;
+}
+
+.quote-info {
+    margin-bottom: 20px;
+}
+
+.quote-info table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.quote-info table td {
+    padding: 5px;
+    vertical-align: top;
+}
+
+.company-info {
+    width: 50%;
+}
+
+.customer-info {
+    width: 50%;
+}
+
+.items {
+    margin-bottom: 20px;
+}
+
+.items table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items table th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+    text-align: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.items table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.items table tfoot td {
+    font-weight: bold;
+    background-color: #f8f8f8;
+}
+
+.notes {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+}
+
+.signature {
+    margin-top: 40px;
+}
+
+.signature div {
+    display: inline-block;
+    width: 45%;
+    border-top: 1px solid #000;
+    padding-top: 5px;
+    text-align: center;
+}
+
+.total-in-words {
+    margin: 20px 0;
+    font-style: italic;
+}
+
+.footer {
+    margin-top: 40px;
+    text-align: center;
+    color: #777;
+    font-size: 10px;
+}
+
+.no-print {
+    display: none;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+</style>
+</head>
+<body>
+    <button onclick="window.print();" class="no-print" style="position: absolute; right: 20px; top: 20px; padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px;">
+        طباعة
+    </button>
+    
+    <div class="container">
+        <div class="header clearfix">
+            <div class="pull-left">
+                {% if company.logo %}
+                <img src="{{ company.logo }}" alt="{{ company.name }}" />
+                {% else %}
+                <h2>{{ company.name }}</h2>
+                {% endif %}
+            </div>
+            <div class="pull-right">
+                <h3>عرض سعر</h3>
+                <p>{{ quotation_number }}</p>
+            </div>
+        </div>
+        
+        <div class="title">عرض سعر</div>
+        
+        <div class="quote-info clearfix">
+            <table>
+                <tr>
+                    <td class="company-info">
+                        <strong>بيانات المورد:</strong><br />
+                        {{ company.name }}<br />
+                        {% if company.tax_id %}
+                        الرقم الضريبي: {{ company.tax_id }}<br />
+                        {% endif %}
+                        {{ company.address|nl2br }}<br />
+                        هاتف: {{ company.telephone }}<br />
+                        بريد إلكتروني: {{ company.email }}
+                    </td>
+                    <td class="customer-info">
+                        <strong>بيانات العميل:</strong><br />
+                        {% if customer %}
+                        {{ customer.name }}<br />
+                        {% if customer.address %}
+                        {{ customer.address|nl2br }}<br />
+                        {% endif %}
+                        {% if customer.telephone %}
+                        هاتف: {{ customer.telephone }}<br />
+                        {% endif %}
+                        {% if customer.email %}
+                        بريد إلكتروني: {{ customer.email }}
+                        {% endif %}
+                        {% else %}
+                        غير محدد
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>فرع المورد:</strong><br />
+                        {% if branch %}
+                        {{ branch.name }}<br />
+                        {% if branch.address %}
+                        {{ branch.address|nl2br }}<br />
+                        {% endif %}
+                        {% if branch.telephone %}
+                        هاتف: {{ branch.telephone }}
+                        {% endif %}
+                        {% else %}
+                        غير محدد
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>تفاصيل العرض:</strong><br />
+                        تاريخ العرض: {{ quotation_date }}<br />
+                        صالح حتى: {{ valid_until }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="items">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 35%;">المنتج</th>
+                        <th style="width: 10%;">الوحدة</th>
+                        <th style="width: 10%;">الكمية</th>
+                        <th style="width: 10%;">السعر</th>
+                        <th style="width: 10%;">الخصم</th>
+                        <th style="width: 10%;">الضريبة</th>
+                        <th style="width: 10%;">الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, item in quote_items %}
+                    <tr>
+                        <td class="text-center">{{ key + 1 }}</td>
+                        <td>{{ item.product_name }}</td>
+                        <td class="text-center">{{ item.unit_name }}</td>
+                        <td class="text-right">{{ item.quantity }}</td>
+                        <td class="text-right">{{ item.price }}</td>
+                        <td class="text-right">{{ item.discount_rate }}%</td>
+                        <td class="text-right">{{ item.tax_rate }}%</td>
+                        <td class="text-right">{{ item.total }}</td>
+                    </tr>
+                    {% if item.notes %}
+                    <tr>
+                        <td></td>
+                        <td colspan="7" style="font-size: 10px; font-style: italic;">ملاحظات: {{ item.notes }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="7" class="text-right">المجموع الفرعي</td>
+                        <td class="text-right">{{ total_amount }}</td>
+                    </tr>
+                    {% if discount_amount > 0 %}
+                    <tr>
+                        <td colspan="7" class="text-right">الخصم</td>
+                        <td class="text-right">{{ discount_amount }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if tax_amount > 0 %}
+                    <tr>
+                        <td colspan="7" class="text-right">الضريبة</td>
+                        <td class="text-right">{{ tax_amount }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td colspan="7" class="text-right">الإجمالي</td>
+                        <td class="text-right">{{ net_amount }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <div class="total-in-words">
+            <strong>المبلغ كتابةً:</strong> {{ total_in_words }}
+        </div>
+        
+        {% if notes %}
+        <div class="notes">
+            <strong>ملاحظات:</strong><br />
+            {{ notes }}
+        </div>
+        {% endif %}
+        
+        <div class="terms">
+            <strong>الشروط والأحكام:</strong><br />
+            1. الأسعار المذكورة أعلاه تشمل ضريبة القيمة المضافة.<br />
+            2. العرض صالح للمدة المذكورة أعلاه فقط.<br />
+            3. يتم تحديد طرق الدفع والشحن عند تأكيد الطلب.<br />
+            4. الإلغاء أو التغيير يخضع لموافقة الإدارة.
+        </div>
+        
+        <div class="signature">
+            <div class="pull-left">
+                توقيع العميل
+            </div>
+            <div class="pull-right">
+                توقيع المورد
+            </div>
+        </div>
+        
+        <div class="footer">
+            {{ company.name }} - {{ company.address|nl2br }} - هاتف: {{ company.telephone }}
+        </div>
+    </div>
+</body>
+</html>

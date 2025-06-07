@@ -1,0 +1,449 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        {% for action in actions %}
+        <a href="{{ action.href }}" 
+           {% if action.onclick %}onclick="{{ action.onclick }}"{% endif %} 
+           class="btn {{ action.class }}">
+          <i class="fa {{ action.icon }}"></i> {{ action.text }}
+        </a>
+        {% endfor %}
+        <a href="{{ back }}" class="btn btn-default"><i class="fa fa-reply"></i> {{ button_back }}</a>
+      </div>
+      <h1>{{ title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-eye"></i> {{ text_view }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <!-- Quote Details -->
+          <div class="col-md-6">
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_quote_details }}</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table table-bordered">
+                  <tr>
+                    <td><strong>{{ entry_quotation_number }}</strong></td>
+                    <td>{{ quotation_number }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_created_by }}</strong></td>
+                    <td>{{ created_by }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_quotation_date }}</strong></td>
+                    <td>{{ quotation_date }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_valid_until }}</strong></td>
+                    <td>{{ valid_until }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_status }}</strong></td>
+                    <td>
+                      <span class="label 
+                        {% if status == 'approved' %}label-success
+                        {% elseif status == 'pending' %}label-warning
+                        {% elseif status == 'rejected' %}label-danger
+                        {% elseif status == 'expired' %}label-default
+                        {% else %}label-info{% endif %}">
+                        {{ status_text }}
+                      </span>
+                    </td>
+                  </tr>
+                  {% if converted_to_order %}
+                  <tr>
+                    <td><strong>{{ text_order }}</strong></td>
+                    <td><a href="{{ order_url }}" class="btn btn-xs btn-primary">#{{ order_id }}</a></td>
+                  </tr>
+                  {% endif %}
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Customer Details -->
+          <div class="col-md-6">
+            <div class="panel panel-success">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_customer_details }}</h3>
+              </div>
+              <div class="panel-body">
+                {% if customer %}
+                <table class="table table-bordered">
+                  <tr>
+                    <td><strong>{{ entry_customer }}</strong></td>
+                    <td>
+                      {{ customer.name }}
+                      {% if customer.href %}
+                      <a href="{{ customer.href }}" class="btn btn-xs btn-info pull-right" target="_blank"><i class="fa fa-external-link"></i></a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_contact_info }}</strong></td>
+                    <td>
+                      {% if customer.email %}
+                      <i class="fa fa-envelope-o"></i> {{ customer.email }}<br>
+                      {% endif %}
+                      {% if customer.telephone %}
+                      <i class="fa fa-phone"></i> {{ customer.telephone }}
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_address }}</strong></td>
+                    <td>{{ customer.address|nl2br }}</td>
+                  </tr>
+                </table>
+                {% else %}
+                <div class="alert alert-warning">{{ text_no_customer_details }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Branch Information -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_branch_details }}</h3>
+              </div>
+              <div class="panel-body">
+                {% if branch %}
+                <table class="table table-bordered">
+                  <tr>
+                    <td width="25%"><strong>{{ entry_branch }}</strong></td>
+                    <td width="25%">{{ branch.name }}</td>
+                    <td width="25%"><strong>{{ text_contact_info }}</strong></td>
+                    <td width="25%">
+                      {% if branch.email %}
+                      <i class="fa fa-envelope-o"></i> {{ branch.email }}<br>
+                      {% endif %}
+                      {% if branch.telephone %}
+                      <i class="fa fa-phone"></i> {{ branch.telephone }}
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>{{ text_address }}</strong></td>
+                    <td colspan="3">{{ branch.address|nl2br }}</td>
+                  </tr>
+                </table>
+                {% else %}
+                <div class="alert alert-warning">{{ text_no_branch_details }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Quote Items -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_items }}</h3>
+              </div>
+              <div class="panel-body">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-striped">
+                    <thead>
+                      <tr>
+                        <th class="text-left">{{ column_product }}</th>
+                        <th class="text-center">{{ column_unit }}</th>
+                        <th class="text-right">{{ column_quantity }}</th>
+                        <th class="text-right">{{ column_price }}</th>
+                        <th class="text-right">{{ column_discount }}</th>
+                        <th class="text-right">{{ column_tax }}</th>
+                        <th class="text-right">{{ column_total }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% if quote_items %}
+                        {% for item in quote_items %}
+                          <tr>
+                            <td class="text-left">
+                              {{ item.product_name }}
+                              {% if item.notes %}
+                              <br><small class="text-muted"><i class="fa fa-comment-o"></i> {{ item.notes }}</small>
+                              {% endif %}
+                            </td>
+                            <td class="text-center">{{ item.unit_name }}</td>
+                            <td class="text-right">{{ item.quantity }}</td>
+                            <td class="text-right">{{ item.price }}</td>
+                            <td class="text-right">{{ item.discount_rate }}%</td>
+                            <td class="text-right">{{ item.tax_rate }}%</td>
+                            <td class="text-right">{{ item.total }}</td>
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        <tr>
+                          <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                        </tr>
+                      {% endif %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Totals and Notes -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_notes }}</h3>
+              </div>
+              <div class="panel-body">
+                {% if notes %}
+                  <p>{{ notes|nl2br }}</p>
+                {% else %}
+                  <p class="text-muted">{{ text_no_notes }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="panel panel-success">
+              <div class="panel-heading">
+                <h3 class="panel-title">{{ text_totals }}</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table table-bordered">
+                  <tr>
+                    <td width="50%" class="text-right"><strong>{{ text_subtotal }}</strong></td>
+                    <td width="50%" class="text-right">{{ total_amount }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-right"><strong>{{ text_discount }}</strong></td>
+                    <td class="text-right">{{ discount_amount }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-right"><strong>{{ text_tax }}</strong></td>
+                    <td class="text-right">{{ tax_amount }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-right"><strong>{{ text_total }}</strong></td>
+                    <td class="text-right"><strong>{{ net_amount }}</strong></td>
+                  </tr>
+                  <tr>
+                    <td class="text-right"><strong>{{ text_total_in_words }}</strong></td>
+                    <td class="text-right">{{ total_in_words }}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Modal -->
+<div class="modal fade" id="modal-email" tabindex="-1" role="dialog" aria-labelledby="modal-email-title">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="modal-email-title">{{ text_send_email }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="email-form">
+          <div class="form-group">
+            <label for="email-to">{{ entry_email_to }}</label>
+            <input type="email" class="form-control" id="email-to" name="email" value="{{ customer_email }}" required>
+          </div>
+          <div class="form-group">
+            <label for="email-subject">{{ entry_email_subject }}</label>
+            <input type="text" class="form-control" id="email-subject" name="subject" value="{{ email_subject }}" required>
+          </div>
+          <div class="form-group">
+            <label for="email-message">{{ entry_email_message }}</label>
+            <textarea class="form-control" id="email-message" name="message" rows="6" required>{{ email_message }}</textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="btn-send-email">{{ button_send }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $('#btn-send-email').on('click', function() {
+    if ($('#email-form')[0].checkValidity()) {
+      sendEmail();
+    } else {
+      $('#email-form')[0].reportValidity();
+    }
+  });
+});
+
+function showEmailModal() {
+  $('#modal-email').modal('show');
+}
+
+function sendEmail() {
+  $.ajax({
+    url: '{{ email_quote_url }}',
+    type: 'POST',
+    data: {
+      email: $('#email-to').val(),
+      subject: $('#email-subject').val(),
+      message: $('#email-message').val()
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#btn-send-email').button('loading');
+    },
+    complete: function() {
+      $('#btn-send-email').button('reset');
+    },
+    success: function(json) {
+      if (json.success) {
+        $('#modal-email').modal('hide');
+        
+        // Show success message
+        $('body').append('<div class="alert alert-success alert-dismissible fade in notification"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        // Automatically hide the notification after 3 seconds
+        setTimeout(function() {
+          $('.notification').fadeOut(500, function() {
+            $(this).remove();
+          });
+        }, 3000);
+      }
+      
+      if (json.error) {
+        // Show error message
+        $('body').append('<div class="alert alert-danger alert-dismissible fade in notification"><i class="fa fa-exclamation-circle"></i> ' + json.error + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+}
+
+function approveQuote(quoteId) {
+  if (confirm('{{ text_confirm_approve }}')) {
+    $.ajax({
+      url: 'index.php?route=sale/quote/approve&user_token={{ user_token }}',
+      type: 'POST',
+      data: { quote_id: quoteId },
+      dataType: 'json',
+      success: function(json) {
+        if (json.success) {
+          location.reload();
+        }
+        
+        if (json.error) {
+          alert(json.error);
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+}
+
+function rejectQuote(quoteId) {
+  var reason = prompt('{{ text_confirm_reject }}', '');
+  
+  if (reason !== null) {
+    $.ajax({
+      url: 'index.php?route=sale/quote/reject&user_token={{ user_token }}',
+      type: 'POST',
+      data: { 
+        quote_id: quoteId,
+        reason: reason
+      },
+      dataType: 'json',
+      success: function(json) {
+        if (json.success) {
+          location.reload();
+        }
+        
+        if (json.error) {
+          alert(json.error);
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+}
+
+function expireQuote(quoteId) {
+  if (confirm('{{ text_confirm_expire }}')) {
+    $.ajax({
+      url: 'index.php?route=sale/quote/expire&user_token={{ user_token }}',
+      type: 'POST',
+      data: { quote_id: quoteId },
+      dataType: 'json',
+      success: function(json) {
+        if (json.success) {
+          location.reload();
+        }
+        
+        if (json.error) {
+          alert(json.error);
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+}
+
+function confirmDelete(url) {
+  if (confirm('{{ text_confirm_delete }}')) {
+    location = url;
+  }
+}
+</script>
+
+<style type="text/css">
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  min-width: 300px;
+}
+</style>
+
+{{ footer }}

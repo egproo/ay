@@ -1,0 +1,305 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-internal-link').submit() : false;"><i class="fa fa-trash-o"></i></button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1><i class="fa fa-link"></i> {{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_internal_links_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-source-page">{{ column_source_page }}</label>
+                <input type="text" name="filter_source_page" value="{{ filter_source_page }}" placeholder="{{ column_source_page }}" id="input-source-page" class="form-control" />
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-target-page">{{ column_target_page }}</label>
+                <input type="text" name="filter_target_page" value="{{ filter_target_page }}" placeholder="{{ column_target_page }}" id="input-target-page" class="form-control" />
+              </div>
+              <button type="button" id="button-filter" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-internal-link">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">{% if sort == 'source_page' %}<a href="{{ sort_source_page }}" class="{{ order|lower }}">{{ column_source_page }}</a>{% else %}<a href="{{ sort_source_page }}">{{ column_source_page }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'target_page' %}<a href="{{ sort_target_page }}" class="{{ order|lower }}">{{ column_target_page }}</a>{% else %}<a href="{{ sort_target_page }}">{{ column_target_page }}</a>{% endif %}</td>
+                  <td class="text-left">{{ column_anchor_text }}</td>
+                  <td class="text-left">{{ column_status }}</td>
+                  <td class="text-left">{% if sort == 'date_added' %}<a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>{% else %}<a href="{{ sort_date_added }}">{{ column_date_added }}</a>{% endif %}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if internal_links %}
+                {% for link in internal_links %}
+                <tr>
+                  <td class="text-center">
+                    {% if link.link_id in selected %}
+                    <input type="checkbox" name="selected[]" value="{{ link.link_id }}" checked="checked" />
+                    {% else %}
+                    <input type="checkbox" name="selected[]" value="{{ link.link_id }}" />
+                    {% endif %}
+                  </td>
+                  <td class="text-left">{{ link.source_page }}</td>
+                  <td class="text-left">{{ link.target_page }}</td>
+                  <td class="text-left">{{ link.anchor_text }}</td>
+                  <td class="text-left">{{ link.status }}</td>
+                  <td class="text-left">{{ link.date_added }}</td>
+                  <td class="text-right">
+                    <a href="{{ link.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+	var url = 'index.php?route=catalog/seo/internalLinks&user_token={{ user_token }}';
+
+	var filter_source_page = $('input[name=\'filter_source_page\']').val();
+	if (filter_source_page) {
+		url += '&filter_source_page=' + encodeURIComponent(filter_source_page);
+	}
+
+	var filter_target_page = $('input[name=\'filter_target_page\']').val();
+	if (filter_target_page) {
+		url += '&filter_target_page=' + encodeURIComponent(filter_target_page);
+	}
+
+	location = url;
+});
+</script>
+<style>
+/* Estilos generales para el módulo SEO */
+.seo-navigation {
+    margin-bottom: 30px;
+}
+
+.seo-navigation .panel-body {
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.seo-navigation .panel-body:hover {
+    background-color: #f8f8f8;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.seo-navigation .btn-link {
+    color: #333;
+    text-decoration: none;
+    padding: 15px 0;
+}
+
+.seo-navigation i.fa {
+    margin-bottom: 10px;
+    color: #23a1d1;
+}
+
+/* Tarjetas de estadísticas */
+.panel-primary, .panel-green, .panel-red, .panel-yellow {
+    border-color: #ddd;
+}
+
+.panel-primary .panel-heading {
+    background-color: #337ab7;
+    border-color: #337ab7;
+    color: #fff;
+}
+
+.panel-green .panel-heading {
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+    color: #fff;
+}
+
+.panel-red .panel-heading {
+    background-color: #d9534f;
+    border-color: #d9534f;
+    color: #fff;
+}
+
+.panel-yellow .panel-heading {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+    color: #fff;
+}
+
+.panel-footer {
+    color: #333;
+}
+
+.panel .huge {
+    font-size: 40px;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+/* Barras de progreso */
+.progress {
+    margin-bottom: 10px;
+    height: 20px;
+}
+
+.progress-bar {
+    line-height: 20px;
+    font-size: 12px;
+}
+
+.progress-bar-success {
+    background-color: #5cb85c;
+}
+
+.progress-bar-warning {
+    background-color: #f0ad4e;
+}
+
+.progress-bar-danger {
+    background-color: #d9534f;
+}
+
+/* Lista de sugerencias */
+.seo-suggestions-list {
+    padding-left: 15px;
+    list-style-type: none;
+}
+
+.seo-suggestions-list li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #eee;
+}
+
+.seo-suggestions-list i {
+    margin-right: 8px;
+}
+
+/* Estilos para estados */
+.label-improved {
+    background-color: #5cb85c;
+}
+
+.label-declined {
+    background-color: #d9534f;
+}
+
+.label-unchanged {
+    background-color: #5bc0de;
+}
+
+.label-new {
+    background-color: #f0ad4e;
+}
+
+/* Indicadores de cambio en posiciones */
+.text-success .fa, 
+.text-danger .fa {
+    margin-right: 3px;
+}
+
+/* Formularios de análisis */
+.analysis-results-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .panel .huge {
+        font-size: 30px;
+    }
+    
+    .form-group [class*='col-xs-'] {
+        margin-bottom: 15px;
+    }
+}
+
+/* Animaciones */
+.fade-in {
+    animation: fadeIn ease 0.5s;
+    -webkit-animation: fadeIn ease 0.5s;
+    -moz-animation: fadeIn ease 0.5s;
+    -o-animation: fadeIn ease 0.5s;
+    -ms-animation: fadeIn ease 0.5s;
+}
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-moz-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}    
+</style>
+{{ footer }}

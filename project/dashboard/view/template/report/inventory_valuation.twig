@@ -1,0 +1,140 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-inventory').toggleClass('d-none');" class="btn btn-light d-md-none d-lg-none"><i class="fas fa-filter"></i></button>
+        <a href="{{ export }}" data-bs-toggle="tooltip" title="{{ text_export_to_excel }}" class="btn btn-success"><i class="fas fa-file-excel"></i></a>
+      </div>
+      <h1>{{ heading_valuation }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <div id="filter-inventory" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ button_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-branch" class="form-label">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-select">
+                <option value="">{{ text_all_status }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_branch %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-category" class="form-label">{{ entry_category }}</label>
+              <select name="filter_category" id="input-category" class="form-select">
+                <option value="">{{ text_all_status }}</option>
+                {% for category in categories %}
+                  <option value="{{ category.category_id }}" {% if category.category_id == filter_category %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-product" class="form-label">{{ entry_product }}</label>
+              <input type="text" name="filter_product" value="{{ filter_product }}" placeholder="{{ entry_product }}" id="input-product" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-date" class="form-label">{{ entry_date }}</label>
+              <input type="date" name="filter_date" value="{{ filter_date }}" id="input-date" class="form-control"/>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-chart-bar"></i> {{ heading_valuation }}
+            <div class="float-end">
+              <span class="badge bg-primary">{{ text_total_value }} {{ total_value_formatted }}</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-start"><a href="{{ sort_name }}" {% if sort == 'p.name' %}class="{{ order|lower }}"{% endif %}>{{ column_product }}</a></td>
+                    <td class="text-start"><a href="{{ sort_model }}" {% if sort == 'p.model' %}class="{{ order|lower }}"{% endif %}>{{ column_model }}</a></td>
+                    <td class="text-start"><a href="{{ sort_category }}" {% if sort == 'category' %}class="{{ order|lower }}"{% endif %}>{{ column_category }}</a></td>
+                    <td class="text-start"><a href="{{ sort_branch }}" {% if sort == 'b.name' %}class="{{ order|lower }}"{% endif %}>{{ column_branch }}</a></td>
+                    <td class="text-end"><a href="{{ sort_quantity }}" {% if sort == 'pi.quantity' %}class="{{ order|lower }}"{% endif %}>{{ column_quantity }}</a></td>
+                    <td class="text-start">{{ column_unit }}</td>
+                    <td class="text-end"><a href="{{ sort_cost }}" {% if sort == 'pi.average_cost' %}class="{{ order|lower }}"{% endif %}>{{ column_cost }}</a></td>
+                    <td class="text-end"><a href="{{ sort_value }}" {% if sort == 'total_value' %}class="{{ order|lower }}"{% endif %}>{{ column_value }}</a></td>
+                    <td class="text-start"><a href="{{ sort_last_movement }}" {% if sort == 'last_movement_date' %}class="{{ order|lower }}"{% endif %}>{{ column_last_movement }}</a></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if inventory_items %}
+                    {% for item in inventory_items %}
+                      <tr>
+                        <td class="text-start">{{ item.name }}</td>
+                        <td class="text-start">{{ item.model }}</td>
+                        <td class="text-start">{{ item.category }}</td>
+                        <td class="text-start">{{ item.branch }}</td>
+                        <td class="text-end">{{ item.quantity }}</td>
+                        <td class="text-start">{{ item.unit }}</td>
+                        <td class="text-end">{{ item.cost }}</td>
+                        <td class="text-end">{{ item.value }}</td>
+                        <td class="text-start">{{ item.last_movement }}</td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td class="text-center" colspan="9">{{ text_no_results }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+	var url = 'index.php?route=report/inventory_analysis/valuation&user_token={{ user_token }}';
+
+	var filter_branch = $('#input-branch').val();
+	if (filter_branch) {
+		url += '&filter_branch=' + encodeURIComponent(filter_branch);
+	}
+
+	var filter_category = $('#input-category').val();
+	if (filter_category) {
+		url += '&filter_category=' + encodeURIComponent(filter_category);
+	}
+
+	var filter_product = $('#input-product').val();
+	if (filter_product) {
+		url += '&filter_product=' + encodeURIComponent(filter_product);
+	}
+
+	var filter_date = $('#input-date').val();
+	if (filter_date) {
+		url += '&filter_date=' + encodeURIComponent(filter_date);
+	}
+
+	location = url;
+});
+</script>
+{{ footer }}

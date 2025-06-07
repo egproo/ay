@@ -1,0 +1,284 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-refresh" data-toggle="tooltip" title="Refresh Data" onclick="refreshProductList();" class="btn btn-default"><i class="fa fa-refresh"></i> List</button>
+          <button type="button" id="button-filter" data-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filterform').slideToggle();" class="btn btn-info"><i class="fa fa-filter"></i></button>
+<button type="button" id="update-code-status" class="btn btn-warning" onclick="triggerCodeStatusUpdate();"><i class="fa fa-refresh"></i> ETA Codes Status </button>
+
+      </div>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div id="filterform" style="display: none;width: 100%;width: 100vw;max-width: 100%;display: block;" class="form-inline" style="margin-bottom: 20px;display: flex;">
+      <div class="form-group col-md-2 col-sm-12 col-xs-12">
+        <input type="text" id="filter-name" placeholder="{{ entry_name }}" class="form-control">
+      </div>
+      <div class="form-group col-md-2 col-sm-12 col-xs-6">
+        <input type="text" id="filter-egs" placeholder="{{ entry_egs }}" class="form-control">
+      </div>
+      <div class="form-group col-md-2 col-sm-12 col-xs-6">
+        <input type="text" id="filter-product-id" placeholder="{{ entry_product_id }}" class="form-control">
+      </div>
+      <div class="form-group col-md-6 col-sm-12 col-xs-12" style="max-width: 100%;display: flex;">
+        <select id="filter-gpc" class="form-control select2">
+            <option value="">{{text_select}} GPC Code</option>
+          {% for gpc in gpc_codes %}
+          <option value="{{ gpc.gpc_code }}">({{ gpc.gpc_code }}) - {{ gpc.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+         
+  </div>  
+  <div class="container-fluid">
+      <div id="alertPlaceholder"></div>
+     <div style="display: flex;max-width: 100%;" class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th class="text-center">{{ column_product_id }}</th>
+            <th class="text-center">{{ column_name }}</th>
+            <th class="text-center" style="max-width:220px;width:220px">{{ column_egs_code }}</th>
+            <th class="text-center">{{ column_gpc_code }}</th>
+            <th class="text-center">{{ column_eta_status }}</th>
+            <th class="text-center">{{ column_action }}</th>
+          </tr>
+        </thead>
+            <tbody id="product-list">
+ 
+            </tbody>
+
+      </table>
+                <div class="text-center loading">
+                    <span class="spinner"></span>
+                </div>
+                
+
+    </div>
+    <nav aria-label="Page navigation example" class="text-center" >
+        <ul class="pagination  text-center" id="pagination">
+            <!-- Pagination links will be dynamically generated here -->
+        </ul>
+    </nav>    
+  </div>
+</div>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+}
+.loading .spinner {
+border: 4px solid #f3f3f3;
+border-top: 4px solid #3498db;
+border-radius: 50%;
+width: 40px;
+height: 50px;
+animation: spin 2s linear infinite;
+text-align: center;
+display: list-item;
+position: absolute;
+left: 45%;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
+<script>
+
+
+
+function generateSelectHtml(productId, selectedGpc) {
+  if (!selectedGpc) {
+    var selectHtml = '<select class="form-control select-gpc select2" onchange="updateGpcCode(' + productId + ', this.value)">';
+    selectHtml += '<option value="">{{text_select}} GPC Code</option>';
+    {% for gpc in gpc_codes %}
+    selectHtml += '<option value="{{ gpc.gpc_code }}">({{ gpc.gpc_code }}) - {{ gpc.title }}</option>';
+    {% endfor %}
+    selectHtml += '</select>';
+    return selectHtml;
+  } else {
+    return selectedGpc; // Display as text if already set
+  }
+}
+
+function updateGpcCode(productId, newGpcCode) {
+  // اضف هنا AJAX لتحديث رمز GPC في الخلفية
+  $.ajax({
+    url: 'index.php?route=eta/codes/updateProduct&user_token={{ user_token }}',
+    type: 'POST',
+    data: {
+      product_id: productId,
+      gpc_code: newGpcCode
+    },
+    dataType: 'json',
+    success: function(response) {
+      $('#alertPlaceholder').html('<div class="alert alert-success alert-dismissible fade show" role="alert">Success: ' + response.success + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+    },
+    error: function(xhr, status, error) {
+      $('#alertPlaceholder').html('<div class="alert alert-danger alert-dismissible fade show" role="alert">Error: ' + xhr.responseText + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+    }
+  });
+}
+
+function sendToETA(productId) {
+  $('#alertPlaceholder').html('<div class="alert alert-info alert-dismissible fade show" role="alert">Sending product ' + productId + ' to ETA<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+  // اضف هنا AJAX لإرسال بيانات المنتج إلى ETA
+  $.ajax({
+    url: 'index.php?route=eta/codes/sendToETA&user_token={{ user_token }}',
+    type: 'POST',
+    data: {
+      product_id: productId
+    },
+    dataType: 'json',
+    success: function(response) {
+	  $('#alertPlaceholder').before('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + response.success.success + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+ 
+    },
+    error: function(xhr, status, error) {
+    }
+  });
+}
+
+function refreshProductList(page = 1) {
+    $('.spinner').show();
+    
+    var filter_name = $('#filter-name').val();
+    var filter_egs = $('#filter-egs').val();
+    var filter_product_id = $('#filter-product-id').val();
+    var filter_gpc = $('#filter-gpc').val();
+
+    $.ajax({
+        url: 'index.php?route=eta/codes/getProducts&user_token={{ user_token }}',
+        type: 'GET',
+        data: {
+            page: page,
+            filter_name: filter_name,
+            filter_egs: filter_egs,
+            filter_product_id: filter_product_id,
+            filter_gpc: filter_gpc
+        },
+        dataType: 'json',
+        success: function(json) {
+            var rows = '';
+            if (json.products && json.products.length > 0) {
+                json.products.forEach(function(product) {
+                    var etaStatusClass = product.eta_status === 'active' ? 'text-success' : 'text-danger';
+                
+                    rows += '<tr>' +
+                        '<td class="text-center">' + product.product_id + '</td>' +
+                        '<td  class="text-center">' + product.name + '</td>' +
+                        '<td  class="text-center">' + product.egs_code + '</td>' +
+                        '<td  class="text-center" style="max-width:220px;width:220px">' + generateSelectHtml(product.product_id, product.gpc_code) + '</td>' +
+                        '<td class="text-center ' + etaStatusClass + '"><strong>' + product.eta_status + '</strong></td>' +
+                        '<td class="text-center">' +
+                        '<button onclick="sendToETA(' + product.product_id + ')" class="btn btn-primary"><i class="fa fa-send"></i> {{text_to_eta}}</button>' +
+                        '</td>' +
+                        '</tr>';
+                });
+            } else {
+                rows = '<tr><td colspan="6" class="text-center">{{ text_no_results }}</td></tr>';
+            }
+            $('#product-list').html(rows);
+            setupPagination(json.pagination);
+            $('.spinner').hide();
+            $('.select2').select2();
+        },
+        error: function(xhr, status, error) {
+            console.log('Error: ' + xhr.responseText);
+            $('.spinner').hide();
+        }
+    });
+}
+
+
+
+$(document).ready(function() {
+    // Trigger filter when text inputs are changed
+    $('#filter-name, #filter-egs, #filter-product-id').on('input', function() {
+        refreshProductList();
+    });
+
+    // Trigger filter when select input is changed
+    $('#filter-gpc').on('change', function() {
+        refreshProductList();
+    });
+    
+    $('#filter-gpc').select2();
+    $('.spinner').show();
+    
+    var json = {{ products_json | raw }}; // Ensure this line is properly templated and parsed by your backend templating engine.
+
+    // Checking if 'products' and 'pagination' keys exist in the JSON object
+    if (json.products && json.products.length > 0) {
+        var rows = '';
+        json.products.forEach(function(product) {
+                var etaStatusClass = product.eta_status === 'active' ? 'text-success' : 'text-danger';
+        
+            rows += '<tr>' +
+                '<td class="text-center">' + product.product_id + '</td>' +
+                '<td class="text-center">' + product.name + '</td>' +
+                '<td class="text-center">' + product.egs_code + '</td>' +
+                '<td class="text-center" style="max-width:220px;width:220px">' + generateSelectHtml(product.product_id, product.gpc_code) + '</td>' +
+                '<td class="text-center ' + etaStatusClass + '"><strong>' + product.eta_status + '</strong></td>' +
+                '<td class="text-center">' +
+                '<button onclick="sendToETA(' + product.product_id + ')" class="btn btn-primary"><i class="fa fa-send"></i> {{text_to_eta}}</button>' +
+                '</td>' +
+                '</tr>';
+        });
+        $('#product-list').html(rows);
+    } else {
+        $('#product-list').html('<tr><td colspan="6" class="text-center">{{ text_no_results }}</td></tr>');
+    }
+
+    // Check if pagination information is available and call the setupPagination function
+    if (json.pagination) {
+        setupPagination(json.pagination);
+    }
+    $('.spinner').hide();
+    $('.select2').select2();
+});
+
+
+
+function setupPagination(pagination) {
+    var paginationHtml = '';
+    for (let i = 1; i <= pagination.num_pages; i++) {
+        paginationHtml += `<li class="page-item ${i === pagination.page ? 'active' : ''}">
+            <span style="cursor: pointer;" class="page-link" href="#" onclick="refreshProductList(${i})">${i}</span>
+        </li>`;
+    }
+    $('.pagination').html(paginationHtml);
+}
+
+function triggerCodeStatusUpdate() {
+    $.ajax({
+        url: 'index.php?route=eta/codes/triggerUpdateCodeStatus&user_token={{ user_token }}',
+        type: 'POST',
+        success: function(response) {
+            if(response.success) {
+  	  $('#alertPlaceholder').before('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + response.success + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+
+            }
+        },
+        error: function(xhr, status, error) {
+            alert('An error occurred: ' + xhr.responseText);
+        }
+    });
+}
+
+
+
+</script>
+
+{{ footer }}

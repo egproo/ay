@@ -1,0 +1,59 @@
+{% extends "common/column_left.twig" %}
+{% block content %}
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>{{ heading_title }}</h1>
+    <ul class="breadcrumb">
+      <li><a href="{{ home }}">{{ text_home }}</a></li>
+      <li><a href="{{ self }}">{{ heading_title }}</a></li>
+    </ul>
+  </div>
+</div>
+<div class="container-fluid">
+  {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+  {% endif %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_invoice_number }}</th>
+              <th>{{ column_po_id }}</th>
+              <th>{{ column_vendor_id }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_total_amount }}</th>
+              <th>{{ column_invoice_date }}</th>
+              <th>{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% if supplier_invoices %}
+            {% for inv in supplier_invoices %}
+            <tr>
+              <td>{{ inv.invoice_number }}</td>
+              <td>{{ inv.po_id }}</td>
+              <td>{{ inv.vendor_id }}</td>
+              <td>{{ inv.status }}</td>
+              <td>{{ inv.total_amount }}</td>
+              <td>{{ inv.invoice_date }}</td>
+              <td><a href="{{ inv.edit }}" class="btn btn-primary">{{ button_edit }}</a></td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center">{{ text_no_results }}</td>
+            </tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-right"><a href="{{ add }}" class="btn btn-primary">{{ button_add }}</a></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

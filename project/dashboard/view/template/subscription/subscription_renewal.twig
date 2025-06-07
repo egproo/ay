@@ -1,0 +1,258 @@
+{# صفحة تجديد الاشتراك #}
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-refresh"></i> {{ text_renew_plan }}</h3>
+      </div>
+      <div class="panel-body">
+        <div x-data="renewForm">
+          <form id="renew-form" class="form-horizontal" @submit.prevent="submitForm">
+            <!-- بيانات الاشتراك الحالي -->
+            <div class="form-group">
+              <label class="col-sm-3 control-label">{{ text_current_plan }}</label>
+              <div class="col-sm-9">
+                <p class="form-control-static">
+                  <strong>{{ current_subscription.plan_name|default('—') }}</strong>
+                </p>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-3 control-label">{{ text_current_expiry }}</label>
+              <div class="col-sm-9">
+                <p class="form-control-static">{{ current_expiry_formatted }}</p>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-3 control-label">{{ text_new_expiry }}</label>
+              <div class="col-sm-9">
+                <p class="form-control-static">{{ new_expiry_formatted }}</p>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="col-sm-3 control-label">{{ text_billing_cycle }}</label>
+              <div class="col-sm-9">
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="billing_cycle" value="yearly" checked> 
+                    {{ text_yearly }} - {{ current_subscription.price_annual_formatted|default('—') }}
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- خيارات الدفع -->
+            <div class="form-group">
+              <label class="col-sm-3 control-label">{{ text_payment_method }}</label>
+              <div class="col-sm-9">
+                <div class="payment-methods">
+                  {% for method in payment_methods %}
+                    <div class="payment-method">
+                      <input type="radio" name="payment_method" id="payment-{{ method.code }}" value="{{ method.code }}" 
+                             x-model="formData.payment_method">
+                      <label for="payment-{{ method.code }}">
+                        <i class="fa {{ method.icon }}"></i> {{ method.name }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+                <div class="text-danger" x-show="errors.payment_method" x-text="errors.payment_method"></div>
+              </div>
+            </div>
+            
+            <!-- تفاصيل التجديد -->
+            <div class="form-group">
+              <label class="col-sm-3 control-label">{{ text_renew_details }}</label>
+              <div class="col-sm-9">
+                <div class="panel panel-info">
+                  <div class="panel-body">
+                    <div class="row">
+                      <div class="col-xs-6"><strong>{{ text_plan }}:</strong></div>
+                      <div class="col-xs-6">{{ current_subscription.plan_name|default('—') }}</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col-xs-6"><strong>{{ text_period }}:</strong></div>
+                      <div class="col-xs-6">{{ text_yearly }}</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col-xs-6"><strong>{{ text_price }}:</strong></div>
+                      <div class="col-xs-6">{{ current_subscription.price_annual_formatted|default('—') }}</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col-xs-6"><strong>{{ text_current_expiry }}:</strong></div>
+                      <div class="col-xs-6">{{ current_expiry_formatted }}</div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col-xs-6"><strong>{{ text_new_expiry }}:</strong></div>
+                      <div class="col-xs-6">{{ new_expiry_formatted }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- أزرار التحكم -->
+            <div class="form-group">
+              <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-primary" :disabled="loading">
+                  <i class="fa" :class="loading ? 'fa-spinner fa-spin' : 'fa-refresh'"></i> {{ button_continue }}
+                </button>
+                <a href="{{ cancel_url }}" class="btn btn-default">{{ button_back }}</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+function renewForm() {
+  return {
+    formData: {
+      payment_method: ''
+    },
+    errors: {},
+    loading: false,
+    submitForm() {
+      this.errors = {};
+      this.loading = true;
+      
+      // التحقق من صحة المدخلات
+      if (!this.formData.payment_method) {
+        this.errors.payment_method = '{{ error_payment_method_required }}';
+      }
+      
+      // إذا كانت هناك أخطاء، توقف
+      if (Object.keys(this.errors).length > 0) {
+        this.loading = false;
+        return;
+      }
+      
+      // إرسال النموذج
+      fetch('{{ process_renew_url }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams(this.formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          } else {
+            window.location.href = '{{ cancel_url }}';
+          }
+        } else {
+          if (data.error) {
+            // إظهار الخطأ العام
+            alert(data.error);
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('{{ error_renew_failed }}');
+      })
+      .finally(() => {
+        this.loading = false;
+      });
+    }
+  };
+}
+</script>
+
+<style type="text/css">
+.payment-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.payment-method {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+  background-color: #f9f9f9;
+}
+
+.payment-method input[type="radio"] {
+  margin-right: 10px;
+}
+
+.payment-method i {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+html[dir="rtl"] .payment-method input[type="radio"] {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+html[dir="rtl"] .payment-method i {
+  margin-right: 0;
+  margin-left: 5px;
+}
+
+.panel-info {
+  border-color: #d9edf7;
+}
+
+.panel-info .panel-body {
+  background-color: #f8fafc;
+}
+
+.panel-body hr {
+  margin: 10px 0;
+  border-top-color: #eee;
+}
+
+@media (max-width: 767px) {
+  .payment-method {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+</style>
+
+{{ footer }}

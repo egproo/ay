@@ -1,0 +1,429 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+
+<!-- استبدال روابط CSS المحلية بروابط CDN -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+
+    <style>
+    .select2-container--default .select2-selection--single {
+        height: 36px;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top:0;left:0;right:0;bottom:0;
+        background: rgba(255,255,255,0.7);
+        z-index:9999;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:24px;
+        font-weight:bold;
+        color:#333;
+        display:none;
+    }
+
+    .modal-lg {
+        width: 90% !important;
+        max-width: 1200px;
+    }
+
+    .barcode-item {
+        margin:5px;
+    }
+
+    .table thead th {
+        vertical-align: middle !important;
+    }
+
+    .form-inline .form-group {
+        margin-right: 10px;
+    }
+
+    /* Adjusting DataTables default style */
+    .dataTables_wrapper .dataTables_filter {
+        float: right;
+        text-align: right;
+    }
+
+    .dataTables_wrapper .dataTables_length {
+        float: left;
+    }
+
+    /* Filters section */
+    .filter-container {
+        margin-bottom:20px;
+    }
+
+    .tab-content {
+        margin-top:20px;
+    }
+
+    /* Toast position */
+    #toast-container {
+        z-index:99999;
+    }
+
+    </style>
+
+    
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- فلاتر متقدمة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <form id="filter-form" class="form-inline">
+          <div class="form-group">
+            <label for="filter_user">{{ text_employee }}</label>
+            <select id="filter_user" name="filter_user" class="form-control" style="width: 200px;">
+              <option value="">{{ text_select_employee }}</option>
+              {% for user in users %}
+                <option value="{{ user.user_id }}">{{ user.firstname }} {{ user.lastname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="filter_date_start">{{ text_review_date_start }}</label>
+            <div class='input-group date' id='filter_date_start'>
+              <input type='text' class="form-control" name="filter_date_start" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filter_date_end">{{ text_review_date_end }}</label>
+            <div class='input-group date' id='filter_date_end'>
+              <input type='text' class="form-control" name="filter_date_end" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filter_status">{{ text_status }}</label>
+            <select name="filter_status" id="filter_status" class="form-control select2" style="width:200px;">
+              <option value="">{{ text_all_statuses }}</option>
+              <option value="pending">{{ text_status_pending }}</option>
+              <option value="completed">{{ text_status_completed }}</option>
+            </select>
+          </div>
+          <button type="button" id="btn-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+          <button type="button" id="btn-reset" class="btn btn-default"><i class="fa fa-eraser"></i> {{ button_reset }}</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- زر إضافة جديد -->
+    <div class="text-right">
+      <button type="button" class="btn btn-success" id="btn-add"><i class="fa fa-plus"></i> {{ button_add_review }}</button>
+    </div>
+
+    <!-- جدول تقييم الأداء -->
+    <div class="panel panel-default" style="margin-top:10px;">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_performance_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <table id="performance-table" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_employee }}</th>
+              <th>{{ column_review_date }}</th>
+              <th>{{ column_reviewer }}</th>
+              <th>{{ column_overall_score }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- سيتم تعبئة المحتوى عبر DataTables Ajax -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إضافة/تعديل تقييم أداء -->
+<div class="modal fade" id="modal-performance" tabindex="-1" role="dialog" aria-labelledby="modalPerformanceLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="performance-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+          <h4 class="modal-title" id="modalPerformanceLabel">{{ text_add_review }}</h4>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="review_id" value="" />
+          <div class="form-group">
+            <label>{{ text_employee }}</label>
+            <select name="user_id" class="form-control select2" style="width:100%;">
+              <option value="">{{ text_select_employee }}</option>
+              {% for user in users %}
+              <option value="{{ user.user_id }}">{{ user.firstname }} {{ user.lastname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ text_review_date }}</label>
+            <div class='input-group date' id='review_date_picker'>
+              <input type='text' name="review_date" class="form-control" required />
+              <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_reviewer }}</label>
+            <select name="reviewer_id" class="form-control select2" style="width:100%;">
+              <option value="">{{ text_select_reviewer }}</option>
+              {% for user in users %}
+              <option value="{{ user.user_id }}">{{ user.firstname }} {{ user.lastname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ text_overall_score }}</label>
+            <input type="number" step="0.01" name="overall_score" class="form-control" value="0.00" required />
+          </div>
+          <div class="form-group">
+            <label>{{ text_status }}</label>
+            <select name="status" class="form-control">
+              <option value="pending">{{ text_status_pending }}</option>
+              <option value="completed">{{ text_status_completed }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ text_comments }}</label>
+            <textarea name="comments" class="form-control" rows="3"></textarea>
+          </div>
+
+          <hr />
+          <h4>{{ text_criteria_scores }}</h4>
+          <table class="table table-bordered" id="criteria-table">
+            <thead>
+              <tr>
+                <th>{{ column_criteria_name }}</th>
+                <th>{{ column_score }}</th>
+                <th>{{ column_comments }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- سيتم تعبئتها ديناميكياً عند فتح المودال حسب المعايير -->
+            </tbody>
+          </table>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- استبدال روابط JavaScript المحلية بروابط CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/dataTables.bootstrap.min.js"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#filter_user').select2({ placeholder: "{{ text_select_employee }}" });
+    $('#filter_status').select2({ placeholder: "{{ text_all_statuses }}" });
+
+    $('select[name="user_id"]').select2({ placeholder: "{{ text_select_employee }}" });
+    $('select[name="reviewer_id"]').select2({ placeholder: "{{ text_select_reviewer }}" });
+
+    $('#filter_date_start').datetimepicker({ format: 'YYYY-MM-DD' });
+    $('#filter_date_end').datetimepicker({ format: 'YYYY-MM-DD', useCurrent: false });
+    $("#filter_date_start").on("dp.change", function (e) {
+        $('#filter_date_end').data("DateTimePicker").minDate(e.date);
+    });
+    $("#filter_date_end").on("dp.change", function (e) {
+        $('#filter_date_start').data("DateTimePicker").maxDate(e.date);
+    });
+
+    $('#review_date_picker').datetimepicker({ format: 'YYYY-MM-DD' });
+
+    var table = $('#performance-table').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "{{ ajax_list_url }}",
+            "type": "POST",
+            "data": function (d) {
+                d.user_token = "{{ user_token }}";
+                d.filter_user = $('#filter_user').val();
+                d.filter_date_start = $('input[name="filter_date_start"]').val();
+                d.filter_date_end = $('input[name="filter_date_end"]').val();
+                d.filter_status = $('#filter_status').val();
+            }
+        },
+        "columns": [
+            { "data": "employee_name" },
+            { "data": "review_date" },
+            { "data": "reviewer_name" },
+            { "data": "overall_score" },
+            { "data": "status" },
+            { "data": "actions", "orderable": false, "searchable": false }
+        ]
+    });
+
+    $('#btn-filter').on('click', function() {
+        table.ajax.reload();
+    });
+
+    $('#btn-reset').on('click', function() {
+        $('#filter_user').val('').trigger('change');
+        $('input[name="filter_date_start"]').val('');
+        $('input[name="filter_date_end"]').val('');
+        $('#filter_status').val('').trigger('change');
+        table.ajax.reload();
+    });
+
+    $('#btn-add').on('click', function() {
+        $('#performance-form')[0].reset();
+        $('input[name="review_id"]').val('');
+        $('select[name="user_id"]').val('').trigger('change');
+        $('select[name="reviewer_id"]').val('').trigger('change');
+        $('select[name="status"]').val('pending');
+        $('textarea[name="comments"]').val('');
+        $('#modalPerformanceLabel').text("{{ text_add_review }}");
+        loadCriteria(); // تحميل المعايير فارغة
+        $('#modal-performance').modal('show');
+    });
+
+    // تحميل المعايير الفارغة أو الخاصة بالتقييم
+    function loadCriteria(review_id) {
+        $.ajax({
+            url: "{{ ajax_criteria_url }}",
+            type: "POST",
+            data: {review_id: review_id ? review_id : 0, user_token: "{{ user_token }}"},
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else {
+                    var tbody = $('#criteria-table tbody');
+                    tbody.empty();
+                    $.each(json.criteria, function(i, c) {
+                        var row = '<tr>' +
+                            '<td>' + c.name + '</td>' +
+                            '<td><input type="number" step="0.01" name="criteria_score['+c.criteria_id+']" class="form-control" value="'+c.score+'" required /></td>' +
+                            '<td><textarea name="criteria_comments['+c.criteria_id+']" class="form-control" rows="2">'+c.comments+'</textarea></td>' +
+                            '</tr>';
+                        tbody.append(row);
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    }
+
+    $('#performance-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{{ ajax_save_url }}",
+            type: "POST",
+            data: $(this).serialize() + '&user_token={{ user_token }}',
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success) {
+                    toastr.success(json.success);
+                    $('#modal-performance').modal('hide');
+                    table.ajax.reload();
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // تحرير تقييم
+    $(document).on('click', '.btn-edit', function() {
+        var id = $(this).data('id');
+        $.ajax({
+            url: "{{ ajax_get_url }}",
+            type: "POST",
+            data: {review_id: id, user_token: "{{ user_token }}"},
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else {
+                    var data = json.data;
+                    $('input[name="review_id"]').val(data.review_id);
+                    $('select[name="user_id"]').val(data.user_id).trigger('change');
+                    $('input[name="review_date"]').val(data.review_date);
+                    $('select[name="reviewer_id"]').val(data.reviewer_id).trigger('change');
+                    $('input[name="overall_score"]').val(data.overall_score);
+                    $('select[name="status"]').val(data.status);
+                    $('textarea[name="comments"]').val(data.comments);
+                    $('#modalPerformanceLabel').text("{{ text_edit_review }}");
+                    loadCriteria(data.review_id);
+                    $('#modal-performance').modal('show');
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // حذف تقييم
+    $(document).on('click', '.btn-delete', function() {
+        var id = $(this).data('id');
+        if (confirm("{{ text_confirm_delete }}")) {
+            $.ajax({
+                url: "{{ ajax_delete_url }}",
+                type: "POST",
+                data: {review_id: id, user_token: "{{ user_token }}"},
+                dataType: "json",
+                success: function(json) {
+                    if (json.error) {
+                        toastr.error(json.error);
+                    } else {
+                        toastr.success(json.success);
+                        table.ajax.reload();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    toastr.error("{{ text_ajax_error }}: " + error);
+                }
+            });
+        }
+    });
+
+});
+</script>
+
+{{ footer }}

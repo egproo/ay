@@ -1,0 +1,350 @@
+{{ header }}{{ column_left }}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="page-header">
+        <div class="page-header-content">
+          <div class="page-title">
+            <h4><i class="icon-arrow-right6 position-left"></i> <span class="text-semibold">{{ heading_title }}</span></h4>
+          </div>
+          <div class="heading-elements">
+            <div class="heading-btn-group">
+              <button type="button" class="btn btn-primary btn-sm" onclick="processQueue()">
+                <i class="icon-play3"></i> {{ button_process_queue }}
+              </button>
+              <button type="button" class="btn btn-info btn-sm" onclick="testConnection()">
+                <i class="icon-wifi"></i> {{ button_test_connection }}
+              </button>
+              <a href="{{ settings_url }}" class="btn btn-default btn-sm">
+                <i class="icon-cog3"></i> الإعدادات
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row">
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-flat bg-primary">
+        <div class="panel-body">
+          <div class="heading-elements">
+            <span class="heading-text badge bg-primary-800">{{ text_total_invoices }}</span>
+          </div>
+          <h3 class="no-margin text-white">{{ statistics.total_invoices|default(0) }}</h3>
+          <span class="text-uppercase text-size-mini text-white-75">إجمالي الفواتير</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-flat bg-success">
+        <div class="panel-body">
+          <div class="heading-elements">
+            <span class="heading-text badge bg-success-800">{{ text_sent_invoices }}</span>
+          </div>
+          <h3 class="no-margin text-white">{{ statistics.sent_invoices|default(0) }}</h3>
+          <span class="text-uppercase text-size-mini text-white-75">الفواتير المرسلة</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-flat bg-warning">
+        <div class="panel-body">
+          <div class="heading-elements">
+            <span class="heading-text badge bg-warning-800">{{ text_pending_invoices }}</span>
+          </div>
+          <h3 class="no-margin text-white">{{ statistics.pending_invoices|default(0) }}</h3>
+          <span class="text-uppercase text-size-mini text-white-75">الفواتير المعلقة</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-flat bg-danger">
+        <div class="panel-body">
+          <div class="heading-elements">
+            <span class="heading-text badge bg-danger-800">{{ text_failed_invoices }}</span>
+          </div>
+          <h3 class="no-margin text-white">{{ statistics.failed_invoices|default(0) }}</h3>
+          <span class="text-uppercase text-size-mini text-white-75">الفواتير الفاشلة</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Rate and Queue Status -->
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="panel panel-flat">
+        <div class="panel-heading">
+          <h6 class="panel-title">معدل النجاح</h6>
+        </div>
+        <div class="panel-body">
+          <div class="progress progress-lg">
+            <div class="progress-bar bg-success" style="width: {{ statistics.success_rate|default(0) }}%">
+              <span>{{ statistics.success_rate|default(0) }}%</span>
+            </div>
+          </div>
+          <div class="row text-center">
+            <div class="col-md-4">
+              <div class="content-group-sm">
+                <h6 class="text-semibold no-margin">{{ statistics.sent_receipts|default(0) }}</h6>
+                <span class="text-muted text-size-small">الإيصالات المرسلة</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="content-group-sm">
+                <h6 class="text-semibold no-margin">{{ statistics.queue_count|default(0) }}</h6>
+                <span class="text-muted text-size-small">في الطابور</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="content-group-sm">
+                <h6 class="text-semibold no-margin">{{ statistics.total_receipts|default(0) }}</h6>
+                <span class="text-muted text-size-small">إجمالي الإيصالات</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="panel panel-flat">
+        <div class="panel-heading">
+          <h6 class="panel-title">حالة النظام</h6>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="content-group-sm">
+                <span class="status-indicator-circle status-active"></span>
+                <span class="text-semibold">ETA Connection</span>
+                <div class="text-muted text-size-small">متصل</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="content-group-sm">
+                <span class="status-indicator-circle status-active"></span>
+                <span class="text-semibold">Queue Processor</span>
+                <div class="text-muted text-size-small">يعمل</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Orders -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="panel panel-flat">
+        <div class="panel-heading">
+          <h6 class="panel-title">الطلبات المعلقة</h6>
+          <div class="heading-elements">
+            <ul class="icons-list">
+              <li><a data-action="reload" onclick="location.reload()"><i class="icon-spinner11"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="panel-body">
+          {% if pending_orders %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>{{ column_order_id }}</th>
+                  <th>{{ column_customer }}</th>
+                  <th>{{ column_total }}</th>
+                  <th>{{ column_status }}</th>
+                  <th>{{ column_action }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in pending_orders %}
+                <tr>
+                  <td><a href="{{ order.view_url }}">#{{ order.order_id }}</a></td>
+                  <td>{{ order.customer_name }}</td>
+                  <td>{{ order.total }}</td>
+                  <td>
+                    <span class="label label-warning">{{ order.status }}</span>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-xs">
+                      <button type="button" class="btn btn-primary" onclick="sendInvoice({{ order.order_id }})">
+                        <i class="icon-paperplane"></i> {{ button_send_invoice }}
+                      </button>
+                      <button type="button" class="btn btn-success" onclick="sendReceipt({{ order.order_id }})">
+                        <i class="icon-receipt"></i> {{ button_send_receipt }}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center">
+            <div class="content-group">
+              <i class="icon-checkmark-circle icon-3x text-success"></i>
+              <h6 class="text-semibold">لا توجد طلبات معلقة</h6>
+              <p class="content-group">جميع الطلبات تم إرسالها لمصلحة الضرائب</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="panel panel-flat">
+        <div class="panel-heading">
+          <h6 class="panel-title">{{ text_queue_management }}</h6>
+        </div>
+        <div class="panel-body">
+          {% if queue_items %}
+          <div class="content-group">
+            <h6 class="text-semibold">{{ text_queue_items }} ({{ queue_items|length }})</h6>
+            {% for item in queue_items %}
+            <div class="media">
+              <div class="media-left">
+                <span class="status-indicator-circle 
+                  {% if item.status == 'pending' %}status-warning{% endif %}
+                  {% if item.status == 'processing' %}status-active{% endif %}
+                  {% if item.status == 'failed' %}status-danger{% endif %}
+                "></span>
+              </div>
+              <div class="media-body">
+                <div class="media-heading text-semibold">{{ item.type }} #{{ item.order_id }}</div>
+                <span class="text-size-small text-muted">{{ item.created_date }}</span>
+                {% if item.error %}
+                <div class="text-danger text-size-small">{{ item.error }}</div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="text-center">
+            <button type="button" class="btn btn-primary btn-sm" onclick="processQueue()">
+              <i class="icon-play3"></i> {{ button_process_queue }}
+            </button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="clearQueue()">
+              <i class="icon-cross2"></i> {{ text_clear_queue }}
+            </button>
+          </div>
+          {% else %}
+          <div class="text-center">
+            <div class="content-group">
+              <i class="icon-checkmark-circle icon-2x text-success"></i>
+              <h6 class="text-semibold">{{ text_queue_empty }}</h6>
+              <p class="text-muted">لا توجد عناصر في الطابور</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+function sendInvoice(orderId) {
+    $.ajax({
+        url: 'index.php?route=extension/eta/invoice/sendInvoice&user_token={{ user_token }}',
+        type: 'POST',
+        data: {order_id: orderId},
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-send-' + orderId).button('loading');
+        },
+        complete: function() {
+            $('#button-send-' + orderId).button('reset');
+        },
+        success: function(json) {
+            if (json.success) {
+                alert(json.message);
+                location.reload();
+            } else {
+                alert(json.error || 'حدث خطأ أثناء الإرسال');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert('خطأ في الاتصال: ' + thrownError);
+        }
+    });
+}
+
+function sendReceipt(orderId) {
+    $.ajax({
+        url: 'index.php?route=extension/eta/invoice/sendReceipt&user_token={{ user_token }}',
+        type: 'POST',
+        data: {order_id: orderId},
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                alert(json.message);
+                location.reload();
+            } else {
+                alert(json.error || 'حدث خطأ أثناء الإرسال');
+            }
+        }
+    });
+}
+
+function processQueue() {
+    $.ajax({
+        url: 'index.php?route=extension/eta/invoice/processQueue&user_token={{ user_token }}',
+        type: 'POST',
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                alert(json.message);
+                location.reload();
+            } else {
+                alert(json.error || 'حدث خطأ أثناء معالجة الطابور');
+            }
+        }
+    });
+}
+
+function testConnection() {
+    $.ajax({
+        url: 'index.php?route=extension/eta/invoice/testConnection&user_token={{ user_token }}',
+        type: 'POST',
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                alert(json.message);
+            } else {
+                alert(json.error || 'فشل في اختبار الاتصال');
+            }
+        }
+    });
+}
+
+function clearQueue() {
+    if (confirm('هل أنت متأكد من مسح جميع عناصر الطابور؟')) {
+        $.ajax({
+            url: 'index.php?route=extension/eta/invoice/clearQueue&user_token={{ user_token }}',
+            type: 'POST',
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    alert(json.message);
+                    location.reload();
+                } else {
+                    alert(json.error || 'حدث خطأ أثناء مسح الطابور');
+                }
+            }
+        });
+    }
+}
+</script>
+
+{{ footer }}

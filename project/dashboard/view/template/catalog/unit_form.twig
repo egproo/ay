@@ -1,0 +1,35 @@
+<form id="form-unit-modal" class="form-horizontal">
+  <div class="alert alert-danger" style="display: none;"></div>
+  
+  <div class="form-group required">
+    <label class="col-sm-3 control-label" for="input-code">{{ entry_code }}</label>
+    <div class="col-sm-9">
+      <input type="text" name="code" value="{{ code }}" placeholder="{{ entry_code }}" id="input-code" class="form-control" />
+      {% if error_code %}
+      <div class="text-danger">{{ error_code }}</div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="form-group required">
+    <label class="col-sm-3 control-label" for="input-desc-en">{{ entry_desc_en }}</label>
+    <div class="col-sm-9">
+      <input type="text" name="desc_en" value="{{ desc_en }}" placeholder="{{ entry_desc_en }}" id="input-desc-en" class="form-control" />
+      {% if error_desc_en %}
+      <div class="text-danger">{{ error_desc_en }}</div>
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="form-group">
+    <label class="col-sm-3 control-label" for="input-desc-ar">{{ entry_desc_ar }}</label>
+    <div class="col-sm-9">
+      <input type="text" name="desc_ar" value="{{ desc_ar }}" placeholder="{{ entry_desc_ar }}" id="input-desc-ar" class="form-control" />
+    </div>
+  </div>
+  
+  <div class="text-right">
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+    <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+  </div>
+</form>

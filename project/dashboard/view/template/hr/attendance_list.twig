@@ -1,0 +1,378 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+
+<!-- استبدال روابط CSS المحلية بروابط CDN -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+
+    <style>
+    .select2-container--default .select2-selection--single {
+        height: 36px;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top:0;left:0;right:0;bottom:0;
+        background: rgba(255,255,255,0.7);
+        z-index:9999;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        font-size:24px;
+        font-weight:bold;
+        color:#333;
+        display:none;
+    }
+
+    .modal-lg {
+        width: 90% !important;
+        max-width: 1200px;
+    }
+
+    .barcode-item {
+        margin:5px;
+    }
+
+    .table thead th {
+        vertical-align: middle !important;
+    }
+
+    .form-inline .form-group {
+        margin-right: 10px;
+    }
+
+    /* Adjusting DataTables default style */
+    .dataTables_wrapper .dataTables_filter {
+        float: right;
+        text-align: right;
+    }
+
+    .dataTables_wrapper .dataTables_length {
+        float: left;
+    }
+
+    /* Filters section */
+    .filter-container {
+        margin-bottom:20px;
+    }
+
+    .tab-content {
+        margin-top:20px;
+    }
+
+    /* Toast position */
+    #toast-container {
+        z-index:99999;
+    }
+
+    </style>
+    
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <!-- فلاتر متقدمة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <form id="filter-form" class="form-inline">
+          <div class="form-group">
+            <label for="filter_user">{{ text_employee }}</label>
+            <select id="filter_user" name="filter_user" class="form-control" style="width: 200px;">
+              <option value="">{{ text_select_employee }}</option>
+              {% for user in users %}
+                <option value="{{ user.user_id }}">{{ user.firstname }} {{ user.lastname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="filter_date_start">{{ text_date_start }}</label>
+            <div class='input-group date' id='filter_date_start'>
+              <input type='text' class="form-control" name="filter_date_start" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="filter_date_end">{{ text_date_end }}</label>
+            <div class='input-group date' id='filter_date_end'>
+              <input type='text' class="form-control" name="filter_date_end" />
+              <span class="input-group-addon">
+                <span class="fa fa-calendar"></span>
+              </span>
+            </div>
+          </div>
+          <button type="button" id="btn-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+          <button type="button" id="btn-reset" class="btn btn-default"><i class="fa fa-eraser"></i> {{ button_reset }}</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- زر إضافة جديد -->
+    <div class="text-right">
+      <button type="button" class="btn btn-success" id="btn-add"><i class="fa fa-plus"></i> {{ button_add_attendance }}</button>
+    </div>
+
+    <!-- جدول الحضور -->
+    <div class="panel panel-default" style="margin-top:10px;">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-calendar-check-o"></i> {{ text_attendance_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <table id="attendance-table" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_employee }}</th>
+              <th>{{ column_date }}</th>
+              <th>{{ column_checkin }}</th>
+              <th>{{ column_checkout }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_actions }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- سيتم تعبئة المحتوى عبر DataTables Ajax -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إضافة/تعديل الحضور -->
+<div class="modal fade" id="modal-attendance" tabindex="-1" role="dialog" aria-labelledby="modalAttendanceLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form id="attendance-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+          <h4 class="modal-title" id="modalAttendanceLabel">{{ text_add_attendance }}</h4>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="attendance_id" value="" />
+          <div class="form-group">
+            <label>{{ text_employee }}</label>
+            <select name="user_id" class="form-control select2" style="width:100%;">
+              <option value="">{{ text_select_employee }}</option>
+              {% for user in users %}
+              <option value="{{ user.user_id }}">{{ user.firstname }} {{ user.lastname }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ text_date }}</label>
+            <div class='input-group date' id='attendance_date_picker'>
+              <input type='text' name="date" class="form-control" />
+              <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_checkin }}</label>
+            <div class='input-group date' id='attendance_checkin_picker'>
+              <input type='text' name="checkin_time" class="form-control" />
+              <span class="input-group-addon"><span class="fa fa-clock-o"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_checkout }}</label>
+            <div class='input-group date' id='attendance_checkout_picker'>
+              <input type='text' name="checkout_time" class="form-control" />
+              <span class="input-group-addon"><span class="fa fa-clock-o"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_status }}</label>
+            <select name="status" class="form-control">
+              <option value="present">{{ text_present }}</option>
+              <option value="absent">{{ text_absent }}</option>
+              <option value="late">{{ text_late }}</option>
+              <option value="on_leave">{{ text_on_leave }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ text_notes }}</label>
+            <textarea name="notes" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- استبدال روابط JavaScript المحلية بروابط CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.13.4/js/dataTables.bootstrap.min.js"></script>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تفعيل select2
+    $('#filter_user').select2({ placeholder: "{{ text_select_employee }}" });
+    $('select[name="user_id"]').select2({ placeholder: "{{ text_select_employee }}" });
+
+    // تفعيل datetimepicker للتواريخ
+    $('#filter_date_start').datetimepicker({ format: 'YYYY-MM-DD' });
+    $('#filter_date_end').datetimepicker({ format: 'YYYY-MM-DD', useCurrent: false });
+    $("#filter_date_start").on("dp.change", function (e) {
+        $('#filter_date_end').data("DateTimePicker").minDate(e.date);
+    });
+    $("#filter_date_end").on("dp.change", function (e) {
+        $('#filter_date_start').data("DateTimePicker").maxDate(e.date);
+    });
+
+    $('#attendance_date_picker').datetimepicker({ format: 'YYYY-MM-DD' });
+    $('#attendance_checkin_picker').datetimepicker({ format: 'HH:mm' });
+    $('#attendance_checkout_picker').datetimepicker({ format: 'HH:mm' });
+
+    // DataTable مع Ajax
+    var table = $('#attendance-table').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "{{ ajax_list_url }}",
+            "type": "POST",
+            "data": function (d) {
+                d.user_token = "{{ user_token }}";
+                d.filter_user = $('#filter_user').val();
+                d.filter_date_start = $('input[name="filter_date_start"]').val();
+                d.filter_date_end = $('input[name="filter_date_end"]').val();
+            }
+        },
+        "columns": [
+            { "data": "employee_name" },
+            { "data": "date" },
+            { "data": "checkin_time" },
+            { "data": "checkout_time" },
+            { "data": "status" },
+            { "data": "actions", "orderable": false, "searchable": false }
+        ]
+    });
+
+    // أزرار الفلترة
+    $('#btn-filter').on('click', function() {
+        table.ajax.reload();
+    });
+
+    $('#btn-reset').on('click', function() {
+        $('#filter_user').val('').trigger('change');
+        $('input[name="filter_date_start"]').val('');
+        $('input[name="filter_date_end"]').val('');
+        table.ajax.reload();
+    });
+
+    // زر إضافة
+    $('#btn-add').on('click', function() {
+        $('#attendance-form')[0].reset();
+        $('select[name="user_id"]').val('').trigger('change');
+        $('select[name="status"]').val('present');
+        $('#modalAttendanceLabel').text("{{ text_add_attendance }}");
+        $('#modal-attendance').modal('show');
+    });
+
+    // إرسال نموذج الحضور AJAX
+    $('#attendance-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{{ ajax_save_url }}",
+            type: "POST",
+            data: $(this).serialize() + '&user_token={{ user_token }}',
+            dataType: "json",
+            beforeSend: function() {
+              // يمكن إضافة مؤشر انتظار هنا
+            },
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success) {
+                    toastr.success(json.success);
+                    $('#modal-attendance').modal('hide');
+                    table.ajax.reload();
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // تحرير سجل
+    $(document).on('click', '.btn-edit', function() {
+        var id = $(this).data('id');
+        $.ajax({
+            url: "{{ ajax_get_url }}",
+            type: "POST",
+            data: {attendance_id: id, user_token: "{{ user_token }}"},
+            dataType: "json",
+            success: function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else {
+                    var data = json.data;
+                    $('input[name="attendance_id"]').val(data.attendance_id);
+                    $('select[name="user_id"]').val(data.user_id).trigger('change');
+                    $('input[name="date"]').val(data.date);
+                    $('input[name="checkin_time"]').val(data.checkin_time);
+                    $('input[name="checkout_time"]').val(data.checkout_time);
+                    $('select[name="status"]').val(data.status);
+                    $('textarea[name="notes"]').val(data.notes);
+                    $('#modalAttendanceLabel').text("{{ text_edit_attendance }}");
+                    $('#modal-attendance').modal('show');
+                }
+            },
+            error: function(xhr, status, error) {
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // حذف سجل
+    $(document).on('click', '.btn-delete', function() {
+        var id = $(this).data('id');
+        if (confirm("{{ text_confirm_delete }}")) {
+            $.ajax({
+                url: "{{ ajax_delete_url }}",
+                type: "POST",
+                data: {attendance_id: id, user_token: "{{ user_token }}"},
+                dataType: "json",
+                success: function(json) {
+                    if (json.error) {
+                        toastr.error(json.error);
+                    } else {
+                        toastr.success(json.success);
+                        table.ajax.reload();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    toastr.error("{{ text_ajax_error }}: " + error);
+                }
+            });
+        }
+    });
+
+});
+</script>
+{{ footer }}

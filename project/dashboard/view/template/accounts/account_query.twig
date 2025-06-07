@@ -1,0 +1,537 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" class="btn btn-success" id="btn-export" disabled>
+          <i class="fa fa-download"></i> {{ button_export }}
+        </button>
+        <button type="button" class="btn btn-info" id="btn-print" disabled>
+          <i class="fa fa-print"></i> {{ button_print }}
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- نموذج الاستعلام -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-search"></i> {{ text_query_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form id="query-form" class="form-horizontal">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group required">
+                <label class="col-sm-3 control-label">{{ text_account }}</label>
+                <div class="col-sm-9">
+                  <select name="account_id" id="account-select" class="form-control" required>
+                    <option value="">{{ text_select_account }}</option>
+                    {% for account in accounts %}
+                    <option value="{{ account.account_id }}">{{ account.account_code }} - {{ account.account_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ text_date_from }}</label>
+                <div class="col-sm-8">
+                  <input type="date" name="date_from" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{{ text_date_to }}</label>
+                <div class="col-sm-8">
+                  <input type="date" name="date_to" class="form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12 text-center">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fa fa-search"></i> {{ button_query }}
+              </button>
+              <button type="button" class="btn btn-default" id="btn-reset">
+                <i class="fa fa-refresh"></i> {{ button_reset }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- نتائج الاستعلام -->
+    <div id="query-results" style="display: none;">
+      <!-- معلومات الحساب -->
+      <div class="panel panel-info">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_account_info }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>{{ text_account_code }}:</strong></td>
+                  <td id="account-code"></td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_account_name }}:</strong></td>
+                  <td id="account-name"></td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_account_type }}:</strong></td>
+                  <td id="account-type"></td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <table class="table table-borderless">
+                <tr>
+                  <td><strong>{{ text_parent_account }}:</strong></td>
+                  <td id="parent-account"></td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_status }}:</strong></td>
+                  <td id="account-status"></td>
+                </tr>
+                <tr>
+                  <td><strong>{{ text_description }}:</strong></td>
+                  <td id="account-description"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ملخص الأرصدة -->
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-calculator"></i> {{ text_balance_summary }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-2">
+              <div class="info-box bg-aqua">
+                <span class="info-box-icon"><i class="fa fa-arrow-up"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_opening_balance }}</span>
+                  <span class="info-box-number" id="opening-balance">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="info-box bg-green">
+                <span class="info-box-icon"><i class="fa fa-plus"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_total_debit }}</span>
+                  <span class="info-box-number" id="total-debit">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="info-box bg-red">
+                <span class="info-box-icon"><i class="fa fa-minus"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_total_credit }}</span>
+                  <span class="info-box-number" id="total-credit">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="info-box bg-yellow">
+                <span class="info-box-icon"><i class="fa fa-exchange"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_net_movement }}</span>
+                  <span class="info-box-number" id="net-movement">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="info-box bg-purple">
+                <span class="info-box-icon"><i class="fa fa-arrow-down"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_closing_balance }}</span>
+                  <span class="info-box-number" id="closing-balance">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="info-box bg-navy">
+                <span class="info-box-icon"><i class="fa fa-list"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">{{ text_transaction_count }}</span>
+                  <span class="info-box-number" id="transaction-count">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- تبويبات التفاصيل -->
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+              <a href="#transactions-tab" aria-controls="transactions" role="tab" data-toggle="tab">
+                <i class="fa fa-list"></i> {{ text_transactions }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#chart-tab" aria-controls="chart" role="tab" data-toggle="tab">
+                <i class="fa fa-line-chart"></i> {{ text_balance_chart }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#statistics-tab" aria-controls="statistics" role="tab" data-toggle="tab">
+                <i class="fa fa-bar-chart"></i> {{ text_statistics }}
+              </a>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- تبويب المعاملات -->
+            <div role="tabpanel" class="tab-pane active" id="transactions-tab">
+              <div class="table-responsive" style="margin-top: 15px;">
+                <table id="transactions-table" class="table table-bordered table-striped">
+                  <thead>
+                    <tr>
+                      <th>{{ column_date }}</th>
+                      <th>{{ column_reference }}</th>
+                      <th>{{ column_description }}</th>
+                      <th>{{ column_debit }}</th>
+                      <th>{{ column_credit }}</th>
+                      <th>{{ column_balance }}</th>
+                      <th>{{ column_source }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- تبويب الرسم البياني -->
+            <div role="tabpanel" class="tab-pane" id="chart-tab">
+              <div style="margin-top: 15px;">
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <label>{{ text_chart_period }}</label>
+                      <select id="chart-period" class="form-control">
+                        <option value="day">{{ text_daily }}</option>
+                        <option value="week">{{ text_weekly }}</option>
+                        <option value="month" selected>{{ text_monthly }}</option>
+                        <option value="year">{{ text_yearly }}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <label>&nbsp;</label>
+                      <button type="button" class="btn btn-primary form-control" id="btn-load-chart">
+                        <i class="fa fa-refresh"></i> {{ button_load_chart }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <canvas id="balance-chart" width="400" height="200"></canvas>
+              </div>
+            </div>
+
+            <!-- تبويب الإحصائيات -->
+            <div role="tabpanel" class="tab-pane" id="statistics-tab">
+              <div style="margin-top: 15px;">
+                <div id="statistics-content">
+                  <!-- سيتم ملؤها بـ JavaScript -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- تضمين مكتبات JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap.min.css">
+
+<script type="text/javascript">
+$(document).ready(function() {
+    var currentAccountId = null;
+    var transactionsTable = null;
+    var balanceChart = null;
+
+    // تهيئة جدول المعاملات
+    function initTransactionsTable() {
+        if (transactionsTable) {
+            transactionsTable.destroy();
+        }
+
+        transactionsTable = $('#transactions-table').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{{ ajax_transactions_url }}",
+                "type": "POST",
+                "data": function(d) {
+                    d.user_token = "{{ user_token }}";
+                    d.account_id = currentAccountId;
+                    d.date_from = $('input[name="date_from"]').val();
+                    d.date_to = $('input[name="date_to"]').val();
+                }
+            },
+            "columns": [
+                {"data": "date"},
+                {"data": "reference"},
+                {"data": "description"},
+                {"data": "debit", "className": "text-right"},
+                {"data": "credit", "className": "text-right"},
+                {"data": "balance", "className": "text-right"},
+                {"data": "source"}
+            ],
+            "order": [[0, "desc"]],
+            "pageLength": 25,
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json"
+            }
+        });
+    }
+
+    // نموذج الاستعلام
+    $('#query-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var accountId = $('#account-select').val();
+        if (!accountId) {
+            toastr.error('{{ error_account_required }}');
+            return;
+        }
+
+        currentAccountId = accountId;
+        
+        $.ajax({
+            url: "{{ ajax_query_url }}",
+            type: "POST",
+            data: $(this).serialize() + '&user_token={{ user_token }}',
+            dataType: "json",
+            beforeSend: function() {
+                $('#query-results').hide();
+                $('button[type="submit"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_loading }}');
+            },
+            success: function(json) {
+                $('button[type="submit"]').prop('disabled', false).html('<i class="fa fa-search"></i> {{ button_query }}');
+                
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success && json.data) {
+                    displayResults(json.data);
+                }
+            },
+            error: function(xhr, status, error) {
+                $('button[type="submit"]').prop('disabled', false).html('<i class="fa fa-search"></i> {{ button_query }}');
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // عرض النتائج
+    function displayResults(data) {
+        // معلومات الحساب
+        $('#account-code').text(data.account_info.account_code);
+        $('#account-name').text(data.account_info.account_name);
+        $('#account-type').text(data.account_info.account_type);
+        $('#parent-account').text(data.account_info.parent_code ? data.account_info.parent_code + ' - ' + data.account_info.parent_name : '{{ text_none }}');
+        $('#account-status').html('<span class="label label-' + (data.account_info.status == 'active' ? 'success' : 'danger') + '">' + data.account_info.status + '</span>');
+        $('#account-description').text(data.account_info.description || '{{ text_none }}');
+
+        // ملخص الأرصدة
+        $('#opening-balance').text(parseFloat(data.balance_data.opening_balance).toLocaleString());
+        $('#total-debit').text(parseFloat(data.balance_data.period_debit).toLocaleString());
+        $('#total-credit').text(parseFloat(data.balance_data.period_credit).toLocaleString());
+        $('#net-movement').text(parseFloat(data.balance_data.net_movement).toLocaleString());
+        $('#closing-balance').text(parseFloat(data.balance_data.closing_balance).toLocaleString());
+        $('#transaction-count').text(data.balance_data.transaction_count);
+
+        // تهيئة جدول المعاملات
+        initTransactionsTable();
+
+        // عرض النتائج
+        $('#query-results').show();
+        $('#btn-export, #btn-print').prop('disabled', false);
+
+        // تحميل الإحصائيات
+        loadStatistics(data.statistics);
+    }
+
+    // تحميل الإحصائيات
+    function loadStatistics(stats) {
+        var html = '<div class="row">';
+        
+        // إحصائيات عامة
+        html += '<div class="col-md-6">';
+        html += '<h4>{{ text_general_statistics }}</h4>';
+        html += '<table class="table table-bordered">';
+        html += '<tr><td>{{ text_active_days }}</td><td>' + (stats.general.active_days || 0) + '</td></tr>';
+        html += '<tr><td>{{ text_avg_debit }}</td><td>' + parseFloat(stats.general.avg_debit || 0).toLocaleString() + '</td></tr>';
+        html += '<tr><td>{{ text_avg_credit }}</td><td>' + parseFloat(stats.general.avg_credit || 0).toLocaleString() + '</td></tr>';
+        html += '<tr><td>{{ text_max_debit }}</td><td>' + parseFloat(stats.general.max_debit || 0).toLocaleString() + '</td></tr>';
+        html += '<tr><td>{{ text_max_credit }}</td><td>' + parseFloat(stats.general.max_credit || 0).toLocaleString() + '</td></tr>';
+        html += '</table>';
+        html += '</div>';
+
+        // إحصائيات شهرية
+        html += '<div class="col-md-6">';
+        html += '<h4>{{ text_monthly_statistics }}</h4>';
+        html += '<table class="table table-bordered table-striped">';
+        html += '<thead><tr><th>{{ text_month }}</th><th>{{ text_debit }}</th><th>{{ text_credit }}</th><th>{{ text_transactions }}</th></tr></thead>';
+        html += '<tbody>';
+        
+        if (stats.monthly && stats.monthly.length > 0) {
+            stats.monthly.forEach(function(month) {
+                html += '<tr>';
+                html += '<td>' + month.year + '-' + String(month.month).padStart(2, '0') + '</td>';
+                html += '<td>' + parseFloat(month.monthly_debit).toLocaleString() + '</td>';
+                html += '<td>' + parseFloat(month.monthly_credit).toLocaleString() + '</td>';
+                html += '<td>' + month.monthly_transactions + '</td>';
+                html += '</tr>';
+            });
+        } else {
+            html += '<tr><td colspan="4" class="text-center">{{ text_no_data }}</td></tr>';
+        }
+        
+        html += '</tbody></table>';
+        html += '</div>';
+        html += '</div>';
+
+        $('#statistics-content').html(html);
+    }
+
+    // تحميل الرسم البياني
+    $('#btn-load-chart').on('click', function() {
+        if (!currentAccountId) {
+            toastr.error('{{ error_account_required }}');
+            return;
+        }
+
+        var period = $('#chart-period').val();
+        
+        $.ajax({
+            url: "{{ ajax_balance_history_url }}",
+            type: "POST",
+            data: {
+                user_token: "{{ user_token }}",
+                account_id: currentAccountId,
+                period: period
+            },
+            dataType: "json",
+            beforeSend: function() {
+                $('#btn-load-chart').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> {{ text_loading }}');
+            },
+            success: function(json) {
+                $('#btn-load-chart').prop('disabled', false).html('<i class="fa fa-refresh"></i> {{ button_load_chart }}');
+                
+                if (json.error) {
+                    toastr.error(json.error);
+                } else if (json.success && json.data) {
+                    drawBalanceChart(json.data);
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#btn-load-chart').prop('disabled', false).html('<i class="fa fa-refresh"></i> {{ button_load_chart }}');
+                toastr.error("{{ text_ajax_error }}: " + error);
+            }
+        });
+    });
+
+    // رسم الرسم البياني
+    function drawBalanceChart(data) {
+        var ctx = document.getElementById('balance-chart').getContext('2d');
+        
+        if (balanceChart) {
+            balanceChart.destroy();
+        }
+
+        var labels = data.map(function(item) { return item.period; });
+        var balances = data.map(function(item) { return item.running_balance; });
+
+        balanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '{{ text_balance }}',
+                    data: balances,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '{{ text_balance_history }}'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    }
+
+    // تصدير البيانات
+    $('#btn-export').on('click', function() {
+        if (!currentAccountId) {
+            toastr.error('{{ error_account_required }}');
+            return;
+        }
+
+        var dateFrom = $('input[name="date_from"]').val();
+        var dateTo = $('input[name="date_to"]').val();
+        
+        var url = "{{ ajax_export_url }}&account_id=" + currentAccountId + "&format=csv";
+        if (dateFrom) url += "&date_from=" + dateFrom;
+        if (dateTo) url += "&date_to=" + dateTo;
+        
+        window.open(url, '_blank');
+    });
+
+    // طباعة
+    $('#btn-print').on('click', function() {
+        window.print();
+    });
+
+    // إعادة تعيين
+    $('#btn-reset').on('click', function() {
+        $('#query-form')[0].reset();
+        $('#query-results').hide();
+        $('#btn-export, #btn-print').prop('disabled', true);
+        currentAccountId = null;
+    });
+});
+</script>
+
+{{ footer }}

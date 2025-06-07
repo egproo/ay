@@ -1,0 +1,159 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <a href="{{ back }}" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+        <a href="{{ export }}" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-success"><i class="fas fa-file-excel"></i></a>
+      </div>
+      <h1>{{ heading_batch_history }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="card mb-3">
+      <div class="card-header"><i class="fas fa-info-circle"></i> {{ text_batch_details }}</div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <th>{{ entry_product }}</th>
+                <td>{{ product_name }}</td>
+              </tr>
+              <tr>
+                <th>{{ entry_batch_number }}</th>
+                <td>{{ batch_number }}</td>
+              </tr>
+              <tr>
+                <th>{{ entry_branch }}</th>
+                <td>{{ branch_name }}</td>
+              </tr>
+              <tr>
+                <th>{{ entry_unit }}</th>
+                <td>{{ unit_name }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <table class="table table-bordered">
+              <tr>
+                <th>{{ entry_quantity }}</th>
+                <td>{{ quantity }} {{ unit_name }}</td>
+              </tr>
+              <tr>
+                <th>{{ entry_manufacturing_date }}</th>
+                <td>{{ manufacturing_date }}</td>
+              </tr>
+              <tr>
+                <th>{{ entry_expiry_date }}</th>
+                <td>{{ expiry_date }}</td>
+              </tr>
+              <tr>
+                <th>{{ entry_status }}</th>
+                <td>
+                  {% if status == 'active' %}
+                    <span class="badge bg-success">{{ text_status_active }}</span>
+                  {% elseif status == 'quarantine' %}
+                    <span class="badge bg-warning text-dark">{{ text_status_quarantine }}</span>
+                  {% elseif status == 'consumed' %}
+                    <span class="badge bg-info">{{ text_status_consumed }}</span>
+                  {% elseif status == 'expired' %}
+                    <span class="badge bg-danger">{{ text_status_expired }}</span>
+                  {% elseif status == 'damaged' %}
+                    <span class="badge bg-danger">{{ text_status_damaged }}</span>
+                  {% elseif status == 'returned' %}
+                    <span class="badge bg-secondary">{{ text_status_returned }}</span>
+                  {% elseif status == 'reserved' %}
+                    <span class="badge bg-primary">{{ text_status_reserved }}</span>
+                  {% else %}
+                    <span class="badge bg-light text-dark">{{ status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        {% if notes %}
+          <div class="row">
+            <div class="col-12">
+              <div class="alert alert-info">
+                <strong>{{ entry_notes }}:</strong> {{ notes }}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header"><i class="fas fa-history"></i> {{ text_batch_history }}</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td class="text-start">{{ column_date }}</td>
+                <td class="text-start">{{ column_action_type }}</td>
+                <td class="text-end">{{ column_action_quantity }}</td>
+                <td class="text-start">{{ column_user }}</td>
+                <td class="text-start">{{ column_action_notes }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if history %}
+                {% for entry in history %}
+                  <tr>
+                    <td class="text-start">{{ entry.created_at }}</td>
+                    <td class="text-start">
+                      {% if entry.action == 'created' %}
+                        <span class="badge bg-success">{{ text_action_created }}</span>
+                      {% elseif entry.action == 'increased' %}
+                        <span class="badge bg-primary">{{ text_action_increased }}</span>
+                      {% elseif entry.action == 'decreased' %}
+                        <span class="badge bg-warning text-dark">{{ text_action_decreased }}</span>
+                      {% elseif entry.action == 'status_changed' %}
+                        <span class="badge bg-info">{{ text_action_status_changed }}</span>
+                      {% elseif entry.action == 'transferred' %}
+                        <span class="badge bg-secondary">{{ text_action_transferred }}</span>
+                      {% elseif entry.action == 'sold' %}
+                        <span class="badge bg-primary">{{ text_action_sold }}</span>
+                      {% elseif entry.action == 'returned' %}
+                        <span class="badge bg-secondary">{{ text_action_returned }}</span>
+                      {% elseif entry.action == 'adjusted' %}
+                        <span class="badge bg-info">{{ text_action_adjusted }}</span>
+                      {% elseif entry.action == 'expired' %}
+                        <span class="badge bg-danger">{{ text_action_expired }}</span>
+                      {% elseif entry.action == 'damaged' %}
+                        <span class="badge bg-danger">{{ text_action_damaged }}</span>
+                      {% elseif entry.action == 'reserved' %}
+                        <span class="badge bg-primary">{{ text_action_reserved }}</span>
+                      {% elseif entry.action == 'released' %}
+                        <span class="badge bg-success">{{ text_action_released }}</span>
+                      {% else %}
+                        <span class="badge bg-light text-dark">{{ entry.action }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end">{{ entry.quantity }}</td>
+                    <td class="text-start">{{ entry.username }}</td>
+                    <td class="text-start">{{ entry.notes }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td class="text-center" colspan="5">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

@@ -1,0 +1,186 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-stock-counting" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i>
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-stock-counting" class="form-horizontal">
+          
+          <!-- معلومات أساسية -->
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-counting-number">{{ entry_counting_number }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="counting_number" value="{{ counting_number }}" placeholder="{{ entry_counting_number }}" id="input-counting-number" class="form-control" readonly />
+              {% if error_counting_number %}
+              <div class="text-danger">{{ error_counting_number }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-counting-name">{{ entry_counting_name }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="counting_name" value="{{ counting_name }}" placeholder="{{ entry_counting_name }}" id="input-counting-name" class="form-control" />
+              {% if error_counting_name %}
+              <div class="text-danger">{{ error_counting_name }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_counting_name }}</div>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-counting-type">{{ entry_counting_type }}</label>
+            <div class="col-sm-10">
+              <select name="counting_type" id="input-counting-type" class="form-control">
+                {% for type in counting_types %}
+                <option value="{{ type.value }}"{% if type.value == counting_type %} selected="selected"{% endif %}>{{ type.text }}</option>
+                {% endfor %}
+              </select>
+              {% if error_counting_type %}
+              <div class="text-danger">{{ error_counting_type }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_counting_type }}</div>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-branch">{{ entry_branch }}</label>
+            <div class="col-sm-10">
+              <select name="branch_id" id="input-branch" class="form-control">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                <option value="{{ branch.branch_id }}"{% if branch.branch_id == branch_id %} selected="selected"{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+              {% if error_branch_id %}
+              <div class="text-danger">{{ error_branch_id }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_branch }}</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-category">{{ entry_category }}</label>
+            <div class="col-sm-10">
+              <select name="category_id" id="input-category" class="form-control">
+                <option value="">{{ text_all_categories }}</option>
+                {% for category in categories %}
+                <option value="{{ category.category_id }}"{% if category.category_id == category_id %} selected="selected"{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+              </select>
+              <div class="help-block">{{ help_category }}</div>
+            </div>
+          </div>
+          
+          <!-- تواريخ الجرد -->
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-start-date">{{ entry_start_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="start_date" value="{{ start_date }}" id="input-start-date" class="form-control" />
+              <div class="help-block">{{ help_start_date }}</div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-end-date">{{ entry_end_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="end_date" value="{{ end_date }}" id="input-end-date" class="form-control" />
+              <div class="help-block">{{ help_end_date }}</div>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-counting-date">{{ entry_counting_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="counting_date" value="{{ counting_date }}" id="input-counting-date" class="form-control" />
+              {% if error_counting_date %}
+              <div class="text-danger">{{ error_counting_date }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_counting_date }}</div>
+            </div>
+          </div>
+          
+          <!-- ملاحظات -->
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="5" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+            </div>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تحديث نوع الجرد
+    $('#input-counting-type').on('change', function() {
+        var type = $(this).val();
+        
+        if (type == 'partial') {
+            $('#input-category').closest('.form-group').show();
+        } else {
+            $('#input-category').closest('.form-group').hide();
+            $('#input-category').val('');
+        }
+    });
+    
+    // تحديد التواريخ الافتراضية
+    if (!$('#input-start-date').val()) {
+        $('#input-start-date').val(new Date().toISOString().split('T')[0]);
+    }
+    
+    if (!$('#input-end-date').val()) {
+        var endDate = new Date();
+        endDate.setDate(endDate.getDate() + 7);
+        $('#input-end-date').val(endDate.toISOString().split('T')[0]);
+    }
+    
+    // التحقق من التواريخ
+    $('#input-start-date, #input-end-date').on('change', function() {
+        var startDate = new Date($('#input-start-date').val());
+        var endDate = new Date($('#input-end-date').val());
+        
+        if (startDate > endDate) {
+            alert('تاريخ البداية يجب أن يكون قبل تاريخ النهاية');
+            $(this).focus();
+        }
+    });
+    
+    // تهيئة نوع الجرد
+    $('#input-counting-type').trigger('change');
+});
+</script>
+
+{{ footer }}

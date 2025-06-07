@@ -1,0 +1,200 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="row">
+      <div id="filter-panel" class="col-md-3 col-sm-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label" for="input-receipt-number">{{ column_receipt_number }}</label>
+              <input type="text" name="filter_receipt_number" value="{{ filter_receipt_number }}" placeholder="{{ column_receipt_number }}" id="input-receipt-number" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-po-number">{{ column_po_number }}</label>
+              <input type="text" name="filter_po_number" value="{{ filter_po_number }}" placeholder="{{ column_po_number }}" id="input-po-number" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-supplier">{{ column_supplier }}</label>
+              <input type="text" name="filter_supplier" value="{{ filter_supplier }}" placeholder="{{ column_supplier }}" id="input-supplier" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-status">{{ column_quality_status }}</label>
+              <select name="filter_status" id="input-status" class="form-control">
+                <option value="">{{ text_all_status }}</option>
+                <option value="pending" {% if filter_status == 'pending' %}selected="selected"{% endif %}>{{ text_status_pending }}</option>
+                <option value="pass" {% if filter_status == 'pass' %}selected="selected"{% endif %}>{{ text_quality_status_pass }}</option>
+                <option value="fail" {% if filter_status == 'fail' %}selected="selected"{% endif %}>{{ text_quality_status_fail }}</option>
+                <option value="partial" {% if filter_status == 'partial' %}selected="selected"{% endif %}>{{ text_quality_status_partial }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-date-from">{{ text_date_from }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ text_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-date-to">{{ text_date_to }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ text_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+            <div class="form-group text-right">
+              <button type="button" id="button-clear-filter" class="btn btn-default"><i class="fa fa-eraser"></i> {{ button_reset }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9 col-sm-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th class="text-center">{{ column_receipt_number }}</th>
+                    <th class="text-center">{{ column_po_number }}</th>
+                    <th class="text-left">{{ column_supplier }}</th>
+                    <th class="text-center">{{ column_receipt_date }}</th>
+                    <th class="text-center">{{ column_quality_status }}</th>
+                    <th class="text-right">{{ column_action }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if receipts %}
+                    {% for receipt in receipts %}
+                    <tr>
+                      <td class="text-center">{{ receipt.receipt_number }}</td>
+                      <td class="text-center">{{ receipt.po_number }}</td>
+                      <td class="text-left">{{ receipt.supplier_name }}</td>
+                      <td class="text-center">{{ receipt.receipt_date }}</td>
+                      <td class="text-center">
+                        {% if receipt.quality_status == 'pass' %}
+                          <span class="label label-success">{{ text_quality_status_pass }}</span>
+                        {% elseif receipt.quality_status == 'fail' %}
+                          <span class="label label-danger">{{ text_quality_status_fail }}</span>
+                        {% elseif receipt.quality_status == 'partial' %}
+                          <span class="label label-warning">{{ text_quality_status_partial }}</span>
+                        {% else %}
+                          <span class="label label-default">{{ text_status_pending }}</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-right">
+                        <a href="{{ receipt.check_url }}" data-toggle="tooltip" title="{{ button_check }}" class="btn btn-primary"><i class="fa fa-check-square-o"></i></a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td class="text-center" colspan="6">{{ text_no_results }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-left">{{ pagination }}</div>
+              <div class="col-sm-6 text-right">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+  var url = 'index.php?route=purchase/quality_check&token={{ token }}';
+
+  var filter_receipt_number = $('input[name=\'filter_receipt_number\']').val();
+  
+  if (filter_receipt_number) {
+    url += '&filter_receipt_number=' + encodeURIComponent(filter_receipt_number);
+  }
+  
+  var filter_po_number = $('input[name=\'filter_po_number\']').val();
+  
+  if (filter_po_number) {
+    url += '&filter_po_number=' + encodeURIComponent(filter_po_number);
+  }
+  
+  var filter_supplier = $('input[name=\'filter_supplier\']').val();
+  
+  if (filter_supplier) {
+    url += '&filter_supplier=' + encodeURIComponent(filter_supplier);
+  }
+  
+  var filter_status = $('select[name=\'filter_status\']').val();
+  
+  if (filter_status !== '') {
+    url += '&filter_status=' + encodeURIComponent(filter_status);
+  }
+  
+  var filter_date_from = $('input[name=\'filter_date_from\']').val();
+  
+  if (filter_date_from) {
+    url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+  }
+  
+  var filter_date_to = $('input[name=\'filter_date_to\']').val();
+  
+  if (filter_date_to) {
+    url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+  }
+
+  location = url;
+});
+
+$('#button-clear-filter').on('click', function() {
+  $('input[name=\'filter_receipt_number\']').val('');
+  $('input[name=\'filter_po_number\']').val('');
+  $('input[name=\'filter_supplier\']').val('');
+  $('select[name=\'filter_status\']').val('');
+  $('input[name=\'filter_date_from\']').val('');
+  $('input[name=\'filter_date_to\']').val('');
+  
+  location = 'index.php?route=purchase/quality_check&token={{ token }}';
+});
+
+$('.date').datetimepicker({
+  pickTime: false
+});
+</script>
+{{ footer }} 

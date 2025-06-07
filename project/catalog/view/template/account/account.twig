@@ -1,0 +1,642 @@
+{{ header }}
+<style>
+.nav-link:hover, .nav-link:focus,.nav-link{color:#000;}
+.nav-tabs {margin-bottom: 0px;}
+.icon-shape {
+    display: inline-flex;
+    padding: 12px;
+    text-align: center;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon {
+    width: 3rem;
+    height: 3rem;
+}
+.col-md-4{margin:10px;max-width: calc( 33.3vw - 27px);}
+  .dashboard-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .dashboard-card-header {
+    background-color: #0f1740;
+    border-bottom: none;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 300;
+  }
+
+  .dashboard-card-body {
+    padding: 20px;
+    text-align: center;
+    
+  }
+
+  .dashboard-card-body ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .dashboard-card-body ul li {
+    margin-bottom: 15px;
+    text-align: center;
+
+  }
+
+  .dashboard-card-body ul li a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    text-align: center;
+
+  }
+
+  .dashboard-card-body ul li a:hover {
+    color: #007bff;
+  }
+
+  @media (max-width: 767px) {
+    .dashboard-card {
+      margin-bottom: 20px;
+    }
+  }
+</style>
+<div id="account-account" class="container" style="margin-top:40px">
+  
+  {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> {{ success }}</div>
+  {% endif %}
+  
+<div id="exTab3" class="container">	
+    <ul class="nav nav-tabs">
+			<li class="nav-item"><a  class="nav-link active" role="tab"  href="#account" data-bs-toggle="tab">{{text_my_account}}</a></li>
+			<li class="nav-item"><a class="nav-link" role="tab"  href="#recharge" data-bs-toggle="tab">{{text_recharge}}</a></li>
+			<li class="nav-item"><a class="nav-link" role="tab"  href="#credit" data-bs-toggle="tab">{{text_wallet}}</a></li>
+			<li class="nav-item"><a class="nav-link" role="tab"  href="#orders" data-bs-toggle="tab">{{text_myorders}}</a></li>			
+  		    <li class="nav-item"><a class="nav-link" role="tab"  href="#lhistory" data-bs-toggle="tab">{{text_lhistory}}</a></li>
+  		    <li class="nav-item"><a class="nav-link" role="tab"  href="#tickets" data-bs-toggle="tab">{{text_tickets}}</a></li>
+  		    <li class="nav-item"><a class="nav-link" role="tab"  href="#wishlist" data-bs-toggle="tab">{{text_wishlist}}</a></li>
+
+		</ul>
+    <div class="tab-content headertabs">
+      <div class="tab-pane fade show active" id="account" role="tabpanel">
+      <div class="container-fluid" style="margin-top:10px">
+          <div class="row">
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div style="margin: 0px 25px;" class="card card-stats mb-4 mb-xl-0">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_wallet}}</h4>
+                            {% if balances %}
+                            {% for balancex in balances %}
+                             <span class="h5 font-weight-bold mb-0" style="font-weight: 900;display: inline-block;width: fit-content;white-space: nowrap;background: #f2f2f2;padding-top:1px;padding-bottom:1px;text-align: center;font-size: 14px;padding-right: 5px;padding-left: 5px;"> {{ balancex.balance }} </span>
+                            {% endfor %}
+                          {% endif %}
+                      <span class="h2 font-weight-bold mb-0"></span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-danger text-white rounded-circle shadow">
+                        <i style="font-size:25px" class="fa-solid fa-wallet"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div  style="margin: 0px 25px;"  class="card card-stats mb-4 mb-xl-0">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_myorders}}</h4>
+                      <span class="h2 font-weight-bold mb-0">{{countorders}}</span>
+                    </div>
+                    <div class="col-auto">
+                      <div class="icon icon-shape bg-black text-white rounded-circle shadow">
+                        <i style="font-size:25px"  class="fas fa-list"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div  style="margin: 0px 25px;"  class="card card-stats mb-4 mb-xl-0">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_tickets}}</h4>
+                      <span class="h2 font-weight-bold mb-0">{{counttickets}}</span>
+                    </div>
+                    <div class="col-auto">
+                      <div style="background-color:#D4AF37 !important" class="icon icon-shape text-black rounded-circle shadow">
+                        <i style="font-size:25px"  class="fa-regular fa-circle-question"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div  style="margin: 0px 25px;"  class="card card-stats mb-4 mb-xl-0">
+                 
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_xtransactions}}</h4>
+                      <span class="h2 font-weight-bold mb-0">{{counttransactions}}</span>
+                    </div>
+                    <div class="col-auto">
+                      <div style="background-color: #0f1740;" class="icon icon-shape text-white rounded-circle shadow">
+                        <i style="font-size:25px"   class="fa-solid fa-square-poll-horizontal"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+        
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div  style="margin: 0px 25px;"  class="card card-stats mb-4 mb-xl-0">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_security}}</h4>
+                      <a href="{{password}}" style="color:#0f1740">
+                      <span class="h6 font-weight-bold mb-0 mt-2 py-3">{{text_change_password}}</span>
+                      </a>
+                    </div>
+                    <div class="col-auto">
+                    <a href="{{password}}" style="color:#0f1740">
+                      <div style="background-color:#6e1414" class="icon icon-shape text-white rounded-circle shadow">
+                        <i style="font-size:25px"  class="fas fa-solid  fa-lock"></i>
+                      </div>
+                    </a>  
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>        
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div  style="margin: 0px 25px;"  class="card card-stats mb-4 mb-xl-0">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_account}}</h4>
+                      <a href="{{edit}}" style="color:#0f1740">
+                      <span class="h6 font-weight-bold mb-0 mt-2 py-3">{{text_change_account}}</span>
+                      </a>
+                    </div>
+                    <div class="col-auto"><a href="{{edit}}" style="color:#0f1740">
+                      <a href="{{edit}}" style="color:#0f1740">
+                      <div style="background-color:#14436e" class="icon icon-shape text-white rounded-circle shadow">
+                        <i style="font-size:25px"  class="fas fa-solid  fa-user-pen"></i>
+                      </div></a>
+                    </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>         
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div  style="margin: 0px 25px;"  class="card card-stats mb-4 mb-xl-0">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_xnewsletter}}</h4>
+                      <a href="{{newsletter}}" style="color:#0f1740">
+                      <span class="h6 font-weight-bold mb-0 mt-2 py-3">{{text_newsletter}}</span>
+                      </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{newsletter}}" style="color:#0f1740">
+                      <div style="background-color:#410544" class="icon icon-shape text-white rounded-circle shadow">
+                        <i style="font-size:25px"  class="fas fa-solid  fa-rss"></i>
+                      </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>         
+               <div class="col-xl-4 col-lg-4 col-md-6 col-sm-6 mt-3">
+              <div  style="margin: 0px 25px;"  class="card card-stats mb-4 mb-xl-0">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      <h4 class="card-title text-uppercase text-muted mb-0">{{text_reward}}</h4>
+                      <a href="{{reward}}" style="color:#0f1740">
+                      <span class="h6 font-weight-bold mb-0 mt-2 py-3">SooN</span>
+                      </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{reward}}" style="color:#0f1740">
+                      <div style="background-color:#054144" class="icon icon-shape text-white rounded-circle shadow">
+                        <i style="font-size:25px"  class="fa-solid fa-circle-dollar-to-slot"></i>
+                      </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>         
+                             
+        
+          </div>
+            
+
+      </div>                        
+      </div>
+      <div class="tab-pane fade" id="recharge" role="tabpanel">
+          <br>
+          <form id="chargecustomeamount" style="text-align:center">
+    <div class="mb-3">
+        <label for="customamount" class="form-label">حدد مبلغ الشحن</label>
+        <input id="customamount" name="customamount" type="number" class="form-control" step="any">
+          <input type="hidden" name="quantity" value="1" size="2" id="input-quantity" class="form-control"/>
+          <input type="hidden" name="product_id" value="78" id="input-product-id"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary">{{button_cart}}</button>
+</form>
+<script>
+$('#chargecustomeamount').on('submit', function (e) {
+    e.preventDefault();
+
+    $.ajax({
+        url: 'index.php?route=checkout/cart.add&language={{ language }}',
+        type: 'post',
+        data: $('#chargecustomeamount').serialize(),
+        dataType: 'json',
+        contentType: 'application/x-www-form-urlencoded',
+        cache: false,
+        processData: false,
+        beforeSend: function () {
+            $('#button-cart').button('loading');
+        },
+        complete: function () {
+            $('#button-cart').button('reset');
+        },
+        success: function (json) {
+            console.log(json);
+
+            $('#chargecustomeamount').find('.is-invalid').removeClass('is-invalid');
+            $('#chargecustomeamount').find('.invalid-feedback').removeClass('d-block');
+
+            if (json['error']) {
+                for (key in json['error']) {
+                    $('#input-' + key.replaceAll('_', '-')).addClass('is-invalid').find('.form-control, .form-select, .form-check-input, .form-check-label').addClass('is-invalid');
+                    $('#error-' + key.replaceAll('_', '-')).html(json['error'][key]).addClass('d-block');
+                }
+            }
+
+            if (json['success']) {
+                //$('#alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+
+                $('#header-cart').load('index.php?route=common/cart.info');
+                $('#carttotalproductscount').load('index.php?route=common/cart.info2');
+                
+         	var butWrap = $('#button-cart').parent('.mb-3'); /* Remember the button wrapper */
+          	butWrap.append('<div class="animtocart"></div>'); /* Add a circle to the wrapper, which will be animated and fly away from the button to the basket */
+            $('.animtocart').css({ /* Assign styles to the circle and mouse cursor position */
+            	'position' : 'absolute',
+              	'background' : '#FF0000',
+              	'width' :  '25px',
+              	'height' : '25px',
+              	'border-radius' : '100px',
+              	'z-index' : '9999999999',
+              	'left' : e.pageX-25,
+            	'top' : e.pageY-25,
+            });
+            
+        	var cart = $('#carttotalproductscount').offset(); /* We get the location of the basket on the page so that the circle flies there */
+        	$('.animtocart').animate({ top: cart.top + 'px', left: cart.left + 'px', width: 0, height: 0 }, 800, function(){ /* We make an animation of the flight of the circle from the button to the basket and at the end, delete it */
+        		$(this).remove();
+            });  
+            
+            $('.floatcart').css({ /* Assign styles to the circle and mouse cursor position */
+              	'bottom' : '40px',
+            });
+            $('#carttotalproductscount').load('index.php?route=common/cart.info2');
+   
+            setTimeout( function(){
+                $('.floatcart').css({ /* Assign styles to the circle and mouse cursor position */
+                  	'bottom' : '20px',
+                });  
+            },1000); 
+            
+            window.location.href = "index.php?route=checkout/checkout&language={{ language }}";
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+</script>
+      </div>
+      <div class="tab-pane fade" id="credit" role="tabpanel">
+          <ul style="" class="nav nav-tabs">
+            <li style="width:40vw" class="nav-item"><a href="#tab-transaction-balance" data-bs-toggle="tab" class="nav-link text-center active">{{column_rsed}}</a></li>
+            <li style="width:50vw" class="nav-item"><a href="#tab-transaction-list" data-bs-toggle="tab" class="nav-link text-center">{{column_rsed_list}}</a></li>
+
+          </ul>                
+              <div class="tab-content">
+                <div id="tab-transaction-balance" class="tab-pane active">
+<div class="table-responsive">
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <td colspan="2" class="text-center">{{column_currency}}</td>
+        <td class="text-center">{{ column_balance }}</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% if balances %}
+
+        {% for balancex in balances %}
+          <tr>
+            <td colspan="2" class="text-center">{{ balancex.currency }}</td>
+            <td class="text-center">{{ balancex.balance }}</td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+                </div>        
+                <div id="tab-transaction-list" class="tab-pane">
+<div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <td class="text-center">{{ column_date_added }}</td>
+            <td class="text-center">{{ column_description }}</td>
+            <td class="text-center">{{ column_balance }}</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% if transactions %}
+            {% for transaction in transactions %}
+              <tr>
+                <td class="text-center">{{ transaction.date_added }}</td>
+                <td class="text-center">{{ transaction.description }}</td>
+                <td class="text-center">{{ transaction.amount }}</td>
+              </tr>
+            {% endfor %}
+                {% else %}
+                <tr><td colspan="3" class="text-center">{{textx_no_results}}</td></tr>
+                {% endif %}   
+        </tbody>
+      </table>
+</div>
+
+                </div>  
+              </div>  
+                
+
+
+      </div>
+      <div class="tab-pane fade" id="orders" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td class="text-center">{{ column_order_id }}</td>
+                <td class="text-center">{{ column_customer }}</td>
+                <td class="text-center">{{ column_product }}</td>
+                <td class="text-center">{{ column_status }}</td>
+                <td class="text-center">{{ column_total }}</td>
+                <td class="text-center">{{ column_date_added }}</td>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody>
+                {%  if orders %}
+              {% for order in orders %}
+                <tr>
+                  <td class="text-center">{{ order.order_id }}</td>
+                  <td class="text-center">{{ order.name }}</td>
+                  <td class="text-center">{{ order.products }}</td>
+                  <td class="text-center">{{ order.status }}</td>
+                  <td class="text-center">{{ order.total }}</td>
+                  <td class="text-center">{{ order.date_added }}</td>
+                  <td class="text-center"><a href="{{ order.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fa-solid fa-eye"></i></a></td>
+                </tr>
+              {% endfor %}
+                {% else %}
+                <tr><td colspan="7" class="text-center">{{textx_no_results}}</td></tr>
+                {% endif %}              
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="lhistory" role="tabpanel">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                  <tr class="text-center"> 
+                    <th class="text-center">Date</th>
+                    <th class="text-center">IP Address</th>
+                  </tr>
+                </thead>
+            <tbody>    
+            {%  if login_history %}
+              {% for lh in login_history  %}
+                <tr class="text-center"> 
+                  <td class="text-center">{{ lh.date }}</td>
+                  <td class="text-center">{{ lh.ip }}</td>
+                </tr>
+              {% endfor %}
+                {% else %}
+                <tr><td colspan="3" class="text-center">{{textx_no_results}}</td></tr>
+                {% endif %}
+            </tbody>  
+            </table>
+          </div>
+      </div>
+
+      <div class="tab-pane fade" id="tickets" role="tabpanel">
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th  class="text-center" style="line-height: 30px;">ID</th>
+                    <th  class="text-center" style="line-height: 30px;">{{ column_date }}</th>
+                    <th  class="text-center" style="line-height: 30px;">{{ column_tsubject }}</th>
+                    <th  class="text-center" style="line-height: 30px;">{{ column_tstatus }}</th>
+                    <th class="text-center" style="line-height: 30px;"><button  style="background-color:#D4AF37 !important;color: #0f1740;"
+                    type="button" class="btn" data-bs-toggle="modal" data-bs-target="#addTicketModal">
+                        <span class="d-sm-none d-xs-none">{{text_add_ticket}}</span>
+                        
+                        <i class="fas fa-plus"></i></button></th>
+                </tr>
+            </thead>
+            
+            <tbody id="ticketlist">
+                {%  if tickets %}
+                {% for ticket in tickets %}
+                <tr>
+                    <td  class="text-center">{{ ticket.ticket_id }}</td>
+                    <td  class="text-center">{{ ticket.date_added }}</td>
+                    <td  class="text-center">{{ ticket.subject }}</td>
+                    <td  class="text-center">
+                    {% if ticket.status == '1' %}{{text_open}}{% endif %}
+                    {% if ticket.status == '2' %}{{text_close}}{% endif %}
+                    </td>
+                    <td  class="text-center"><a href="{{ ticket.href }}" class="btn btn-info">{{ button_view }}</a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="5" class="text-center">{{textx_no_results}}</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+  
+    <!-- Add Ticket Modal -->
+    <div class="modal fade" id="addTicketModal" tabindex="-1" aria-labelledby="addTicketModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTicketModalLabel">{{ text_add_ticket }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ add_ticket_url }}" method="post">
+                        <div class="mb-3">
+                            <label for="ticketSubject" class="form-label">{{ column_tsubject }}</label>
+                            <input type="text" class="form-control" id="ticketSubject" name="subject">
+                        </div>
+                        <div class="mb-3">
+                            <label for="ticketMessage" class="form-label">{{ text_message }}</label>
+                            <textarea class="form-control" id="ticketMessage" rows="3" name="message"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{ button_submit }}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div> 
+ <script>
+$(document).ready(function() {
+$('#addTicketModal form').submit(function(e) {
+e.preventDefault();
+var subject = $('#ticketSubject').val();
+var message = $('#ticketMessage').val();
+
+$.ajax({
+        url: 'index.php?route=account/account.addTicket&language={{ language }}',
+type: 'post',
+data: {
+subject: subject,
+message: message
+},
+dataType: 'json',
+success: function(json) {
+if (json.success) {
+// Update the account page to display the newly added ticket
+// You can use the response data to update the page dynamically
+    $('#addTicketModal').modal('hide');
+    $('#alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+    window.history.pushState({}, null, 'index.php?route=account/account.getTicketslist&language={{ language }}');
+    $('#ticketlist').load('index.php?route=account/account.getTicketslist&language={{ language }}');
+$('#ticketSubject').val('');
+$('#ticketMessage').val('');  
+} else {
+                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+}
+},
+error: function(xhr, status, error) {
+// Handle the AJAX request error
+}
+});
+});
+});
+</script>
+      </div>      
+      <div class="tab-pane fade" id="wishlist" role="tabpanel">
+          {%  if wishlistx %}
+                        {{wishlistx}}
+           {% endif %}    
+             
+      </div>
+  </div>      
+  </div>
+  
+  
+  {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> {{ success }}</div>
+  {% endif %}
+
+  {{ content_bottom }}</div>
+
+<script type="text/javascript"><!--
+$('#input-country').on('change', function () {
+    var element = this;
+
+    $.ajax({
+        url: 'index.php?route=localisation/country&country_id=' + this.value + '&language={{ language }}',
+        dataType: 'json',
+        beforeSend: function () {
+            $(element).prop('disabled', true);
+            $('#input-zone').prop('disabled', true);
+        },
+        complete: function () {
+            $(element).prop('disabled', false);
+            $('#input-zone').prop('disabled', false);
+        },
+        success: function (json) {
+            if (json['postcode_required'] == '1') {
+                $('#input-postcode').parent().parent().addClass('required');
+            } else {
+                $('#input-postcode').parent().parent().removeClass('required');
+            }
+
+            html = '';
+
+            if (json['zone'] && json['zone'] != '') {
+                for (i = 0; i < json['zone'].length; i++) {
+                    html += '<option value="' + json['zone'][i]['zone_id'] + '"';
+
+                    if (json['zone'][i]['zone_id'] == '{{ zone_id }}') {
+                        html += ' selected';
+                    }
+
+                    html += '>' + json['zone'][i]['name'] + '</option>';
+                }
+            } else {
+                html += '<option value="0" selected>   {{ text_none|escape('js') }}</option>';
+            }
+
+            $('#input-zone').html(html);
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+$('#input-country').trigger('change');
+//--></script>
+
+
+{{ footer }}
+
+</div>
+</div>

@@ -1,0 +1,179 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="row">
+      <div id="filter-journal" class="col-md-3 col-md-push-9 col-sm-12 hidden-sm hidden-xs">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label" for="input-reference-type">{{ entry_reference_type }}</label>
+              <select name="filter_reference_type" id="input-reference-type" class="form-control">
+                <option value="">{{ text_all }}</option>
+                <option value="inventory_movement" {% if filter_reference_type == 'inventory_movement' %}selected="selected"{% endif %}>{{ text_inventory_movement }}</option>
+                <option value="purchase" {% if filter_reference_type == 'purchase' %}selected="selected"{% endif %}>{{ text_purchase }}</option>
+                <option value="sale" {% if filter_reference_type == 'sale' %}selected="selected"{% endif %}>{{ text_sale }}</option>
+                <option value="manual" {% if filter_reference_type == 'manual' %}selected="selected"{% endif %}>{{ text_manual }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-date-from">{{ entry_date_from }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="input-date-to">{{ entry_date_to }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+            <div class="form-group text-right">
+              <button type="button" id="button-clear-filter" class="btn btn-default"><i class="fa fa-times"></i> {{ button_clear }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9 col-md-pull-3 col-sm-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-left">{% if sort == 'j.journal_id' %}
+                      <a href="{{ sort_journal_id }}" class="{{ order|lower }}">{{ column_journal_id }}</a>
+                      {% else %}
+                      <a href="{{ sort_journal_id }}">{{ column_journal_id }}</a>
+                      {% endif %}</td>
+                    <td class="text-left">{% if sort == 'j.reference_type' %}
+                      <a href="{{ sort_reference_type }}" class="{{ order|lower }}">{{ column_reference_type }}</a>
+                      {% else %}
+                      <a href="{{ sort_reference_type }}">{{ column_reference_type }}</a>
+                      {% endif %}</td>
+                    <td class="text-left">{% if sort == 'j.reference_id' %}
+                      <a href="{{ sort_reference_id }}" class="{{ order|lower }}">{{ column_reference_id }}</a>
+                      {% else %}
+                      <a href="{{ sort_reference_id }}">{{ column_reference_id }}</a>
+                      {% endif %}</td>
+                    <td class="text-left">{% if sort == 'j.description' %}
+                      <a href="{{ sort_description }}" class="{{ order|lower }}">{{ column_description }}</a>
+                      {% else %}
+                      <a href="{{ sort_description }}">{{ column_description }}</a>
+                      {% endif %}</td>
+                    <td class="text-left">{% if sort == 'j.date_added' %}
+                      <a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>
+                      {% else %}
+                      <a href="{{ sort_date_added }}">{{ column_date_added }}</a>
+                      {% endif %}</td>
+                    <td class="text-left">{% if sort == 'u.username' %}
+                      <a href="{{ sort_user_name }}" class="{{ order|lower }}">{{ column_user }}</a>
+                      {% else %}
+                      <a href="{{ sort_user_name }}">{{ column_user }}</a>
+                      {% endif %}</td>
+                    <td class="text-right">{{ column_action }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if journals %}
+                  {% for journal in journals %}
+                  <tr>
+                    <td class="text-left">{{ journal.journal_id }}</td>
+                    <td class="text-left">{{ journal.reference_type }}</td>
+                    <td class="text-left">{{ journal.reference_id }}</td>
+                    <td class="text-left">{{ journal.description }}</td>
+                    <td class="text-left">{{ journal.date_added }}</td>
+                    <td class="text-left">{{ journal.user_name }}</td>
+                    <td class="text-right"><a href="{{ journal.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fa fa-eye"></i></a></td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-left">{{ pagination }}</div>
+              <div class="col-sm-6 text-right">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript"><!--
+$('#button-filter').on('click', function() {
+	var url = 'index.php?route=accounting/journal&user_token={{ user_token }}';
+
+	var filter_reference_type = $('select[name=\'filter_reference_type\']').val();
+
+	if (filter_reference_type) {
+		url += '&filter_reference_type=' + encodeURIComponent(filter_reference_type);
+	}
+
+	var filter_date_from = $('input[name=\'filter_date_from\']').val();
+
+	if (filter_date_from) {
+		url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+	}
+
+	var filter_date_to = $('input[name=\'filter_date_to\']').val();
+
+	if (filter_date_to) {
+		url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+	}
+
+	location = url;
+});
+
+$('#button-clear-filter').on('click', function() {
+	$('select[name=\'filter_reference_type\']').val('');
+	$('input[name=\'filter_date_from\']').val('');
+	$('input[name=\'filter_date_to\']').val('');
+	
+	location = 'index.php?route=accounting/journal&user_token={{ user_token }}';
+});
+
+$('.date').datetimepicker({
+	pickTime: false
+});
+//--></script>
+</div>
+{{ footer }}

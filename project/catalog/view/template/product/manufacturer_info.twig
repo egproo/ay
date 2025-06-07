@@ -1,0 +1,62 @@
+{{ header }}
+<div id="product-manufacturer" class="container">
+  <div class="row">{{ column_left }}
+    <div id="content" class="col" >{{ content_top }}
+<div style="display:none;overflow: auto;padding: 0px 25px;text-align: start;">
+  <img src="{{ manufacturerimage }}" alt="{{ custom_title }}" style="float: inline-start;
+margin-inline-end: 10px; min-height: 100px; line-height: 30px; border-radius: 50%;">
+  <div style="overflow: auto;display: contents;">
+    <p style="padding: 5px 20px">
+      {{description}}
+    </p>
+  </div>
+</div>    
+      {% if products %}
+        <div id="display-control" class="row">
+          <div class="col-md-1 d-none d-md-block">
+            <div class="btn-group">
+              <button type="button" id="button-grid" class="btn btn-light" data-bs-toggle="tooltip" title="{{ button_grid }}"><i class="fa-solid fa-table-cells"></i></button>
+            </div>
+          </div>
+          <div class="col-md-4 offset-md-1 col-6">
+            <div class="input-group mb-3">
+              <div class="input-group">
+                <label for="input-sort" class="input-group-text">{{ text_sort }}</label>
+                <select id="input-sort" class="form-select" onchange="location = this.value;">
+                  {% for sorts in sorts %}
+                    <option value="{{ sorts.href }}"{% if sorts.value == '%s-%s'|format(sort, order) %} selected{% endif %}>{{ sorts.text }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="input-group mb-3">
+              <div class="input-group">
+                <label for="input-limit" class="input-group-text">{{ text_limit }}</label>
+                <select id="input-limit" class="form-select" onchange="location = this.value;">
+                  {% for limits in limits %}
+                    <option value="{{ limits.href }}"{% if limits.value == limit %} selected{% endif %}>{{ limits.text }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="product-list" class="row">
+          {% for product in products %}
+            <div class="col-6 col-sm-6 col-md-3 col-lg-2">{{ product }}</div>
+          {% endfor %}
+        </div>
+        <div class="row">
+          <div class="col-sm-6 text-start">{{ pagination }}</div>
+          <div class="col-sm-6 text-end">{{ results }}</div>
+        </div>
+      {% else %}
+        <p>{{ text_no_results }}</p>
+        <div class="text-end"><a href="{{ continue }}" class="btn btn-primary">{{ button_continue }}</a></div>
+      {% endif %}
+      {{ content_bottom }}</div>
+    {{ column_right }}</div>
+</div>
+{{ footer }}

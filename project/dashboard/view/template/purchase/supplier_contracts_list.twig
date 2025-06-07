@@ -1,0 +1,359 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-contract').submit() : false;"><i class="fa fa-trash-o"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-contract').toggleClass('hidden-sm hidden-xs');" class="btn btn-default hidden-md hidden-lg"><i class="fa fa-filter"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="well hidden-sm hidden-xs" id="filter-contract">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-contract-number">{{ entry_contract_number }}</label>
+                <input type="text" name="filter_contract_number" value="{{ filter_contract_number }}" placeholder="{{ entry_contract_number }}" id="input-contract-number" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label class="control-label" for="input-supplier">{{ entry_supplier }}</label>
+                <select name="filter_supplier_id" id="input-supplier" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  {% for supplier in suppliers %}
+                  {% if supplier.supplier_id == filter_supplier_id %}
+                  <option value="{{ supplier.supplier_id }}" selected="selected">{{ supplier.name }}</option>
+                  {% else %}
+                  <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-status">{{ entry_status }}</label>
+                <select name="filter_status" id="input-status" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  {% for status in statuses %}
+                  {% if status.value == filter_status %}
+                  <option value="{{ status.value }}" selected="selected">{{ status.text }}</option>
+                  {% else %}
+                  <option value="{{ status.value }}">{{ status.text }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="control-label" for="input-date-start">{{ entry_date_start }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                  <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-date-end">{{ entry_date_end }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                  <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">&nbsp;</label>
+                <div>
+                  <button type="button" id="button-filter" class="btn btn-primary pull-right"><i class="fa fa-search"></i> {{ button_filter }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-contract">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">{% if sort == 'sc.contract_number' %}<a href="{{ sort_contract_number }}" class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}">{{ column_contract_number }}</a>{% else %}<a href="{{ sort_contract_number }}">{{ column_contract_number }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'supplier_name' %}<a href="{{ sort_supplier }}" class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}">{{ column_supplier }}</a>{% else %}<a href="{{ sort_supplier }}">{{ column_supplier }}</a>{% endif %}</td>
+                  <td class="text-left">{{ column_contract_type }}</td>
+                  <td class="text-left">{% if sort == 'sc.contract_date' %}<a href="{{ sort_contract_date }}" class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}">{{ column_contract_date }}</a>{% else %}<a href="{{ sort_contract_date }}">{{ column_contract_date }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'sc.start_date' %}<a href="{{ sort_start_date }}" class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}">{{ column_start_date }}</a>{% else %}<a href="{{ sort_start_date }}">{{ column_start_date }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'sc.end_date' %}<a href="{{ sort_end_date }}" class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}">{{ column_end_date }}</a>{% else %}<a href="{{ sort_end_date }}">{{ column_end_date }}</a>{% endif %}</td>
+                  <td class="text-right">{{ column_contract_value }}</td>
+                  <td class="text-left">{% if sort == 'sc.status' %}<a href="{{ sort_status }}" class="{% if order == 'ASC' %}asc{% else %}desc{% endif %}">{{ column_status }}</a>{% else %}<a href="{{ sort_status }}">{{ column_status }}</a>{% endif %}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if contracts %}
+                {% for contract in contracts %}
+                <tr class="{% if contract.status == 'expired' %}danger{% elseif contract.status == 'expiring' %}warning{% endif %}">
+                  <td class="text-center">{% if contract.selected %}<input type="checkbox" name="selected[]" value="{{ contract.contract_id }}" checked="checked" />{% else %}<input type="checkbox" name="selected[]" value="{{ contract.contract_id }}" />{% endif %}</td>
+                  <td class="text-left">{{ contract.contract_number }}</td>
+                  <td class="text-left">{{ contract.supplier_name }}</td>
+                  <td class="text-left">{{ contract.contract_type }}</td>
+                  <td class="text-left">{{ contract.contract_date }}</td>
+                  <td class="text-left">{{ contract.start_date }}</td>
+                  <td class="text-left">{{ contract.end_date }}</td>
+                  <td class="text-right">{{ contract.contract_value }}</td>
+                  <td class="text-left">
+                    <span class="label label-{% if contract.status == 'active' %}success{% elseif contract.status == 'pending_approval' %}warning{% elseif contract.status == 'expired' or contract.status == 'terminated' %}danger{% else %}default{% endif %}">{{ contract.status }}</span>
+                  </td>
+                  <td class="text-right">
+                    <div class="btn-group">
+                      <a href="{{ contract.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>
+                      <button type="button" data-toggle="dropdown" class="btn btn-primary btn-sm dropdown-toggle"><span class="caret"></span></button>
+                      <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="{{ contract.edit }}"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                        <li><a href="#" onclick="viewContract({{ contract.contract_id }})"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                        <li><a href="#" onclick="renewContract({{ contract.contract_id }})"><i class="fa fa-refresh"></i> {{ button_renew }}</a></li>
+                        <li><a href="#" onclick="terminateContract({{ contract.contract_id }})"><i class="fa fa-times"></i> {{ button_terminate }}</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#" onclick="viewHistory({{ contract.contract_id }})"><i class="fa fa-history"></i> {{ button_view_history }}</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="10">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contract Renewal Modal -->
+<div id="modal-renew-contract" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ button_renew }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-renew-contract">
+          <input type="hidden" name="contract_id" id="renew-contract-id" value="" />
+          <div class="form-group">
+            <label class="control-label" for="new-end-date">{{ entry_new_end_date }}</label>
+            <div class="input-group date">
+              <input type="text" name="new_end_date" id="new-end-date" class="form-control" data-date-format="YYYY-MM-DD" required />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+              </span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="renewal-notes">{{ entry_renewal_notes }}</label>
+            <textarea name="renewal_notes" id="renewal-notes" rows="3" class="form-control"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="submitRenewal()">{{ button_renew }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contract Termination Modal -->
+<div id="modal-terminate-contract" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{{ button_terminate }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-terminate-contract">
+          <input type="hidden" name="contract_id" id="terminate-contract-id" value="" />
+          <div class="form-group">
+            <label class="control-label" for="termination-reason">{{ entry_termination_reason }}</label>
+            <input type="text" name="termination_reason" id="termination-reason" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="termination-notes">{{ entry_termination_notes }}</label>
+            <textarea name="termination_notes" id="termination-notes" rows="3" class="form-control"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-danger" onclick="submitTermination()">{{ button_terminate }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=purchase/supplier_contracts&user_token={{ user_token }}';
+    
+    var filter_contract_number = $('input[name=\'filter_contract_number\']').val();
+    
+    if (filter_contract_number) {
+        url += '&filter_contract_number=' + encodeURIComponent(filter_contract_number);
+    }
+
+    var filter_supplier_id = $('select[name=\'filter_supplier_id\']').val();
+    
+    if (filter_supplier_id !== '') {
+        url += '&filter_supplier_id=' + filter_supplier_id;
+    }
+    
+    var filter_status = $('select[name=\'filter_status\']').val();
+    
+    if (filter_status !== '') {
+        url += '&filter_status=' + filter_status;
+    }
+
+    var filter_date_start = $('input[name=\'filter_date_start\']').val();
+    
+    if (filter_date_start) {
+        url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+    }
+
+    var filter_date_end = $('input[name=\'filter_date_end\']').val();
+    
+    if (filter_date_end) {
+        url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+    }
+    
+    location = url;
+});
+
+$('.date').datetimepicker({
+    language: '{{ datepicker }}',
+    pickTime: false
+});
+
+function renewContract(contract_id) {
+    $('#renew-contract-id').val(contract_id);
+    $('#modal-renew-contract').modal('show');
+}
+
+function terminateContract(contract_id) {
+    $('#terminate-contract-id').val(contract_id);
+    $('#modal-terminate-contract').modal('show');
+}
+
+function submitRenewal() {
+    $.ajax({
+        url: 'index.php?route=purchase/supplier_contracts/renew&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-renew-contract').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-renew-contract .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-renew-contract .btn-primary').button('reset');
+        },
+        success: function(json) {
+            $('.alert-dismissible').remove();
+            
+            if (json['error']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+            
+            if (json['success']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                
+                $('#modal-renew-contract').modal('hide');
+                
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+function submitTermination() {
+    $.ajax({
+        url: 'index.php?route=purchase/supplier_contracts/terminate&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-terminate-contract').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-terminate-contract .btn-danger').button('loading');
+        },
+        complete: function() {
+            $('#modal-terminate-contract .btn-danger').button('reset');
+        },
+        success: function(json) {
+            $('.alert-dismissible').remove();
+            
+            if (json['error']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+            
+            if (json['success']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                
+                $('#modal-terminate-contract').modal('hide');
+                
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+$('input[name=\'filter_contract_number\'], input[name=\'filter_date_start\'], input[name=\'filter_date_end\']').on('keydown', function(e) {
+    if (e.keyCode == 13) {
+        $('#button-filter').trigger('click');
+    }
+});
+//--></script>
+{{ footer }}

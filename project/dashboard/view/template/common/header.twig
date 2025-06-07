@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<base href="{{ base }}" />
+{% if description %}
+<meta name="description" content="{{ description }}" />
+{% endif %}
+{% if keywords %}
+<meta name="keywords" content="{{ keywords }}" />
+{% endif %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<script type="text/javascript" src="view/javascript/jquery/jquery-3.7.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-migrate-3.4.1.min.js"></script>
+
+<script type="text/javascript" src="view/javascript/bootstrap/js/bootstrap.min.js"></script>
+{% if direction == 'rtl' %}
+<link href="view/stylesheet/bootstrap-a.css?ver=3.3.7" rel="stylesheet" media="screen" />
+{% else %}
+<link href="view/stylesheet/bootstrap.css?ver=3.3.7" rel="stylesheet" media="screen" />
+{% endif %}
+<link href="view/javascript/font-awesome/css/font-awesome.min.css?ver=4.7.0" type="text/css" rel="stylesheet" />
+<script src="view/javascript/jquery/datetimepicker/moment/moment.min.js?ver=2.18.1" type="text/javascript"></script>
+<script src="view/javascript/jquery/datetimepicker/moment/moment-with-locales.min.js" type="text/javascript"></script>
+<script src="view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.js" type="text/javascript"></script>
+<link href="view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.css?ver=3.1.3" type="text/css" rel="stylesheet" media="screen" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/0.2.4/gridstack.min.css" integrity="sha512-RxnEGBxCieGCfyVnVIiLZ21OjPX+G3yIPAvwJE3tm+obCOePv02AW7ZMRDHfi5O8uF8393EY+JIDxsBPwGfXEA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- Core Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js" integrity="sha512-57oZ/vW8ANMjR/KQ6Be9v/+/h6bq9/l3f0Oc7vn6qMqyhvPd1cvKBRWWpzu0QoneImqr2SkmO4MSqU+RpHom3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.min.css" integrity="sha512-ELV+xyi8IhEApPS/pSj66+Jiw+sOT1Mqkzlh8ExXihe4zfqbWkxPRi8wptXIO9g73FSlhmquFlUOuMSoXz5IRw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Select2 -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap.min.css" integrity="sha512-BMbq2It2D3J17/C7aRklzOODG1IQ3+MHw3ifzBHMBwGO/0yUqYmsStgBjI0z5EYlaDEFnvYV7gNYdD3vFLRKsA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/jquery.dataTables.min.css"/>
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap.min.js"></script>
+
+<!-- Toastr -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<!-- DateRangePicker -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
+<!-- Vue.js -->
+<script src="https://unpkg.com/vue@3.3.4/dist/vue.global.js"></script>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/polyfills.umd.js"></script>
+
+<!-- gridstack -->
+
+<!-- Add this before the gridstack script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.6/underscore-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/0.2.4/gridstack.min.js"></script>
+
+{% if direction == 'rtl' %}
+<link type="text/css" href="view/stylesheet/stylesheet-a.css?ver=1.0.0" rel="stylesheet" media="screen" />
+{% else %}
+<link type="text/css" href="view/stylesheet/stylesheet.css?ver=1.0.0" rel="stylesheet" media="screen" />
+{% endif %}
+
+{% for style in styles %}
+<link type="text/css" href="{{ style.href }}" rel="{{ style.rel }}" media="{{ style.media }}" />
+{% endfor %}
+{% for link in links %}
+<link href="{{ link.href }}" rel="{{ link.rel }}" />
+{% endfor %}
+<script src="view/javascript/common.js" type="text/javascript"></script>
+{% for script in scripts %}
+<script type="text/javascript" src="{{ script }}"></script>
+{% endfor %}
+
+<style>
+.select2-container--default[dir="rtl"] .select2-selection--single .select2-selection__clear,
+.select2-container--default[dir="ltr"] .select2-selection--single .select2-selection__clear {
+    padding-inline-end: 25px;
+}    
+.modal-dialog {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+.modal-content {
+    height: auto;
+    min-height: 100%;
+    border-radius: 0;
+}
+.notification-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 10px;
+    border-radius: 10px;
+    padding: 2px 5px;
+}
+.dropdown-menu.notifications-dropdown,
+.dropdown-menu.messages-dropdown,
+.dropdown-menu.approvals-dropdown {
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.dropdown-menu .header,
+.dropdown-menu .footer {
+    padding: 8px 10px;
+    text-align: center;
+    background: #f9f9f9;
+}
+.dropdown-menu .footer a {
+    color: #444;
+    text-align: center;
+    display: block;
+}
+.menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.menu > li {
+    border-bottom: 1px solid #f4f4f4;
+    padding: 10px;
+}
+.menu > li:last-child {
+    border-bottom: none;
+}
+.menu > li:hover {
+    background-color: #f7f7f7;
+}
+.menu .notification-item {
+    display: flex;
+    align-items: flex-start;
+}
+.menu .notification-icon {
+    width: 30px;
+    margin-left: 10px;
+    text-align: center;
+}
+.menu .notification-content {
+    flex: 1;
+}
+.menu .notification-title {
+    font-weight: bold;
+    font-size: 13px;
+    margin-bottom: 3px;
+    display: block;
+    color: #333;
+}
+.menu .notification-text {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 3px;
+    display: block;
+}
+.menu .notification-time {
+    font-size: 11px;
+    color: #999;
+    text-align: left;
+    display: block;
+}
+@media (max-width: 767px) {
+    .dropdown-menu.notifications-dropdown,
+    .dropdown-menu.messages-dropdown,
+    .dropdown-menu.approvals-dropdown {
+        width: 100%;
+        left: 0;
+        right: 0;
+    }
+}
+
+/* Enhanced Notification Styles */
+.notifications-dropdown,
+.messages-dropdown,
+.approvals-dropdown {
+    width: 360px;
+    padding: 0;
+    border-radius: 3px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.1);
+}
+
+.dropdown-header {
+    padding: 15px;
+    border-bottom: 1px solid #f4f4f4;
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.mark-all-read {
+    font-size: 12px;
+    color: #3c8dbc;
+    cursor: pointer;
+}
+
+.notification-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f4f4f4;
+    display: flex;
+    align-items: flex-start;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-icon i {
+    font-size: 18px;
+    color: #fff;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 3px;
+    line-height: 1.4;
+}
+
+.notification-message {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.notification-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #999;
+}
+
+.notification-time {
+    display: flex;
+    align-items: center;
+}
+
+.notification-time i {
+    font-size: 12px;
+    margin-right: 4px;
+}
+
+.notification-priority {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.priority-high {
+    background-color: #f4433610;
+    color: #f44336;
+}
+
+.priority-medium {
+    background-color: #ff980010;
+    color: #ff9800;
+}
+
+.priority-low {
+    background-color: #4caf5010;
+    color: #4caf50;
+}
+
+.icon-order {
+    background-color: #3c8dbc;
+}
+
+.icon-stock {
+    background-color: #f39c12;
+}
+
+.icon-approval {
+    background-color: #f44336;
+}
+
+.icon-system {
+    background-color: #00a65a;
+}
+
+.icon-message {
+    background-color: #605ca8;
+}
+
+.dropdown-footer {
+    padding: 10px 15px;
+    text-align: center;
+    border-top: 1px solid #f4f4f4;
+    background: #fff;
+}
+
+.dropdown-footer a {
+    color: #3c8dbc;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 8px;
+    right: 5px;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 5px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 9px;
+    text-align: center;
+    color: #fff;
+    background-color: #f44336;
+    transition: transform 0.2s;
+}
+
+.notification-badge.pulse {
+    animation: pulse 1s;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.empty-state {
+    padding: 30px 15px;
+    text-align: center;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 40px;
+    margin-bottom: 10px;
+    color: #ddd;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Enhanced User Menu */
+.navbar-nav > .user-menu > .dropdown-menu {
+    width: 280px;
+    padding: 0;
+    border-radius: 3px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.1);
+}
+
+.user-header {
+    padding: 20px;
+    text-align: center;
+    background: #3c8dbc;
+    color: #fff;
+}
+
+.user-header img {
+    width: 70px;
+    height: 70px;
+    border: 3px solid rgba(255,255,255,0.2);
+    margin-bottom: 10px;
+}
+
+.user-header p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.user-footer {
+    padding: 15px;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+    .notifications-dropdown,
+    .messages-dropdown,
+    .approvals-dropdown {
+        position: fixed;
+        top: 50px;
+        left: 0;
+        right: 0;
+        width: 100%;
+        margin: 0;
+        height: calc(100vh - 50px);
+        border-radius: 0;
+    }
+
+    .notification-list {
+        max-height: none;
+        height: calc(100vh - 150px);
+    }
+}
+/* Enhanced Notification System CSS */
+.header-notification {
+    position: relative;
+}
+.notification-counter {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 11px;
+    animation: pulse 2s infinite;
+}
+.notification-dropdown {
+    width: 360px;
+    padding: 0;
+    max-height: 480px;
+    overflow-y: auto;
+}
+.notification-header {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+}
+.notification-footer {
+    padding: 12px;
+    border-top: 1px solid #eee;
+    text-align: center;
+    background: #f8f9fa;
+}
+.notification-item {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+.notification-item.unread {
+    background-color: #e8f0fe;
+}
+.notification-item .time {
+    color: #999;
+    font-size: 12px;
+}
+.notification-item .title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.notification-item .message {
+    color: #666;
+    font-size: 13px;
+}
+.notification-item .icon {
+    float: left;
+    margin-right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+.notification-item .icon.order { background: #3498db; }
+.notification-item .icon.inventory { background: #e67e22; }
+.notification-item .icon.approval { background: #9b59b6; }
+.notification-item .icon.system { background: #34495e; }
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Enhanced Header Styles */
+.navbar-custom {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.navbar-brand {
+    padding: 15px;
+    height: 60px;
+}
+.navbar-nav > li > a {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+.header-icon {
+    font-size: 18px;
+    color: #fff;
+    padding: 20px 15px;
+    display: inline-block;
+    position: relative;
+}
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+.user-info {
+    color: #fff;
+    line-height: 1.2;
+}
+.user-name {
+    font-weight: 600;
+}
+.user-role {
+    font-size: 12px;
+    opacity: 0.8;
+}
+.notification-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification-center .dropdown-menu {
+  width: 320px;
+  padding: 0;
+  border: none;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+}
+
+.notification-header, .message-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.notification-body, .message-body {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.notification-item .notification-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-item.priority-high .notification-icon {
+  background: #ffe0e0;
+  color: #dc3545;
+}
+
+.notification-item .notification-content {
+  flex: 1;
+}
+
+.notification-item .notification-title {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.notification-item .notification-text {
+  display: block;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.notification-item .notification-time {
+  display: block;
+  color: #999;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
+.notification-badge, .message-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.quick-actions .dropdown-item {
+  padding: 8px 20px;
+}
+
+.quick-actions .dropdown-item i {
+  margin-left: 8px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Animation for new notifications */
+@keyframes notification-highlight {
+  0% { background-color: #fff3cd; }
+  100% { background-color: #f0f7ff; }
+}
+
+.notification-item.new {
+  animation: notification-highlight 2s ease;
+}
+</style>
+</head>
+<body>
+<div id="container">
+<header id="header" class="navbar navbar-static-top">
+  <div class="container-fluid">
+    <div id="header-logo" class="navbar-header"><a href="{{ home }}" class="navbar-brand"><img width="120" src="view/image/logo.png" alt="CODAYM" title="CODAYM" /></a></div>
+    {% if logged %}<a href="#" id="button-menu" class="hidden-md hidden-lg"><span class="fa fa-bars"></span></a>
+    <ul class="nav navbar-nav navbar-right">
+      <div class="notification-center">
+        <div class="dropdown">
+          <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+            <i class="fa fa-bell"></i>
+            <span class="badge badge-danger notification-badge" id="notification-count">0</span>
+          </button>
+          <div class="dropdown-menu notification-dropdown">
+            <div class="notification-header">
+              <h6 class="float-right">الإشعارات</h6>
+              <a href="#" class="float-left mark-all-read">تعليم الكل كمقروء</a>
+              <div class="clearfix"></div>
+            </div>
+            <div class="notification-tabs">
+              <ul class="nav nav-tabs">
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#all-notifications">الكل</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#alerts">تنبيهات</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tasks">مهام</a></li>
+              </ul>
+            </div>
+            <div class="notification-body tab-content" id="notification-items">
+              <div id="all-notifications" class="tab-pane active">
+                <div class="notification-loading text-center py-3">
+                  <i class="fa fa-spinner fa-spin fa-2x"></i>
+                </div>
+              </div>
+              <div id="alerts" class="tab-pane">
+                <!-- Alerts content -->
+              </div>
+              <div id="tasks" class="tab-pane">
+                <!-- Tasks content -->
+              </div>
+            </div>
+            <div class="notification-footer">
+              <a href="{{ notification_center }}" class="btn btn-link btn-block">عرض كل الإشعارات</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown messages-dropdown">
+          <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+            <i class="fa fa-envelope"></i>
+            <span class="badge badge-primary message-badge" id="messages-count">0</span>
+          </button>
+          <div class="dropdown-menu">
+            <div class="message-header">
+              <h6 class="float-right">الرسائل</h6>
+              <a href="#" class="float-left compose-message"><i class="fa fa-edit"></i> رسالة جديدة</a>
+              <div class="clearfix"></div>
+            </div>
+            <div class="message-body" id="messages-list">
+              <div class="message-loading text-center py-3">
+                <i class="fa fa-spinner fa-spin fa-2x"></i>
+              </div>
+            </div>
+            <div class="message-footer">
+              <a href="{{ messages_center }}" class="btn btn-link btn-block">عرض كل الرسائل</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown quick-actions">
+          <button class="btn dropdown-toggle" type="button" data-toggle="dropdown">
+            <i class="fa fa-plus"></i>
+          </button>
+          <div class="dropdown-menu">
+            <h6 class="dropdown-header">إجراءات سريعة</h6>
+            <a class="dropdown-item" href="{{ create_invoice }}">
+              <i class="fa fa-file-text"></i> إنشاء فاتورة
+            </a>
+            <a class="dropdown-item" href="{{ add_customer }}">
+              <i class="fa fa-user-plus"></i> إضافة عميل
+            </a>
+            <a class="dropdown-item" href="{{ create_task }}">
+              <i class="fa fa-tasks"></i> إنشاء مهمة
+            </a>
+            <a class="dropdown-item" href="{{ add_product }}">
+              <i class="fa fa-cube"></i> إضافة منتج
+            </a>
+          </div>
+        </div>
+      </div>
+    </ul>
+    {% endif %}
+  </div>
+</header>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  // Initialize websocket connection for real-time updates
+  var ws = new WebSocket('{{ websocket_url }}');
+  
+  ws.onmessage = function(event) {
+    var data = JSON.parse(event.data);
+    
+    switch(data.type) {
+      case 'notification':
+        handleNotification(data);
+        break;
+      case 'message':
+        handleMessage(data);
+        break;
+    }
+  };
+
+  // Load initial notifications
+  loadNotifications();
+  loadMessages();
+  
+  // Mark notification as read
+  $(document).on('click', '.notification-item', function() {
+    var $this = $(this);
+    if ($this.hasClass('unread')) {
+      $.ajax({
+        url: '{{ mark_notification_read }}',
+        type: 'POST',
+        data: { id: $this.data('id') },
+        success: function() {
+          $this.removeClass('unread');
+          updateNotificationCount(-1);
+        }
+      });
+    }
+    
+    // If has URL, navigate
+    if ($this.data('url')) {
+      window.location.href = $this.data('url');
+    }
+  });
+
+  // Mark all as read
+  $('.mark-all-read').click(function(e) {
+    e.preventDefault();
+    $.ajax({
+      url: '{{ mark_all_read }}',
+      type: 'POST',
+      success: function() {
+        $('.notification-item.unread').removeClass('unread');
+        $('#notification-count').text('0').hide();
+      }
+    });
+  });
+
+  // Real-time notification handling
+  function handleNotification(data) {
+    // Update count
+    updateNotificationCount(1);
+    
+    // Add notification to list
+    var html = createNotificationHTML(data);
+    $('#notification-items').prepend(html);
+    
+    // Show toast
+    showToast(data.title, data.message);
+  }
+
+  function createNotificationHTML(data) {
+    return `
+      <div class="notification-item unread new" data-id="${data.id}" ${data.url ? 'data-url="'+data.url+'"' : ''}>
+        <div class="notification-icon ${data.priority ? 'priority-'+data.priority : ''}">
+          <i class="fa ${data.icon || 'fa-bell'}"></i>
+        </div>
+        <div class="notification-content">
+          <span class="notification-title">${data.title}</span>
+          <span class="notification-text">${data.message}</span>
+          <span class="notification-time">الآن</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function updateNotificationCount(change) {
+    var $count = $('#notification-count');
+    var newCount = parseInt($count.text()) + change;
+    $count.text(newCount);
+    $count[newCount > 0 ? 'show' : 'hide']();
+  }
+
+  function showToast(title, message) {
+    // Assuming you have a toast library
+    $.toast({
+      heading: title,
+      text: message,
+      position: 'top-left',
+      loaderBg: '#ff6849',
+      icon: 'info',
+      hideAfter: 3000,
+      stack: 6
+    });
+  }
+});
+</script>
+</div>
+</body>
+</html>
+<script type="text/javascript">
+$(document).ready(function() {
+    // Function to fetch and update header data (notifications, messages, etc.)
+    function updateHeaderData() {
+        $.ajax({
+            url: 'index.php?route=common/header/getHeaderData&user_token={{ user_token }}',
+            dataType: 'json',
+            success: function(json) {
+                // Update Notifications
+                var notificationHtml = '';
+                if (json.notifications && json.notifications.length > 0) {
+                    json.notifications.forEach(function(notification) {
+                        notificationHtml += '<li class="notification-item ' + (notification.is_read == '0' ? 'unread' : '') + '" data-id="' + notification.notification_id + '">';
+                        notificationHtml += '  <a href="' + (notification.url ? notification.url + '&notification_id=' + notification.notification_id : '#') + '">';
+                        notificationHtml += '    <div class="notification-icon"><i class="fas ' + notification.icon + ' text-' + notification.color + '"></i></div>';
+                        notificationHtml += '    <div class="notification-content">';
+                        notificationHtml += '      <span class="notification-title">' + notification.title + '</span>';
+                        notificationHtml += '      <span class="notification-text">' + notification.message + '</span>';
+                        notificationHtml += '      <span class="notification-time">' + notification.created_at + '</span>';
+                        notificationHtml += '    </div>';
+                        notificationHtml += '  </a>';
+                        notificationHtml += '</li>';
+                    });
+                    $('#notifications-menu').html(notificationHtml);
+                    if (json.unread_notifications > 0) {
+                        $('#notification-count').text(json.unread_notifications).show();
+                    } else {
+                        $('#notification-count').hide();
+                    }
+                } else {
+                    notificationHtml = '<li class="text-center p-2">{{ text_no_notifications }}</li>';
+                     $('#notifications-menu').html(notificationHtml);
+                    $('#notification-count').hide();
+                }
+                $('#notification-total').text(json.unread_notifications);
+
+                // Update Messages
+                var messageHtml = '';
+                if (json.messages && json.messages.length > 0) {
+                    json.messages.forEach(function(message) {
+                        messageHtml += '<li class="message-item ' + (message.is_read == '0' ? 'unread' : '') + '" data-id="' + message.message_id + '">';
+                        messageHtml += '  <a href="index.php?route=common/message/view&user_token={{ user_token }}&message_id=' + message.message_id + '">'; // Assuming a message view page
+                        messageHtml += '    <div class="message-sender-img"><img src="' + message.sender_image + '" alt="User Avatar" class="img-circle"></div>';
+                        messageHtml += '    <div class="message-content">';
+                        messageHtml += '      <h3 class="message-title">' + message.sender_name + '<small class="float-end text-muted"><i class="far fa-clock"></i> ' + message.created_at + '</small></h3>';
+                        messageHtml += '      <p class="message-subject">' + message.subject + '</p>';
+                        messageHtml += '    </div>';
+                        messageHtml += '  </a>';
+                        messageHtml += '</li>';
+                    });
+                    $('#messages-menu').html(messageHtml);
+                    if (json.unread_messages > 0) {
+                        $('#message-count').text(json.unread_messages).show();
+                    } else {
+                        $('#message-count').hide();
+                    }
+                } else {
+                    messageHtml = '<li class="text-center p-2">{{ text_no_messages }}</li>';
+                    $('#messages-menu').html(messageHtml);
+                    $('#message-count').hide();
+                }
+                $('#message-total').text(json.unread_messages);
+
+                // Update other elements like tasks, approvals if needed
+                if (json.pending_tasks > 0) {
+                    $('#task-count').text(json.pending_tasks).show();
+                } else {
+                    $('#task-count').hide();
+                }
+                $('#task-total').text(json.pending_tasks);
+
+                if (json.pending_approvals > 0) {
+                    $('#approval-count').text(json.pending_approvals).show();
+                } else {
+                    $('#approval-count').hide();
+                }
+                $('#approval-total').text(json.pending_approvals);
+
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log('Error fetching header data: ' + thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+
+    // Initial load
+    updateHeaderData();
+
+    // Set interval for periodic updates (e.g., every 60 seconds)
+    // setInterval(updateHeaderData, 60000);
+
+    // Mark notification as read on click
+    $(document).on('click', '.notification-item a', function(e) {
+        var notification_id = $(this).closest('.notification-item').data('id');
+        var href = $(this).attr('href');
+        // If it's a real link, let it navigate but also mark as read
+        if (href !== '#') {
+             $.ajax({
+                url: 'index.php?route=common/header/markNotificationRead&user_token={{ user_token }}&notification_id=' + notification_id,
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    // Optionally update UI immediately or wait for next poll
+                    updateHeaderData(); 
+                }
+            });
+        } else {
+            e.preventDefault(); // Prevent default if it's just a placeholder link
+             $.ajax({
+                url: 'index.php?route=common/header/markNotificationRead&user_token={{ user_token }}&notification_id=' + notification_id,
+                type: 'GET',
+                dataType: 'json',
+                success: function(json) {
+                    updateHeaderData(); 
+                }
+            });
+        }
+    });
+
+    // Mark all notifications as read
+    $('#mark-all-notifications-read').on('click', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: 'index.php?route=common/header/markAllNotificationsRead&user_token={{ user_token }}',
+            type: 'POST', // Or GET, depending on your controller
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    updateHeaderData(); // Refresh header data
+                }
+            }
+        });
+    });
+
+    // Mark message as read (when navigating to message view)
+    // This is handled by the controller when the message_id is in the URL for the message view page.
+    // If you want to mark as read just by clicking in the dropdown without navigating, you'd add similar AJAX here.
+    $(document).on('click', '.message-item a', function(e) {
+        var message_id = $(this).closest('.message-item').data('id');
+        // The navigation itself will trigger markAsRead if message_id is in URL params
+        // If direct marking without navigation is needed:
+        /*
+        e.preventDefault();
+        $.ajax({
+            url: 'index.php?route=common/header/markMessageRead&user_token={{ user_token }}&message_id=' + message_id,
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                updateHeaderData();
+            }
+        });
+        */
+    });
+
+    // Mark all messages as read
+    $('#mark-all-messages-read').on('click', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: 'index.php?route=common/header/markAllMessagesRead&user_token={{ user_token }}',
+            type: 'POST', // Or GET
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    updateHeaderData();
+                }
+            }
+        });
+    });
+
+    // Prevent dropdown from closing when clicking inside
+    $('.dropdown-menu.notifications-dropdown, .dropdown-menu.messages-dropdown, .dropdown-menu.approvals-dropdown').on('click', function (e) {
+        // e.stopPropagation(); // This might be too aggressive, check specific elements if needed
+    });
+
+    // Example: Real-time updates using Socket.IO (if configured)
+    /*
+    var socket = io('http://localhost:3000'); // Replace with your Socket.IO server URL
+    socket.on('new_notification', function(data) {
+        console.log('New notification received:', data);
+        toastr.info(data.message, data.title, {timeOut: 5000, positionClass: 'toast-top-right'});
+        updateHeaderData(); // Refresh header data
+    });
+    socket.on('new_message', function(data) {
+        console.log('New message received:', data);
+        toastr.success(data.subject, 'New Message from ' + data.sender_name, {timeOut: 5000, positionClass: 'toast-top-right'});
+        updateHeaderData(); // Refresh header data
+    });
+    */
+});
+
+// Logout
+$('#button-logout').on('click', function() {
+// ... existing code ...
+          <div class="dropdown-menu dropdown-menu-end notifications-dropdown">
+            <div class="dropdown-header">
+              <strong>{{ text_notifications }} (<span id="notification-total">{{ unread_notifications }}</span>)</strong>
+              <a href="#" id="mark-all-notifications-read" class="float-end mark-all-read">{{ text_mark_all_as_read }}</a>
+            </div>
+            <ul class="menu" id="notifications-menu">
+              {% if notifications %}
+                {% for notification in notifications %}
+                <li class="notification-item {{ not notification.is_read ? 'unread' : '' }}" data-id="{{ notification.notification_id }}">
+                  <a href="{{ notification.url ? notification.url ~ '&notification_id=' ~ notification.notification_id : '#' }}">
+                    <div class="notification-icon"><i class="fas {{ notification.icon }} text-{{ notification.color }}"></i></div>
+                    <div class="notification-content">
+                      <span class="notification-title">{{ notification.title }}</span>
+                      <span class="notification-text">{{ notification.message }}</span>
+                      <span class="notification-time">{{ notification.created_at }}</span>
+                    </div>
+                  </a>
+                </li>
+                {% endfor %}
+              {% else %}
+                <li class="text-center p-2">{{ text_no_notifications }}</li>
+              {% endif %}
+            </ul>
+            <div class="dropdown-footer">
+              <a href="{{ link_all_notifications }}">{{ text_view_all_notifications }}</a>
+            </div>
+          </div>
+          <div class="dropdown-menu dropdown-menu-end messages-dropdown">
+            <div class="dropdown-header">
+              <strong>{{ text_messages }} (<span id="message-total">{{ unread_messages }}</span>)</strong>
+              <a href="#" id="mark-all-messages-read" class="float-end mark-all-read">{{ text_mark_all_as_read }}</a>
+            </div>
+            <ul class="menu" id="messages-menu">
+              {% if messages %}
+                {% for message in messages %}
+                <li class="message-item {{ not message.is_read ? 'unread' : '' }}" data-id="{{ message.message_id }}">
+                  <a href="{{ link_message_view ~ '&message_id=' ~ message.message_id }}">
+                    <div class="message-sender-img"><img src="{{ message.sender_image }}" alt="User Avatar" class="img-circle"></div>
+                    <div class="message-content">
+                      <h3 class="message-title">{{ message.sender_name }}<small class="float-end text-muted"><i class="far fa-clock"></i> {{ message.created_at }}</small></h3>
+                      <p class="message-subject">{{ message.subject }}</p>
+                    </div>
+                  </a>
+                </li>
+                {% endfor %}
+              {% else %}
+                <li class="text-center p-2">{{ text_no_messages }}</li>
+              {% endif %}
+            </ul>
+            <div class="dropdown-footer">
+              <a href="{{ link_all_messages }}">{{ text_view_all_messages }}</a>
+            </div>
+          </div>
+          <div class="dropdown-menu dropdown-menu-end approvals-dropdown">
+            <div class="dropdown-header">
+              <strong>{{ text_approvals }} (<span id="approval-total">{{ unread_approvals }}</span>)</strong>
+              <a href="#" id="mark-all-approvals-read" class="float-end mark-all-read">{{ text_mark_all_as_read }}</a>
+            </div>
+            <ul class="menu" id="approvals-menu">
+              {% if approvals %}
+                {% for approval in approvals %}
+                <li class="approval-item {{ not approval.is_read ? 'unread' : '' }}" data-id="{{ approval.approval_id }}">
+                  <a href="{{ link_approval_view ~ '&approval_id=' ~ approval.approval_id }}">
+                    <div class="approval-sender-img"><img src="{{ approval.sender_image }}" alt="User Avatar" class="img-circle"></div>
+                    <div class="approval-content">
+                      <h3 class="approval-title">{{ approval.sender_name }}<small class="float-end text-muted"><i class="far fa-clock"></i> {{ approval.created_at }}</small></h3>
+                      <p class="approval-subject">{{ approval.subject }}</p>
+                    </div>
+                  </a>
+                </li>
+                {% endfor %}
+              {% else %}
+                <li class="text-center p-2">{{ text_no_approvals }}</li>
+              {% endif %}
+            </ul>
+            <div class="dropdown-footer">
+              <a href="{{ link_all_approvals }}">{{ text_view_all_approvals }}</a>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+</body>
+</html>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+</body>
+</html>task-content">
+                      <h3 class="task-title">{{ task.sender_name }}<small class="float-end text-muted"><i class="far fa-clock"></i> {{ task.created_at }}</small></h3>
+                      <p class="task-subject">{{ task.subject }}</p>
+                    </div>
+                  </a>
+                </li>
+                {% endfor %}
+              {% else %}
+                <li class="text-center p-2">{{ text_no_tasks }}</li>
+              {% endif %}
+            </ul>
+            <div class="dropdown-footer">
+              <a href="{{ link_all_tasks }}">{{ text_view_all_tasks }}</a>
+            </div>
+          </div>
+          <div class="dropdown-menu dropdown-menu-end">
+            <div class="dropdown-header">
+              <strong>{{ text_tasks }} (<span id="task-total">{{ unread_tasks }}</span>)</strong>
+              <a href="#" id="mark-all-tasks-read" class="float-end mark-all-read">{{ text_mark_all_as_read }}</a>
+            </div>
+            <ul class="menu" id="tasks-menu">
+              {% if tasks %}
+                {% for task in tasks %}
+                <li class="task-item {{ not task.is_read ? 'unread' : '' }}" data-id="{{ task.task_id }}">
+                  <a href="{{ link_task_view ~ '&task_id=' ~ task.task_id }}">
+                    <div class="task-sender-img"><img src="{{ task.sender_image }}" alt="User Avatar" class="img-circle"></div>
+                    <div class="task-content">
+                      <h3 class="task-title">{{ task.sender_name }}<small class="float-end text-muted"><i class="far fa-clock"></i> {{ task.created_at }}</small></h3>
+                      <p class="task-subject">{{ task.subject }}</p>
+                    </div>
+                  </a>
+                </li>
+                {% endfor %}
+              {% else %}
+                <li class="text-center p-2">{{ text_no_tasks }}</li>
+              {% endif %}
+            </ul>
+            <div class="dropdown-footer">
+              <a href="{{ link_all_tasks }}">{{ text_view_all_tasks }}</a>
+            </div>
+          </div>
+          <div class="dropdown-menu dropdown-menu-end">
+            <div class="dropdown-header">
+              <strong>{{ text_tasks }} (<span id="task-total">{{ unread_tasks }}</span>)</strong>
+              <a href="#" id="mark-all-tasks-read" class="float-end mark-all-read">{{ text_mark_all_as_read }}</a>
+            </div>
+            <ul class="menu" id="tasks-menu">
+              {% if tasks %}
+                {% for task in tasks %}
+                <li class="task-item {{ not task.is_read ? 'unread' : '' }}" data-id="{{ task.task_id }}">
+                  <a href="{{ link_task_view ~ '&task_id=' ~ task.task_id }}">
+                    <div class="task-sender-img"><img src="{{ task.sender_image }}" alt="User Avatar" class="img-circle"></div>
+                    <div class="

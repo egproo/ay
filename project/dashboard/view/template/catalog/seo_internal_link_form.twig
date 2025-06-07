@@ -1,0 +1,318 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-internal-link" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-internal-link" class="form-horizontal">
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-source-page">{{ entry_source_page }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="source_page" value="{{ source_page }}" placeholder="{{ entry_source_page }}" id="input-source-page" class="form-control" />
+              {% if error_source_page %}
+              <div class="text-danger">{{ error_source_page }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_source_page }}</div>
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-target-page">{{ entry_target_page }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="target_page" value="{{ target_page }}" placeholder="{{ entry_target_page }}" id="input-target-page" class="form-control" />
+              {% if error_target_page %}
+              <div class="text-danger">{{ error_target_page }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_target_page }}</div>
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-anchor-text">{{ entry_anchor_text }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="anchor_text" value="{{ anchor_text }}" placeholder="{{ entry_anchor_text }}" id="input-anchor-text" class="form-control" />
+              {% if error_anchor_text %}
+              <div class="text-danger">{{ error_anchor_text }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_anchor_text }}</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <label class="radio-inline">
+                {% if status %}
+                <input type="radio" name="status" value="1" checked="checked" />
+                {{ text_enabled }}
+                {% else %}
+                <input type="radio" name="status" value="1" />
+                {{ text_enabled }}
+                {% endif %}
+              </label>
+              <label class="radio-inline">
+                {% if not status %}
+                <input type="radio" name="status" value="0" checked="checked" />
+                {{ text_disabled }}
+                {% else %}
+                <input type="radio" name="status" value="0" />
+                {{ text_disabled }}
+                {% endif %}
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// Autocompletar fuente y destino de páginas
+$(document).ready(function() {
+    // Autocomplete para página fuente
+    $('input[name=\'source_page\']').autocomplete({
+        'source': function(request, response) {
+            $.ajax({
+                url: 'index.php?route=catalog/seo/autocompletePages&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+                dataType: 'json',
+                success: function(json) {
+                    response($.map(json, function(item) {
+                        return {
+                            label: item.name,
+                            value: item.url
+                        }
+                    }));
+                }
+            });
+        },
+        'select': function(item) {
+            $('input[name=\'source_page\']').val(item.value);
+        }
+    });
+
+    // Autocomplete para página destino
+    $('input[name=\'target_page\']').autocomplete({
+        'source': function(request, response) {
+            $.ajax({
+                url: 'index.php?route=catalog/seo/autocompletePages&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+                dataType: 'json',
+                success: function(json) {
+                    response($.map(json, function(item) {
+                        return {
+                            label: item.name,
+                            value: item.url
+                        }
+                    }));
+                }
+            });
+        },
+        'select': function(item) {
+            $('input[name=\'target_page\']').val(item.value);
+        }
+    });
+});
+</script>
+<style>
+/* Estilos generales para el módulo SEO */
+.seo-navigation {
+    margin-bottom: 30px;
+}
+
+.seo-navigation .panel-body {
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.seo-navigation .panel-body:hover {
+    background-color: #f8f8f8;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.seo-navigation .btn-link {
+    color: #333;
+    text-decoration: none;
+    padding: 15px 0;
+}
+
+.seo-navigation i.fa {
+    margin-bottom: 10px;
+    color: #23a1d1;
+}
+
+/* Tarjetas de estadísticas */
+.panel-primary, .panel-green, .panel-red, .panel-yellow {
+    border-color: #ddd;
+}
+
+.panel-primary .panel-heading {
+    background-color: #337ab7;
+    border-color: #337ab7;
+    color: #fff;
+}
+
+.panel-green .panel-heading {
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+    color: #fff;
+}
+
+.panel-red .panel-heading {
+    background-color: #d9534f;
+    border-color: #d9534f;
+    color: #fff;
+}
+
+.panel-yellow .panel-heading {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+    color: #fff;
+}
+
+.panel-footer {
+    color: #333;
+}
+
+.panel .huge {
+    font-size: 40px;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+/* Barras de progreso */
+.progress {
+    margin-bottom: 10px;
+    height: 20px;
+}
+
+.progress-bar {
+    line-height: 20px;
+    font-size: 12px;
+}
+
+.progress-bar-success {
+    background-color: #5cb85c;
+}
+
+.progress-bar-warning {
+    background-color: #f0ad4e;
+}
+
+.progress-bar-danger {
+    background-color: #d9534f;
+}
+
+/* Lista de sugerencias */
+.seo-suggestions-list {
+    padding-left: 15px;
+    list-style-type: none;
+}
+
+.seo-suggestions-list li {
+    padding: 5px 0;
+    border-bottom: 1px dotted #eee;
+}
+
+.seo-suggestions-list i {
+    margin-right: 8px;
+}
+
+/* Estilos para estados */
+.label-improved {
+    background-color: #5cb85c;
+}
+
+.label-declined {
+    background-color: #d9534f;
+}
+
+.label-unchanged {
+    background-color: #5bc0de;
+}
+
+.label-new {
+    background-color: #f0ad4e;
+}
+
+/* Indicadores de cambio en posiciones */
+.text-success .fa, 
+.text-danger .fa {
+    margin-right: 3px;
+}
+
+/* Formularios de análisis */
+.analysis-results-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .panel .huge {
+        font-size: 30px;
+    }
+    
+    .form-group [class*='col-xs-'] {
+        margin-bottom: 15px;
+    }
+}
+
+/* Animaciones */
+.fade-in {
+    animation: fadeIn ease 0.5s;
+    -webkit-animation: fadeIn ease 0.5s;
+    -moz-animation: fadeIn ease 0.5s;
+    -o-animation: fadeIn ease 0.5s;
+    -ms-animation: fadeIn ease 0.5s;
+}
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-moz-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-o-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-ms-keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}    
+</style>
+{{ footer }}

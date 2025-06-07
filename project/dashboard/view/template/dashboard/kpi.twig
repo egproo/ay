@@ -1,0 +1,361 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-refresh" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-info">
+          <i class="fa fa-refresh"></i> {{ button_refresh }}
+        </button>
+        <a href="{{ export }}" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-success">
+          <i class="fa fa-download"></i> {{ button_export }}
+        </a>
+        <a href="{{ settings_url }}" data-toggle="tooltip" title="{{ button_settings }}" class="btn btn-default">
+          <i class="fa fa-cog"></i> {{ button_settings }}
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <!-- KPI Cards Grid -->
+    <div class="row" id="kpi-grid">
+      {% for kpi in kpis %}
+      <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+        <div class="panel panel-default kpi-card" data-kpi="{{ kpi.name }}">
+          <div class="panel-body">
+            <div class="kpi-header">
+              <h4 class="kpi-title">
+                {% if kpi.name == 'sales_today' %}{{ text_sales_today }}
+                {% elseif kpi.name == 'orders_today' %}{{ text_orders_today }}
+                {% elseif kpi.name == 'customers_online' %}{{ text_customers_online }}
+                {% elseif kpi.name == 'low_stock_items' %}{{ text_low_stock_items }}
+                {% elseif kpi.name == 'total_revenue_month' %}{{ text_total_revenue_month }}
+                {% elseif kpi.name == 'pending_orders' %}{{ text_pending_orders }}
+                {% elseif kpi.name == 'avg_order_value' %}{{ text_avg_order_value }}
+                {% elseif kpi.name == 'inventory_value' %}{{ text_inventory_value }}
+                {% elseif kpi.name == 'overdue_payments' %}{{ text_overdue_payments }}
+                {% else %}{{ kpi.name }}
+                {% endif %}
+              </h4>
+            </div>
+            
+            <div class="kpi-content">
+              <div class="kpi-value">
+                <span class="value-number">
+                  {% if kpi.name in ['sales_today', 'total_revenue_month', 'avg_order_value', 'inventory_value'] %}
+                    {{ text_currency }} {{ kpi.value|number_format(2) }}
+                  {% else %}
+                    {{ kpi.value|number_format(0) }}
+                  {% endif %}
+                </span>
+              </div>
+              
+              <div class="kpi-trend">
+                {% if kpi.trend > 0 %}
+                  <span class="trend-up">
+                    <i class="fa fa-arrow-up"></i> {{ kpi.trend }}%
+                  </span>
+                {% elseif kpi.trend < 0 %}
+                  <span class="trend-down">
+                    <i class="fa fa-arrow-down"></i> {{ kpi.trend|abs }}%
+                  </span>
+                {% else %}
+                  <span class="trend-stable">
+                    <i class="fa fa-minus"></i> {{ text_trend_stable }}
+                  </span>
+                {% endif %}
+              </div>
+              
+              <div class="kpi-comparison">
+                <small class="text-muted">
+                  {{ text_previous_value }}: 
+                  {% if kpi.name in ['sales_today', 'total_revenue_month', 'avg_order_value', 'inventory_value'] %}
+                    {{ text_currency }} {{ kpi.previous_value|number_format(2) }}
+                  {% else %}
+                    {{ kpi.previous_value|number_format(0) }}
+                  {% endif %}
+                </small>
+              </div>
+              
+              {% if kpi.projected_value %}
+              <div class="kpi-projection">
+                <small class="text-info">
+                  {{ text_projected }}: {{ text_currency }} {{ kpi.projected_value|number_format(2) }}
+                </small>
+              </div>
+              {% endif %}
+              
+              {% if kpi.avg_processing_time %}
+              <div class="kpi-additional">
+                <small class="text-warning">
+                  {{ text_avg_processing_time }}: {{ kpi.avg_processing_time }} {{ text_hours }}
+                </small>
+              </div>
+              {% endif %}
+              
+              {% if kpi.total_amount %}
+              <div class="kpi-additional">
+                <small class="text-danger">
+                  {{ text_total_amount }}: {{ text_currency }} {{ kpi.total_amount|number_format(2) }}
+                </small>
+              </div>
+              {% endif %}
+            </div>
+            
+            <div class="kpi-footer">
+              <small class="text-muted">
+                <i class="fa fa-clock-o"></i> {{ text_last_updated }}: <span class="last-updated">{{ "now"|date("Y-m-d H:i:s") }}</span>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="display: none;">
+      <div class="loading-content">
+        <i class="fa fa-spinner fa-spin fa-3x"></i>
+        <p>{{ text_loading }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.kpi-card {
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.kpi-header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.kpi-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.kpi-content {
+  text-align: center;
+}
+
+.kpi-value {
+  margin-bottom: 10px;
+}
+
+.value-number {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.kpi-trend {
+  margin-bottom: 10px;
+}
+
+.trend-up {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.trend-down {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.trend-stable {
+  color: #95a5a6;
+  font-weight: bold;
+}
+
+.kpi-comparison {
+  margin-bottom: 5px;
+}
+
+.kpi-projection {
+  margin-bottom: 5px;
+}
+
+.kpi-additional {
+  margin-bottom: 5px;
+}
+
+.kpi-footer {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-content p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .value-number {
+    font-size: 20px;
+  }
+  
+  .kpi-title {
+    font-size: 13px;
+  }
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Auto-refresh functionality
+    var autoRefreshInterval;
+    var refreshIntervalTime = 300000; // 5 minutes default
+    
+    // Manual refresh button
+    $('#button-refresh').on('click', function() {
+        refreshKpis();
+    });
+    
+    // Auto-refresh function
+    function startAutoRefresh() {
+        autoRefreshInterval = setInterval(function() {
+            refreshKpis(true); // Silent refresh
+        }, refreshIntervalTime);
+    }
+    
+    // Refresh KPIs function
+    function refreshKpis(silent = false) {
+        if (!silent) {
+            $('#loading-overlay').show();
+        }
+        
+        $.ajax({
+            url: 'index.php?route=dashboard/kpi/getKpiData&user_token={{ user_token }}&ajax=1',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                if (json.success && json.kpis) {
+                    updateKpiCards(json.kpis);
+                    updateLastUpdatedTime(json.timestamp);
+                }
+                
+                if (!silent) {
+                    $('#loading-overlay').hide();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.error('KPI refresh failed:', thrownError);
+                if (!silent) {
+                    $('#loading-overlay').hide();
+                    alert('{{ error_refresh_failed }}');
+                }
+            }
+        });
+    }
+    
+    // Update KPI cards with new data
+    function updateKpiCards(kpis) {
+        kpis.forEach(function(kpi) {
+            var card = $('.kpi-card[data-kpi="' + kpi.name + '"]');
+            if (card.length) {
+                // Update value
+                var valueElement = card.find('.value-number');
+                if (kpi.name.includes('sales') || kpi.name.includes('revenue') || kpi.name.includes('value') || kpi.name.includes('avg')) {
+                    valueElement.text('{{ text_currency }} ' + parseFloat(kpi.value).toLocaleString('en-US', {minimumFractionDigits: 2}));
+                } else {
+                    valueElement.text(parseInt(kpi.value).toLocaleString());
+                }
+                
+                // Update trend
+                var trendElement = card.find('.kpi-trend span');
+                trendElement.removeClass('trend-up trend-down trend-stable');
+                
+                if (kpi.trend > 0) {
+                    trendElement.addClass('trend-up');
+                    trendElement.html('<i class="fa fa-arrow-up"></i> ' + Math.abs(kpi.trend) + '%');
+                } else if (kpi.trend < 0) {
+                    trendElement.addClass('trend-down');
+                    trendElement.html('<i class="fa fa-arrow-down"></i> ' + Math.abs(kpi.trend) + '%');
+                } else {
+                    trendElement.addClass('trend-stable');
+                    trendElement.html('<i class="fa fa-minus"></i> {{ text_trend_stable }}');
+                }
+                
+                // Add animation effect
+                card.addClass('updated');
+                setTimeout(function() {
+                    card.removeClass('updated');
+                }, 1000);
+            }
+        });
+    }
+    
+    // Update last updated time
+    function updateLastUpdatedTime(timestamp) {
+        $('.last-updated').text(timestamp);
+    }
+    
+    // Start auto-refresh
+    startAutoRefresh();
+    
+    // Cleanup on page unload
+    $(window).on('beforeunload', function() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+    });
+});
+</script>
+
+{{ footer }}

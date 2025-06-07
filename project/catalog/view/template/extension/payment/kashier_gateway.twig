@@ -1,0 +1,32 @@
+{% if testmode %}
+<div class="alert alert-danger alert-dismissible text-left"><i class="fa fa-exclamation-circle"></i> {{ text_testmode }}</div>
+{% endif %}
+<div style='display:none'>
+<script id='kashier-iFrame' src='https://checkout.kashier.io/kashier-checkout.js'
+ data-currency={{ currency_code }} data-merchantId={{ mid }} data-hash={{ hash }} data-orderId={{ orderId }} data-amount={{ amount }} data-allowedMethods={{ method }}
+ data-display={{ lc }} data-store='{{ storeName }}' data-mode={{ mode }}  data-failureRedirect='false' data-redirectMethod={{ redirectMethod }} data-merchantRedirect={{ notify_url }} data-serverWebhook={{ notify_url }} data-metaData='{{ metaData }}' data-type="external"
+></script>
+<script>
+  function openJsIframe(){
+    var kashier_btn = document.getElementById('el-kashier-button');
+    if(kashier_btn){
+      kashier_btn.click();
+    }
+  }
+  function responseCallBack(e){ 
+   if(e.data.message== 'closeIframe'){
+   }
+ }
+ if (window.addEventListener) {
+     addEventListener('message', responseCallBack, false);
+ } else {
+     attachEvent('onmessage', responseCallBack);
+ }
+</script>
+</div>
+<div class="buttons">
+  <div class="pull-right">
+    <input type="button" value="{{ button_confirm }}" id="button-confirm" data-loading-text="{{ text_loading }}" class="btn btn-primary" onClick="openJsIframe();"/>
+  </div>
+</div>
+

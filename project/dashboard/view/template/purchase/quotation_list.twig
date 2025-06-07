@@ -1,0 +1,828 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                {% if can_add %}
+                <button type="button" class="btn btn-primary" onclick="$('#modal-quotation-form').modal('show');">
+                    <i class="fas fa-plus"></i> {{ button_add_quotation }}
+                </button>
+                {% endif %}
+            </div>
+            <h1><i class="fas fa-file-invoice-dollar"></i> {{ heading_title }}</h1>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endif %}
+
+        <!-- إحصائيات عروض الأسعار -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white cursor-pointer" onclick="filterByStatus('')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-file-invoice-dollar"></i> {{ text_total_quotations }}</h5>
+                        <h3 id="total-quotations">{{ stats.total|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white cursor-pointer" onclick="filterByStatus('pending')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-clock"></i> {{ text_pending_quotations }}</h5>
+                        <h3 id="pending-quotations">{{ stats.pending|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white cursor-pointer" onclick="filterByStatus('approved')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-check-circle"></i> {{ text_approved_quotations }}</h5>
+                        <h3 id="approved-quotations">{{ stats.approved|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white cursor-pointer" onclick="filterByStatus('rejected')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-times-circle"></i> {{ text_rejected_quotations }}</h5>
+                        <h3 id="rejected-quotations">{{ stats.rejected|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فلاتر البحث -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-filter"></i> {{ text_filters }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_quotation_number }}</label>
+                            <input type="text" class="form-control" id="filter-quotation-number">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_requisition }}</label>
+                            <select class="form-control select2-requisition" id="filter-requisition-id">
+                                <option value="">{{ text_all_requisitions }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_supplier }}</label>
+                            <select class="form-control select2-supplier" id="filter-supplier-id">
+                                <option value="">{{ text_all_suppliers }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_filter_status }}</label>
+                            <select class="form-control" id="filter-status">
+                                <option value="">{{ text_all_statuses }}</option>
+                                {% for status in status_options %}
+                                <option value="{{ status.value }}">{{ status.text }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_filter_date_start }}</label>
+                            <input type="date" class="form-control" id="filter-date-start">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_filter_date_end }}</label>
+                            <input type="date" class="form-control" id="filter-date-end">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_filter_validity }}</label>
+                            <select class="form-control" id="filter-validity">
+                                <option value="all">{{ text_all_validity }}</option>
+                                <option value="active">{{ text_valid }}</option>
+                                <option value="expired">{{ text_expired }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-primary" onclick="loadQuotations();">
+                            <i class="fas fa-search"></i> {{ text_search }}
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetFilters();">
+                            <i class="fas fa-undo"></i> {{ text_reset }}
+                        </button>
+                        <button type="button" class="btn btn-success float-end" onclick="exportQuotations();">
+                            <i class="fas fa-download"></i> {{ text_export }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <select class="form-control" id="bulk-action">
+                            <option value="">{{ text_select_action }}</option>
+                            {% if can_approve %}
+                            <option value="approve">{{ text_approve_selected }}</option>
+                            {% endif %}
+                            {% if can_reject %}
+                            <option value="reject">{{ text_reject_selected }}</option>
+                            {% endif %}
+                            {% if can_delete %}
+                            <option value="delete">{{ text_delete_selected }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary" onclick="executeBulkAction();">
+                            {{ button_execute }}
+                        </button>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button type="button" class="btn btn-info" onclick="loadQuotations();">
+                            <i class="fas fa-sync"></i> {{ text_refresh_list }}
+                        </button>
+                        {% if can_compare %}
+                        <button type="button" class="btn btn-primary" onclick="showComparisonModal();">
+                            <i class="fas fa-balance-scale"></i> {{ text_compare_selected }}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة عروض الأسعار -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th width="1"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);"></th>
+                                <th>{{ column_quotation_number }}</th>
+                                <th>{{ column_requisition }}</th>
+                                <th>{{ column_supplier }}</th>
+                                <th>{{ column_total_amount }}</th>
+                                <th>{{ column_validity_date }}</th>
+                                <th>{{ column_status }}</th>
+                                <th>{{ column_created_at }}</th>
+                                <th>{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quotation-list">
+                            <!-- Filled dynamically via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 text-start" id="pagination"></div>
+                    <div class="col-sm-6 text-end" id="results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نموذج إضافة/تعديل عرض السعر -->
+<div class="modal fade" id="modal-quotation-form" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- نموذج عرض التفاصيل -->
+<div class="modal fade" id="modal-quotation-view" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- نموذج المقارنة -->
+<div class="modal fade" id="modal-quotation-comparison" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- نموذج سجل الأسعار -->
+<div class="modal fade" id="modal-price-history" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ text_price_history }}</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Loaded via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نموذج أداء المورد -->
+<div class="modal fade" id="modal-supplier-performance" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ text_supplier_performance }}</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Loaded via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- قالب صف البند -->
+<template id="item-row-template">
+    <tr class="item-row">
+        <td>
+            <select class="form-control product-select" name="item[{INDEX}][product_id]" required>
+                <option value="">{{ text_select_product }}</option>
+            </select>
+            <div class="product-details mt-2"></div>
+            <div class="price-history mt-2"></div>
+        </td>
+        <td>
+            <input type="number" class="form-control" name="item[{INDEX}][quantity]" value="1" min="0.0001" step="0.0001" required>
+        </td>
+        <td>
+            <select class="form-control unit-select" name="item[{INDEX}][unit_id]" required>
+                <option value="">{{ text_select }}</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" class="form-control" name="item[{INDEX}][unit_price]" value="0" min="0" step="0.0001" required>
+        </td>
+        <td>
+            <select class="form-control" name="item[{INDEX}][discount_type]">
+                <option value="fixed">{{ text_fixed }}</option>
+                <option value="percentage">{{ text_percentage }}</option>
+            </select>
+            <input type="number" class="form-control mt-2" name="item[{INDEX}][discount_value]" value="0" min="0" step="0.01">
+        </td>
+        <td>
+            <input type="number" class="form-control" name="item[{INDEX}][tax_rate]" value="{{ default_tax_rate }}" min="0" step="0.01">
+        </td>
+        <td class="text-end">
+            <span class="line-total">0.00</span>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this);">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+{{ footer }}
+
+<script type="text/javascript">
+// Global variables
+var user_token = '{{ user_token }}';
+var currentPage = 1;
+var language = {
+    text_no_results: '{{ text_no_results }}',
+    text_confirm_approve: '{{ text_confirm_approve }}',
+    text_confirm_reject: '{{ text_confirm_reject }}',
+    text_confirm_delete: '{{ text_confirm_delete }}',
+    text_confirm_bulk_approve: '{{ text_confirm_bulk_approve }}',
+    text_confirm_bulk_reject: '{{ text_confirm_bulk_reject }}',
+    text_confirm_bulk_delete: '{{ text_confirm_bulk_delete }}',
+    text_prompt_reject_reason: '{{ text_prompt_reject_reason }}',
+    text_select_supplier: '{{ text_select_supplier }}',
+    text_select_status: '{{ text_select_status }}',
+    text_select_branch: '{{ text_select_branch }}',
+    error_no_selection: '{{ error_no_selection }}',
+    error_select_action: '{{ error_select_action }}'
+};
+
+// Permissions
+window.can_approve = {{ can_approve ? 'true' : 'false' }};
+window.can_reject = {{ can_reject ? 'true' : 'false' }};
+window.can_delete = {{ can_delete ? 'true' : 'false' }};
+window.can_edit = {{ can_edit ? 'true' : 'false' }};
+window.can_add = {{ can_add ? 'true' : 'false' }};
+
+// تحميل عروض الأسعار
+function loadQuotations() {
+    var data = {
+        filter_quotation_number: $('#filter-quotation-number').val(),
+        filter_requisition_id: $('#filter-requisition-id').val(),
+        filter_supplier_id: $('#filter-supplier-id').val(),
+        filter_status: $('#filter-status').val(),
+        filter_date_start: $('#filter-date-start').val(),
+        filter_date_end: $('#filter-date-end').val(),
+        filter_validity: $('#filter-validity').val(),
+        page: currentPage
+    };
+
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/ajaxList&user_token={{ user_token }}',
+        type: 'get',
+        data: data,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#loading-overlay').show();
+        },
+        complete: function() {
+            $('#loading-overlay').hide();
+        },
+        success: function(json) {
+            updateStats(json.stats);
+            updateTable(json.quotations);
+            updatePagination(json.pagination, json.total);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+// تحديث الإحصائيات
+function updateStats(stats) {
+    $('#total-quotations').html(stats.total);
+    $('#pending-quotations').html(stats.pending);
+    $('#approved-quotations').html(stats.approved);
+    $('#rejected-quotations').html(stats.rejected);
+}
+
+// تحديث الجدول
+function updateTable(quotations) {
+    var html = '';
+    if (quotations && quotations.length > 0) {
+        for (var i = 0; i < quotations.length; i++) {
+            var q = quotations[i];
+            html += generateQuotationRow(q);
+        }
+    } else {
+        html = '<tr><td colspan="9" class="text-center">{{ text_no_results }}</td></tr>';
+    }
+    $('#quotation-list').html(html);
+}
+
+// تحديث الترقيم
+function updatePagination(pagination, total) {
+    $('#pagination').html(pagination);
+    $('#results').html(total);
+}
+
+// إعادة تعيين الفلاتر
+function resetFilters() {
+    $('#filter-quotation-number').val('');
+    $('#filter-requisition-id').val('').trigger('change');
+    $('#filter-supplier-id').val('').trigger('change');
+    $('#filter-status').val('');
+    $('#filter-date-start').val('');
+    $('#filter-date-end').val('');
+    $('#filter-validity').val('all');
+    currentPage = 1;
+    loadQuotations();
+}
+
+// تنفيذ إجراء جماعي
+function executeBulkAction() {
+    var action = $('#bulk-action').val();
+    var selected = [];
+
+    $('input[name="selected[]"]:checked').each(function() {
+        selected.push($(this).val());
+    });
+
+    if (selected.length === 0) {
+        alert('{{ text_select_items }}');
+        return;
+    }
+
+    if (action === '') {
+        alert('{{ text_select_action }}');
+        return;
+    }
+
+    var confirmMessage = '';
+    switch(action) {
+        case 'approve':
+            confirmMessage = '{{ text_confirm_approve_selected }}';
+            break;
+        case 'reject':
+            confirmMessage = '{{ text_confirm_reject_selected }}';
+            break;
+        case 'delete':
+            confirmMessage = '{{ text_confirm_delete_selected }}';
+            break;
+    }
+
+    if (confirm(confirmMessage)) {
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/ajaxBulkAction&user_token={{ user_token }}',
+            type: 'post',
+            data: {
+                action: action,
+                selected: selected
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.error) {
+                    alert(json.error);
+                }
+                if (json.success) {
+                    loadQuotations();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+}
+
+// تهيئة المكونات
+$(document).ready(function() {
+    // تهيئة Select2 للطلبات
+    $('.select2-requisition').select2({
+        placeholder: '{{ text_select_requisition }}',
+        allowClear: true,
+        ajax: {
+            url: 'index.php?route=purchase/requisition/ajaxRequisitions&user_token={{ user_token }}',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    q: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data
+                };
+            },
+            cache: true
+        }
+    });
+
+    // تهيئة Select2 للموردين
+    $('.select2-supplier').select2({
+        placeholder: '{{ text_select_supplier }}',
+        allowClear: true,
+        ajax: {
+            url: 'index.php?route=supplier/supplier/autocomplete&user_token={{ user_token }}',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    filter_name: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: $.map(data, function(item) {
+                        return {
+                            id: item.supplier_id,
+                            text: item.name
+                        }
+                    })
+                };
+            },
+            cache: true
+        }
+    });
+
+    // تحميل البيانات الأولية
+    loadQuotations();
+});
+
+// Filter by status
+function filterByStatus(status) {
+    $('#filter-status').val(status);
+    loadQuotations();
+}
+
+// معالجة النقر على روابط الترقيم
+$(document).on('click', '#pagination a', function(e) {
+    e.preventDefault();
+    var page = $(this).attr('href').split('page=')[1];
+    currentPage = page;
+    loadQuotations();
+});
+</script>
+
+<div class="modal-header">
+    <h5 class="modal-title">{{ text_quotations_for_requisition }} #{{ requisition.req_number }}</h5>
+    <button type="button" class="close" data-dismiss="modal">&times;</button>
+</div>
+<div class="modal-body">
+    {% if can_add_quotation %}
+        <div class="mb-3">
+            <button type="button" class="btn btn-primary" onclick="addQuotation({{ requisition.requisition_id }});">
+                <i class="fas fa-plus"></i> {{ button_add_quotation }}
+            </button>
+            {% if quotations|length > 1 %}
+                <button type="button" class="btn btn-info" onclick="compareQuotations();">
+                    <i class="fas fa-exchange-alt"></i> {{ button_compare }}
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if quotations %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        {% if quotations|length > 1 %}
+                            <th width="1">
+                                <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);">
+                            </th>
+                        {% endif %}
+                        <th>{{ column_quotation_number }}</th>
+                        <th>{{ column_supplier }}</th>
+                        <th>{{ column_date_added }}</th>
+                        <th>{{ column_validity }}</th>
+                        <th>{{ column_items }}</th>
+                        <th>{{ column_total }}</th>
+                        <th>{{ column_status }}</th>
+                        <th>{{ column_action }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quotation in quotations %}
+                        <tr>
+                            {% if quotations|length > 1 %}
+                                <td>
+                                    <input type="checkbox" name="selected[]" value="{{ quotation.quotation_id }}">
+                                </td>
+                            {% endif %}
+                            <td>{{ quotation.quotation_number }}</td>
+                            <td>
+                                {{ quotation.supplier_name }}
+                                {% if quotation.supplier_stats %}
+                                    <div class="small text-muted">
+                                        <i class="fas fa-star text-warning"></i> {{ quotation.supplier_stats.quality_rating }}/5
+                                        <i class="fas fa-truck text-info ml-2"></i> {{ quotation.supplier_stats.on_time_delivery }}%
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ quotation.created_at }}</td>
+                            <td>
+                                {{ quotation.validity_date }}
+                                {% if quotation.is_expired %}
+                                    <span class="badge bg-danger">{{ text_expired }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ text_valid }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ quotation.total_items }}
+                                {% if quotation.has_best_prices %}
+                                    <span class="badge bg-success" title="{{ text_has_best_prices }}">
+                                        <i class="fas fa-award"></i>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {{ quotation.currency_code }} {{ quotation.total_amount|number_format(4) }}
+                                {% if quotation.is_best_total %}
+                                    <span class="badge bg-success">{{ text_best_price }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ quotation.status_color }}">
+                                    {{ quotation.status_text }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    {% if can_edit %}
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                onclick="editQuotation({{ quotation.quotation_id }});"
+                                                {% if not quotation.can_edit %}disabled{% endif %}>
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    {% endif %}
+
+                                    <button type="button" class="btn btn-info btn-sm"
+                                            onclick="viewQuotation({{ quotation.quotation_id }});">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+
+                                    {% if quotation.documents_count > 0 %}
+                                        <button type="button" class="btn btn-secondary btn-sm"
+                                                onclick="viewDocuments({{ quotation.quotation_id }});"
+                                                title="{{ text_view_documents }} ({{ quotation.documents_count }})">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                    {% endif %}
+
+                                    {% if can_approve and quotation.can_approve %}
+                                        <button type="button" class="btn btn-success btn-sm"
+                                                onclick="approveQuotation({{ quotation.quotation_id }});">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    {% endif %}
+
+                                    {% if can_reject and quotation.can_reject %}
+                                        <button type="button" class="btn btn-warning btn-sm"
+                                                onclick="rejectQuotation({{ quotation.quotation_id }});">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    {% endif %}
+
+                                    {% if quotation.can_convert_to_po %}
+                                        <button type="button" class="btn btn-primary btn-sm"
+                                                onclick="convertToPO({{ quotation.quotation_id }});"
+                                                title="{{ text_convert_to_po }}">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    {% endif %}
+
+                                    {% if can_delete and quotation.can_delete %}
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="deleteQuotation({{ quotation.quotation_id }});">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination %}
+            <div class="row">
+                <div class="col-sm-6 text-start">{{ pagination }}</div>
+                <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> {{ text_no_quotations }}
+        </div>
+    {% endif %}
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+</div>
+
+<script type="text/javascript">
+function compareQuotations() {
+    var selected = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        selected.push($(this).val());
+    });
+
+    if (selected.length < 2) {
+        alert('{{ error_select_min_two }}');
+        return;
+    }
+
+    // Load comparison view in a new modal
+    $('#modal-comparison').remove();
+    $('body').append('<div id="modal-comparison" class="modal fade"></div>');
+
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/comparison&user_token={{ user_token }}',
+        type: 'post',
+        data: { quotation_ids: selected },
+        dataType: 'html',
+        beforeSend: function() {
+            $('#loading-overlay').show();
+        },
+        complete: function() {
+            $('#loading-overlay').hide();
+        },
+        success: function(html) {
+            $('#modal-comparison').html(html);
+            $('#modal-comparison').modal('show');
+        }
+    });
+}
+
+function viewDocuments(quotationId) {
+    $('#modal-documents').remove();
+    $('body').append('<div id="modal-documents" class="modal fade"></div>');
+
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/documents&user_token={{ user_token }}',
+        type: 'get',
+        data: { quotation_id: quotationId },
+        dataType: 'html',
+        beforeSend: function() {
+            $('#loading-overlay').show();
+        },
+        complete: function() {
+            $('#loading-overlay').hide();
+        },
+        success: function(html) {
+            $('#modal-documents').html(html);
+            $('#modal-documents').modal('show');
+        }
+    });
+}
+
+function approveQuotation(quotationId) {
+    if (confirm('{{ text_confirm_approve }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/approve&user_token={{ user_token }}',
+            type: 'post',
+            data: { quotation_id: quotationId },
+            dataType: 'json',
+            success: function(json) {
+                if (json.error) {
+                    alert(json.error);
+                }
+                if (json.success) {
+                    loadQuotations();
+                }
+            }
+        });
+    }
+}
+
+function rejectQuotation(quotationId) {
+    var reason = prompt('{{ text_enter_reject_reason }}');
+    if (reason !== null) {
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/reject&user_token={{ user_token }}',
+            type: 'post',
+            data: {
+                quotation_id: quotationId,
+                reason: reason
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.error) {
+                    alert(json.error);
+                }
+                if (json.success) {
+                    loadQuotations();
+                }
+            }
+        });
+    }
+}
+
+function convertToPO(quotationId) {
+    location = 'index.php?route=purchase/purchase_order/add&user_token={{ user_token }}&quotation_id=' + quotationId;
+}
+
+function deleteQuotation(quotationId) {
+    if (confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/delete&user_token={{ user_token }}',
+            type: 'post',
+            data: { quotation_id: quotationId },
+            dataType: 'json',
+            success: function(json) {
+                if (json.error) {
+                    alert(json.error);
+                }
+                if (json.success) {
+                    loadQuotations();
+                }
+            }
+        });
+    }
+}
+</script>
+
+<script src="view/javascript/purchase/quotation_list.js"></script>

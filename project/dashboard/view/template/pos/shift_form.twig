@@ -1,0 +1,111 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-shift" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-shift" class="form-horizontal">
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-branch">{{ entry_branch }}</label>
+            <div class="col-sm-10">
+              <select name="branch_id" id="input-branch" class="form-control">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+              {% if error_branch %}
+              <div class="text-danger">{{ error_branch }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-terminal">{{ entry_terminal }}</label>
+            <div class="col-sm-10">
+              <select name="terminal_id" id="input-terminal" class="form-control">
+                <option value="">{{ text_select }}</option>
+              </select>
+              {% if error_terminal %}
+              <div class="text-danger">{{ error_terminal }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-starting-cash">{{ entry_starting_cash }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="starting_cash" value="" placeholder="{{ entry_starting_cash }}" id="input-starting-cash" class="form-control" />
+              {% if error_starting_cash %}
+              <div class="text-danger">{{ error_starting_cash }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-notes">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="5" placeholder="{{ entry_notes }}" id="input-notes" class="form-control"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تحميل النهايات الطرفية عند تغيير الفرع
+    $('#input-branch').change(function() {
+        var branch_id = $(this).val();
+        $('#input-terminal').html('<option value="">{{ text_loading }}</option>');
+        
+        if (branch_id) {
+            $.ajax({
+                url: 'index.php?route=pos/terminal/getTerminalsByBranch&user_token={{ user_token }}&branch_id=' + branch_id,
+                dataType: 'json',
+                success: function(json) {
+                    var html = '<option value="">{{ text_select }}</option>';
+                    
+                    if (json.length) {
+                        for (var i = 0; i < json.length; i++) {
+                            html += '<option value="' + json[i].terminal_id + '">' + json[i].name + '</option>';
+                        }
+                    } else {
+                        html = '<option value="">{{ text_no_terminals }}</option>';
+                    }
+                    
+                    $('#input-terminal').html(html);
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+                }
+            });
+        } else {
+            $('#input-terminal').html('<option value="">{{ text_select }}</option>');
+        }
+    });
+    
+    // تنفيذ التغيير مباشرة لتحميل النهايات الطرفية للفرع المحدد افتراضيًا
+    $('#input-branch').trigger('change');
+});
+</script>
+{{ footer }}

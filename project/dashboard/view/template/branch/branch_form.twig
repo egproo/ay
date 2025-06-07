@@ -1,0 +1,178 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-branch" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-branch" class="form-horizontal">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+            <li><a href="#tab-address" data-toggle="tab">{{ tab_address }}</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab-general">
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+                  {% if error_name %}
+                  <div class="text-danger">{{ error_name }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-type">{{ entry_type }}</label>
+                <div class="col-sm-10">
+                  <select name="type" id="input-type" class="form-control">
+                    <option value="store" {% if type == 'store' %}selected="selected"{% endif %}>{{ text_store }}</option>
+                    <option value="warehouse" {% if type == 'warehouse' %}selected="selected"{% endif %}>{{ text_warehouse }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group" id="eta-branch-group" style="display: none;">
+                <label class="col-sm-2 control-label" for="input-eta-branch-id">{{ entry_eta_branch_id }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="eta_branch_id" value="{{ eta_branch_id }}" placeholder="{{ entry_eta_branch_id }}" id="input-eta-branch-id" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-available-online">{{ entry_available_online }}</label>
+                <div class="col-sm-10">
+                  <select name="available_online" id="input-available-online" class="form-control">
+                    <option value="1" {% if available_online %}selected="selected"{% endif %}>{{ text_yes }}</option>
+                    <option value="0" {% if not available_online %}selected="selected"{% endif %}>{{ text_no }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-telephone">{{ entry_telephone }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="telephone" value="{{ telephone }}" placeholder="{{ entry_telephone }}" id="input-telephone" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-email">{{ entry_email }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="email" value="{{ email }}" placeholder="{{ entry_email }}" id="input-email" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-manager">{{ entry_manager }}</label>
+                <div class="col-sm-10">
+                  <select name="manager_id" id="input-manager" class="form-control">
+                    <option value="0">{{ text_none }}</option>
+                    {% for user in users %}
+                      {% if user.user_id == manager_id %}
+                        <option value="{{ user.user_id }}" selected="selected">{{ user.username }}</option>
+                      {% else %}
+                        <option value="{{ user.user_id }}">{{ user.username }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-address">
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-address-1">{{ entry_address_1 }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="address_1" value="{{ address_1 }}" placeholder="{{ entry_address_1 }}" id="input-address-1" class="form-control" />
+                  {% if error_address_1 %}
+                  <div class="text-danger">{{ error_address_1 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-address-2">{{ entry_address_2 }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="address_2" value="{{ address_2 }}" placeholder="{{ entry_address_2 }}" id="input-address-2" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-city">{{ entry_city }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="city" value="{{ city }}" placeholder="{{ entry_city }}" id="input-city" class="form-control" />
+                  {% if error_city %}
+                  <div class="text-danger">{{ error_city }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-zone">{{ entry_zone }}</label>
+                <div class="col-sm-10">
+                  <select name="zone_id" id="input-zone" class="form-control">
+                  </select>
+                  {% if error_zone %}
+                  <div class="text-danger">{{ error_zone }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+// Load zones for Egypt
+$(document).ready(function() {
+    $.ajax({
+        url: 'index.php?route=localisation/country/country&user_token={{ user_token }}&country_id=63',
+        dataType: 'json',
+        success: function(json) {
+            html = '<option value="">{{ text_select }}</option>';
+            if (json['zone'] && json['zone'] != '') {
+                for (i = 0; i < json['zone'].length; i++) {
+                    html += '<option value="' + json['zone'][i]['zone_id'] + '"';
+                    if (json['zone'][i]['zone_id'] == '{{ zone_id }}') {
+                        html += ' selected="selected"';
+                    }
+                    html += '>' + json['zone'][i]['name'] + '</option>';
+                }
+            } else {
+                html += '<option value="0" selected="selected">{{ text_none }}</option>';
+            }
+            $('select[name=\'zone_id\']').html(html);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// Show/hide eta_branch_id field based on branch type
+$('#input-type').change(function() {
+    if ($(this).val() == 'store') {
+        $('#eta-branch-group').show();
+    } else {
+        $('#eta-branch-group').hide();
+        $('#input-eta-branch-id').val('');
+    }
+});
+
+// Trigger change event on page load
+$('#input-type').trigger('change');
+//--></script>
+{{ footer }}

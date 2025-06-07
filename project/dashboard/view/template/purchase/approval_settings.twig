@@ -1,0 +1,499 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_test_system }}" class="btn btn-info" onclick="testApprovalSystem();"><i class="fa fa-flask"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_export_settings }}" class="btn btn-success" onclick="exportSettings();"><i class="fa fa-download"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_import_settings }}" class="btn btn-warning" onclick="$('#import-modal').modal('show');"><i class="fa fa-upload"></i></button>
+        <button type="submit" form="form-approval-settings" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-approval-settings" class="form-horizontal">
+          
+          <!-- Navigation Tabs -->
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+            <li><a href="#tab-amount-thresholds" data-toggle="tab">{{ tab_amount_thresholds }}</a></li>
+            <li><a href="#tab-department-rules" data-toggle="tab">{{ tab_department_rules }}</a></li>
+            <li><a href="#tab-category-rules" data-toggle="tab">{{ tab_category_rules }}</a></li>
+            <li><a href="#tab-workflow" data-toggle="tab">{{ tab_workflow }}</a></li>
+            <li><a href="#tab-notifications" data-toggle="tab">{{ tab_notifications }}</a></li>
+            <li><a href="#tab-emergency" data-toggle="tab">{{ tab_emergency }}</a></li>
+          </ul>
+          
+          <div class="tab-content">
+            
+            <!-- General Settings Tab -->
+            <div class="tab-pane active" id="tab-general">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="col-sm-4 control-label" for="input-approval-enabled">{{ entry_approval_enabled }}</label>
+                    <div class="col-sm-8">
+                      <select name="purchase_approval_enabled" id="input-approval-enabled" class="form-control">
+                        {% if approval_enabled %}
+                        <option value="1" selected="selected">{{ text_enabled }}</option>
+                        <option value="0">{{ text_disabled }}</option>
+                        {% else %}
+                        <option value="1">{{ text_enabled }}</option>
+                        <option value="0" selected="selected">{{ text_disabled }}</option>
+                        {% endif %}
+                      </select>
+                      <div class="help-block">{{ help_approval_enabled }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="col-sm-4 control-label" for="input-auto-approval">{{ entry_auto_approval_enabled }}</label>
+                    <div class="col-sm-8">
+                      <select name="purchase_approval_auto_approval_enabled" id="input-auto-approval" class="form-control">
+                        {% if auto_approval_enabled %}
+                        <option value="1" selected="selected">{{ text_enabled }}</option>
+                        <option value="0">{{ text_disabled }}</option>
+                        {% else %}
+                        <option value="1">{{ text_enabled }}</option>
+                        <option value="0" selected="selected">{{ text_disabled }}</option>
+                        {% endif %}
+                      </select>
+                      <div class="help-block">{{ help_auto_approval }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="col-sm-4 control-label" for="input-timeout-days">{{ entry_approval_timeout_days }}</label>
+                    <div class="col-sm-8">
+                      <input type="number" name="purchase_approval_timeout_days" value="{{ approval_timeout_days }}" placeholder="{{ entry_approval_timeout_days }}" id="input-timeout-days" class="form-control" min="1" max="365" />
+                      <div class="help-block">{{ help_timeout_days }}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="col-sm-4 control-label" for="input-escalation-enabled">{{ entry_escalation_enabled }}</label>
+                    <div class="col-sm-8">
+                      <select name="purchase_approval_escalation_enabled" id="input-escalation-enabled" class="form-control">
+                        {% if escalation_enabled %}
+                        <option value="1" selected="selected">{{ text_enabled }}</option>
+                        <option value="0">{{ text_disabled }}</option>
+                        {% else %}
+                        <option value="1">{{ text_enabled }}</option>
+                        <option value="0" selected="selected">{{ text_disabled }}</option>
+                        {% endif %}
+                      </select>
+                      <div class="help-block">{{ help_escalation }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="col-sm-4 control-label" for="input-escalation-days">{{ entry_escalation_days }}</label>
+                    <div class="col-sm-8">
+                      <input type="number" name="purchase_approval_escalation_days" value="{{ escalation_days }}" placeholder="{{ entry_escalation_days }}" id="input-escalation-days" class="form-control" min="1" max="30" />
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="col-sm-4 control-label" for="input-workflow-type">{{ entry_workflow_type }}</label>
+                    <div class="col-sm-8">
+                      <select name="purchase_approval_workflow_type" id="input-workflow-type" class="form-control">
+                        {% if workflow_type == 'sequential' %}
+                        <option value="sequential" selected="selected">{{ text_sequential }}</option>
+                        <option value="parallel">{{ text_parallel }}</option>
+                        {% else %}
+                        <option value="sequential">{{ text_sequential }}</option>
+                        <option value="parallel" selected="selected">{{ text_parallel }}</option>
+                        {% endif %}
+                      </select>
+                      <div class="help-block">{{ help_workflow_type }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="form-group" id="parallel-percentage-group" style="display: {% if workflow_type == 'parallel' %}block{% else %}none{% endif %};">
+                    <label class="col-sm-4 control-label" for="input-parallel-percentage">{{ entry_parallel_approval_percentage }}</label>
+                    <div class="col-sm-8">
+                      <input type="number" name="purchase_approval_parallel_approval_percentage" value="{{ parallel_approval_percentage }}" placeholder="{{ entry_parallel_approval_percentage }}" id="input-parallel-percentage" class="form-control" min="1" max="100" />
+                      <div class="help-block">{{ help_parallel_percentage }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Amount Thresholds Tab -->
+            <div class="tab-pane" id="tab-amount-thresholds">
+              <div class="form-group">
+                <div class="col-sm-12">
+                  <button type="button" class="btn btn-primary" onclick="addAmountThreshold();"><i class="fa fa-plus"></i> {{ button_add_threshold }}</button>
+                  <div class="help-block">{{ help_amount_thresholds }}</div>
+                </div>
+              </div>
+              
+              <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover" id="amount-thresholds-table">
+                  <thead>
+                    <tr>
+                      <td class="text-left">{{ column_amount }}</td>
+                      <td class="text-left">{{ column_currency }}</td>
+                      <td class="text-left">{{ column_approver_type }}</td>
+                      <td class="text-left">{{ column_approver }}</td>
+                      <td class="text-left">{{ column_department }}</td>
+                      <td class="text-left">{{ column_category }}</td>
+                      <td class="text-center">{{ column_sort_order }}</td>
+                      <td class="text-center">{{ column_status }}</td>
+                      <td class="text-center">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% set threshold_row = 0 %}
+                    {% for threshold in amount_thresholds %}
+                    <tr id="threshold-row{{ threshold_row }}">
+                      <td class="text-left">
+                        <input type="number" name="amount_thresholds[{{ threshold_row }}][amount]" value="{{ threshold.amount }}" placeholder="{{ entry_amount }}" class="form-control" step="0.01" min="0" />
+                      </td>
+                      <td class="text-left">
+                        <select name="amount_thresholds[{{ threshold_row }}][currency_id]" class="form-control">
+                          {% for currency in currencies %}
+                          {% if currency.currency_id == threshold.currency_id %}
+                          <option value="{{ currency.currency_id }}" selected="selected">{{ currency.title }}</option>
+                          {% else %}
+                          <option value="{{ currency.currency_id }}">{{ currency.title }}</option>
+                          {% endif %}
+                          {% endfor %}
+                        </select>
+                      </td>
+                      <td class="text-left">
+                        <select name="amount_thresholds[{{ threshold_row }}][approver_type]" class="form-control approver-type-select" data-row="{{ threshold_row }}">
+                          {% if threshold.approver_type == 'user' %}
+                          <option value="user" selected="selected">{{ text_user }}</option>
+                          <option value="group">{{ text_group }}</option>
+                          {% else %}
+                          <option value="user">{{ text_user }}</option>
+                          <option value="group" selected="selected">{{ text_group }}</option>
+                          {% endif %}
+                        </select>
+                      </td>
+                      <td class="text-left">
+                        <select name="amount_thresholds[{{ threshold_row }}][approver_id]" class="form-control approver-select" id="approver-{{ threshold_row }}">
+                          <option value="{{ threshold.approver_id }}" selected="selected">{{ threshold.approver_name }}</option>
+                        </select>
+                      </td>
+                      <td class="text-left">
+                        <select name="amount_thresholds[{{ threshold_row }}][department_id]" class="form-control">
+                          <option value="0">{{ text_all }}</option>
+                          {% for department in departments %}
+                          {% if department.department_id == threshold.department_id %}
+                          <option value="{{ department.department_id }}" selected="selected">{{ department.name }}</option>
+                          {% else %}
+                          <option value="{{ department.department_id }}">{{ department.name }}</option>
+                          {% endif %}
+                          {% endfor %}
+                        </select>
+                      </td>
+                      <td class="text-left">
+                        <select name="amount_thresholds[{{ threshold_row }}][category_id]" class="form-control">
+                          <option value="0">{{ text_all }}</option>
+                          {% for category in categories %}
+                          {% if category.category_id == threshold.category_id %}
+                          <option value="{{ category.category_id }}" selected="selected">{{ category.name }}</option>
+                          {% else %}
+                          <option value="{{ category.category_id }}">{{ category.name }}</option>
+                          {% endif %}
+                          {% endfor %}
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <input type="number" name="amount_thresholds[{{ threshold_row }}][sort_order]" value="{{ threshold.sort_order }}" placeholder="{{ entry_sort_order }}" class="form-control" style="width: 80px;" />
+                      </td>
+                      <td class="text-center">
+                        <select name="amount_thresholds[{{ threshold_row }}][status]" class="form-control">
+                          {% if threshold.status %}
+                          <option value="1" selected="selected">{{ text_enabled }}</option>
+                          <option value="0">{{ text_disabled }}</option>
+                          {% else %}
+                          <option value="1">{{ text_enabled }}</option>
+                          <option value="0" selected="selected">{{ text_disabled }}</option>
+                          {% endif %}
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <button type="button" onclick="removeThreshold({{ threshold_row }});" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger btn-sm"><i class="fa fa-minus-circle"></i></button>
+                      </td>
+                    </tr>
+                    {% set threshold_row = threshold_row + 1 %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Department Rules Tab -->
+            <div class="tab-pane" id="tab-department-rules">
+              <div class="form-group">
+                <div class="col-sm-12">
+                  <button type="button" class="btn btn-primary" onclick="addDepartmentRule();"><i class="fa fa-plus"></i> {{ button_add_rule }}</button>
+                  <div class="help-block">{{ help_department_rules }}</div>
+                </div>
+              </div>
+              
+              <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover" id="department-rules-table">
+                  <thead>
+                    <tr>
+                      <td class="text-left">{{ column_department }}</td>
+                      <td class="text-left">{{ column_approver_type }}</td>
+                      <td class="text-left">{{ column_approver }}</td>
+                      <td class="text-center">{{ entry_min_amount }}</td>
+                      <td class="text-center">{{ entry_max_amount }}</td>
+                      <td class="text-center">{{ column_sort_order }}</td>
+                      <td class="text-center">{{ column_status }}</td>
+                      <td class="text-center">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% set rule_row = 0 %}
+                    {% for rule in department_rules %}
+                    <tr id="dept-rule-row{{ rule_row }}">
+                      <td class="text-left">
+                        <select name="department_rules[{{ rule_row }}][department_id]" class="form-control">
+                          {% for department in departments %}
+                          {% if department.department_id == rule.department_id %}
+                          <option value="{{ department.department_id }}" selected="selected">{{ department.name }}</option>
+                          {% else %}
+                          <option value="{{ department.department_id }}">{{ department.name }}</option>
+                          {% endif %}
+                          {% endfor %}
+                        </select>
+                      </td>
+                      <td class="text-left">
+                        <select name="department_rules[{{ rule_row }}][approver_type]" class="form-control approver-type-select" data-row="{{ rule_row }}" data-type="dept">
+                          {% if rule.approver_type == 'user' %}
+                          <option value="user" selected="selected">{{ text_user }}</option>
+                          <option value="group">{{ text_group }}</option>
+                          {% else %}
+                          <option value="user">{{ text_user }}</option>
+                          <option value="group" selected="selected">{{ text_group }}</option>
+                          {% endif %}
+                        </select>
+                      </td>
+                      <td class="text-left">
+                        <select name="department_rules[{{ rule_row }}][approver_id]" class="form-control approver-select" id="dept-approver-{{ rule_row }}">
+                          <option value="{{ rule.approver_id }}" selected="selected">{{ rule.approver_name }}</option>
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <input type="number" name="department_rules[{{ rule_row }}][min_amount]" value="{{ rule.min_amount }}" placeholder="{{ entry_min_amount }}" class="form-control" step="0.01" min="0" />
+                      </td>
+                      <td class="text-center">
+                        <input type="number" name="department_rules[{{ rule_row }}][max_amount]" value="{{ rule.max_amount }}" placeholder="{{ entry_max_amount }}" class="form-control" step="0.01" min="0" />
+                      </td>
+                      <td class="text-center">
+                        <input type="number" name="department_rules[{{ rule_row }}][sort_order]" value="{{ rule.sort_order }}" placeholder="{{ entry_sort_order }}" class="form-control" style="width: 80px;" />
+                      </td>
+                      <td class="text-center">
+                        <select name="department_rules[{{ rule_row }}][status]" class="form-control">
+                          {% if rule.status %}
+                          <option value="1" selected="selected">{{ text_enabled }}</option>
+                          <option value="0">{{ text_disabled }}</option>
+                          {% else %}
+                          <option value="1">{{ text_enabled }}</option>
+                          <option value="0" selected="selected">{{ text_disabled }}</option>
+                          {% endif %}
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <button type="button" onclick="removeDepartmentRule({{ rule_row }});" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger btn-sm"><i class="fa fa-minus-circle"></i></button>
+                      </td>
+                    </tr>
+                    {% set rule_row = rule_row + 1 %}
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Additional tabs would continue here... -->
+            
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Test Modal -->
+<div id="test-modal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ button_test_system }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="test-form">
+          <div class="form-group">
+            <label for="test-amount">{{ entry_test_amount }}</label>
+            <input type="number" id="test-amount" class="form-control" step="0.01" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="test-department">{{ entry_test_department }}</label>
+            <select id="test-department" class="form-control">
+              <option value="0">{{ text_all }}</option>
+              {% for department in departments %}
+              <option value="{{ department.department_id }}">{{ department.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="test-category">{{ entry_test_category }}</label>
+            <select id="test-category" class="form-control">
+              <option value="0">{{ text_all }}</option>
+              {% for category in categories %}
+              <option value="{{ category.category_id }}">{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+        <div id="test-results" style="display: none;">
+          <h5>{{ info_approval_flow }}</h5>
+          <div id="approval-flow-results"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="runTest();">{{ button_test_system }}</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+var threshold_row = {{ amount_thresholds|length }};
+var dept_rule_row = {{ department_rules|length }};
+var cat_rule_row = {{ category_rules|length }};
+
+// Workflow type change handler
+$('#input-workflow-type').on('change', function() {
+    if ($(this).val() == 'parallel') {
+        $('#parallel-percentage-group').show();
+    } else {
+        $('#parallel-percentage-group').hide();
+    }
+});
+
+// Add amount threshold
+function addAmountThreshold() {
+    html = '<tr id="threshold-row' + threshold_row + '">';
+    html += '  <td class="text-left"><input type="number" name="amount_thresholds[' + threshold_row + '][amount]" placeholder="{{ entry_amount }}" class="form-control" step="0.01" min="0" /></td>';
+    html += '  <td class="text-left"><select name="amount_thresholds[' + threshold_row + '][currency_id]" class="form-control">{% for currency in currencies %}<option value="{{ currency.currency_id }}">{{ currency.title }}</option>{% endfor %}</select></td>';
+    html += '  <td class="text-left"><select name="amount_thresholds[' + threshold_row + '][approver_type]" class="form-control approver-type-select" data-row="' + threshold_row + '"><option value="user">{{ text_user }}</option><option value="group">{{ text_group }}</option></select></td>';
+    html += '  <td class="text-left"><select name="amount_thresholds[' + threshold_row + '][approver_id]" class="form-control approver-select" id="approver-' + threshold_row + '"></select></td>';
+    html += '  <td class="text-left"><select name="amount_thresholds[' + threshold_row + '][department_id]" class="form-control"><option value="0">{{ text_all }}</option>{% for department in departments %}<option value="{{ department.department_id }}">{{ department.name }}</option>{% endfor %}</select></td>';
+    html += '  <td class="text-left"><select name="amount_thresholds[' + threshold_row + '][category_id]" class="form-control"><option value="0">{{ text_all }}</option>{% for category in categories %}<option value="{{ category.category_id }}">{{ category.name }}</option>{% endfor %}</select></td>';
+    html += '  <td class="text-center"><input type="number" name="amount_thresholds[' + threshold_row + '][sort_order]" value="0" class="form-control" style="width: 80px;" /></td>';
+    html += '  <td class="text-center"><select name="amount_thresholds[' + threshold_row + '][status]" class="form-control"><option value="1" selected="selected">{{ text_enabled }}</option><option value="0">{{ text_disabled }}</option></select></td>';
+    html += '  <td class="text-center"><button type="button" onclick="removeThreshold(' + threshold_row + ');" class="btn btn-danger btn-sm"><i class="fa fa-minus-circle"></i></button></td>';
+    html += '</tr>';
+    
+    $('#amount-thresholds-table tbody').append(html);
+    
+    threshold_row++;
+}
+
+function removeThreshold(row) {
+    $('#threshold-row' + row).remove();
+}
+
+// Test approval system
+function testApprovalSystem() {
+    $('#test-modal').modal('show');
+}
+
+function runTest() {
+    var amount = $('#test-amount').val();
+    var department_id = $('#test-department').val();
+    var category_id = $('#test-category').val();
+    
+    if (!amount) {
+        alert('{{ error_test_data }}');
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?route=purchase/approval_settings/test&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            amount: amount,
+            department_id: department_id,
+            category_id: category_id
+        },
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                var html = '<div class="alert alert-success">' + json.message + '</div>';
+                html += '<table class="table table-striped">';
+                html += '<thead><tr><th>{{ column_step_name }}</th><th>{{ column_approver }}</th><th>{{ column_is_required }}</th></tr></thead>';
+                html += '<tbody>';
+                
+                if (json.approval_flow && json.approval_flow.length > 0) {
+                    for (var i = 0; i < json.approval_flow.length; i++) {
+                        var step = json.approval_flow[i];
+                        html += '<tr>';
+                        html += '<td>' + (step.step_name || 'Step ' + (i + 1)) + '</td>';
+                        html += '<td>' + step.approver_name + '</td>';
+                        html += '<td>' + (step.is_required ? '{{ text_yes }}' : '{{ text_no }}') + '</td>';
+                        html += '</tr>';
+                    }
+                } else {
+                    html += '<tr><td colspan="3" class="text-center">{{ info_no_steps }}</td></tr>';
+                }
+                
+                html += '</tbody></table>';
+                
+                $('#approval-flow-results').html(html);
+                $('#test-results').show();
+            } else {
+                $('#approval-flow-results').html('<div class="alert alert-danger">' + json.error + '</div>');
+                $('#test-results').show();
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+// Export settings
+function exportSettings() {
+    window.open('index.php?route=purchase/approval_settings/export&user_token={{ user_token }}', '_blank');
+}
+
+// Initialize tooltips
+$('[data-toggle="tooltip"]').tooltip();
+//--></script>
+
+{{ footer }}

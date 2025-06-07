@@ -1,0 +1,683 @@
+<!-- Modal Header -->
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+    <h4 class="modal-title">
+        {% if quotation_info %}
+            {{ text_edit_quotation }}
+        {% else %}
+            {{ text_add_quotation }}
+        {% endif %}
+    </h4>
+</div>
+
+<form id="form-quotation" class="form-horizontal">
+    {% if quotation_info %}
+        <input type="hidden" name="quotation_id" value="{{ quotation_info.quotation_id }}" />
+    {% endif %}
+
+    <div class="modal-body">
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+            <li><a href="#tab-items" data-toggle="tab">{{ tab_items }}</a></li>
+            <li><a href="#tab-documents" data-toggle="tab">{{ tab_documents }}</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- General Tab -->
+            <div class="tab-pane active" id="tab-general">
+                <!-- Requisition Reference -->
+                {% if requisition_info %}
+                <div class="well">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label">{{ text_requisition_number }}</label>
+                                <p class="form-control-static">{{ requisition_info.req_number }}</p>
+                                <input type="hidden" name="requisition_id" value="{{ requisition_info.requisition_id }}" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label">{{ text_branch }}</label>
+                                <p class="form-control-static">{{ requisition_info.branch_name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="form-group required">
+                    <label class="col-sm-3 control-label">{{ text_requisition }}</label>
+                    <div class="col-sm-9">
+                        <select name="requisition_id" class="form-control select2-requisition" {% if quotation_info %}disabled{% endif %}>
+                            <option value="">{{ text_select }}</option>
+                            {% if requisition_info %}
+                            <option value="{{ requisition_info.requisition_id }}" selected>{{ requisition_info.req_number }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Supplier -->
+                <div class="form-group required">
+                    <label class="col-sm-3 control-label">{{ text_supplier }}</label>
+                    <div class="col-sm-9">
+                        <select name="supplier_id" class="form-control select2-supplier" required>
+                            <option value="">{{ text_select }}</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.supplier_id }}" {% if supplier.supplier_id == quotation_info.supplier_id %}selected{% endif %}>
+                                {{ supplier.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Currency -->
+                <div class="form-group required">
+                    <label class="col-sm-3 control-label">{{ text_currency }}</label>
+                    <div class="col-sm-9">
+                        <select name="currency_id" class="form-control" required>
+                            {% for currency in currencies %}
+                            <option value="{{ currency.currency_id }}" 
+                                    data-value="{{ currency.value }}"
+                                    {% if currency.currency_id == quotation_info.currency_id %}selected{% endif %}>
+                                {{ currency.title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="exchange_rate" value="{{ quotation_info.exchange_rate|default(1) }}" />
+                    </div>
+                </div>
+
+                <!-- Validity Date -->
+                <div class="form-group required">
+                    <label class="col-sm-3 control-label">{{ text_validity_date }}</label>
+                    <div class="col-sm-9">
+                        <input type="date" name="validity_date" class="form-control" required 
+                               value="{{ quotation_info.validity_date }}" />
+                    </div>
+                </div>
+
+                <!-- Payment Terms -->
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">{{ text_payment_terms }}</label>
+                    <div class="col-sm-9">
+                        <textarea name="payment_terms" class="form-control" rows="2">{{ quotation_info.payment_terms }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Delivery Terms -->
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">{{ text_delivery_terms }}</label>
+                    <div class="col-sm-9">
+                        <textarea name="delivery_terms" class="form-control" rows="2">{{ quotation_info.delivery_terms }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">{{ text_notes }}</label>
+                    <div class="col-sm-9">
+                        <textarea name="notes" class="form-control" rows="3">{{ quotation_info.notes }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Tab -->
+            <div class="tab-pane" id="tab-items">
+                <div class="table-responsive">
+                    <table id="quotation-items" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>{{ column_product }}</th>
+                                <th width="100px">{{ column_quantity }}</th>
+                                <th width="120px">{{ column_unit }}</th>
+                                <th width="150px">{{ column_unit_price }}</th>
+                                <th width="100px">{{ column_tax }}</th>
+                                <th width="120px">{{ column_discount }}</th>
+                                <th width="150px">{{ column_total }}</th>
+                                <th width="50px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if items %}
+                                {% for item in items %}
+                                <tr>
+                                    <td>
+                                        <select name="item[{{ loop.index0 }}][product_id]" class="form-control select2-product" required>
+                                            <option value="{{ item.product_id }}" selected>{{ item.product_name }}</option>
+                                        </select>
+                                        <div class="product-info mt-2"></div>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="item[{{ loop.index0 }}][quantity]" 
+                                               class="form-control calc-trigger" value="{{ item.quantity }}" 
+                                               min="0.01" step="0.01" required />
+                                    </td>
+                                    <td>
+                                        <select name="item[{{ loop.index0 }}][unit_id]" class="form-control unit-select calc-trigger" required>
+                                            <option value="{{ item.unit_id }}" selected>{{ item.unit_name }}</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="item[{{ loop.index0 }}][unit_price]" 
+                                               class="form-control calc-trigger" value="{{ item.unit_price }}"
+                                               min="0" step="0.0001" required />
+                                        <div class="price-history mt-1"></div>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="item[{{ loop.index0 }}][tax_rate]" 
+                                               class="form-control calc-trigger" value="{{ item.tax_rate }}"
+                                               min="0" max="100" step="0.01" />
+                                    </td>
+                                    <td>
+                                        <div class="input-group">
+                                            <select name="item[{{ loop.index0 }}][discount_type]" class="form-control calc-trigger">
+                                                <option value="percentage" {% if item.discount_type == 'percentage' %}selected{% endif %}>%</option>
+                                                <option value="fixed" {% if item.discount_type == 'fixed' %}selected{% endif %}>{{ text_fixed }}</option>
+                                            </select>
+                                            <input type="number" name="item[{{ loop.index0 }}][discount_value]" 
+                                                   class="form-control calc-trigger" value="{{ item.discount_value }}"
+                                                   min="0" step="0.01" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="item[{{ loop.index0 }}][total]" 
+                                               class="form-control line-total" value="{{ item.line_total }}"
+                                               readonly />
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-remove-line">
+                                            <i class="fa fa-minus-circle"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="8">
+                                    <button type="button" id="button-add-item" class="btn btn-primary">
+                                        <i class="fa fa-plus-circle"></i> {{ text_add_item }}
+                                    </button>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Totals Section -->
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ text_tax_handling }}</label>
+                            <div class="col-sm-8">
+                                <select id="tax-included" name="tax_included" class="form-control">
+                                    {% for option in tax_options %}
+                                    <option value="{{ option.value }}" {% if option.value == quotation_info.tax_included %}selected{% endif %}>
+                                        {{ option.text }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <table class="table table-bordered">
+                            <tr>
+                                <td class="text-right"><strong>{{ text_subtotal }}</strong></td>
+                                <td width="200" class="text-right">
+                                    <span id="subtotal">{{ quotation_info.subtotal|default(0)|number_format(2) }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-right"><strong>{{ text_total_discount }}</strong></td>
+                                <td class="text-right">
+                                    <span id="total-discount">{{ quotation_info.discount_amount|default(0)|number_format(2) }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-right"><strong>{{ text_total_tax }}</strong></td>
+                                <td class="text-right">
+                                    <span id="total-tax">{{ quotation_info.tax_amount|default(0)|number_format(2) }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-right"><strong>{{ text_grand_total }}</strong></td>
+                                <td class="text-right">
+                                    <span id="grand-total">{{ quotation_info.total_amount|default(0)|number_format(2) }}</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="tab-pane" id="tab-documents">
+                <div class="document-upload-container">
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="dz-message">
+                            {{ text_drag_drop_files }}
+                            <br>
+                            <span class="note">{{ text_or_click_to_upload }}</span>
+                        </div>
+                    </div>
+                    
+                    <table class="table table-bordered mt-3">
+                        <thead>
+                            <tr>
+                                <th>{{ column_filename }}</th>
+                                <th>{{ column_size }}</th>
+                                <th>{{ column_date_added }}</th>
+                                <th>{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="document-list">
+                            {% if documents %}
+                                {% for document in documents %}
+                                <tr id="document-{{ document.document_id }}">
+                                    <td>{{ document.original_filename }}</td>
+                                    <td>{{ document.formatted_size }}</td>
+                                    <td>{{ document.upload_date }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteDocument({{ document.document_id }})">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+        {% if mode == 'add' or quotation_info.status == 'draft' %}
+            <button type="submit" name="submit_type" value="draft" class="btn btn-info">
+                <i class="fa fa-save"></i> {{ button_save_draft }}
+            </button>
+        {% endif %}
+        {% if can_submit %}
+            <button type="submit" name="submit_type" value="submit" class="btn btn-primary">
+                <i class="fa fa-check"></i> {{ button_submit }}
+            </button>
+        {% endif %}
+    </div>
+</form>
+
+<!-- Template for new item row -->
+<template id="template-item-row">
+    <tr>
+        <td>
+            <select name="item[{index}][product_id]" class="form-control select2-product" required></select>
+            <div class="product-info mt-2"></div>
+        </td>
+        <td>
+            <input type="number" name="item[{index}][quantity]" class="form-control calc-trigger" 
+                   value="1" min="0.01" step="0.01" required />
+        </td>
+        <td>
+            <select name="item[{index}][unit_id]" class="form-control unit-select calc-trigger" required></select>
+        </td>
+        <td>
+            <input type="number" name="item[{index}][unit_price]" class="form-control calc-trigger"
+                   value="0" min="0" step="0.0001" required />
+            <div class="price-history mt-1"></div>
+        </td>
+        <td>
+            <input type="number" name="item[{index}][tax_rate]" class="form-control calc-trigger"
+                   value="0" min="0" max="100" step="0.01" />
+        </td>
+        <td>
+            <div class="input-group">
+                <select name="item[{index}][discount_type]" class="form-control calc-trigger">
+                    <option value="percentage">%</option>
+                    <option value="fixed">{{ text_fixed }}</option>
+                </select>
+                <input type="number" name="item[{index}][discount_value]" class="form-control calc-trigger"
+                       value="0" min="0" step="0.01" />
+            </div>
+        </td>
+        <td>
+            <input type="number" name="item[{index}][total]" class="form-control line-total" readonly />
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-remove-line">
+                <i class="fa fa-minus-circle"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<script type="text/javascript">
+// تهيئة النموذج
+function initializeAddForm() {
+    // Select2 للطلبات
+    $('.select2-requisition').select2({
+        ajax: {
+            url: 'index.php?route=purchase/quotation/select2Requisitions&user_token={{ user_token }}',
+            dataType: 'json',
+            data: function(params) {
+                return {
+                    q: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data
+                };
+            }
+        }
+    }).on('select2:select', function(e) {
+        loadRequisitionItems(e.params.data.id);
+    });
+
+    // Select2 للموردين
+    $('.select2-supplier').select2({
+        placeholder: '{{ text_select_supplier }}'
+    });
+
+    // تهيئة الأحداث للحسابات والتفاعل مع المستخدم
+    $('#quotation-items').on('input change', '.calc-trigger', function() {
+        recalcTotals();
+    });
+
+    $('#tax-included, #tax-rate, #discount-type, #discount-value').on('input change', function() {
+        recalcTotals();
+    });
+
+    // حذف بند
+    $('#quotation-items').on('click', '.btn-remove-line', function() {
+        if(confirm('{{ text_confirm_remove_item }}')) {
+            $(this).closest('tr').remove();
+            recalcTotals();
+        }
+    });
+
+    // جلب سعر الصرف عند تغيير العملة
+    $('select[name=\'currency_id\']').on('change', function() {
+        var rate = $(this).find(':selected').data('value');
+        $('input[name=\'exchange_rate\']').val(rate);
+        recalcTotals();
+    });
+}
+
+// جلب بنود طلب الشراء
+function loadRequisitionItems(requisition_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/getRequisitionItems&user_token={{ user_token }}',
+        type: 'GET',
+        data: { requisition_id: requisition_id },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#quotation-items tbody').html('<tr><td colspan="8" class="text-center"><i class="fa fa-spinner fa-spin"></i></td></tr>');
+        },
+        success: function(json) {
+            $('#quotation-items tbody').empty();
+            if(json.items && json.items.length) {
+                json.items.forEach(function(item) {
+                    addItemRow(item);
+                });
+            }
+            recalcTotals();
+        },
+        error: function(xhr, status, error) {
+            alert('{{ error_ajax }}');
+        }
+    });
+}
+
+// إضافة صف بند جديد
+function addItemRow(item) {
+    var template = document.querySelector('#template-item-row').innerHTML;
+    var index = $('#quotation-items tbody tr').length;
+    template = template.replace(/{index}/g, index);
+    
+    $('#quotation-items tbody').append(template);
+    var $newRow = $('#quotation-items tbody tr:last');
+    
+    if(item) {
+        $newRow.find('select[name$="[product_id]"]')
+            .append(new Option(item.product_name, item.product_id, true, true));
+            
+        $newRow.find('input[name$="[quantity]"]').val(item.quantity);
+        
+        if(item.units) {
+            item.units.forEach(function(unit) {
+                $newRow.find('select[name$="[unit_id]"]')
+                    .append(new Option(unit.text, unit.id, false, unit.id == item.unit_id));
+            });
+        }
+    }
+    
+    initializeRowComponents($newRow);
+}
+
+// تهيئة مكونات الصف
+function initializeRowComponents($row) {
+    // Select2 للمنتجات
+    $row.find('.select2-product').select2({
+        ajax: {
+            url: 'index.php?route=purchase/quotation/select2Products&user_token={{ user_token }}',
+            dataType: 'json',
+            data: function(params) {
+                return {
+                    q: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data
+                };
+            }
+        }
+    }).on('select2:select', function(e) {
+        var $row = $(this).closest('tr');
+        loadProductDetails(e.params.data, $row);
+    });
+}
+
+// حساب إجمالي البند
+function calcLineTotal($tr) {
+    let qty         = parseFloat($tr.find('input[name$="[quantity]"]').val()) || 0;
+    let unitPrice   = parseFloat($tr.find('input[name$="[unit_price]"]').val()) || 0;
+    let taxRate     = parseFloat($tr.find('input[name$="[tax_rate]"]').val()) || 0;
+    let discType    = $tr.find('select[name$="[discount_type]"]').val();
+    let discValue   = parseFloat($tr.find('input[name$="[discount_value]"]').val()) || 0;
+
+    let lineSubtotal = qty * unitPrice;
+    let discountAmt = 0;
+    
+    if (discType === 'percentage') {
+        discountAmt = lineSubtotal * (discValue / 100);
+    } else {
+        discountAmt = discValue;
+    }
+    
+    if (discountAmt > lineSubtotal) discountAmt = lineSubtotal;
+    
+    let lineNet = lineSubtotal - discountAmt;
+    if (lineNet < 0) lineNet = 0;
+
+    let taxAmt = 0;
+    let isTaxIncluded = ($('#tax-included').val() === '1');
+    
+    if (!isTaxIncluded) {
+        taxAmt = lineNet * (taxRate / 100);
+        lineNet += taxAmt;
+    } else {
+        taxAmt = lineNet - (lineNet / (1 + (taxRate / 100)));
+    }
+
+    $tr.find('input[name$="[total]"]').val(lineNet.toFixed(2));
+    return {
+        subtotal: lineSubtotal,
+        discount: discountAmt,
+        tax: taxAmt,
+        total: lineNet
+    };
+}
+
+// إعادة حساب الإجماليات
+function recalcTotals() {
+    let subtotal = 0;
+    let totalDiscount = 0;
+    let totalTax = 0;
+
+    $('#quotation-items tbody tr').each(function() {
+        let lineTotals = calcLineTotal($(this));
+        subtotal += lineTotals.subtotal;
+        totalDiscount += lineTotals.discount;
+        totalTax += lineTotals.tax;
+    });
+
+    // الخصم العام
+    let discType = $('#discount-type').val();
+    let discValue = parseFloat($('#discount-value').val()) || 0;
+    let globalDiscount = 0;
+
+    if (discType === 'percentage') {
+        globalDiscount = subtotal * (discValue / 100);
+    } else {
+        globalDiscount = discValue;
+    }
+
+    if (globalDiscount > subtotal) globalDiscount = subtotal;
+    totalDiscount += globalDiscount;
+
+    let netAmount = subtotal - totalDiscount;
+    if (netAmount < 0) netAmount = 0;
+
+    // الضريبة العامة
+    let isTaxIncluded = ($('#tax-included').val() === '1');
+    let taxRate = parseFloat($('#tax-rate').val()) || 0;
+    let globalTax = 0;
+
+    if (!isTaxIncluded) {
+        globalTax = netAmount * (taxRate / 100);
+        netAmount += globalTax;
+    } else {
+        globalTax = netAmount - (netAmount / (1 + (taxRate / 100)));
+    }
+
+    totalTax += globalTax;
+
+    // عرض الإجماليات
+    $('#subtotal').val(subtotal.toFixed(2));
+    $('#total-discount').val(totalDiscount.toFixed(2));
+    $('#total-tax').val(totalTax.toFixed(2));
+    $('#grand-total').val(netAmount.toFixed(2));
+}
+
+function loadPriceHistory(productId, unitId, $priceDiv) {
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/getPriceHistory&user_token={{ user_token }}',
+        type: 'GET',
+        data: {
+            product_id: productId,
+            unit_id: unitId
+        },
+        success: function(json) {
+            var html = '<small class="text-muted">';
+            if(json.history && json.history.length) {
+                json.history.forEach(function(item) {
+                    html += item.date + ': ' + item.price + '<br>';
+                });
+            } else {
+                html += '{{ text_no_price_history }}';
+            }
+            html += '</small>';
+            $priceDiv.html(html);
+        }
+    });
+}
+
+function loadSupplierHistory(productId, supplierId, $historyDiv) {
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/getSupplierHistory&user_token={{ user_token }}',
+        type: 'GET',
+        data: {
+            product_id: productId,
+            supplier_id: supplierId
+        },
+        success: function(json) {
+            var html = '<small class="text-muted">';
+            if(json.history && json.history.length) {
+                html += '<strong>{{ text_supplier_history }}:</strong><br>';
+                json.history.forEach(function(item) {
+                    html += item.date + ': ' + item.details + '<br>';
+                    if(item.rating) {
+                        html += getRatingStars(item.rating) + '<br>';
+                    }
+                });
+            }
+            html += '</small>';
+            $historyDiv.html(html);
+        }
+    });
+}
+
+function getRatingStars(rating) {
+    var html = '';
+    for (var i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            html += '<i class="fa fa-star text-warning"></i>';
+        } else {
+            html += '<i class="fa fa-star-o text-muted"></i>';
+        }
+    }
+    return html;
+}
+
+// Initialize form
+$(document).ready(function() {
+    initializeAddForm();
+    
+    // Add new row button handler
+    $('#button-add-item').on('click', function() {
+        addItemRow();
+    });
+    
+    // Form submission
+    $('#form-quotation').on('submit', function(e) {
+        e.preventDefault();
+        var submitType = $(document.activeElement).val();
+        
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/save&user_token={{ user_token }}',
+            type: 'POST',
+            data: $(this).serialize() + '&submit_type=' + submitType,
+            dataType: 'json',
+            beforeSend: function() {
+                $('#form-quotation button[type=submit]').prop('disabled', true);
+            },
+            complete: function() {
+                $('#form-quotation button[type=submit]').prop('disabled', false);
+            },
+            success: function(json) {
+                if(json.error) {
+                    alert(json.error);
+                }
+                if(json.success) {
+                    $('#modal-quotation').modal('hide');
+                    // Refresh quotations list
+                    if(typeof loadQuotations === 'function') {
+                        loadQuotations();
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('{{ error_ajax }}');
+            }
+        });
+    });
+});
+</script>

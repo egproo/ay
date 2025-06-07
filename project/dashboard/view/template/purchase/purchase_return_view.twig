@@ -1,0 +1,179 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-right">
+        {% if return.status == 'pending' %}
+          <a href="{{ approve }}" class="btn btn-success" data-toggle="tooltip" title="{{ button_approve }}" onclick="return confirm('{{ text_confirm }}');"><i class="fas fa-check"></i></a>
+          <a href="{{ reject }}" class="btn btn-danger" data-toggle="tooltip" title="{{ button_reject }}" onclick="return confirm('{{ text_confirm }}');"><i class="fas fa-times"></i></a>
+        {% endif %}
+        {% if return.status == 'approved' %}
+          <a href="{{ credit_note }}" class="btn btn-primary" data-toggle="tooltip" title="{{ button_create_credit_note }}"><i class="fas fa-file-invoice-dollar"></i></a>
+        {% endif %}
+        <button type="button" data-toggle="tooltip" title="{{ button_print }}" class="btn btn-info" onclick="window.open('{{ print }}');"><i class="fas fa-print"></i></button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-info-circle"></i> {{ text_return_details }}</div>
+          <div class="card-body">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ text_return_number }}</strong></td>
+                <td>{{ return.return_number }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_order_number }}</strong></td>
+                <td>{{ return.order_number }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_receipt_number }}</strong></td>
+                <td>{{ return.receipt_number }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_supplier }}</strong></td>
+                <td>{{ return.supplier }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_status }}</strong></td>
+                <td>
+                  {% if return.status == 'pending' %}
+                    <span class="badge badge-warning">{{ text_pending }}</span>
+                  {% elseif return.status == 'approved' %}
+                    <span class="badge badge-success">{{ text_approved }}</span>
+                  {% elseif return.status == 'rejected' %}
+                    <span class="badge badge-danger">{{ text_rejected }}</span>
+                  {% elseif return.status == 'completed' %}
+                    <span class="badge badge-info">{{ text_completed }}</span>
+                  {% elseif return.status == 'canceled' %}
+                    <span class="badge badge-secondary">{{ text_canceled }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_date_added }}</strong></td>
+                <td>{{ return.date_added }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_reason }}</strong></td>
+                <td>{{ return.reason }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-sticky-note"></i> {{ text_note }}</div>
+          <div class="card-body">
+            <p>{{ return.note ? return.note : text_no_results }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-3">
+      <div class="card-header"><i class="fas fa-cubes"></i> {{ text_return_items }}</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="text-left">{{ column_product }}</th>
+                <th class="text-right">{{ column_quantity }}</th>
+                <th class="text-center">{{ column_unit }}</th>
+                <th class="text-right">{{ column_unit_price }}</th>
+                <th class="text-right">{{ column_total }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if return_items %}
+                {% for item in return_items %}
+                  <tr>
+                    <td class="text-left">{{ item.product_name }}</td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-center">{{ item.unit }}</td>
+                    <td class="text-right">{{ item.unit_price }}</td>
+                    <td class="text-right">{{ item.total }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td class="text-center" colspan="5">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="text-right"><strong>{{ text_total_amount }}</strong></td>
+                <td class="text-right"><strong>{{ total_amount }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mt-3">
+      <div class="card-header"><i class="fas fa-history"></i> {{ text_history }}</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="text-left">{{ column_date_added }}</th>
+                <th class="text-left">{{ column_status }}</th>
+                <th class="text-left">{{ column_user }}</th>
+                <th class="text-left">{{ column_comment }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if histories %}
+                {% for history in histories %}
+                  <tr>
+                    <td class="text-left">{{ history.date_added }}</td>
+                    <td class="text-left">
+                      {% if history.status == 'pending' %}
+                        <span class="badge badge-warning">{{ text_pending }}</span>
+                      {% elseif history.status == 'approved' %}
+                        <span class="badge badge-success">{{ text_approved }}</span>
+                      {% elseif history.status == 'rejected' %}
+                        <span class="badge badge-danger">{{ text_rejected }}</span>
+                      {% elseif history.status == 'completed' %}
+                        <span class="badge badge-info">{{ text_completed }}</span>
+                      {% elseif history.status == 'canceled' %}
+                        <span class="badge badge-secondary">{{ text_canceled }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-left">{{ history.user }}</td>
+                    <td class="text-left">{{ history.comment }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td class="text-center" colspan="4">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }} 

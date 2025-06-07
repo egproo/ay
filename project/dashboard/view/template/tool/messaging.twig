@@ -1,0 +1,369 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-compose" data-toggle="tooltip" title="{{ button_compose }}" class="btn btn-primary"><i class="fa fa-plus"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="row">
+      <div class="col-md-3">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_folders }}</h3>
+          </div>
+          <div class="panel-body">
+            <ul class="nav nav-pills nav-stacked">
+              <li{% if filter == 'inbox' %} class="active"{% endif %}><a href="{{ inbox }}"><i class="fa fa-inbox"></i> {{ text_inbox }} {% if inbox_count > 0 %}<span class="badge">{{ inbox_count }}</span>{% endif %}</a></li>
+              <li{% if filter == 'sent' %} class="active"{% endif %}><a href="{{ sent }}"><i class="fa fa-paper-plane"></i> {{ text_sent }} {% if sent_count > 0 %}<span class="badge">{{ sent_count }}</span>{% endif %}</a></li>
+              <li{% if filter == 'draft' %} class="active"{% endif %}><a href="{{ draft }}"><i class="fa fa-file-text-o"></i> {{ text_draft }} {% if draft_count > 0 %}<span class="badge">{{ draft_count }}</span>{% endif %}</a></li>
+              <li{% if filter == 'archived' %} class="active"{% endif %}><a href="{{ archived }}"><i class="fa fa-archive"></i> {{ text_archived }} {% if archived_count > 0 %}<span class="badge">{{ archived_count }}</span>{% endif %}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_list }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    {% if filter == 'inbox' %}
+                    <td class="text-left">{% if sort == 'from' %}<a href="{{ sort_from }}" class="{{ order|lower }}">{{ column_from }}</a>{% else %}<a href="{{ sort_from }}">{{ column_from }}</a>{% endif %}</td>
+                    {% elseif filter == 'sent' or filter == 'draft' %}
+                    <td class="text-left">{% if sort == 'to' %}<a href="{{ sort_to }}" class="{{ order|lower }}">{{ column_to }}</a>{% else %}<a href="{{ sort_to }}">{{ column_to }}</a>{% endif %}</td>
+                    {% else %}
+                    <td class="text-left">{% if sort == 'from' %}<a href="{{ sort_from }}" class="{{ order|lower }}">{{ column_from }}</a>{% else %}<a href="{{ sort_from }}">{{ column_from }}</a>{% endif %}</td>
+                    <td class="text-left">{% if sort == 'to' %}<a href="{{ sort_to }}" class="{{ order|lower }}">{{ column_to }}</a>{% else %}<a href="{{ sort_to }}">{{ column_to }}</a>{% endif %}</td>
+                    {% endif %}
+                    <td class="text-left">{% if sort == 'subject' %}<a href="{{ sort_subject }}" class="{{ order|lower }}">{{ column_subject }}</a>{% else %}<a href="{{ sort_subject }}">{{ column_subject }}</a>{% endif %}</td>
+                    <td class="text-left">{% if sort == 'date_added' %}<a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>{% else %}<a href="{{ sort_date_added }}">{{ column_date_added }}</a>{% endif %}</td>
+                    <td class="text-right">{{ column_action }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if messages %}
+                  {% for message in messages %}
+                  <tr{% if filter == 'inbox' and message.is_read == 0 %} class="info"{% endif %}>
+                    {% if filter == 'inbox' %}
+                    <td class="text-left">{{ message.from }}</td>
+                    {% elseif filter == 'sent' or filter == 'draft' %}
+                    <td class="text-left">{{ message.to }}</td>
+                    {% else %}
+                    <td class="text-left">{{ message.from }}</td>
+                    <td class="text-left">{{ message.to }}</td>
+                    {% endif %}
+                    <td class="text-left">{{ message.subject }} {% if message.has_attachment %}<i class="fa fa-paperclip"></i>{% endif %}</td>
+                    <td class="text-left">{{ message.date_added }}</td>
+                    <td class="text-right">
+                      {% if message.is_draft %}
+                      <a href="{{ message.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                      {% else %}
+                      <a href="{{ message.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fa fa-eye"></i></a>
+                      {% endif %}
+                      <button type="button" data-toggle="tooltip" title="{{ button_archive }}" class="btn btn-default" onclick="archive('{{ message.message_id }}');"><i class="fa fa-archive"></i></button>
+                      <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? deleteMessage('{{ message.message_id }}') : false;"><i class="fa fa-trash-o"></i></button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td class="text-center" colspan="{% if filter == 'archived' %}5{% else %}4{% endif %}">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-left">{{ pagination }}</div>
+              <div class="col-sm-6 text-right">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="modal-compose" class="modal fade">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">{{ text_compose }}</h4>
+        </div>
+        <div class="modal-body">
+          <form id="form-message" class="form-horizontal">
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-to">{{ entry_to }}</label>
+              <div class="col-sm-10">
+                <select name="to_id" id="input-to" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  {% for user in users %}
+                  <option value="{{ user.user_id }}">{{ user.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-subject">{{ entry_subject }}</label>
+              <div class="col-sm-10">
+                <input type="text" name="subject" value="" placeholder="{{ entry_subject }}" id="input-subject" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-message">{{ entry_message }}</label>
+              <div class="col-sm-10">
+                <textarea name="message" placeholder="{{ entry_message }}" id="input-message" class="form-control" rows="8"></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ entry_attachment }}</label>
+              <div class="col-sm-10">
+                <button type="button" id="button-upload" class="btn btn-default"><i class="fa fa-upload"></i> {{ button_upload }}</button>
+                <ul id="attachment-list" class="list-unstyled"></ul>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="button-save-draft" class="btn btn-default pull-left"><i class="fa fa-save"></i> {{ button_save_draft }}</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+          <button type="button" id="button-send" class="btn btn-primary">{{ button_send }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$('#button-compose').on('click', function() {
+  // Reset form
+  $('#form-message')[0].reset();
+  $('#attachment-list').empty();
+  $('#form-message input[name="parent_id"]').remove();
+  
+  $('#modal-compose').modal('show');
+});
+
+$('#button-send').on('click', function() {
+  $.ajax({
+    url: 'index.php?route=tool/messaging/send&user_token={{ user_token }}',
+    type: 'post',
+    dataType: 'json',
+    data: $('#form-message').serialize() + getAttachments(),
+    beforeSend: function() {
+      $('#button-send').button('loading');
+    },
+    complete: function() {
+      $('#button-send').button('reset');
+    },
+    success: function(json) {
+      $('.alert, .text-danger').remove();
+      $('.form-group').removeClass('has-error');
+      
+      if (json['error']) {
+        if (json['error']['to_id']) {
+          $('#input-to').parent().addClass('has-error');
+          $('#input-to').after('<div class="text-danger">' + json['error']['to_id'] + '</div>');
+        }
+        
+        if (json['error']['subject']) {
+          $('#input-subject').parent().addClass('has-error');
+          $('#input-subject').after('<div class="text-danger">' + json['error']['subject'] + '</div>');
+        }
+        
+        if (json['error']['message']) {
+          $('#input-message').parent().addClass('has-error');
+          $('#input-message').after('<div class="text-danger">' + json['error']['message'] + '</div>');
+        }
+      }
+      
+      if (json['success']) {
+        $('#modal-compose').modal('hide');
+        
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-save-draft').on('click', function() {
+  $.ajax({
+    url: 'index.php?route=tool/messaging/saveDraft&user_token={{ user_token }}',
+    type: 'post',
+    dataType: 'json',
+    data: $('#form-message').serialize() + getAttachments(),
+    beforeSend: function() {
+      $('#button-save-draft').button('loading');
+    },
+    complete: function() {
+      $('#button-save-draft').button('reset');
+    },
+    success: function(json) {
+      $('.alert, .text-danger').remove();
+      $('.form-group').removeClass('has-error');
+      
+      if (json['error']) {
+        if (json['error']['to_id']) {
+          $('#input-to').parent().addClass('has-error');
+          $('#input-to').after('<div class="text-danger">' + json['error']['to_id'] + '</div>');
+        }
+        
+        if (json['error']['subject']) {
+          $('#input-subject').parent().addClass('has-error');
+          $('#input-subject').after('<div class="text-danger">' + json['error']['subject'] + '</div>');
+        }
+      }
+      
+      if (json['success']) {
+        $('#modal-compose').modal('hide');
+        
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-upload').on('click', function() {
+  $('#form-upload').remove();
+  
+  $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" /></form>');
+  
+  $('#form-upload input[name=\'file\']').trigger('click');
+  
+  if (typeof timer != 'undefined') {
+    clearInterval(timer);
+  }
+  
+  timer = setInterval(function() {
+    if ($('#form-upload input[name=\'file\']').val() != '') {
+      clearInterval(timer);
+      
+      $.ajax({
+        url: 'index.php?route=tool/messaging/upload&user_token={{ user_token }}',
+        type: 'post',
+        dataType: 'json',
+        data: new FormData($('#form-upload')[0]),
+        cache: false,
+        contentType: false,
+        processData: false,
+        beforeSend: function() {
+          $('#button-upload').button('loading');
+        },
+        complete: function() {
+          $('#button-upload').button('reset');
+        },
+        success: function(json) {
+          if (json['error']) {
+            alert(json['error']);
+          }
+          
+          if (json['success']) {
+            alert(json['success']);
+            
+            $('#attachment-list').append('<li id="attachment-' + json['attachment_id'] + '">' + json['name'] + ' (' + json['size'] + ') <button type="button" class="btn btn-danger btn-xs" onclick="$(\'#attachment-' + json['attachment_id'] + '\').remove();"><i class="fa fa-trash-o"></i></button><input type="hidden" name="attachment[]" value="' + json['attachment_id'] + '" /></li>');
+          }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+          alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+      });
+    }
+  }, 500);
+});
+
+function getAttachments() {
+  var attachments = '';
+  
+  $('input[name^=\'attachment\']').each(function() {
+    attachments += '&attachment[]=' + $(this).val();
+  });
+  
+  return attachments;
+}
+
+function archive(message_id) {
+  $.ajax({
+    url: 'index.php?route=tool/messaging/archive&user_token={{ user_token }}&message_id=' + message_id,
+    dataType: 'json',
+    beforeSend: function() {
+      $('[data-toggle=\'tooltip\']').tooltip('hide');
+    },
+    success: function(json) {
+      $('.alert').remove();
+      
+      if (json['success']) {
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+}
+
+function deleteMessage(message_id) {
+  $.ajax({
+    url: 'index.php?route=tool/messaging/delete&user_token={{ user_token }}&message_id=' + message_id,
+    dataType: 'json',
+    beforeSend: function() {
+      $('[data-toggle=\'tooltip\']').tooltip('hide');
+    },
+    success: function(json) {
+      $('.alert').remove();
+      
+      if (json['success']) {
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+}
+//--></script>
+{{ footer }} 

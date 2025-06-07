@@ -1,0 +1,57 @@
+{% extends "common/column_left.twig" %}
+{% block content %}
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>{{ heading_title }}</h1>
+    <ul class="breadcrumb">
+      <li><a href="{{ home }}">{{ text_home }}</a></li>
+      <li><a href="{{ self }}">{{ heading_title }}</a></li>
+    </ul>
+  </div>
+</div>
+<div class="container-fluid">
+  {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+  {% endif %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_payment_number }}</th>
+              <th>{{ column_vendor_id }}</th>
+              <th>{{ column_amount }}</th>
+              <th>{{ column_payment_date }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% if vendor_payments %}
+            {% for vp in vendor_payments %}
+            <tr>
+              <td>{{ vp.payment_number }}</td>
+              <td>{{ vp.vendor_id }}</td>
+              <td>{{ vp.amount }}</td>
+              <td>{{ vp.payment_date }}</td>
+              <td>{{ vp.status }}</td>
+              <td><a href="{{ vp.edit }}" class="btn btn-primary">{{ button_edit }}</a></td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center">{{ text_no_results }}</td>
+            </tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-right"><a href="{{ add }}" class="btn btn-primary">{{ button_add }}</a></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

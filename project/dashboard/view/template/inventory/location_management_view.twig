@@ -1,0 +1,825 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary">
+          <i class="fa fa-pencil"></i>
+        </a>
+        <a href="{{ copy }}" data-toggle="tooltip" title="{{ button_copy }}" class="btn btn-success">
+          <i class="fa fa-copy"></i>
+        </a>
+        <button type="button" data-toggle="tooltip" title="{{ button_generate_qr }}" class="btn btn-warning" onclick="generateQRCode()">
+          <i class="fa fa-qrcode"></i>
+        </button>
+        <button type="button" data-toggle="tooltip" title="{{ button_update_quantities }}" class="btn btn-info" onclick="updateQuantities()">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - {{ location_info.name }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- معلومات الموقع الأساسية -->
+      <div class="col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-info-circle"></i> معلومات الموقع الأساسية
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="text-center">
+                  <div class="location-icon">
+                    <i class="fa fa-map-marker fa-4x text-primary"></i>
+                  </div>
+                  <h3>{{ location_info.name }}</h3>
+                  <h4><span class="label label-info label-lg">{{ location_info.location_code }}</span></h4>
+                  <p><span class="label label-primary">{{ location_info.location_type }}</span></p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-condensed">
+                  <tr>
+                    <td><strong>الفرع:</strong></td>
+                    <td>{{ location_info.branch_name ?: text_none }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>المستودع:</strong></td>
+                    <td>{{ location_info.warehouse_name ?: text_none }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>المنطقة:</strong></td>
+                    <td>{{ location_info.zone_name ?: text_none }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>الموقع الرئيسي:</strong></td>
+                    <td>{{ location_info.parent_location_name ?: text_none }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>الحالة:</strong></td>
+                    <td>
+                      {% if location_info.is_active %}
+                      <span class="label label-success">مفعل</span>
+                      {% else %}
+                      <span class="label label-danger">معطل</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            {% if location_info.description %}
+            <div class="row">
+              <div class="col-md-12">
+                <hr>
+                <h5><strong>الوصف:</strong></h5>
+                <p class="text-muted">{{ location_info.description }}</p>
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- العنوان التفصيلي -->
+            {% if location_info.aisle or location_info.rack or location_info.shelf or location_info.bin %}
+            <div class="row">
+              <div class="col-md-12">
+                <hr>
+                <h5><strong>العنوان التفصيلي:</strong></h5>
+                <div class="address-details">
+                  {% if location_info.aisle %}<span class="label label-default">ممر: {{ location_info.aisle }}</span>{% endif %}
+                  {% if location_info.rack %}<span class="label label-default">رف: {{ location_info.rack }}</span>{% endif %}
+                  {% if location_info.shelf %}<span class="label label-default">رفة: {{ location_info.shelf }}</span>{% endif %}
+                  {% if location_info.bin %}<span class="label label-default">صندوق: {{ location_info.bin }}</span>{% endif %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- إحصائيات الاستخدام -->
+      <div class="col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bar-chart"></i> إحصائيات الاستخدام
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="stat-box text-center">
+                  <i class="fa fa-cubes fa-2x text-primary"></i>
+                  <h4>{{ location_info.products_count ?: 0 }}</h4>
+                  <p>المنتجات المخزنة</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="stat-box text-center">
+                  <i class="fa fa-exchange fa-2x text-info"></i>
+                  <h4>{{ location_info.movements_30_days ?: 0 }}</h4>
+                  <p>حركات آخر 30 يوم</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="stat-box text-center">
+                  <i class="fa fa-sitemap fa-2x text-warning"></i>
+                  <h4>{{ sub_locations|length }}</h4>
+                  <p>المواقع الفرعية</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="stat-box text-center">
+                  <i class="fa fa-dollar fa-2x text-success"></i>
+                  <h4>{{ location_info.total_value|number_format(2) ?: '0.00' }}</h4>
+                  <p>إجمالي القيمة</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <hr>
+                <div class="text-center">
+                  <small class="text-muted">
+                    <strong>تاريخ الإضافة:</strong> {{ location_info.date_added|date('d/m/Y H:i') }}<br>
+                    <strong>آخر تعديل:</strong> {{ location_info.date_modified|date('d/m/Y H:i') }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- معلومات السعة -->
+      <div class="col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-pie-chart"></i> معلومات السعة والاستخدام
+            </h3>
+          </div>
+          <div class="panel-body">
+            <!-- سعة الوحدات -->
+            {% if location_info.capacity_units > 0 %}
+            <div class="capacity-section">
+              <h5>سعة الوحدات</h5>
+              <div class="progress">
+                {% set usage_percentage = (location_info.current_units / location_info.capacity_units * 100)|round(1) %}
+                <div class="progress-bar progress-bar-{% if usage_percentage < 50 %}success{% elseif usage_percentage < 80 %}warning{% else %}danger{% endif %}"
+                     style="width: {{ usage_percentage }}%">
+                  {{ usage_percentage }}%
+                </div>
+              </div>
+              <p><strong>{{ location_info.current_units|number_format }}</strong> من أصل <strong>{{ location_info.capacity_units|number_format }}</strong> وحدة</p>
+            </div>
+            {% endif %}
+
+            <!-- سعة الوزن -->
+            {% if location_info.capacity_weight > 0 %}
+            <div class="capacity-section">
+              <h5>سعة الوزن</h5>
+              <div class="progress">
+                {% set weight_percentage = (location_info.current_weight / location_info.capacity_weight * 100)|round(1) %}
+                <div class="progress-bar progress-bar-{% if weight_percentage < 50 %}success{% elseif weight_percentage < 80 %}warning{% else %}danger{% endif %}"
+                     style="width: {{ weight_percentage }}%">
+                  {{ weight_percentage }}%
+                </div>
+              </div>
+              <p><strong>{{ location_info.current_weight|number_format(2) }}</strong> من أصل <strong>{{ location_info.capacity_weight|number_format(2) }}</strong> كجم</p>
+            </div>
+            {% endif %}
+
+            <!-- سعة الحجم -->
+            {% if location_info.capacity_volume > 0 %}
+            <div class="capacity-section">
+              <h5>سعة الحجم</h5>
+              <div class="progress">
+                {% set volume_percentage = (location_info.current_volume / location_info.capacity_volume * 100)|round(1) %}
+                <div class="progress-bar progress-bar-{% if volume_percentage < 50 %}success{% elseif volume_percentage < 80 %}warning{% else %}danger{% endif %}"
+                     style="width: {{ volume_percentage }}%">
+                  {{ volume_percentage }}%
+                </div>
+              </div>
+              <p><strong>{{ location_info.current_volume|number_format(2) }}</strong> من أصل <strong>{{ location_info.capacity_volume|number_format(2) }}</strong> لتر</p>
+            </div>
+            {% endif %}
+
+            {% if location_info.capacity_units == 0 and location_info.capacity_weight == 0 and location_info.capacity_volume == 0 %}
+            <div class="text-center text-muted">
+              <i class="fa fa-info-circle fa-3x"></i>
+              <p>لم يتم تحديد معلومات السعة لهذا الموقع</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- الظروف البيئية -->
+      <div class="col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-thermometer-half"></i> الظروف البيئية والإعدادات
+            </h3>
+          </div>
+          <div class="panel-body">
+            <!-- درجة الحرارة -->
+            {% if location_info.temperature_min is not null or location_info.temperature_max is not null %}
+            <div class="environmental-condition">
+              <h5><i class="fa fa-thermometer-half text-danger"></i> درجة الحرارة</h5>
+              <p>
+                <strong>النطاق المسموح:</strong>
+                {{ location_info.temperature_min ?: '?' }}°م - {{ location_info.temperature_max ?: '?' }}°م
+              </p>
+            </div>
+            {% endif %}
+
+            <!-- الرطوبة -->
+            {% if location_info.humidity_min is not null or location_info.humidity_max is not null %}
+            <div class="environmental-condition">
+              <h5><i class="fa fa-tint text-info"></i> الرطوبة</h5>
+              <p>
+                <strong>النطاق المسموح:</strong>
+                {{ location_info.humidity_min ?: '?' }}% - {{ location_info.humidity_max ?: '?' }}%
+              </p>
+            </div>
+            {% endif %}
+
+            <!-- الإعدادات التشغيلية -->
+            <div class="operational-settings">
+              <h5><i class="fa fa-cogs"></i> الإعدادات التشغيلية</h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <p>
+                    <i class="fa fa-{% if location_info.is_pickable %}check text-success{% else %}times text-danger{% endif %}"></i>
+                    قابل للانتقاء
+                  </p>
+                  <p>
+                    <i class="fa fa-{% if location_info.is_receivable %}check text-success{% else %}times text-danger{% endif %}"></i>
+                    قابل للاستقبال
+                  </p>
+                </div>
+                <div class="col-md-6">
+                  <p>
+                    <i class="fa fa-{% if location_info.is_countable %}check text-success{% else %}times text-danger{% endif %}"></i>
+                    قابل للعد
+                  </p>
+                  <p>
+                    <strong>الأولوية:</strong>
+                    <span class="label label-{% if location_info.priority_level <= 2 %}success{% elseif location_info.priority_level <= 3 %}warning{% else %}danger{% endif %}">
+                      {{ location_info.priority_level }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- إحداثيات GPS -->
+            {% if location_info.gps_latitude and location_info.gps_longitude %}
+            <div class="gps-coordinates">
+              <h5><i class="fa fa-map-marker text-primary"></i> إحداثيات GPS</h5>
+              <p>
+                <strong>خط العرض:</strong> {{ location_info.gps_latitude|number_format(6) }}<br>
+                <strong>خط الطول:</strong> {{ location_info.gps_longitude|number_format(6) }}
+              </p>
+              <button type="button" class="btn btn-sm btn-info" onclick="showOnMap()">
+                <i class="fa fa-map"></i> عرض على الخريطة
+              </button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- المواقع الفرعية -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-sitemap"></i> المواقع الفرعية
+              <button type="button" class="btn btn-xs btn-success pull-right" data-toggle="modal" data-target="#add-sub-location-modal">
+                <i class="fa fa-plus"></i> إضافة موقع فرعي
+              </button>
+            </h3>
+          </div>
+          <div class="panel-body">
+            {% if sub_locations %}
+            <div class="table-responsive">
+              <table class="table table-striped table-condensed">
+                <thead>
+                  <tr>
+                    <th>اسم الموقع</th>
+                    <th class="text-center">الكود</th>
+                    <th class="text-center">النوع</th>
+                    <th class="text-center">السعة</th>
+                    <th class="text-center">الاستخدام</th>
+                    <th class="text-center">الحالة</th>
+                    <th class="text-center">إجراء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for sub_location in sub_locations %}
+                  <tr>
+                    <td>{{ sub_location.name }}</td>
+                    <td class="text-center">
+                      <span class="label label-info">{{ sub_location.location_code }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="label label-primary">{{ sub_location.location_type }}</span>
+                    </td>
+                    <td class="text-center">{{ sub_location.capacity_units|number_format }}</td>
+                    <td class="text-center">{{ sub_location.current_units|number_format }}</td>
+                    <td class="text-center">
+                      <span class="label label-{% if sub_location.is_active %}success{% else %}danger{% endif %}">
+                        {% if sub_location.is_active %}مفعل{% else %}معطل{% endif %}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <a href="index.php?route=inventory/location_management/view&location_id={{ sub_location.location_id }}&user_token={{ user_token }}" class="btn btn-xs btn-info">
+                        <i class="fa fa-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted">
+              <i class="fa fa-sitemap fa-3x"></i>
+              <p>لا توجد مواقع فرعية</p>
+              <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#add-sub-location-modal">
+                <i class="fa fa-plus"></i> إضافة أول موقع فرعي
+              </button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الباركود و QR Code -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-barcode"></i> الباركود
+            </h3>
+          </div>
+          <div class="panel-body text-center">
+            {% if location_info.barcode %}
+            <div class="barcode-display">
+              <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; border: 1px solid #333; padding: 10px; background: white; display: inline-block;">
+                {{ location_info.barcode }}
+              </div>
+              <p class="text-muted">{{ location_info.barcode }}</p>
+            </div>
+            {% else %}
+            <div class="text-muted">
+              <i class="fa fa-barcode fa-3x"></i>
+              <p>لا يوجد باركود</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-qrcode"></i> QR Code
+            </h3>
+          </div>
+          <div class="panel-body text-center">
+            {% if location_info.qr_code %}
+            <div class="qr-code-display">
+              <div style="width: 150px; height: 150px; border: 1px solid #333; margin: 0 auto; background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEzMCIgaGVpZ2h0PSIxMzAiIGZpbGw9IiNmZmYiLz48L3N2Zz4=') center center; background-size: contain;"></div>
+              <p class="text-muted">{{ location_info.qr_code }}</p>
+            </div>
+            {% else %}
+            <div class="text-muted">
+              <i class="fa fa-qrcode fa-3x"></i>
+              <p>لا يوجد QR Code</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة إضافة موقع فرعي -->
+<div class="modal fade" id="add-sub-location-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-plus"></i> إضافة موقع فرعي</h4>
+      </div>
+      <div class="modal-body">
+        <form id="sub-location-form">
+          <div class="form-group">
+            <label for="sub-location-name">اسم الموقع الفرعي</label>
+            <input type="text" id="sub-location-name" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="sub-location-code">كود الموقع</label>
+            <div class="input-group">
+              <input type="text" id="sub-location-code" class="form-control" required />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-info" onclick="generateSubLocationCode()">
+                  <i class="fa fa-magic"></i>
+                </button>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="sub-location-type">نوع الموقع</label>
+            <select id="sub-location-type" class="form-control" required>
+              <option value="">اختر النوع</option>
+              <option value="zone">منطقة</option>
+              <option value="aisle">ممر</option>
+              <option value="rack">رف</option>
+              <option value="shelf">رفة</option>
+              <option value="bin">صندوق</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="sub-location-capacity">السعة (وحدات)</label>
+            <input type="number" id="sub-location-capacity" class="form-control" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label for="sub-location-description">الوصف</label>
+            <textarea id="sub-location-description" class="form-control" rows="2"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="addSubLocation()">
+          <i class="fa fa-save"></i> حفظ
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة عرض الخريطة -->
+<div class="modal fade" id="map-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-map-marker"></i> موقع {{ location_info.name }} على الخريطة</h4>
+      </div>
+      <div class="modal-body">
+        <div id="location-map" style="height: 400px; border: 1px solid #ddd;"></div>
+        <br>
+        <div class="text-center">
+          <p><strong>الإحداثيات:</strong> {{ location_info.gps_latitude|number_format(6) }}, {{ location_info.gps_longitude|number_format(6) }}</p>
+          <a href="https://www.google.com/maps?q={{ location_info.gps_latitude }},{{ location_info.gps_longitude }}" target="_blank" class="btn btn-primary">
+            <i class="fa fa-external-link"></i> فتح في Google Maps
+          </a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة QR Code -->
+<div class="modal fade" id="qr-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-qrcode"></i> QR Code للموقع</h4>
+      </div>
+      <div class="modal-body text-center">
+        <div id="qr-code-content">
+          <div class="text-center">
+            <i class="fa fa-spinner fa-spin fa-2x"></i>
+            <p>جاري إنشاء QR Code...</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="printQRCode()">طباعة</button>
+        <button type="button" class="btn btn-success" onclick="downloadQRCode()">تحميل</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.location-icon {
+  margin-bottom: 15px;
+}
+
+.label-lg {
+  font-size: 16px;
+  padding: 8px 12px;
+}
+
+.stat-box {
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.stat-box h4 {
+  margin: 10px 0 5px 0;
+  font-weight: bold;
+}
+
+.stat-box p {
+  margin: 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.capacity-section {
+  margin-bottom: 20px;
+}
+
+.capacity-section h5 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.environmental-condition {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.operational-settings {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f0f8ff;
+  border-radius: 4px;
+}
+
+.gps-coordinates {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f0fff0;
+  border-radius: 4px;
+}
+
+.address-details .label {
+  margin-right: 5px;
+  margin-bottom: 5px;
+  display: inline-block;
+}
+
+.barcode-display, .qr-code-display {
+  margin: 15px 0;
+}
+
+.progress {
+  height: 25px;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  line-height: 25px;
+  font-weight: bold;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // تأثيرات بصرية للإحصائيات
+    $('.stat-box h4').each(function() {
+        var $this = $(this);
+        var finalValue = parseInt($this.text().replace(/,/g, ''));
+        if (!isNaN(finalValue)) {
+            $this.text('0');
+
+            $({ counter: 0 }).animate({ counter: finalValue }, {
+                duration: 1500,
+                easing: 'swing',
+                step: function() {
+                    $this.text(Math.ceil(this.counter).toLocaleString());
+                }
+            });
+        }
+    });
+
+    // تأثيرات بصرية لأشرطة التقدم
+    $('.progress-bar').each(function() {
+        var $this = $(this);
+        var width = $this.css('width');
+        $this.css('width', '0%');
+
+        setTimeout(function() {
+            $this.animate({ width: width }, 1000);
+        }, 500);
+    });
+});
+
+function generateQRCode() {
+    $('#qr-modal').modal('show');
+
+    $.ajax({
+        url: 'index.php?route=inventory/location_management/generateQR&user_token={{ user_token }}&location_id={{ location_info.location_id }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.success) {
+                var qrHtml = '<div class="qr-code-display">';
+                qrHtml += '<div style="border: 2px solid #333; padding: 20px; display: inline-block; background: white;">';
+                qrHtml += '<div style="width: 200px; height: 200px; background: url(\'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwMCIvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiNmZmYiLz48L3N2Zz4=\') center center; background-size: contain;"></div>';
+                qrHtml += '</div>';
+                qrHtml += '<br><br><strong>كود الموقع:</strong> ' + data.qr_code;
+                qrHtml += '<br><strong>اسم الموقع:</strong> {{ location_info.name }}';
+                qrHtml += '<br><strong>نوع الموقع:</strong> {{ location_info.location_type }}';
+                qrHtml += '</div>';
+
+                $('#qr-code-content').html(qrHtml);
+            } else {
+                $('#qr-code-content').html('<div class="alert alert-danger">' + data.error + '</div>');
+            }
+        },
+        error: function() {
+            $('#qr-code-content').html('<div class="alert alert-danger">خطأ في إنشاء QR Code</div>');
+        }
+    });
+}
+
+function updateQuantities() {
+    $.ajax({
+        url: 'index.php?route=inventory/location_management/updateQuantities&user_token={{ user_token }}&location_id={{ location_info.location_id }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.error, 'error');
+            }
+        },
+        error: function() {
+            showNotification('خطأ في تحديث الكميات', 'error');
+        }
+    });
+}
+
+function showOnMap() {
+    $('#map-modal').modal('show');
+
+    // محاكاة عرض الخريطة
+    $('#location-map').html('<div class="text-center" style="padding: 150px 0;"><i class="fa fa-map-marker fa-4x text-danger"></i><br><br><h4>{{ location_info.name }}</h4><p>خط العرض: {{ location_info.gps_latitude|number_format(6) }}<br>خط الطول: {{ location_info.gps_longitude|number_format(6) }}</p></div>');
+}
+
+function generateSubLocationCode() {
+    var type = $('#sub-location-type').val();
+    if (!type) {
+        alert('يرجى اختيار نوع الموقع أولاً');
+        return;
+    }
+
+    var prefix = '';
+    switch (type) {
+        case 'zone': prefix = 'ZN'; break;
+        case 'aisle': prefix = 'AI'; break;
+        case 'rack': prefix = 'RK'; break;
+        case 'shelf': prefix = 'SH'; break;
+        case 'bin': prefix = 'BN'; break;
+        default: prefix = 'LC';
+    }
+
+    var randomNum = Math.floor(Math.random() * 9000) + 1000;
+    var code = prefix + randomNum;
+
+    $('#sub-location-code').val(code);
+}
+
+function addSubLocation() {
+    var name = $('#sub-location-name').val();
+    var code = $('#sub-location-code').val();
+    var type = $('#sub-location-type').val();
+    var capacity = $('#sub-location-capacity').val();
+    var description = $('#sub-location-description').val();
+
+    if (!name || !code || !type) {
+        alert('يرجى ملء الحقول المطلوبة');
+        return;
+    }
+
+    // هنا ستتم عملية الإضافة الفعلية عبر AJAX
+    var data = {
+        location_description: {
+            1: {
+                name: name,
+                description: description
+            }
+        },
+        location_code: code,
+        location_type: type,
+        parent_location_id: {{ location_info.location_id }},
+        capacity_units: capacity || 0,
+        is_active: 1
+    };
+
+    $.ajax({
+        url: 'index.php?route=inventory/location_management/add&user_token={{ user_token }}',
+        type: 'POST',
+        data: data,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                showNotification('تم إضافة الموقع الفرعي بنجاح', 'success');
+                $('#add-sub-location-modal').modal('hide');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            } else {
+                showNotification(response.error || 'خطأ في إضافة الموقع الفرعي', 'error');
+            }
+        },
+        error: function() {
+            showNotification('خطأ في إضافة الموقع الفرعي', 'error');
+        }
+    });
+}
+
+function printQRCode() {
+    var printContent = $('#qr-code-content').html();
+    var printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>طباعة QR Code - {{ location_info.name }}</title></head><body>' + printContent + '</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function downloadQRCode() {
+    // محاكاة تحميل QR Code
+    showNotification('سيتم تحميل QR Code قريباً', 'success');
+}
+
+function showNotification(message, type) {
+    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+    var notification = $('<div class="alert ' + alertClass + ' alert-dismissible" style="position: fixed; top: 70px; right: 20px; z-index: 9999; min-width: 300px;"><i class="fa ' + icon + '"></i> ' + message + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+
+    $('body').append(notification);
+
+    setTimeout(function() {
+        notification.fadeOut(function() { notification.remove(); });
+    }, 5000);
+}
+
+// إعادة تعيين النموذج عند إغلاق النافذة
+$('#add-sub-location-modal').on('hidden.bs.modal', function() {
+    $('#sub-location-form')[0].reset();
+});
+
+// تحديث كود الموقع عند تغيير النوع
+$('#sub-location-type').change(function() {
+    if ($(this).val() && !$('#sub-location-code').val()) {
+        generateSubLocationCode();
+    }
+});
+</script>
+
+{{ footer }}

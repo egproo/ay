@@ -1,0 +1,283 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ reply }}" data-toggle="tooltip" title="{{ button_reply }}" class="btn btn-primary"><i class="fa fa-reply"></i></a>
+        <a href="{{ forward }}" data-toggle="tooltip" title="{{ button_forward }}" class="btn btn-info"><i class="fa fa-share"></i></a>
+        {% if is_starred %}
+        <a href="{{ star_toggle }}" data-toggle="tooltip" title="{{ button_unstar }}" class="btn btn-default"><i class="fa fa-star text-warning"></i></a>
+        {% else %}
+        <a href="{{ star_toggle }}" data-toggle="tooltip" title="{{ button_star }}" class="btn btn-default"><i class="fa fa-star-o"></i></a>
+        {% endif %}
+        <a href="{{ delete }}" data-toggle="tooltip" onclick="return confirm('{{ text_confirm_delete }}');" title="{{ button_delete }}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-arrow-left"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-envelope"></i> {{ communication.subject }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="message-header">
+          <div class="row">
+            <div class="col-md-8">
+              <h4>{{ communication.subject }}
+                {% if communication.priority == 'high' %}
+                <span class="label label-danger">{{ text_high }}</span>
+                {% elseif communication.priority == 'urgent' %}
+                <span class="label label-danger">{{ text_urgent }}</span>
+                {% endif %}
+              </h4>
+              <div><strong>{{ text_from }}:</strong> {{ communication.sender_name }}</div>
+              <div><strong>{{ text_to }}:</strong> 
+                {% if recipients %}
+                {% for recipient in recipients %}
+                {{ recipient.name }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+              </div>
+              {% if communication.communication_type == 'announcement' %}
+              <div><span class="label label-primary">{{ text_announcement }}</span></div>
+              {% endif %}
+            </div>
+            <div class="col-md-4 text-right">
+              <div class="message-date">{{ communication.date_added }}</div>
+              {% if communication.has_attachment %}
+              <div><i class="fa fa-paperclip"></i> {{ text_has_attachments }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="message-body">
+          {{ communication.message }}
+        </div>
+        
+        {% if attachments %}
+        <hr>
+        <div class="message-attachments">
+          <h4><i class="fa fa-paperclip"></i> {{ text_attachments }}</h4>
+          <div class="row">
+            {% for attachment in attachments %}
+            <div class="col-md-4">
+              <div class="attachment-box">
+                <a href="{{ attachment.download }}" target="_blank">
+                  <i class="fa fa-file{% if attachment.is_image %}-image{% elseif attachment.is_pdf %}-pdf{% elseif attachment.is_archive %}-archive{% elseif attachment.is_excel %}-excel{% elseif attachment.is_word %}-word{% elseif attachment.is_video %}-video{% elseif attachment.is_audio %}-audio{% endif %}-o fa-2x"></i>
+                  <span>{{ attachment.name }}</span>
+                  <small>{{ attachment.size }}</small>
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        
+        {% if replies %}
+        <hr>
+        <div class="replies">
+          <h4>{{ text_replies }} ({{ replies|length }})</h4>
+          
+          {% for reply in replies %}
+          <div class="panel panel-default reply-panel">
+            <div class="panel-heading">
+              <div class="row">
+                <div class="col-md-8">
+                  <strong>{{ reply.user_name }}</strong>
+                </div>
+                <div class="col-md-4 text-right">
+                  {{ reply.date_added }}
+                </div>
+              </div>
+            </div>
+            <div class="panel-body">
+              {{ reply.message }}
+              
+              {% if reply.attachments %}
+              <hr>
+              <div class="reply-attachments">
+                <h5><i class="fa fa-paperclip"></i> {{ text_attachments }}</h5>
+                <div class="row">
+                  {% for attachment in reply.attachments %}
+                  <div class="col-md-4">
+                    <div class="attachment-box">
+                      <a href="{{ attachment.download }}" target="_blank">
+                        <i class="fa fa-file{% if attachment.is_image %}-image{% elseif attachment.is_pdf %}-pdf{% elseif attachment.is_archive %}-archive{% elseif attachment.is_excel %}-excel{% elseif attachment.is_word %}-word{% elseif attachment.is_video %}-video{% elseif attachment.is_audio %}-audio{% endif %}-o fa-2x"></i>
+                        <span>{{ attachment.name }}</span>
+                        <small>{{ attachment.size }}</small>
+                      </a>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        <hr>
+        
+        <form action="{{ add_reply }}" method="post" enctype="multipart/form-data" id="form-reply" class="form-horizontal">
+          <div class="form-group">
+            <div class="col-sm-12">
+              <textarea name="message" id="input-message" class="form-control" rows="5" placeholder="{{ text_write_reply }}"></textarea>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="col-sm-12">
+              <div class="row" id="attachment-row">
+                <div class="col-sm-12">
+                  <button type="button" id="button-add-attachment" class="btn btn-default"><i class="fa fa-paperclip"></i> {{ button_add_attachment }}</button>
+                  <div id="attachments"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="col-sm-12 text-right">
+              <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> {{ button_send_reply }}</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// File upload handling
+$('#button-add-attachment').on('click', function() {
+  var node = this;
+  
+  $('#form-upload').remove();
+  
+  $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" /></form>');
+  
+  $('#form-upload input[name=\'file\']').trigger('click');
+  
+  $('#form-upload input[name=\'file\']').on('change', function() {
+    $.ajax({
+      url: 'index.php?route=extension/message/upload&token={{ token }}',
+      type: 'post',
+      dataType: 'json',
+      data: new FormData($(this).parent()[0]),
+      cache: false,
+      contentType: false,
+      processData: false,
+      beforeSend: function() {
+        $(node).button('loading');
+      },
+      complete: function() {
+        $(node).button('reset');
+      },
+      success: function(json) {
+        if (json['error']) {
+          alert(json['error']);
+        }
+        
+        if (json['success']) {
+          alert(json['success']);
+          
+          if (json['file']) {
+            var fileHtml = '<div class="attachment-item">' +
+                '<input type="hidden" name="attachment[]" value="' + json['file']['filename'] + ',' + json['file']['mask'] + ',' + json['file']['size'] + ',' + json['file']['type'] + '" />' +
+                '<div class="attachment-info">' +
+                '<i class="fa fa-file"></i> ' + json['file']['mask'] + ' (' + json['file']['size_formatted'] + ')' +
+                ' <button type="button" class="btn btn-danger btn-xs remove-attachment"><i class="fa fa-times"></i></button>' +
+                '</div>' +
+                '</div>';
+            
+            $('#attachments').append(fileHtml);
+          }
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  });
+});
+
+// Remove attachment
+$(document).on('click', '.remove-attachment', function() {
+  $(this).closest('.attachment-item').remove();
+});
+</script>
+
+<style type="text/css">
+.message-header {
+  margin-bottom: 20px;
+}
+.message-body {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+.attachment-box {
+  padding: 10px;
+  margin-bottom: 15px;
+  background: #f5f5f5;
+  border-radius: 3px;
+  text-align: center;
+}
+.attachment-box a {
+  display: block;
+  color: #444;
+}
+.attachment-box i {
+  display: block;
+  margin-bottom: 5px;
+}
+.attachment-box span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attachment-box small {
+  display: block;
+  color: #777;
+}
+.reply-panel {
+  margin-bottom: 15px;
+  box-shadow: none;
+  border-color: #ddd;
+}
+.attachment-item {
+  margin-top: 10px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 3px;
+}
+</style>
+
+{{ footer }} 

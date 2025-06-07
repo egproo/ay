@@ -1,0 +1,236 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-search"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-date-start">{{ entry_date_start }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-date-end">{{ entry_date_end }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-branch">{{ entry_branch }}</label>
+                <select name="filter_branch_id" id="input-branch" class="form-control">
+                  <option value="0">{{ text_all_branches }}</option>
+                  {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {{ branch.branch_id == filter_branch_id ? 'selected="selected"' }}>{{ branch.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-terminal">{{ entry_terminal }}</label>
+                <select name="filter_terminal_id" id="input-terminal" class="form-control">
+                  <option value="0">{{ text_all_terminals }}</option>
+                  {% for terminal in terminals %}
+                  <option value="{{ terminal.terminal_id }}" {{ terminal.terminal_id == filter_terminal_id ? 'selected="selected"' }}>{{ terminal.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 text-right">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-4">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_total_sales }}</h3>
+          </div>
+          <div class="panel-body">
+            <h2 class="text-center">{{ summary.total_sales }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_total_orders }}</h3>
+          </div>
+          <div class="panel-body">
+            <h2 class="text-center">{{ summary.total_orders }}</h2>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_avg_order }}</h3>
+          </div>
+          <div class="panel-body">
+            <h2 class="text-center">{{ summary.avg_order }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">{{ text_payment_methods }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-left">{{ column_payment_method }}</td>
+                    <td class="text-right">{{ column_count }}</td>
+                    <td class="text-right">{{ column_total }}</td>
+                    <td class="text-right">{{ column_percentage }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if payment_methods %}
+                  {% for method in payment_methods %}
+                  <tr>
+                    <td class="text-left">{{ method.payment_method }}</td>
+                    <td class="text-right">{{ method.count }}</td>
+                    <td class="text-right">{{ method.total }}</td>
+                    <td class="text-right">{{ method.percentage }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td class="text-center" colspan="4">{{ text_no_results }}</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_sales_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td class="text-left">{{ column_order_id }}</td>
+                <td class="text-left">{{ column_date }}</td>
+                <td class="text-left">{{ column_customer }}</td>
+                <td class="text-left">{{ column_cashier }}</td>
+                <td class="text-left">{{ column_terminal }}</td>
+                <td class="text-right">{{ column_products }}</td>
+                <td class="text-right">{{ column_total }}</td>
+                <td class="text-left">{{ column_payment_method }}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if sales %}
+              {% for sale in sales %}
+              <tr>
+                <td class="text-left">{{ sale.order_id }}</td>
+                <td class="text-left">{{ sale.date_added }}</td>
+                <td class="text-left">{{ sale.customer_name }}</td>
+                <td class="text-left">{{ sale.user_name }}</td>
+                <td class="text-left">{{ sale.terminal_name }}</td>
+                <td class="text-right">{{ sale.products }}</td>
+                <td class="text-right">{{ sale.total }}</td>
+                <td class="text-left">{{ sale.payment_method }}</td>
+                <td class="text-right">
+                  <a href="{{ sale.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fa fa-eye"></i></a>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="9">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $('.date').datetimepicker({
+    pickTime: false
+  });
+  
+  $('#button-filter').on('click', function() {
+    var url = 'index.php?route=pos/reports/sales&user_token={{ user_token }}';
+    
+    var filter_date_start = $('input[name=\'filter_date_start\']').val();
+    if (filter_date_start) {
+      url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+    }
+    
+    var filter_date_end = $('input[name=\'filter_date_end\']').val();
+    if (filter_date_end) {
+      url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+    }
+    
+    var filter_branch_id = $('select[name=\'filter_branch_id\']').val();
+    if (filter_branch_id) {
+      url += '&filter_branch_id=' + encodeURIComponent(filter_branch_id);
+    }
+    
+    var filter_terminal_id = $('select[name=\'filter_terminal_id\']').val();
+    if (filter_terminal_id) {
+      url += '&filter_terminal_id=' + encodeURIComponent(filter_terminal_id);
+    }
+    
+    location = url;
+  });
+});
+</script>
+{{ footer }}

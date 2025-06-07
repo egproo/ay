@@ -1,0 +1,586 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+          <i class="fa fa-plus"></i>
+        </a>
+        <a href="{{ import }}" data-toggle="tooltip" title="{{ button_import }}" class="btn btn-success">
+          <i class="fa fa-upload"></i>
+        </a>
+        <a href="{{ export_excel }}" data-toggle="tooltip" title="{{ button_export_excel }}" class="btn btn-info">
+          <i class="fa fa-download"></i>
+        </a>
+        <a href="{{ bulk_update }}" data-toggle="tooltip" title="{{ button_bulk_update }}" class="btn btn-warning">
+          <i class="fa fa-edit"></i>
+        </a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-product').submit() : false;">
+          <i class="fa fa-trash-o"></i>
+        </button>
+        <a href="{{ refresh }}" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-default">
+          <i class="fa fa-refresh"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <!-- إحصائيات المنتجات -->
+    <div class="row">
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-cubes fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.total_products }}</div>
+                <div>{{ text_total_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.active_products }}</div>
+                <div>{{ text_active_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exclamation-triangle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.low_stock_products }}</div>
+                <div>{{ text_low_stock_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-danger">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-times-circle fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.out_of_stock_products }}</div>
+                <div>{{ text_out_of_stock_products }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-money fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.total_inventory_value }}</div>
+                <div>{{ text_total_inventory_value }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6">
+        <div class="panel panel-purple">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-line-chart fa-2x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.avg_selling_price }}</div>
+                <div>{{ text_avg_selling_price }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- تحليلات سريعة -->
+    <div class="row">
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-trophy"></i> {{ text_top_selling_products }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if top_selling_products %}
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>المنتج</th>
+                    <th class="text-center">المبيعات</th>
+                    <th class="text-center">الإيراد</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for product in top_selling_products %}
+                  <tr>
+                    <td>
+                      <strong>{{ product.name }}</strong>
+                      <br><small class="text-muted">{{ product.model }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-success">{{ product.total_sold }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="text-success">{{ product.total_revenue }}</span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">لا توجد بيانات مبيعات</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-exclamation-triangle"></i> {{ text_low_stock_alert }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if low_stock_products %}
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>المنتج</th>
+                    <th class="text-center">المتاح</th>
+                    <th class="text-center">الحد الأدنى</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for product in low_stock_products %}
+                  <tr>
+                    <td>
+                      <strong>{{ product.name }}</strong>
+                      <br><small class="text-muted">{{ product.sku }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-warning">{{ product.available_quantity }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="text-muted">{{ product.reorder_level }}</span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">لا توجد منتجات منخفضة المخزون</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-arrow-up"></i> {{ text_overstock_alert }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if overstock_products %}
+            <div class="table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th>المنتج</th>
+                    <th class="text-center">المتاح</th>
+                    <th class="text-center">الحد الأقصى</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for product in overstock_products %}
+                  <tr>
+                    <td>
+                      <strong>{{ product.name }}</strong>
+                      <br><small class="text-muted">{{ product.sku }}</small>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-info">{{ product.available_quantity }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="text-muted">{{ product.max_stock_level }}</span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center">لا توجد منتجات عالية المخزون</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- الفلاتر المتقدمة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-filter"></i> فلاتر البحث المتقدم
+          <button type="button" class="btn btn-xs btn-default pull-right" data-toggle="collapse" data-target="#filter-panel">
+            <i class="fa fa-chevron-down"></i>
+          </button>
+        </h3>
+      </div>
+      <div id="filter-panel" class="panel-collapse collapse">
+        <div class="panel-body">
+          <form method="get" id="filter-form">
+            <input type="hidden" name="route" value="inventory/product_management" />
+            <input type="hidden" name="user_token" value="{{ user_token }}" />
+            
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_name">{{ entry_filter_name }}</label>
+                  <input type="text" name="filter_name" value="{{ filter_name }}" placeholder="{{ entry_filter_name }}" id="filter_name" class="form-control" />
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_model">{{ entry_filter_model }}</label>
+                  <input type="text" name="filter_model" value="{{ filter_model }}" placeholder="{{ entry_filter_model }}" id="filter_model" class="form-control" />
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_sku">{{ entry_filter_sku }}</label>
+                  <input type="text" name="filter_sku" value="{{ filter_sku }}" placeholder="{{ entry_filter_sku }}" id="filter_sku" class="form-control" />
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_manufacturer">{{ entry_filter_manufacturer }}</label>
+                  <select name="filter_manufacturer_id" id="filter_manufacturer" class="form-control">
+                    <option value="">{{ text_all }}</option>
+                    {% for manufacturer in manufacturers %}
+                    <option value="{{ manufacturer.manufacturer_id }}"{% if manufacturer.manufacturer_id == filter_manufacturer_id %} selected="selected"{% endif %}>{{ manufacturer.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_category">{{ entry_filter_category }}</label>
+                  <select name="filter_category_id" id="filter_category" class="form-control">
+                    <option value="">{{ text_all }}</option>
+                    {% for category in categories %}
+                    <option value="{{ category.category_id }}"{% if category.category_id == filter_category_id %} selected="selected"{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_status">{{ entry_filter_status }}</label>
+                  <select name="filter_status" id="filter_status" class="form-control">
+                    {% for option in status_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_status %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label for="filter_stock_status">{{ entry_filter_stock_status }}</label>
+                  <select name="filter_stock_status" id="filter_stock_status" class="form-control">
+                    {% for option in stock_status_options %}
+                    <option value="{{ option.value }}"{% if option.value == filter_stock_status %} selected="selected"{% endif %}>{{ option.text }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              
+              <div class="col-md-3">
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <div>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                    <a href="{{ refresh }}" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_clear }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="filter_price_from">{{ entry_filter_price_from }}</label>
+                  <input type="number" name="filter_price_from" value="{{ filter_price_from }}" placeholder="0.00" id="filter_price_from" class="form-control" step="0.01" />
+                </div>
+              </div>
+              
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="filter_price_to">{{ entry_filter_price_to }}</label>
+                  <input type="number" name="filter_price_to" value="{{ filter_price_to }}" placeholder="0.00" id="filter_price_to" class="form-control" step="0.01" />
+                </div>
+              </div>
+              
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="filter_quantity_from">{{ entry_filter_quantity_from }}</label>
+                  <input type="number" name="filter_quantity_from" value="{{ filter_quantity_from }}" placeholder="0" id="filter_quantity_from" class="form-control" />
+                </div>
+              </div>
+              
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="filter_quantity_to">{{ entry_filter_quantity_to }}</label>
+                  <input type="number" name="filter_quantity_to" value="{{ filter_quantity_to }}" placeholder="0" id="filter_quantity_to" class="form-control" />
+                </div>
+              </div>
+              
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="filter_date_from">{{ entry_filter_date_from }}</label>
+                  <input type="date" name="filter_date_from" value="{{ filter_date_from }}" id="filter_date_from" class="form-control" />
+                </div>
+              </div>
+              
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label for="filter_date_to">{{ entry_filter_date_to }}</label>
+                  <input type="date" name="filter_date_to" value="{{ filter_date_to }}" id="filter_date_to" class="form-control" />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- جدول المنتجات -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-product">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center">
+                    <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                  </td>
+                  <td class="text-center">{{ column_image }}</td>
+                  <td>{{ column_name }}</td>
+                  <td>{{ column_model }}</td>
+                  <td>{{ column_sku }}</td>
+                  <td>{{ column_manufacturer }}</td>
+                  <td class="text-right">{{ column_price }}</td>
+                  <td class="text-center">{{ column_quantity }}</td>
+                  <td class="text-center">{{ column_barcode_count }}</td>
+                  <td class="text-center">{{ column_stock_status }}</td>
+                  <td class="text-center">{{ column_status }}</td>
+                  <td>{{ column_date_added }}</td>
+                  <td class="text-center">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if products %}
+                {% for product in products %}
+                <tr>
+                  <td class="text-center">
+                    <input type="checkbox" name="selected[]" value="{{ product.product_id }}" />
+                  </td>
+                  <td class="text-center">
+                    {% if product.image %}
+                    <img src="{{ product.image }}" alt="{{ product.name }}" class="img-thumbnail" style="width: 40px; height: 40px;" />
+                    {% else %}
+                    <span class="img-thumbnail" style="width: 40px; height: 40px; display: inline-block;">
+                      <i class="fa fa-camera fa-2x text-muted"></i>
+                    </span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <strong>{{ product.name }}</strong>
+                    {% if product.model %}
+                    <br><small class="text-muted">{{ product.model }}</small>
+                    {% endif %}
+                  </td>
+                  <td>{{ product.model }}</td>
+                  <td><code>{{ product.sku }}</code></td>
+                  <td>{{ product.manufacturer }}</td>
+                  <td class="text-right">
+                    <strong>{{ product.basic_price }}</strong>
+                    {% if product.offer_price > 0 %}
+                    <br><small class="text-success">عرض: {{ product.offer_price }}</small>
+                    {% endif %}
+                    {% if product.wholesale_price > 0 %}
+                    <br><small class="text-info">جملة: {{ product.wholesale_price }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <span class="badge badge-{{ product.stock_status_class }}">{{ product.available_quantity }}</span>
+                    {% if product.reorder_level > 0 %}
+                    <br><small class="text-muted">حد: {{ product.reorder_level }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <span class="badge badge-primary">{{ product.barcode_count }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="label label-{{ product.stock_status_class }}">{{ product.stock_status_text }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="label label-{{ product.status_class }}">{{ product.status_text }}</span>
+                  </td>
+                  <td>
+                    {{ product.date_added }}
+                    {% if product.last_movement_date != 'أبداً' %}
+                    <br><small class="text-muted">آخر حركة: {{ product.last_movement_date }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <div class="btn-group">
+                      <a href="{{ product.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info btn-xs">
+                        <i class="fa fa-eye"></i>
+                      </a>
+                      <a href="{{ product.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-xs">
+                        <i class="fa fa-pencil"></i>
+                      </a>
+                      <a href="{{ product.copy }}" data-toggle="tooltip" title="{{ button_copy }}" class="btn btn-success btn-xs">
+                        <i class="fa fa-copy"></i>
+                      </a>
+                      <a href="{{ product.manage_barcodes }}" data-toggle="tooltip" title="{{ button_manage_barcodes }}" class="btn btn-warning btn-xs">
+                        <i class="fa fa-qrcode"></i>
+                      </a>
+                      <a href="{{ product.stock_movements }}" data-toggle="tooltip" title="{{ button_stock_movements }}" class="btn btn-default btn-xs">
+                        <i class="fa fa-history"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="13">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.huge { font-size: 28px; }
+.panel-green { border-color: #5cb85c; }
+.panel-green > .panel-heading { border-color: #5cb85c; color: white; background-color: #5cb85c; }
+.panel-purple { border-color: #9b59b6; }
+.panel-purple > .panel-heading { border-color: #9b59b6; color: white; background-color: #9b59b6; }
+.badge-primary { background-color: #337ab7; }
+.badge-success { background-color: #5cb85c; }
+.badge-warning { background-color: #f0ad4e; }
+.badge-info { background-color: #5bc0de; }
+.badge-danger { background-color: #d9534f; }
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // تحديث تلقائي للإحصائيات
+    setInterval(function() {
+        if ($('.huge').length > 0) {
+            // تحديث الإحصائيات كل 5 دقائق
+            location.reload();
+        }
+    }, 300000);
+    
+    // تأثيرات بصرية للإحصائيات
+    $('.huge').each(function() {
+        var $this = $(this);
+        var finalValue = parseInt($this.text().replace(/,/g, ''));
+        if (!isNaN(finalValue)) {
+            $this.text('0');
+            
+            $({ counter: 0 }).animate({ counter: finalValue }, {
+                duration: 1500,
+                easing: 'swing',
+                step: function() {
+                    $this.text(Math.ceil(this.counter).toLocaleString());
+                }
+            });
+        }
+    });
+});
+</script>
+
+{{ footer }}

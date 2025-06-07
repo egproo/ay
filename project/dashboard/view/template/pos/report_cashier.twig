@@ -1,0 +1,207 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-search"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-date-start">{{ entry_date_start }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-date-end">{{ entry_date_end }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                  <span class="input-group-btn">
+                    <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-user">{{ entry_user }}</label>
+                <select name="filter_user_id" id="input-user" class="form-control">
+                  <option value="0">{{ text_all_users }}</option>
+                  {% for user in users %}
+                  <option value="{{ user.user_id }}" {{ user.user_id == filter_user_id ? 'selected="selected"' }}>{{ user.firstname }} {{ user.lastname }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 text-right">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-users"></i> {{ text_user_summary }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td class="text-left">{{ column_user }}</td>
+                <td class="text-right">{{ column_shifts }}</td>
+                <td class="text-right">{{ column_hours }}</td>
+                <td class="text-right">{{ column_sales }}</td>
+                <td class="text-right">{{ column_sales_total }}</td>
+                <td class="text-right">{{ column_avg_sale }}</td>
+                <td class="text-right">{{ column_sales_per_hour }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if user_summary %}
+              {% for summary in user_summary %}
+              <tr>
+                <td class="text-left">{{ summary.user_name }}</td>
+                <td class="text-right">{{ summary.shifts_count }}</td>
+                <td class="text-right">{{ summary.total_hours }}</td>
+                <td class="text-right">{{ summary.sales_count }}</td>
+                <td class="text-right">{{ summary.sales_total }}</td>
+                <td class="text-right">{{ summary.avg_sale }}</td>
+                <td class="text-right">{{ summary.sales_per_hour }}</td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_shifts_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td class="text-left">{{ column_shift_id }}</td>
+                <td class="text-left">{{ column_user }}</td>
+                <td class="text-left">{{ column_terminal }}</td>
+                <td class="text-left">{{ column_start_time }}</td>
+                <td class="text-left">{{ column_end_time }}</td>
+                <td class="text-right">{{ column_duration }}</td>
+                <td class="text-right">{{ column_sales }}</td>
+                <td class="text-right">{{ column_sales_total }}</td>
+                <td class="text-right">{{ column_cash_difference }}</td>
+                <td class="text-center">{{ column_status }}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if shifts %}
+              {% for shift in shifts %}
+              <tr>
+                <td class="text-left">{{ shift.shift_id }}</td>
+                <td class="text-left">{{ shift.user_name }}</td>
+                <td class="text-left">{{ shift.terminal_name }}</td>
+                <td class="text-left">{{ shift.start_time }}</td>
+                <td class="text-left">{{ shift.end_time }}</td>
+                <td class="text-right">{{ shift.duration }}</td>
+                <td class="text-right">{{ shift.sales_count }}</td>
+                <td class="text-right">{{ shift.sales_total }}</td>
+                <td class="text-right">
+                  {% if shift.cash_difference > 0 %}
+                  <span class="text-success">+{{ shift.cash_difference }}</span>
+                  {% elseif shift.cash_difference < 0 %}
+                  <span class="text-danger">{{ shift.cash_difference }}</span>
+                  {% else %}
+                  {{ shift.cash_difference ? shift.cash_difference : '-' }}
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  {% if shift.status == text_status_active %}
+                  <span class="label label-success">{{ shift.status }}</span>
+                  {% elseif shift.status == text_status_closed %}
+                  <span class="label label-warning">{{ shift.status }}</span>
+                  {% elseif shift.status == text_status_balanced %}
+                  <span class="label label-info">{{ shift.status }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  <a href="{{ shift.view }}" data-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fa fa-eye"></i></a>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="11">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+$('.date').datetimepicker({
+    pickTime: false
+  });
+  
+  $('#button-filter').on('click', function() {
+    var url = 'index.php?route=pos/reports/cashier&user_token={{ user_token }}';
+    
+    var filter_date_start = $('input[name=\'filter_date_start\']').val();
+    if (filter_date_start) {
+      url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+    }
+    
+    var filter_date_end = $('input[name=\'filter_date_end\']').val();
+    if (filter_date_end) {
+      url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+    }
+    
+    var filter_user_id = $('select[name=\'filter_user_id\']').val();
+    if (filter_user_id) {
+      url += '&filter_user_id=' + encodeURIComponent(filter_user_id);
+    }
+    
+    location = url;
+  });
+});
+</script>
+{{ footer }}

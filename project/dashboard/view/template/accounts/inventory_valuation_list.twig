@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    font-size:14px;
+    text-align:left;
+}
+th {
+    background:#eee;
+}
+.summary {
+    margin-top:20px;
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_inventory_valuation }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_product_name }}</th>
+    <th>{{ text_opening_qty }}</th>
+    <th>{{ text_in_qty }}</th>
+    <th>{{ text_out_qty }}</th>
+    <th>{{ text_closing_qty }}</th>
+    <th>{{ text_average_cost }}</th>
+    <th>{{ text_inventory_value }}</th>
+</tr>
+</thead>
+<tbody>
+{% for product in products %}
+<tr>
+    <td>{{ product.product_name }}</td>
+    <td>{{ product.opening_qty }}</td>
+    <td>{{ product.in_qty }}</td>
+    <td>{{ product.out_qty }}</td>
+    <td>{{ product.closing_qty }}</td>
+    <td>{{ product.average_cost }}</td>
+    <td>{{ product.inventory_value }}</td>
+</tr>
+{% endfor %}
+{% if products is empty %}
+<tr><td colspan="7" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="summary">
+    <strong>{{ text_total_value }}: {{ total_value }}</strong>
+</div>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

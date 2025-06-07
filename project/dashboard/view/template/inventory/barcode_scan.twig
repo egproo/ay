@@ -1,0 +1,505 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="start-camera" class="btn btn-success">
+          <i class="fa fa-camera"></i> تشغيل الكاميرا
+        </button>
+        <button type="button" id="stop-camera" class="btn btn-warning" style="display: none;">
+          <i class="fa fa-stop"></i> إيقاف الكاميرا
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - مسح الباركود</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <div class="row">
+      <!-- منطقة المسح -->
+      <div class="col-md-8">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-qrcode"></i> مسح الباركود</h3>
+          </div>
+          <div class="panel-body">
+            <!-- مسح يدوي -->
+            <div class="form-group">
+              <label for="barcode-input">أدخل الباركود يدوياً أو امسحه:</label>
+              <div class="input-group input-group-lg">
+                <input type="text" id="barcode-input" class="form-control" placeholder="امسح الباركود أو اكتبه هنا..." autofocus />
+                <span class="input-group-btn">
+                  <button type="button" id="scan-button" class="btn btn-primary">
+                    <i class="fa fa-search"></i> بحث
+                  </button>
+                </span>
+              </div>
+              <div class="help-block">
+                <i class="fa fa-info-circle"></i> 
+                يمكنك استخدام قارئ الباركود أو كتابة الباركود يدوياً ثم الضغط على Enter أو زر البحث
+              </div>
+            </div>
+            
+            <!-- مسح بالكاميرا -->
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <h4 class="panel-title">مسح بالكاميرا</h4>
+              </div>
+              <div class="panel-body text-center">
+                <div id="camera-container" style="display: none;">
+                  <video id="camera-preview" width="100%" height="300" style="border: 2px solid #ddd; border-radius: 5px;"></video>
+                  <canvas id="camera-canvas" style="display: none;"></canvas>
+                  <div class="camera-overlay">
+                    <div class="scan-line"></div>
+                    <div class="scan-corners">
+                      <div class="corner top-left"></div>
+                      <div class="corner top-right"></div>
+                      <div class="corner bottom-left"></div>
+                      <div class="corner bottom-right"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div id="camera-placeholder" class="camera-placeholder">
+                  <i class="fa fa-camera fa-5x text-muted"></i>
+                  <br><br>
+                  <p class="text-muted">اضغط على "تشغيل الكاميرا" لبدء مسح الباركود بالكاميرا</p>
+                </div>
+                
+                <div id="camera-status" class="alert alert-info" style="margin-top: 15px; display: none;">
+                  <i class="fa fa-info-circle"></i> <span id="status-text">جاري تحضير الكاميرا...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- نتائج المسح -->
+      <div class="col-md-4">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-check-circle"></i> نتيجة المسح</h3>
+          </div>
+          <div class="panel-body">
+            <div id="scan-result" style="display: none;">
+              <!-- سيتم ملء النتائج هنا -->
+            </div>
+            
+            <div id="scan-placeholder" class="text-center text-muted">
+              <i class="fa fa-search fa-3x"></i>
+              <br><br>
+              <p>لم يتم مسح أي باركود بعد</p>
+              <small>امسح باركود لعرض معلومات المنتج</small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- سجل المسح الأخير -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-history"></i> آخر عمليات المسح</h3>
+          </div>
+          <div class="panel-body">
+            <div id="recent-scans">
+              <p class="text-muted text-center">لا توجد عمليات مسح حديثة</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.camera-placeholder {
+    padding: 60px 20px;
+    border: 2px dashed #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+#camera-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 500px;
+}
+
+.camera-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.scan-line {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff0000, transparent);
+    animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+    0% { transform: translateY(-100px); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(100px); opacity: 0; }
+}
+
+.scan-corners {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    right: 20%;
+    bottom: 20%;
+}
+
+.corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #00ff00;
+}
+
+.corner.top-left {
+    top: 0;
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+}
+
+.corner.top-right {
+    top: 0;
+    right: 0;
+    border-left: none;
+    border-bottom: none;
+}
+
+.corner.bottom-left {
+    bottom: 0;
+    left: 0;
+    border-right: none;
+    border-top: none;
+}
+
+.corner.bottom-right {
+    bottom: 0;
+    right: 0;
+    border-left: none;
+    border-top: none;
+}
+
+.scan-result-item {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+}
+
+.scan-result-success {
+    border-color: #5cb85c;
+    background-color: #dff0d8;
+}
+
+.scan-result-error {
+    border-color: #d9534f;
+    background-color: #f2dede;
+}
+
+.recent-scan-item {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+}
+
+.recent-scan-item:last-child {
+    border-bottom: none;
+}
+
+.barcode-display {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    background-color: #f5f5f5;
+    padding: 5px 8px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.product-info {
+    margin-top: 10px;
+}
+
+.product-info .row > div {
+    margin-bottom: 8px;
+}
+
+.stock-status {
+    font-weight: bold;
+}
+
+.stock-available {
+    color: #5cb85c;
+}
+
+.stock-low {
+    color: #f0ad4e;
+}
+
+.stock-out {
+    color: #d9534f;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    let camera = null;
+    let scanning = false;
+    let recentScans = [];
+    
+    // مسح يدوي
+    $('#barcode-input').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            performScan();
+        }
+    });
+    
+    $('#scan-button').on('click', function() {
+        performScan();
+    });
+    
+    // تشغيل الكاميرا
+    $('#start-camera').on('click', function() {
+        startCamera();
+    });
+    
+    // إيقاف الكاميرا
+    $('#stop-camera').on('click', function() {
+        stopCamera();
+    });
+    
+    function performScan() {
+        const barcodeValue = $('#barcode-input').val().trim();
+        
+        if (!barcodeValue) {
+            alert('يرجى إدخال قيمة الباركود');
+            return;
+        }
+        
+        // إظهار حالة التحميل
+        showScanStatus('جاري البحث...', 'info');
+        
+        $.ajax({
+            url: '{{ action }}',
+            type: 'POST',
+            data: { barcode_value: barcodeValue },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    showScanResult(response.data, true);
+                    addToRecentScans(barcodeValue, response.data.product_name, true);
+                } else {
+                    showScanResult({ barcode_value: barcodeValue, error: response.error }, false);
+                    addToRecentScans(barcodeValue, 'غير موجود', false);
+                }
+                
+                // مسح الحقل
+                $('#barcode-input').val('').focus();
+            },
+            error: function() {
+                showScanResult({ barcode_value: barcodeValue, error: 'حدث خطأ في الاتصال' }, false);
+                addToRecentScans(barcodeValue, 'خطأ', false);
+                $('#barcode-input').val('').focus();
+            },
+            complete: function() {
+                hideScanStatus();
+            }
+        });
+    }
+    
+    function showScanResult(data, success) {
+        $('#scan-placeholder').hide();
+        
+        let html = '<div class="scan-result-item ' + (success ? 'scan-result-success' : 'scan-result-error') + '">';
+        
+        if (success) {
+            html += '<h4><i class="fa fa-check-circle text-success"></i> تم العثور على المنتج</h4>';
+            html += '<div class="product-info">';
+            html += '<div class="row">';
+            html += '<div class="col-xs-12"><strong>' + data.product_name + '</strong></div>';
+            if (data.model) {
+                html += '<div class="col-xs-12"><small class="text-muted">موديل: ' + data.model + '</small></div>';
+            }
+            html += '<div class="col-xs-12"><span class="barcode-display">' + data.barcode_value + '</span></div>';
+            if (data.unit_name) {
+                html += '<div class="col-xs-12"><small>الوحدة: ' + data.unit_name + '</small></div>';
+            }
+            if (data.stock_quantity !== undefined) {
+                let stockClass = 'stock-available';
+                if (data.stock_quantity <= 0) stockClass = 'stock-out';
+                else if (data.stock_quantity <= 10) stockClass = 'stock-low';
+                
+                html += '<div class="col-xs-12"><span class="stock-status ' + stockClass + '">المخزون: ' + data.stock_quantity + '</span></div>';
+            }
+            if (data.price) {
+                html += '<div class="col-xs-12"><strong>السعر: ' + data.price + '</strong></div>';
+            }
+            html += '</div>';
+            html += '</div>';
+        } else {
+            html += '<h4><i class="fa fa-times-circle text-danger"></i> لم يتم العثور على المنتج</h4>';
+            html += '<div class="barcode-display">' + data.barcode_value + '</div>';
+            html += '<p class="text-danger">' + (data.error || 'الباركود غير موجود في النظام') + '</p>';
+        }
+        
+        html += '</div>';
+        
+        $('#scan-result').html(html).show();
+        
+        // تأثير صوتي (اختياري)
+        if (success) {
+            playSuccessSound();
+        } else {
+            playErrorSound();
+        }
+    }
+    
+    function addToRecentScans(barcode, productName, success) {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('ar-EG');
+        
+        recentScans.unshift({
+            barcode: barcode,
+            product: productName,
+            time: timeString,
+            success: success
+        });
+        
+        // الاحتفاظ بآخر 10 عمليات فقط
+        if (recentScans.length > 10) {
+            recentScans = recentScans.slice(0, 10);
+        }
+        
+        updateRecentScansDisplay();
+    }
+    
+    function updateRecentScansDisplay() {
+        if (recentScans.length === 0) {
+            $('#recent-scans').html('<p class="text-muted text-center">لا توجد عمليات مسح حديثة</p>');
+            return;
+        }
+        
+        let html = '';
+        recentScans.forEach(function(scan) {
+            html += '<div class="recent-scan-item">';
+            html += '<div class="row">';
+            html += '<div class="col-xs-8">';
+            html += '<strong class="' + (scan.success ? 'text-success' : 'text-danger') + '">' + scan.product + '</strong><br>';
+            html += '<small class="text-muted">' + scan.barcode + '</small>';
+            html += '</div>';
+            html += '<div class="col-xs-4 text-right">';
+            html += '<small class="text-muted">' + scan.time + '</small>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+        });
+        
+        $('#recent-scans').html(html);
+    }
+    
+    function showScanStatus(message, type) {
+        $('#camera-status')
+            .removeClass('alert-info alert-success alert-warning alert-danger')
+            .addClass('alert-' + type)
+            .find('#status-text').text(message);
+        $('#camera-status').show();
+    }
+    
+    function hideScanStatus() {
+        $('#camera-status').hide();
+    }
+    
+    function startCamera() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            showScanStatus('جاري تشغيل الكاميرا...', 'info');
+            
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(function(stream) {
+                    camera = stream;
+                    const video = document.getElementById('camera-preview');
+                    video.srcObject = stream;
+                    video.play();
+                    
+                    $('#camera-placeholder').hide();
+                    $('#camera-container').show();
+                    $('#start-camera').hide();
+                    $('#stop-camera').show();
+                    
+                    showScanStatus('الكاميرا جاهزة - وجه الكاميرا نحو الباركود', 'success');
+                    
+                    // بدء المسح التلقائي (يتطلب مكتبة إضافية مثل QuaggaJS)
+                    // startBarcodeDetection();
+                })
+                .catch(function(error) {
+                    console.error('خطأ في تشغيل الكاميرا:', error);
+                    showScanStatus('فشل في تشغيل الكاميرا. تأكد من السماح بالوصول للكاميرا.', 'danger');
+                });
+        } else {
+            showScanStatus('الكاميرا غير مدعومة في هذا المتصفح', 'warning');
+        }
+    }
+    
+    function stopCamera() {
+        if (camera) {
+            camera.getTracks().forEach(track => track.stop());
+            camera = null;
+        }
+        
+        $('#camera-container').hide();
+        $('#camera-placeholder').show();
+        $('#start-camera').show();
+        $('#stop-camera').hide();
+        
+        hideScanStatus();
+    }
+    
+    function playSuccessSound() {
+        // يمكن إضافة صوت نجاح هنا
+        try {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+            audio.play();
+        } catch (e) {
+            // تجاهل الأخطاء الصوتية
+        }
+    }
+    
+    function playErrorSound() {
+        // يمكن إضافة صوت خطأ هنا
+    }
+    
+    // تركيز تلقائي على حقل الإدخال
+    $('#barcode-input').focus();
+    
+    // منع إرسال النموذج عند الضغط على Enter
+    $(document).on('keypress', function(e) {
+        if (e.which === 13 && e.target.id === 'barcode-input') {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+{{ footer }}

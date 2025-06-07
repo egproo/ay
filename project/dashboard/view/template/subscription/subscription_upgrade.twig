@@ -1,0 +1,348 @@
+{# صفحة ترقية الاشتراك #}
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-arrow-up"></i> {{ text_choose_plan }}</h3>
+      </div>
+      <div class="panel-body">
+        <div x-data="upgradeForm">
+          <form id="upgrade-form" class="form-horizontal" @submit.prevent="submitForm">
+            <!-- الخطة الحالية -->
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ text_current_plan }}</label>
+              <div class="col-sm-10">
+                <p class="form-control-static">
+                  <strong>{{ current_subscription.plan_name|default('—') }}</strong>
+                  {% if current_subscription.expiry_date_formatted %}
+                  <span class="text-muted"> ({{ text_expiry }}: {{ current_subscription.expiry_date_formatted }})</span>
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+            
+            <!-- اختيار الخطة الجديدة -->
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-plan">{{ text_choose_plan }}</label>
+              <div class="col-sm-10">
+                <div class="row">
+                  {% for plan in plans %}
+                    {% if plan.plan_id != current_subscription.plan_id %}
+                      <div class="col-sm-4">
+                        <div class="plan-option">
+                          <div class="plan-radio">
+                            <input type="radio" name="plan_id" id="plan-{{ plan.plan_id }}" value="{{ plan.plan_id }}" 
+                                  x-model="formData.plan_id" {% if plan.recommended %}checked{% endif %}>
+                            <label for="plan-{{ plan.plan_id }}">
+                              <span class="plan-name">{{ plan.plan_name }}</span>
+                              {% if plan.recommended %}
+                              <span class="label label-success">{{ text_recommended }}</span>
+                              {% endif %}
+                            </label>
+                          </div>
+                          <div class="plan-price">{{ plan.price_formatted }}<span class="text-muted"> / {{ text_month }}</span></div>
+                          <div class="plan-details">
+                            <ul class="list-unstyled">
+                              {% for feature in plan.features_array %}
+                                <li><i class="fa fa-check text-success"></i> {{ feature }}</li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+                <div class="text-danger" x-show="errors.plan_id" x-text="errors.plan_id"></div>
+              </div>
+            </div>
+            
+            <!-- خيارات الدفع -->
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ text_payment_method }}</label>
+              <div class="col-sm-10">
+                <div class="payment-methods">
+                  {% for method in payment_methods %}
+                    <div class="payment-method">
+                      <input type="radio" name="payment_method" id="payment-{{ method.code }}" value="{{ method.code }}" 
+                             x-model="formData.payment_method">
+                      <label for="payment-{{ method.code }}">
+                        <i class="fa {{ method.icon }}"></i> {{ method.name }}
+                      </label>
+                    </div>
+                  {% endfor %}
+                </div>
+                <div class="text-danger" x-show="errors.payment_method" x-text="errors.payment_method"></div>
+              </div>
+            </div>
+            
+            <!-- مقارنة الخطط -->
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ text_plan_comparison }}</label>
+              <div class="col-sm-10">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <th>{{ text_feature }}</th>
+                        <th>{{ current_subscription.plan_name|default(text_current_plan) }}</th>
+                        <template x-for="plan in selectedPlanDetails">
+                          <th x-text="plan.plan_name"></th>
+                        </template>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- المساحة التخزينية -->
+                      <tr>
+                        <td>{{ text_storage }}</td>
+                        <td>{{ current_subscription.storage|default('—') }}</td>
+                        <template x-for="plan in selectedPlanDetails">
+                          <td x-text="plan.storage"></td>
+                        </template>
+                      </tr>
+                      <!-- حركة البيانات -->
+                      <tr>
+                        <td>{{ text_traffic }}</td>
+                        <td>{{ current_subscription.traffic|default('—') }}</td>
+                        <template x-for="plan in selectedPlanDetails">
+                          <td x-text="plan.traffic"></td>
+                        </template>
+                      </tr>
+                      <!-- عدد الطلبات -->
+                      <tr>
+                        <td>{{ text_orders }}</td>
+                        <td>{{ current_subscription.max_orders|default('—') }}</td>
+                        <template x-for="plan in selectedPlanDetails">
+                          <td x-text="plan.max_orders"></td>
+                        </template>
+                      </tr>
+                      <!-- عدد المنتجات -->
+                      <tr>
+                        <td>{{ text_products }}</td>
+                        <td>{{ current_subscription.max_products|default('—') }}</td>
+                        <template x-for="plan in selectedPlanDetails">
+                          <td x-text="plan.max_products"></td>
+                        </template>
+                      </tr>
+                      <!-- السعر -->
+                      <tr>
+                        <td>{{ text_price }}</td>
+                        <td>{{ current_subscription.price_formatted|default('—') }}</td>
+                        <template x-for="plan in selectedPlanDetails">
+                          <td x-text="plan.price_formatted"></td>
+                        </template>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+            <!-- أزرار التحكم -->
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary" :disabled="loading">
+                  <i class="fa" :class="loading ? 'fa-spinner fa-spin' : 'fa-arrow-up'"></i> {{ button_continue }}
+                </button>
+                <a href="{{ cancel_url }}" class="btn btn-default">{{ button_back }}</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+function upgradeForm() {
+  return {
+    formData: {
+      plan_id: '{{ plans[0].plan_id }}',
+      payment_method: ''
+    },
+errors: {},
+    loading: false,
+    get selectedPlanDetails() {
+      const planId = this.formData.plan_id;
+      const plans = {{ plans|json_encode|raw }};
+      return plans.filter(plan => plan.plan_id == planId);
+    },
+    submitForm() {
+      this.errors = {};
+      this.loading = true;
+      
+      // التحقق من صحة المدخلات
+      if (!this.formData.plan_id) {
+        this.errors.plan_id = '{{ error_plan_required }}';
+      }
+      
+      if (!this.formData.payment_method) {
+        this.errors.payment_method = '{{ error_payment_method_required }}';
+      }
+      
+      // إذا كانت هناك أخطاء، توقف
+      if (Object.keys(this.errors).length > 0) {
+        this.loading = false;
+        return;
+      }
+      
+      // إرسال النموذج
+      fetch('{{ process_upgrade_url }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams(this.formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          } else {
+            window.location.href = '{{ cancel_url }}';
+          }
+        } else {
+          if (data.error) {
+            // إظهار الخطأ العام
+            alert(data.error);
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('{{ error_upgrade_failed }}');
+      })
+      .finally(() => {
+        this.loading = false;
+      });
+    }
+  };
+}
+</script>
+
+<style type="text/css">
+.plan-option {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-option:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.plan-radio {
+  margin-bottom: 10px;
+}
+
+.plan-radio input[type="radio"] {
+  margin-right: 10px;
+}
+
+.plan-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.plan-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #3c8dbc;
+  margin: 10px 0;
+}
+
+.plan-details {
+  flex-grow: 1;
+}
+
+.plan-details ul {
+  margin-bottom: 0;
+}
+
+.plan-details li {
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.payment-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.payment-method {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+  background-color: #f9f9f9;
+}
+
+.payment-method input[type="radio"] {
+  margin-right: 10px;
+}
+
+.payment-method i {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+html[dir="rtl"] .plan-radio input[type="radio"],
+html[dir="rtl"] .payment-method input[type="radio"] {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+html[dir="rtl"] .payment-method i {
+  margin-right: 0;
+  margin-left: 5px;
+}
+
+@media (max-width: 767px) {
+  .plan-option {
+    margin-bottom: 15px;
+  }
+  
+  .payment-method {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+</style>
+
+{{ footer }}    

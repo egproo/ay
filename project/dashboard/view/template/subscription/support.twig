@@ -1,0 +1,383 @@
+{# صفحة التواصل مع الدعم الفني #}
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+      <!-- نموذج التواصل -->
+      <div class="col-md-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-envelope-o"></i> {{ text_contact_form }}</h3>
+          </div>
+          <div class="panel-body">
+            <div x-data="contactForm">
+              <form id="support-form" class="form-horizontal" @submit.prevent="submitForm">
+                <div class="form-group" :class="{'has-error': errors.subject}">
+                  <label class="col-sm-3 control-label" for="input-subject">{{ text_subject }}</label>
+                  <div class="col-sm-9">
+                    <select id="input-subject" name="subject" class="form-control" x-model="formData.subject">
+                      <option value="">{{ text_select }}</option>
+                      {% for key, label in subject_options %}
+                        <option value="{{ key }}">{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                    <div class="help-block" x-show="errors.subject" x-text="errors.subject"></div>
+                  </div>
+                </div>
+                
+                <div class="form-group" :class="{'has-error': errors.message}">
+                  <label class="col-sm-3 control-label" for="input-message">{{ text_message }}</label>
+                  <div class="col-sm-9">
+                    <textarea id="input-message" name="message" rows="10" class="form-control" x-model="formData.message"></textarea>
+                    <div class="help-block" x-show="errors.message" x-text="errors.message"></div>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="btn btn-primary" :disabled="loading">
+                      <i class="fa" :class="loading ? 'fa-spinner fa-spin' : 'fa-send'"></i> {{ button_submit }}
+                    </button>
+                    <a href="{{ back_url }}" class="btn btn-default">{{ button_back }}</a>
+                  </div>
+                </div>
+                
+                <div class="form-group" x-show="success">
+                  <div class="col-sm-offset-3 col-sm-9">
+                    <div class="alert alert-success">
+                      <i class="fa fa-check-circle"></i> {{ text_message_sent }}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="form-group" x-show="error">
+                  <div class="col-sm-offset-3 col-sm-9">
+                    <div class="alert alert-danger">
+                      <i class="fa fa-exclamation-circle"></i> <span x-text="error"></span>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- معلومات الاتصال -->
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_contact_info }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="contact-info">
+              {% if support_info.email %}
+                <div class="contact-item">
+                  <div class="contact-icon">
+                    <i class="fa fa-envelope-o"></i>
+                  </div>
+                  <div class="contact-text">
+                    <h4>{{ text_email }}</h4>
+                    <p><a href="mailto:{{ support_info.email }}">{{ support_info.email }}</a></p>
+                  </div>
+                </div>
+              {% endif %}
+              
+              {% if support_info.phone %}
+                <div class="contact-item">
+                  <div class="contact-icon">
+                    <i class="fa fa-phone"></i>
+                  </div>
+                  <div class="contact-text">
+                    <h4>{{ text_phone }}</h4>
+                    <p>{{ support_info.phone }}</p>
+                  </div>
+                </div>
+              {% endif %}
+              
+              {% if support_info.hours %}
+                <div class="contact-item">
+                  <div class="contact-icon">
+                    <i class="fa fa-clock-o"></i>
+                  </div>
+                  <div class="contact-text">
+                    <h4>{{ text_support_hours }}</h4>
+                    <p>{{ support_info.hours }}</p>
+                  </div>
+                </div>
+              {% endif %}
+              
+              {% if support_info.response_time %}
+                <div class="contact-item">
+                  <div class="contact-icon">
+                    <i class="fa fa-history"></i>
+                  </div>
+                  <div class="contact-text">
+                    <h4>{{ text_response_time }}</h4>
+                    <p>{{ support_info.response_time }}</p>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+            
+            <div class="contact-social">
+              {% if support_info.social %}
+                <div class="social-heading">{{ text_follow_us }}</div>
+                <div class="social-icons">
+                  {% if support_info.social.facebook %}
+                    <a href="{{ support_info.social.facebook }}" target="_blank" class="social-icon">
+                      <i class="fa fa-facebook"></i>
+                    </a>
+                  {% endif %}
+                  
+                  {% if support_info.social.twitter %}
+                    <a href="{{ support_info.social.twitter }}" target="_blank" class="social-icon">
+                      <i class="fa fa-twitter"></i>
+                    </a>
+                  {% endif %}
+                  
+                  {% if support_info.social.linkedin %}
+                    <a href="{{ support_info.social.linkedin }}" target="_blank" class="social-icon">
+                      <i class="fa fa-linkedin"></i>
+                    </a>
+                  {% endif %}
+                  
+                  {% if support_info.social.youtube %}
+                    <a href="{{ support_info.social.youtube }}" target="_blank" class="social-icon">
+                      <i class="fa fa-youtube"></i>
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_faq }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="faq-list">
+              {% if support_info.faq %}
+                {% for faq in support_info.faq %}
+                  <div class="faq-item">
+                    <div class="faq-question">{{ faq.question }}</div>
+                    <div class="faq-answer">{{ faq.answer }}</div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p>{{ text_no_faq }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+function contactForm() {
+  return {
+    formData: {
+      subject: '',
+      message: ''
+    },
+    errors: {},
+    loading: false,
+    success: false,
+    error: null,
+    
+    submitForm() {
+      this.errors = {};
+      this.loading = true;
+      this.success = false;
+      this.error = null;
+      
+      // التحقق من صحة المدخلات
+      if (!this.formData.subject) {
+        this.errors.subject = '{{ error_subject_required }}';
+      }
+      
+      if (!this.formData.message) {
+        this.errors.message = '{{ error_message_required }}';
+      }
+      
+      // إذا كانت هناك أخطاء، توقف
+      if (Object.keys(this.errors).length > 0) {
+        this.loading = false;
+        return;
+      }
+      
+      // إرسال النموذج
+      fetch('{{ submit_url }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams(this.formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          this.success = true;
+          this.formData.subject = '';
+          this.formData.message = '';
+          
+          if (data.redirect) {
+            setTimeout(() => {
+              window.location.href = data.redirect;
+            }, 2000);
+          }
+        } else {
+          if (data.error) {
+            if (typeof data.error === 'object') {
+              this.errors = data.error;
+            } else {
+              this.error = data.error;
+            }
+          } else {
+            this.error = '{{ error_send_failed }}';
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        this.error = '{{ error_send_failed }}';
+      })
+      .finally(() => {
+        this.loading = false;
+      });
+    }
+  };
+}
+</script>
+
+<style type="text/css">
+.contact-item {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.contact-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #3c8dbc;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.contact-text h4 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+
+.contact-text p {
+  margin: 0;
+}
+
+.contact-social {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.social-heading {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.social-icons {
+  display: flex;
+}
+
+.social-icon {
+  width: 35px;
+  height: 35px;
+  background-color: #f5f5f5;
+  color: #333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  background-color: #3c8dbc;
+  color: #fff;
+}
+
+.faq-item {
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.faq-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.faq-question {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.faq-answer {
+  color: #666;
+}
+
+html[dir="rtl"] .contact-icon {
+  margin-right: 0;
+  margin-left: 15px;
+}
+
+html[dir="rtl"] .social-icon {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+@media (max-width: 767px) {
+  .contact-item {
+    flex-direction: column;
+  }
+  
+  .contact-icon {
+    margin-bottom: 10px;
+  }
+}
+</style>
+
+{{ footer }}

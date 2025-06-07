@@ -1,0 +1,263 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-movement').toggleClass('d-none');" class="btn btn-light d-md-none d-lg-none"><i class="fas fa-filter"></i></button>
+        <a href="{{ export }}" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-success"><i class="fas fa-file-excel"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <div id="filter-movement" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ text_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-product" class="form-label">{{ entry_product }}</label>
+              <input type="text" name="filter_product" value="{{ filter_product }}" placeholder="{{ entry_product }}" id="input-product" data-oc-target="autocomplete-product" class="form-control" autocomplete="off"/>
+              <input type="hidden" name="filter_product_id" value="{{ filter_product_id }}" id="input-product-id"/>
+              <ul id="autocomplete-product" class="dropdown-menu"></ul>
+            </div>
+            <div class="mb-3">
+              <label for="input-branch" class="form-label">{{ entry_branch }}</label>
+              <select name="filter_branch_id" id="input-branch" class="form-select">
+                <option value="">{{ text_all_types }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_branch_id %}selected="selected"{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-movement-type" class="form-label">{{ entry_movement_type }}</label>
+              <select name="filter_movement_type" id="input-movement-type" class="form-select">
+                {% for key, value in movement_types %}
+                  <option value="{{ key }}" {% if key == filter_movement_type %}selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-reference-type" class="form-label">{{ entry_reference_type }}</label>
+              <select name="filter_reference_type" id="input-reference-type" class="form-select">
+                {% for key, value in reference_types %}
+                  <option value="{{ key }}" {% if key == filter_reference_type %}selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-start" class="form-label">{{ entry_date_start }}</label>
+              <div class="input-group">
+                <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" id="input-date-start" class="form-control date"/>
+                <div class="input-group-text"><i class="fas fa-calendar"></i></div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-end" class="form-label">{{ entry_date_end }}</label>
+              <div class="input-group">
+                <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" id="input-date-end" class="form-control date"/>
+                <div class="input-group-text"><i class="fas fa-calendar"></i></div>
+              </div>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-list"></i> {{ text_list }}</div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-start"><a href="{{ sort_date }}" {% if sort == 'sm.date_added' %}class="{{ order|lower }}"{% endif %}>{{ column_date }}</a></td>
+                    <td class="text-start"><a href="{{ sort_product }}" {% if sort == 'p.name' %}class="{{ order|lower }}"{% endif %}>{{ column_product }}</a></td>
+                    <td class="text-start"><a href="{{ sort_warehouse }}" {% if sort == 'w.name' %}class="{{ order|lower }}"{% endif %}>{{ column_warehouse }}</a></td>
+                    <td class="text-end"><a href="{{ sort_quantity }}" {% if sort == 'sm.quantity' %}class="{{ order|lower }}"{% endif %}>{{ column_quantity }}</a></td>
+                    <td class="text-center">{{ column_movement_type }}</td>
+                    <td class="text-start">{{ column_reference }}</td>
+                    <td class="text-end">{{ column_cost }}</td>
+                    <td class="text-end">{{ column_action }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if movements %}
+                    {% for movement in movements %}
+                      <tr>
+                        <td class="text-start">{{ movement.date_added }}</td>
+                        <td class="text-start">{{ movement.product_name }}</td>
+                        <td class="text-start">{{ movement.warehouse_name }}</td>
+                        <td class="text-end">{{ movement.quantity }}</td>
+                        <td class="text-center">{{ movement.movement_type|raw }}</td>
+                        <td class="text-start">
+                          {% if movement.reference_link %}
+                            <a href="{{ movement.reference_link }}" target="_blank">{{ movement.reference_text }}</a>
+                          {% else %}
+                            {{ movement.reference_text }}
+                          {% endif %}
+                        </td>
+                        <td class="text-end">{{ movement.cost }}</td>
+                        <td class="text-end">
+                          <button type="button" onclick="viewMovementDetails({{ movement.movement_id }});" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></button>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td class="text-center" colspan="8">{{ text_no_results }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Movement Details Modal -->
+<div class="modal fade" id="movementDetailsModal" tabindex="-1" aria-labelledby="movementDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="movementDetailsModalLabel">{{ text_movement_details }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="movement-details-content">
+          <p class="text-center">{{ text_loading }}</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// Product Autocomplete
+$('#input-product').autocomplete({
+  'source': function(request, response) {
+    $.ajax({
+      url: 'index.php?route=catalog/product/autocomplete&user_token={{ user_token }}&filter_name=' + encodeURIComponent(request),
+      dataType: 'json',
+      success: function(json) {
+        response($.map(json, function(item) {
+          return {
+            label: item['name'],
+            value: item['product_id']
+          }
+        }));
+      }
+    });
+  },
+  'select': function(item) {
+    $('#input-product').val(item['label']);
+    $('#input-product-id').val(item['value']);
+  }
+});
+
+// Date picker
+$('.date').datetimepicker({
+  'format': 'YYYY-MM-DD',
+  'locale': 'ar',
+  'allowInputToggle': true
+});
+
+// Filter button
+$('#button-filter').on('click', function() {
+  var url = 'index.php?route=inventory/movement_history&user_token={{ user_token }}';
+
+  var filter_product_id = $('#input-product-id').val();
+  if (filter_product_id) {
+    url += '&filter_product_id=' + encodeURIComponent(filter_product_id);
+  }
+
+  var filter_branch_id = $('#input-branch').val();
+  if (filter_branch_id) {
+    url += '&filter_branch_id=' + encodeURIComponent(filter_branch_id);
+  }
+
+  var filter_movement_type = $('#input-movement-type').val();
+  if (filter_movement_type) {
+    url += '&filter_movement_type=' + encodeURIComponent(filter_movement_type);
+  }
+
+  var filter_reference_type = $('#input-reference-type').val();
+  if (filter_reference_type) {
+    url += '&filter_reference_type=' + encodeURIComponent(filter_reference_type);
+  }
+
+  var filter_date_start = $('#input-date-start').val();
+  if (filter_date_start) {
+    url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+  }
+
+  var filter_date_end = $('#input-date-end').val();
+  if (filter_date_end) {
+    url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+  }
+
+  location = url;
+});
+
+// View movement details
+function viewMovementDetails(movement_id) {
+  $('#movement-details-content').html('<p class="text-center">{{ text_loading }}</p>');
+  $('#movementDetailsModal').modal('show');
+  
+  $.ajax({
+    url: 'index.php?route=inventory/movement_history/getMovementDetails&user_token={{ user_token }}&movement_id=' + movement_id,
+    dataType: 'json',
+    success: function(json) {
+      var html = '';
+      
+      if (json['success']) {
+        var movement = json['movement'];
+        
+        html += '<table class="table table-bordered">';
+        html += '<tr><td><strong>{{ column_date }}:</strong></td><td>' + movement['date_added_formatted'] + '</td></tr>';
+        html += '<tr><td><strong>{{ column_product }}:</strong></td><td>' + movement['product_name'] + '</td></tr>';
+        html += '<tr><td><strong>{{ column_warehouse }}:</strong></td><td>' + movement['warehouse_name'] + '</td></tr>';
+        html += '<tr><td><strong>{{ column_unit }}:</strong></td><td>' + movement['unit_name'] + '</td></tr>';
+        html += '<tr><td><strong>{{ column_quantity }}:</strong></td><td>' + movement['quantity'] + '</td></tr>';
+        html += '<tr><td><strong>{{ column_movement_type }}:</strong></td><td>' + movement['movement_type_text'] + '</td></tr>';
+        html += '<tr><td><strong>{{ column_reference }}:</strong></td><td>' + movement['reference_type'] + ' #' + movement['reference_id'] + '</td></tr>';
+        html += '<tr><td><strong>{{ column_cost }}:</strong></td><td>' + movement['cost_formatted'] + '</td></tr>';
+        
+        if (movement['notes']) {
+          html += '<tr><td><strong>{{ column_notes }}:</strong></td><td>' + movement['notes'] + '</td></tr>';
+        }
+        
+        html += '<tr><td><strong>{{ column_user }}:</strong></td><td>' + movement['username'] + '</td></tr>';
+        html += '</table>';
+      } else {
+        html = '<div class="alert alert-danger">' + json['error'] + '</div>';
+      }
+      
+      $('#movement-details-content').html(html);
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+}
+</script>
+{{ footer }}

@@ -1,0 +1,862 @@
+{{ header }}{{ column_left }}
+
+<!-- CSS مخصص للقيود المحاسبية -->
+<style>
+.journal-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.journal-header {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    padding: 20px;
+    position: relative;
+}
+
+.journal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.journal-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #3498db;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.toolbar {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.search-container {
+    position: relative;
+    min-width: 300px;
+}
+
+.search-input {
+    border-radius: 25px;
+    padding-left: 45px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.journal-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.journal-table thead th {
+    background: #2c3e50;
+    color: white;
+    font-weight: 600;
+    padding: 15px 12px;
+    text-align: center;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.journal-table thead th:first-child {
+    border-top-left-radius: 6px;
+}
+
+.journal-table thead th:last-child {
+    border-top-right-radius: 6px;
+}
+
+.journal-table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.journal-table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.journal-table tbody tr.selected {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: #3498db;
+}
+
+.journal-table td {
+    padding: 12px;
+    vertical-align: middle;
+    border: none;
+}
+
+.journal-number {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.journal-amount {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: left;
+}
+
+.amount-debit {
+    color: #27ae60;
+}
+
+.amount-credit {
+    color: #e74c3c;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.status-draft { background: #95a5a6; }
+.status-posted { background: #27ae60; }
+.status-approved { background: #3498db; }
+.status-cancelled { background: #e74c3c; }
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.action-btn.edit {
+    background: #3498db;
+    color: white;
+}
+
+.action-btn.duplicate {
+    background: #f39c12;
+    color: white;
+}
+
+.action-btn.print {
+    background: #9b59b6;
+    color: white;
+}
+
+.action-btn.delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.bulk-actions {
+    background: #f39c12;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bulk-actions.show {
+    display: flex;
+}
+
+.bulk-info {
+    font-weight: 600;
+}
+
+.bulk-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.bulk-btn {
+    padding: 5px 15px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bulk-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+@media (max-width: 768px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-container {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .journal-table {
+        font-size: 0.9rem;
+    }
+
+    .journal-table td {
+        padding: 8px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 3px;
+    }
+}
+
+@media print {
+    .toolbar, .bulk-actions, .action-buttons, .pagination, .btn, .checkbox {
+        display: none !important;
+    }
+
+    .journal-container {
+        box-shadow: none;
+        border: none;
+    }
+
+    .journal-table {
+        border: 1px solid #000;
+    }
+
+    .journal-table th,
+    .journal-table td {
+        border: 1px solid #000;
+        padding: 8px;
+    }
+
+    .journal-table thead th {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+    }
+}
+</style>
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <div class="btn-group">
+                    <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> {{ button_add }}
+                    </a>
+                    <button type="button" data-bs-toggle="dropdown" class="btn btn-primary dropdown-toggle dropdown-toggle-split">
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="{{ print_multiple }}">
+                            <i class="fa fa-print"></i> {{ text_print_selected }}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{{ export }}&format=excel">
+                            <i class="fa fa-file-excel-o"></i> تصدير Excel
+                        </a>
+                        <a class="dropdown-item" href="{{ export }}&format=pdf">
+                            <i class="fa fa-file-pdf-o"></i> تصدير PDF
+                        </a>
+                        <a class="dropdown-item" href="{{ export }}&format=csv">
+                            <i class="fa fa-file-text-o"></i> تصدير CSV
+                        </a>
+                    </div>
+                </div>
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-journal').submit() : false;">
+                    <i class="fa fa-trash-o"></i>
+                </button>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item">
+                    <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- إحصائيات سريعة -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_journals|default(0) }}</div>
+                <div class="stat-label">إجمالي القيود</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.draft_journals|default(0) }}</div>
+                <div class="stat-label">قيود مسودة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.posted_journals|default(0) }}</div>
+                <div class="stat-label">قيود مرحلة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_debit|number_format(2) }}</div>
+                <div class="stat-label">إجمالي المدين</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.total_credit|number_format(2) }}</div>
+                <div class="stat-label">إجمالي الدائن</div>
+            </div>
+        </div>
+
+        <!-- شريط الأدوات -->
+        <div class="toolbar">
+            <div class="search-container">
+                <input type="text" class="form-control search-input" placeholder="البحث في القيود..." id="journal-search">
+                <i class="fa fa-search search-icon"></i>
+            </div>
+            <div class="d-flex gap-2">
+                <select class="form-select" id="status-filter">
+                    <option value="">جميع الحالات</option>
+                    <option value="draft">مسودة</option>
+                    <option value="posted">مرحل</option>
+                    <option value="approved">معتمد</option>
+                    <option value="cancelled">ملغي</option>
+                </select>
+                <input type="date" class="form-control" id="date-start" placeholder="من تاريخ">
+                <input type="date" class="form-control" id="date-end" placeholder="إلى تاريخ">
+                <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()">
+                    <i class="fa fa-times"></i> مسح
+                </button>
+            </div>
+        </div>
+
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible">
+            <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success alert-dismissible">
+            <i class="fa fa-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- الإجراءات المجمعة -->
+        <div class="bulk-actions" id="bulk-actions">
+            <div class="bulk-info">
+                <span id="selected-count">0</span> قيد محدد
+            </div>
+            <div class="bulk-buttons">
+                <button type="button" class="bulk-btn" onclick="bulkPost()">
+                    <i class="fa fa-check"></i> ترحيل
+                </button>
+                <button type="button" class="bulk-btn" onclick="bulkPrint()">
+                    <i class="fa fa-print"></i> طباعة
+                </button>
+                <button type="button" class="bulk-btn" onclick="bulkDelete()">
+                    <i class="fa fa-trash"></i> حذف
+                </button>
+            </div>
+        </div>
+
+        <!-- جدول القيود -->
+        <div class="journal-container">
+            <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-journal">
+                <div class="table-responsive">
+                    <table class="journal-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 1px;" class="text-center">
+                                    <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked); updateBulkActions();" />
+                                </th>
+                                <th class="text-center">
+                                    <a href="{{ sort_journal_number }}" class="text-white text-decoration-none">
+                                        رقم القيد
+                                        {% if sort == 'journal_number' %}
+                                            <i class="fa fa-sort-{{ order|lower == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th class="text-center">
+                                    <a href="{{ sort_journal_date }}" class="text-white text-decoration-none">
+                                        التاريخ
+                                        {% if sort == 'journal_date' %}
+                                            <i class="fa fa-sort-{{ order|lower == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="{{ sort_description }}" class="text-white text-decoration-none">
+                                        الوصف
+                                        {% if sort == 'description' %}
+                                            <i class="fa fa-sort-{{ order|lower == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th class="text-center">إجمالي المدين</th>
+                                <th class="text-center">إجمالي الدائن</th>
+                                <th class="text-center">
+                                    <a href="{{ sort_status }}" class="text-white text-decoration-none">
+                                        الحالة
+                                        {% if sort == 'status' %}
+                                            <i class="fa fa-sort-{{ order|lower == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th class="text-center">المرجع</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for journal in journals %}
+                            <tr class="journal-item" data-status="{{ journal.status }}" data-date="{{ journal.journal_date }}">
+                                <td class="text-center">
+                                    {% if journal.selected %}
+                                    <input type="checkbox" name="selected[]" value="{{ journal.journal_id }}" checked="checked" onchange="updateBulkActions()" />
+                                    {% else %}
+                                    <input type="checkbox" name="selected[]" value="{{ journal.journal_id }}" onchange="updateBulkActions()" />
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="journal-number">{{ journal.journal_number }}</span>
+                                    {% if journal.auto_generated %}
+                                        <i class="fa fa-cog text-info ms-1" title="قيد تلقائي"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">{{ journal.journal_date }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span>{{ journal.description }}</span>
+                                        {% if journal.reference_type %}
+                                            <small class="text-muted ms-2">({{ journal.reference_type }})</small>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="journal-amount amount-debit">{{ journal.total_debit }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="journal-amount amount-credit">{{ journal.total_credit }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="status-badge status-{{ journal.status }}">
+                                        {{ journal.status_text }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    {% if journal.reference_number %}
+                                        <small class="text-muted">{{ journal.reference_number }}</small>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="action-buttons">
+                                        <a href="{{ journal.edit }}" data-bs-toggle="tooltip" title="تعديل" class="action-btn edit">
+                                            <i class="fa fa-pencil"></i>
+                                        </a>
+                                        <a href="{{ journal.duplicate }}" data-bs-toggle="tooltip" title="نسخ" class="action-btn duplicate">
+                                            <i class="fa fa-copy"></i>
+                                        </a>
+                                        <a href="{{ journal.print }}" data-bs-toggle="tooltip" title="طباعة" class="action-btn print" target="_blank">
+                                            <i class="fa fa-print"></i>
+                                        </a>
+                                        {% if journal.status == 'draft' %}
+                                        <button type="button" class="action-btn edit" onclick="postJournal({{ journal.journal_id }})" data-bs-toggle="tooltip" title="ترحيل">
+                                            <i class="fa fa-check"></i>
+                                        </button>
+                                        {% elseif journal.status == 'posted' %}
+                                        <button type="button" class="action-btn duplicate" onclick="unpostJournal({{ journal.journal_id }})" data-bs-toggle="tooltip" title="إلغاء ترحيل">
+                                            <i class="fa fa-undo"></i>
+                                        </button>
+                                        {% endif %}
+                                        <button type="button" class="action-btn delete" onclick="deleteJournal({{ journal.journal_id }})" data-bs-toggle="tooltip" title="حذف">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="9">{{ text_no_results }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+
+            <div class="row p-3">
+                <div class="col-sm-6 text-start">{{ pagination }}</div>
+                <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript متقدم للقيود المحاسبية -->
+<script>
+$(document).ready(function() {
+    // البحث المباشر
+    $('#journal-search').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('.journal-item').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    // فلترة حسب الحالة
+    $('#status-filter').on('change', function() {
+        var selectedStatus = $(this).val();
+        if (selectedStatus === '') {
+            $('.journal-item').show();
+        } else {
+            $('.journal-item').hide();
+            $('.journal-item[data-status="' + selectedStatus + '"]').show();
+        }
+    });
+
+    // فلترة حسب التاريخ
+    $('#date-start, #date-end').on('change', function() {
+        filterByDateRange();
+    });
+
+    // تفعيل التلميحات
+    $('[data-bs-toggle="tooltip"]').tooltip();
+
+    // تحديث الإحصائيات كل 30 ثانية
+    setInterval(function() {
+        updateStats();
+    }, 30000);
+});
+
+function updateBulkActions() {
+    var selectedCount = $('input[name="selected[]"]:checked').length;
+    $('#selected-count').text(selectedCount);
+
+    if (selectedCount > 0) {
+        $('#bulk-actions').addClass('show');
+    } else {
+        $('#bulk-actions').removeClass('show');
+    }
+}
+
+function clearFilters() {
+    $('#journal-search').val('');
+    $('#status-filter').val('');
+    $('#date-start').val('');
+    $('#date-end').val('');
+    $('.journal-item').show();
+}
+
+function filterByDateRange() {
+    var startDate = $('#date-start').val();
+    var endDate = $('#date-end').val();
+
+    if (!startDate && !endDate) {
+        $('.journal-item').show();
+        return;
+    }
+
+    $('.journal-item').each(function() {
+        var itemDate = $(this).data('date');
+        var show = true;
+
+        if (startDate && itemDate < startDate) {
+            show = false;
+        }
+
+        if (endDate && itemDate > endDate) {
+            show = false;
+        }
+
+        $(this).toggle(show);
+    });
+}
+
+function postJournal(journalId) {
+    if (confirm('هل تريد ترحيل هذا القيد؟')) {
+        $.ajax({
+            url: 'index.php?route=accounts/journal_entry/post&user_token={{ user_token }}',
+            type: 'POST',
+            data: { journal_id: journalId },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    showAlert('success', response.success);
+                    location.reload();
+                } else {
+                    showAlert('danger', response.error);
+                }
+            },
+            error: function() {
+                showAlert('danger', 'حدث خطأ أثناء ترحيل القيد');
+            }
+        });
+    }
+}
+
+function unpostJournal(journalId) {
+    if (confirm('هل تريد إلغاء ترحيل هذا القيد؟')) {
+        $.ajax({
+            url: 'index.php?route=accounts/journal_entry/unpost&user_token={{ user_token }}',
+            type: 'POST',
+            data: { journal_id: journalId },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    showAlert('success', response.success);
+                    location.reload();
+                } else {
+                    showAlert('danger', response.error);
+                }
+            },
+            error: function() {
+                showAlert('danger', 'حدث خطأ أثناء إلغاء ترحيل القيد');
+            }
+        });
+    }
+}
+
+function deleteJournal(journalId) {
+    if (confirm('هل تريد حذف هذا القيد؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+        $.ajax({
+            url: '{{ delete }}',
+            type: 'POST',
+            data: { selected: [journalId] },
+            success: function(response) {
+                showAlert('success', 'تم حذف القيد بنجاح');
+                location.reload();
+            },
+            error: function() {
+                showAlert('danger', 'حدث خطأ أثناء حذف القيد');
+            }
+        });
+    }
+}
+
+function bulkPost() {
+    var selected = getSelectedJournals();
+    if (selected.length === 0) {
+        showAlert('warning', 'يرجى تحديد قيد واحد على الأقل');
+        return;
+    }
+
+    if (confirm('هل تريد ترحيل ' + selected.length + ' قيد؟')) {
+        $.ajax({
+            url: 'index.php?route=accounts/journal_entry/bulkPost&user_token={{ user_token }}',
+            type: 'POST',
+            data: { selected: selected },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    showAlert('success', response.success);
+                    location.reload();
+                } else {
+                    showAlert('danger', response.error);
+                }
+            },
+            error: function() {
+                showAlert('danger', 'حدث خطأ أثناء ترحيل القيود');
+            }
+        });
+    }
+}
+
+function bulkPrint() {
+    var selected = getSelectedJournals();
+    if (selected.length === 0) {
+        showAlert('warning', 'يرجى تحديد قيد واحد على الأقل');
+        return;
+    }
+
+    var url = '{{ print_multiple }}&journal_ids=' + selected.join(',');
+    window.open(url, '_blank');
+}
+
+function bulkDelete() {
+    var selected = getSelectedJournals();
+    if (selected.length === 0) {
+        showAlert('warning', 'يرجى تحديد قيد واحد على الأقل');
+        return;
+    }
+
+    if (confirm('هل تريد حذف ' + selected.length + ' قيد؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+        $('#form-journal').submit();
+    }
+}
+
+function getSelectedJournals() {
+    var selected = [];
+    $('input[name="selected[]"]:checked').each(function() {
+        selected.push($(this).val());
+    });
+    return selected;
+}
+
+function updateStats() {
+    $.ajax({
+        url: 'index.php?route=accounts/journal_entry/getStats&user_token={{ user_token }}',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            $('.stat-value').each(function(index) {
+                var statType = ['total_journals', 'draft_journals', 'posted_journals', 'total_debit', 'total_credit'][index];
+                if (data[statType] !== undefined) {
+                    $(this).text(data[statType]);
+                }
+            });
+        }
+    });
+}
+
+function showAlert(type, message) {
+    var alertHtml = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                   '<i class="fa fa-' + (type === 'success' ? 'check' : 'exclamation') + '-circle"></i> ' + message +
+                   '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                   '</div>';
+
+    $('.container-fluid').prepend(alertHtml);
+
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+
+// اختصارات لوحة المفاتيح
+$(document).on('keydown', function(e) {
+    // Ctrl+A - تحديد الكل
+    if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault();
+        $('input[name*="selected"]').prop('checked', true);
+        updateBulkActions();
+    }
+
+    // Ctrl+P - طباعة المحدد
+    if (e.ctrlKey && e.key === 'p') {
+        e.preventDefault();
+        bulkPrint();
+    }
+
+    // Delete - حذف المحدد
+    if (e.key === 'Delete') {
+        e.preventDefault();
+        bulkDelete();
+    }
+
+    // Ctrl+N - قيد جديد
+    if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        window.location.href = '{{ add }}';
+    }
+});
+</script>
+
+{{ footer }}

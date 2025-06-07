@@ -1,0 +1,932 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="refresh-list" class="btn btn-default" onclick="QuoteManager.loadQuotes();">
+          <i class="fa fa-refresh"></i> {{ text_refresh_list }}
+        </button>
+        {% if can_add %}
+        <button type="button" id="add-quote" class="btn btn-primary" onclick="QuoteManager.addQuote();">
+          <i class="fa fa-plus"></i> {{ button_add }}
+        </button>
+        {% endif %}
+      </div>
+      <h1><i class="fa fa-file-text-o"></i> {{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- التنبيهات -->
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible fade in">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible fade in">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {% endif %}
+    
+    <!-- إحصائيات لوحة المعلومات -->
+    <div class="row statistics-container">
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title text-center"><i class="fa fa-file-text-o"></i> {{ text_total_orders }}</h3>
+          </div>
+          <div class="panel-body text-center">
+            <h2><strong id="stats-total">{{ stats.total }}</strong></h2>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title text-center"><i class="fa fa-clock-o"></i> {{ text_status_pending }}</h3>
+          </div>
+          <div class="panel-body text-center">
+            <h2><strong id="stats-pending">{{ stats.pending }}</strong></h2>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title text-center"><i class="fa fa-check-circle"></i> {{ text_status_approved }}</h3>
+          </div>
+          <div class="panel-body text-center">
+            <h2><strong id="stats-approved">{{ stats.approved }}</strong></h2>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-danger">
+          <div class="panel-heading">
+            <h3 class="panel-title text-center"><i class="fa fa-times-circle"></i> {{ text_status_rejected }}</h3>
+          </div>
+          <div class="panel-body text-center">
+            <h2><strong id="stats-rejected">{{ stats.rejected }}</strong></h2>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title text-center"><i class="fa fa-calendar-times-o"></i> {{ text_status_expired }}</h3>
+          </div>
+          <div class="panel-body text-center">
+            <h2><strong id="stats-expired">{{ stats.expired }}</strong></h2>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title text-center"><i class="fa fa-exchange"></i> {{ text_converted }}</h3>
+          </div>
+          <div class="panel-body text-center">
+            <h2><strong id="stats-converted">{{ stats.converted }}</strong></h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- فلاتر البحث -->
+    <div class="panel panel-default filter-panel">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-quote-number" class="control-label">{{ entry_filter_quote_number }}</label>
+              <input type="text" id="filter-quote-number" class="form-control" placeholder="{{ entry_filter_quote_number }}">
+            </div>
+          </div>
+          
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-customer" class="control-label">{{ entry_filter_customer }}</label>
+              <select id="filter-customer" class="form-control select2"></select>
+            </div>
+          </div>
+          
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-status" class="control-label">{{ entry_filter_status }}</label>
+              <select id="filter-status" class="form-control">
+                <option value="">{{ text_all_statuses }}</option>
+                <option value="draft">{{ text_status_draft }}</option>
+                <option value="pending">{{ text_status_pending }}</option>
+                <option value="approved">{{ text_status_approved }}</option>
+                <option value="rejected">{{ text_status_rejected }}</option>
+                <option value="expired">{{ text_status_expired }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label for="filter-date-start" class="control-label">{{ entry_filter_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" id="filter-date-start" class="form-control" data-date-format="YYYY-MM-DD">
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label for="filter-date-end" class="control-label">{{ entry_filter_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" id="filter-date-end" class="form-control" data-date-format="YYYY-MM-DD">
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label for="filter-total-min" class="control-label">{{ entry_filter_total_min }}</label>
+              <input type="number" id="filter-total-min" class="form-control" min="0" step="0.01">
+            </div>
+          </div>
+          
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label for="filter-total-max" class="control-label">{{ entry_filter_total_max }}</label>
+              <input type="number" id="filter-total-max" class="form-control" min="0" step="0.01">
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-sm-12 text-right">
+            <button type="button" id="button-filter" class="btn btn-primary">
+              <i class="fa fa-search"></i> {{ button_filter }}
+            </button>
+            <button type="button" id="button-clear" class="btn btn-default">
+              <i class="fa fa-eraser"></i> {{ button_clear }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- قائمة عروض الأسعار -->
+    <div class="panel panel-default list-panel">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <form id="form-quote" method="post" action="{{ delete }}">
+          <div class="table-responsive">
+            <table id="quote-table" class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th style="width: 1px;" class="text-center">
+                    <input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" />
+                  </th>
+                  <th>{{ column_quotation_number }}</th>
+                  <th>{{ column_customer }}</th>
+                  <th class="text-right">{{ column_total }}</th>
+                  <th class="text-center">{{ column_status }}</th>
+                  <th>{{ column_date }}</th>
+                  <th>{{ column_valid_until }}</th>
+                  <th>{{ column_converted }}</th>
+                  <th class="text-right">{{ column_action }}</th>
+                </tr>
+              </thead>
+              <tbody id="quote-list">
+                {% if quotes %}
+                  {% for quote in quotes %}
+                  <tr>
+                    <td class="text-center">
+                      <input type="checkbox" name="selected[]" value="{{ quote.quotation_id }}" />
+                    </td>
+                    <td>{{ quote.quotation_number }}</td>
+                    <td>{{ quote.customer_name }}</td>
+                    <td class="text-right">{{ quote.total_formatted }}</td>
+                    <td class="text-center"><span class="label label-{{ quote.status_class }}">{{ quote.status_text }}</span></td>
+                    <td>{{ quote.quotation_date }}</td>
+                    <td>{{ quote.valid_until }}</td>
+                    <td>
+                      {% if quote.converted_to_order %}
+                        <a href="{{ quote.order_url }}" target="_blank">{{ quote.order_id }}</a>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-right">
+                      <div class="btn-group" role="group">
+                        {% if quote.can_view %}
+                        <a href="{{ quote.view_url }}" class="btn btn-info btn-sm" data-toggle="tooltip" title="{{ button_view }}">
+                          <i class="fa fa-eye"></i>
+                        </a>
+                        {% endif %}
+                        
+                        {% if quote.can_edit %}
+                        <a href="{{ quote.edit_url }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="{{ button_edit }}">
+                          <i class="fa fa-pencil"></i>
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{{ quote.print_url }}" target="_blank" class="btn btn-default btn-sm" data-toggle="tooltip" title="{{ button_print }}">
+                          <i class="fa fa-print"></i>
+                        </a>
+                        
+                        {% if quote.can_approve %}
+                        <button type="button" class="btn btn-success btn-sm" onclick="QuoteManager.approveQuote({{ quote.quotation_id }});" data-toggle="tooltip" title="{{ button_approve }}">
+                          <i class="fa fa-check"></i>
+                        </button>
+                        {% endif %}
+                        
+                        {% if quote.can_reject %}
+                        <button type="button" class="btn btn-warning btn-sm" onclick="QuoteManager.rejectQuote({{ quote.quotation_id }});" data-toggle="tooltip" title="{{ button_reject }}">
+                          <i class="fa fa-times"></i>
+                        </button>
+                        {% endif %}
+                        
+                        {% if quote.can_expire %}
+                        <button type="button" class="btn btn-default btn-sm" onclick="QuoteManager.expireQuote({{ quote.quotation_id }});" data-toggle="tooltip" title="{{ button_expire }}">
+                          <i class="fa fa-calendar-times-o"></i>
+                        </button>
+                        {% endif %}
+                        
+                        {% if quote.can_convert %}
+                        <button type="button" class="btn btn-primary btn-sm" onclick="QuoteManager.convertToOrder({{ quote.quotation_id }});" data-toggle="tooltip" title="{{ button_convert_to_order }}">
+                          <i class="fa fa-exchange"></i>
+                        </button>
+                        {% endif %}
+                        
+                        {% if quote.can_delete %}
+                        <button type="button" class="btn btn-danger btn-sm" onclick="QuoteManager.deleteQuote({{ quote.quotation_id }});" data-toggle="tooltip" title="{{ button_delete }}">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td class="text-center" colspan="9">{{ text_no_results }}</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        
+        <!-- الإجراءات الجماعية -->
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-inline bulk-actions">
+              <div class="form-group">
+                <select id="bulk-action" class="form-control">
+                  <option value="">{{ text_select_action }}</option>
+                  {% if can_approve %}
+                  <option value="approve">{{ text_approve_selected }}</option>
+                  {% endif %}
+                  {% if can_reject %}
+                  <option value="reject">{{ text_reject_selected }}</option>
+                  {% endif %}
+                  {% if can_delete %}
+                  <option value="delete">{{ text_delete_selected }}</option>
+                  {% endif %}
+                </select>
+              </div>
+              <button type="button" id="bulk-action-apply" class="btn btn-primary" onclick="QuoteManager.executeBulkAction();">
+                <i class="fa fa-check"></i> {{ button_execute }}
+              </button>
+            </div>
+          </div>
+          <div class="col-sm-6 text-right">
+            <div class="btn-group">
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-download"></i> {{ button_export }} <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-right">
+                <li>
+                  <a href="javascript:void(0);" onclick="QuoteManager.exportQuotes('excel');">
+                    <i class="fa fa-file-excel-o"></i> {{ text_export_excel }}
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:void(0);" onclick="QuoteManager.exportQuotes('pdf');">
+                    <i class="fa fa-file-pdf-o"></i> {{ text_export_pdf }}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <!-- الترقيم -->
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right pagination-info">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- طبقة التحميل -->
+<div id="loading-overlay">
+  <div class="loading-spinner">
+    <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+    <span class="sr-only">{{ text_loading }}</span>
+  </div>
+</div>
+<!-- نافذة منبثقة لإضافة/تعديل عرض السعر -->
+<div class="modal fade" id="modal-quote-form" tabindex="-1" role="dialog" aria-labelledby="modal-quote-form-title">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <!-- سيتم تحميل المحتوى هنا عبر AJAX -->
+    </div>
+  </div>
+</div>
+
+<!-- نافذة منبثقة لعرض تفاصيل عرض السعر -->
+<div class="modal fade" id="modal-quote-view" tabindex="-1" role="dialog" aria-labelledby="modal-quote-view-title">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <!-- سيتم تحميل المحتوى هنا عبر AJAX -->
+    </div>
+  </div>
+</div>
+
+{{footer}}
+
+<script type="text/javascript">
+/**
+ * Quote Manager - كائن لإدارة عروض الأسعار
+ */
+var QuoteManager = {
+  user_token: '{{ user_token }}',
+  
+  /**
+   * تهيئة مدير عروض الأسعار
+   */
+  init: function() {
+    this.initializeFilters();
+    this.loadQuotes();
+    this.setupEventHandlers();
+    
+    // تهيئة tooltips
+    $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+  },
+  
+  /**
+   * تهيئة عناصر التصفية
+   */
+  initializeFilters: function() {
+    // تهيئة عناصر Select2 للعملاء
+    $('#filter-customer').select2({
+      placeholder: '{{ entry_filter_customer }}',
+      allowClear: true,
+      ajax: {
+        url: 'index.php?route=sale/quote/ajaxGetCustomers&user_token=' + this.user_token,
+        dataType: 'json',
+        delay: 300,
+        data: function(params) {
+          return {
+            q: params.term || ''
+          };
+        },
+        processResults: function(data) {
+          return {
+            results: data
+          };
+        },
+        cache: true
+      }
+    });
+    
+    // تهيئة منتقيات التاريخ
+    $('.date').datetimepicker({
+      pickTime: false,
+      format: 'YYYY-MM-DD'
+    });
+  },
+  
+  /**
+   * إعداد معالجات الأحداث للفلاتر وعناصر التحكم الأخرى
+   */
+  setupEventHandlers: function() {
+    // معالجة زر البحث
+    $('#button-filter').on('click', function() {
+      QuoteManager.loadQuotes();
+    });
+    
+    // معالجة زر مسح الفلتر
+    $('#button-clear').on('click', function() {
+      QuoteManager.clearFilters();
+    });
+  },
+  
+  /**
+   * إظهار طبقة التحميل
+   */
+  showLoading: function() {
+    $('#loading-overlay').fadeIn(200);
+  },
+  
+  /**
+   * إخفاء طبقة التحميل
+   */
+  hideLoading: function() {
+    $('#loading-overlay').fadeOut(200);
+  },
+  
+  /**
+   * تحميل قائمة عروض الأسعار مع تطبيق الفلاتر
+   * @param {number} page - رقم الصفحة (اختياري)
+   */
+  loadQuotes: function(page) {
+    this.showLoading();
+    
+    $.ajax({
+      url: 'index.php?route=sale/quote/ajaxList&user_token=' + this.user_token,
+      type: 'GET',
+      data: {
+        filter_quote_number: $('#filter-quote-number').val(),
+        filter_customer: $('#filter-customer').val(),
+        filter_status: $('#filter-status').val(),
+        filter_date_start: $('#filter-date-start').val(),
+        filter_date_end: $('#filter-date-end').val(),
+        filter_total_min: $('#filter-total-min').val(),
+        filter_total_max: $('#filter-total-max').val(),
+        page: page || 1
+      },
+      dataType: 'json',
+      success: function(json) {
+        QuoteManager.renderQuotes(json);
+        QuoteManager.updateStatistics(json.stats);
+        QuoteManager.hideLoading();
+      },
+      error: function(xhr, status, error) {
+        alert('Error loading quotes: ' + error);
+        QuoteManager.hideLoading();
+      }
+    });
+  },
+  
+  /**
+   * عرض جدول عروض الأسعار بالبيانات المقدمة
+   * @param {object} json - بيانات JSON التي تحتوي على قائمة عروض الأسعار
+   */
+  renderQuotes: function(json) {
+    var html = '';
+    
+    if (json.quotes && json.quotes.length > 0) {
+      for (var i = 0; i < json.quotes.length; i++) {
+        var quote = json.quotes[i];
+        html += '<tr>';
+        html += '  <td class="text-center"><input type="checkbox" name="selected[]" value="' + quote.quotation_id + '" /></td>';
+        html += '  <td>' + quote.quotation_number + '</td>';
+        html += '  <td>' + quote.customer_name + '</td>';
+        html += '  <td class="text-right">' + quote.total_formatted + '</td>';
+        html += '  <td class="text-center"><span class="label label-' + quote.status_class + '">' + quote.status_text + '</span></td>';
+        html += '  <td>' + quote.quotation_date + '</td>';
+        html += '  <td>' + quote.valid_until + '</td>';
+        html += '  <td>';
+        if (quote.converted_to_order) {
+          html += '<a href="index.php?route=sale/order/info&user_token=' + this.user_token + '&order_id=' + quote.order_id + '" target="_blank">' + quote.order_id + '</a>';
+        } else {
+          html += '<span class="text-muted">-</span>';
+        }
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '<div class="btn-group" role="group">';
+        
+        if (quote.can_view) {
+          html += '<a href="index.php?route=sale/quote/view&user_token=' + this.user_token + '&quote_id=' + quote.quotation_id + '" class="btn btn-info btn-sm" data-toggle="tooltip" title="{{ button_view }}"><i class="fa fa-eye"></i></a>';
+        }
+        
+        if (quote.can_edit) {
+          html += '<a href="index.php?route=sale/quote/edit&user_token=' + this.user_token + '&quote_id=' + quote.quotation_id + '" class="btn btn-primary btn-sm" data-toggle="tooltip" title="{{ button_edit }}"><i class="fa fa-pencil"></i></a>';
+        }
+        
+        html += '<a href="index.php?route=sale/quote/print&user_token=' + this.user_token + '&quote_id=' + quote.quotation_id + '" target="_blank" class="btn btn-default btn-sm" data-toggle="tooltip" title="{{ button_print }}"><i class="fa fa-print"></i></a>';
+        
+        if (quote.can_approve) {
+          html += '<button type="button" class="btn btn-success btn-sm" onclick="QuoteManager.approveQuote(' + quote.quotation_id + ');" data-toggle="tooltip" title="{{ button_approve }}"><i class="fa fa-check"></i></button>';
+        }
+        
+        if (quote.can_reject) {
+          html += '<button type="button" class="btn btn-warning btn-sm" onclick="QuoteManager.rejectQuote(' + quote.quotation_id + ');" data-toggle="tooltip" title="{{ button_reject }}"><i class="fa fa-times"></i></button>';
+        }
+        
+        if (quote.can_expire) {
+          html += '<button type="button" class="btn btn-default btn-sm" onclick="QuoteManager.expireQuote(' + quote.quotation_id + ');" data-toggle="tooltip" title="{{ button_expire }}"><i class="fa fa-calendar-times-o"></i></button>';
+        }
+        
+        if (quote.can_convert) {
+          html += '<button type="button" class="btn btn-primary btn-sm" onclick="QuoteManager.convertToOrder(' + quote.quotation_id + ');" data-toggle="tooltip" title="{{ button_convert_to_order }}"><i class="fa fa-exchange"></i></button>';
+        }
+        
+        if (quote.can_delete) {
+          html += '<button type="button" class="btn btn-danger btn-sm" onclick="QuoteManager.deleteQuote(' + quote.quotation_id + ');" data-toggle="tooltip" title="{{ button_delete }}"><i class="fa fa-trash"></i></button>';
+        }
+        
+        html += '</div>';
+        html += '  </td>';
+        html += '</tr>';
+      }
+    } else {
+      html += '<tr>';
+      html += '  <td class="text-center" colspan="9">{{ text_no_results }}</td>';
+      html += '</tr>';
+    }
+    
+    $('#quote-list').html(html);
+    
+    // إعادة تهيئة tooltips على الأزرار المضافة حديثاً
+    $('[data-toggle="tooltip"]').tooltip({container: 'body'});
+    
+    // تحديث الترقيم
+    if (json.pagination) {
+      $('.pagination').html(json.pagination);
+      
+      // إضافة معالجات الأحداث لروابط الترقيم
+      $('.pagination a').on('click', function(e) {
+        e.preventDefault();
+        var page = $(this).attr('href').match(/page=(\d+)/);
+        page = page ? page[1] : 1;
+        QuoteManager.loadQuotes(page);
+      });
+    }
+    
+    // تحديث معلومات الترقيم
+    if (json.results) {
+      $('.pagination-info').html(json.results);
+    }
+  },
+  
+  /**
+   * تحديث إحصائيات لوحة المعلومات
+   * @param {object} stats - بيانات الإحصائيات
+   */
+  updateStatistics: function(stats) {
+    if (stats) {
+      $('#stats-total').text(stats.total || 0);
+      $('#stats-pending').text(stats.pending || 0);
+      $('#stats-approved').text(stats.approved || 0);
+      $('#stats-rejected').text(stats.rejected || 0);
+      $('#stats-expired').text(stats.expired || 0);
+      $('#stats-converted').text(stats.converted || 0);
+    }
+  },
+  
+  /**
+   * مسح جميع حقول الفلاتر
+   */
+  clearFilters: function() {
+    $('#filter-quote-number').val('');
+    $('#filter-customer').val(null).trigger('change');
+    $('#filter-status').val('');
+    $('#filter-date-start').val('');
+    $('#filter-date-end').val('');
+    $('#filter-total-min').val('');
+    $('#filter-total-max').val('');
+    
+    this.loadQuotes();
+  },
+  
+// إضافة هذه الدوال إلى كائن QuoteManager الموجود
+
+/**
+ * فتح نافذة منبثقة لإضافة عرض سعر جديد
+ */
+addQuote: function() {
+    this.showLoading();
+    
+    $('#modal-quote-form .modal-content').load('index.php?route=sale/quote/ajaxGetQuoteForm&user_token=' + this.user_token, function() {
+        $('#modal-quote-form').modal('show');
+        QuoteManager.hideLoading();
+    });
+},
+
+/**
+ * فتح نافذة منبثقة لتعديل عرض سعر
+ * @param {number} quote_id - معرف عرض السعر
+ */
+editQuote: function(quote_id) {
+    this.showLoading();
+    
+    $('#modal-quote-form .modal-content').load('index.php?route=sale/quote/ajaxGetQuoteForm&user_token=' + this.user_token + '&quote_id=' + quote_id, function() {
+        $('#modal-quote-form').modal('show');
+        QuoteManager.hideLoading();
+    });
+},
+
+/**
+ * عرض تفاصيل عرض سعر
+ * @param {number} quote_id - معرف عرض السعر
+ */
+viewQuote: function(quote_id) {
+    this.showLoading();
+    
+    $('#modal-quote-view .modal-content').load('index.php?route=sale/quote/ajaxGetQuoteView&user_token=' + this.user_token + '&quote_id=' + quote_id, function() {
+        $('#modal-quote-view').modal('show');
+        QuoteManager.hideLoading();
+    });
+},
+  
+  /**
+   * اعتماد عرض سعر
+   * @param {number} quote_id - معرف عرض السعر المراد اعتماده
+   */
+  approveQuote: function(quote_id) {
+    if (confirm('{{ text_confirm_approve }}')) {
+      this.showLoading();
+      
+      $.ajax({
+        url: 'index.php?route=sale/quote/ajaxApprove&user_token=' + this.user_token,
+        type: 'POST',
+        data: { quote_id: quote_id },
+        dataType: 'json',
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+          } else if (json.success) {
+            alert(json.success);
+            QuoteManager.loadQuotes();
+          }
+          QuoteManager.hideLoading();
+        },
+        error: function(xhr, status, error) {
+          alert('Error: ' + error);
+          QuoteManager.hideLoading();
+        }
+      });
+    }
+  },
+  
+  /**
+   * رفض عرض سعر
+   * @param {number} quote_id - معرف عرض السعر المراد رفضه
+   */
+  rejectQuote: function(quote_id) {
+    var reason = prompt('{{ text_prompt_reject_reason }}');
+    
+    if (reason !== null) {
+      this.showLoading();
+      
+      $.ajax({
+        url: 'index.php?route=sale/quote/ajaxReject&user_token=' + this.user_token,
+        type: 'POST',
+        data: { 
+          quote_id: quote_id,
+          reason: reason 
+        },
+        dataType: 'json',
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+          } else if (json.success) {
+            alert(json.success);
+            QuoteManager.loadQuotes();
+          }
+          QuoteManager.hideLoading();
+        },
+        error: function(xhr, status, error) {
+          alert('Error: ' + error);
+          QuoteManager.hideLoading();
+        }
+      });
+    }
+  },
+  
+  /**
+   * تعيين عرض سعر كمنتهي الصلاحية
+   * @param {number} quote_id - معرف عرض السعر المراد تعيينه كمنتهي الصلاحية
+   */
+  expireQuote: function(quote_id) {
+    if (confirm('{{ text_confirm_expire }}')) {
+      this.showLoading();
+      
+      $.ajax({
+        url: 'index.php?route=sale/quote/ajaxExpire&user_token=' + this.user_token,
+        type: 'POST',
+        data: { quote_id: quote_id },
+        dataType: 'json',
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+          } else if (json.success) {
+            alert(json.success);
+            QuoteManager.loadQuotes();
+          }
+          QuoteManager.hideLoading();
+        },
+        error: function(xhr, status, error) {
+          alert('Error: ' + error);
+          QuoteManager.hideLoading();
+        }
+      });
+    }
+  },
+  
+ /**
+   * تحويل عرض سعر إلى طلب
+   * @param {number} quote_id - معرف عرض السعر المراد تحويله
+   */
+  convertToOrder: function(quote_id) {
+    if (confirm('{{ text_confirm_convert }}')) {
+      this.showLoading();
+      
+      $.ajax({
+        url: 'index.php?route=sale/quote/ajaxConvertToOrder&user_token=' + this.user_token,
+        type: 'POST',
+        data: { quote_id: quote_id },
+        dataType: 'json',
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+            QuoteManager.hideLoading();
+          } else if (json.success) {
+            alert(json.success);
+            if (json.redirect) {
+              window.location.href = json.redirect;
+            } else {
+              QuoteManager.loadQuotes();
+              QuoteManager.hideLoading();
+            }
+          }
+        },
+        error: function(xhr, status, error) {
+          alert('Error: ' + error);
+          QuoteManager.hideLoading();
+        }
+      });
+    }
+  },
+  
+  /**
+   * حذف عرض سعر
+   * @param {number} quote_id - معرف عرض السعر المراد حذفه
+   */
+  deleteQuote: function(quote_id) {
+    if (confirm('{{ text_confirm_delete }}')) {
+      this.showLoading();
+      
+      $.ajax({
+        url: 'index.php?route=sale/quote/ajaxDelete&user_token=' + this.user_token,
+        type: 'POST',
+        data: { quote_id: quote_id },
+        dataType: 'json',
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+          } else if (json.success) {
+            alert(json.success);
+            QuoteManager.loadQuotes();
+          }
+          QuoteManager.hideLoading();
+        },
+        error: function(xhr, status, error) {
+          alert('Error: ' + error);
+          QuoteManager.hideLoading();
+        }
+      });
+    }
+  },
+  
+  /**
+   * تنفيذ إجراء مجمع على عروض الأسعار المحددة
+   */
+  executeBulkAction: function() {
+    var action = $('#bulk-action').val();
+    
+    if (!action) {
+      alert('{{ text_select_action }}');
+      return;
+    }
+    
+    var selected = [];
+    $('input[name="selected[]"]:checked').each(function() {
+      selected.push($(this).val());
+    });
+    
+    if (selected.length === 0) {
+      alert('{{ text_no_items_selected }}');
+      return;
+    }
+    
+    var confirmMessage = '';
+    switch(action) {
+      case 'approve':
+        confirmMessage = '{{ text_confirm_approve }}';
+        break;
+      case 'reject':
+        confirmMessage = '{{ text_confirm_reject }}';
+        break;
+      case 'delete':
+        confirmMessage = '{{ text_confirm_delete }}';
+        break;
+    }
+    
+    if (confirm(confirmMessage)) {
+      this.showLoading();
+      
+      var postData = {
+        action: action,
+        selected: selected
+      };
+      
+      // إذا كان الإجراء هو الرفض، فنحتاج إلى سبب الرفض
+      if (action === 'reject') {
+        var reason = prompt('{{ text_prompt_reject_reason }}');
+        if (reason === null) {
+          this.hideLoading();
+          return;
+        }
+        postData.reason = reason;
+      }
+      
+      $.ajax({
+        url: 'index.php?route=sale/quote/ajaxBulkAction&user_token=' + this.user_token,
+        type: 'POST',
+        data: postData,
+        dataType: 'json',
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+            
+            if (json.errors && Array.isArray(json.errors)) {
+              for (var i = 0; i < json.errors.length; i++) {
+                alert(json.errors[i]);
+              }
+            }
+          }
+          
+          if (json.success) {
+            alert(json.success);
+            QuoteManager.loadQuotes();
+          }
+          
+          QuoteManager.hideLoading();
+        },
+        error: function(xhr, status, error) {
+          alert('Error: ' + error);
+          QuoteManager.hideLoading();
+        }
+      });
+    }
+  },
+  
+  /**
+   * تصدير عروض الأسعار إلى Excel أو PDF
+   * @param {string} type - نوع التصدير ('excel' أو 'pdf')
+   */
+  exportQuotes: function(type) {
+    var url = 'index.php?route=sale/quote/export&user_token=' + this.user_token +
+      '&type=' + type +
+      '&filter_quote_number=' + encodeURIComponent($('#filter-quote-number').val() || '') +
+      '&filter_customer=' + encodeURIComponent($('#filter-customer').val() || '') +
+      '&filter_status=' + encodeURIComponent($('#filter-status').val() || '') +
+      '&filter_date_start=' + encodeURIComponent($('#filter-date-start').val() || '') +
+      '&filter_date_end=' + encodeURIComponent($('#filter-date-end').val() || '') +
+      '&filter_total_min=' + encodeURIComponent($('#filter-total-min').val() || '') +
+      '&filter_total_max=' + encodeURIComponent($('#filter-total-max').val() || '');
+    
+    window.open(url, '_blank');
+  }
+};
+
+// التهيئة عند جاهزية المستند
+$(document).ready(function() {
+  QuoteManager.init();
+});
+</script>

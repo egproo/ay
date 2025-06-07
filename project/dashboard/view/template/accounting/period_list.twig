@@ -1,0 +1,117 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-period').submit() : false;"><i class="fa fa-trash-o"></i></button>
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-period">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">{% if sort == 'name' %}
+                    <a href="{{ sort_name }}" class="{{ order|lower }}">{{ column_name }}</a>
+                    {% else %}
+                    <a href="{{ sort_name }}">{{ column_name }}</a>
+                    {% endif %}</td>
+                  <td class="text-left">{{ column_description }}</td>
+                  <td class="text-left">{% if sort == 'start_date' %}
+                    <a href="{{ sort_start_date }}" class="{{ order|lower }}">{{ column_start_date }}</a>
+                    {% else %}
+                    <a href="{{ sort_start_date }}">{{ column_start_date }}</a>
+                    {% endif %}</td>
+                  <td class="text-left">{% if sort == 'end_date' %}
+                    <a href="{{ sort_end_date }}" class="{{ order|lower }}">{{ column_end_date }}</a>
+                    {% else %}
+                    <a href="{{ sort_end_date }}">{{ column_end_date }}</a>
+                    {% endif %}</td>
+                  <td class="text-left">{% if sort == 'status' %}
+                    <a href="{{ sort_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                    {% else %}
+                    <a href="{{ sort_status }}">{{ column_status }}</a>
+                    {% endif %}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if periods %}
+                {% for period in periods %}
+                <tr>
+                  <td class="text-center">{% if period.period_id in selected %}
+                    <input type="checkbox" name="selected[]" value="{{ period.period_id }}" checked="checked" />
+                    {% else %}
+                    <input type="checkbox" name="selected[]" value="{{ period.period_id }}" />
+                    {% endif %}</td>
+                  <td class="text-left">{{ period.name }}</td>
+                  <td class="text-left">{{ period.description }}</td>
+                  <td class="text-left">{{ period.start_date }}</td>
+                  <td class="text-left">{{ period.end_date }}</td>
+                  <td class="text-left">
+                    {% if period.status_id == 0 %}
+                    <span class="label label-success">{{ period.status }}</span>
+                    {% elseif period.status_id == 1 %}
+                    <span class="label label-warning">{{ period.status }}</span>
+                    {% else %}
+                    <span class="label label-danger">{{ period.status }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-right">
+                    <div class="btn-group">
+                      {% if period.status_id == 0 %}
+                      <a href="{{ period.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                      <a href="{{ period.close }}" data-toggle="tooltip" title="{{ button_close }}" class="btn btn-warning"><i class="fa fa-lock"></i></a>
+                      {% elseif period.status_id == 1 %}
+                      <a href="{{ period.reopen }}" data-toggle="tooltip" title="{{ button_reopen }}" class="btn btn-success" onclick="return confirm('{{ text_confirm_reopen }}');"><i class="fa fa-unlock"></i></a>
+                      <a href="{{ period.lock }}" data-toggle="tooltip" title="{{ button_lock }}" class="btn btn-danger" onclick="return confirm('{{ text_confirm_lock }}');"><i class="fa fa-lock"></i></a>
+                      {% else %}
+                      <button type="button" class="btn btn-default" disabled="disabled"><i class="fa fa-lock"></i></button>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

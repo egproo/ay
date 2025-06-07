@@ -1,0 +1,212 @@
+<form method="post"
+      data-oc-toggle="ajax"
+      data-oc-load="{{ cart }}"
+      data-oc-load2="{{ cart2 }}"
+      data-oc-load3="{{ cart3 }}"
+      data-oc-target="#header-cart"
+      data-oc-target3="#side-header-cart"
+      data-oc-target2="#carttotalproductscount"
+      class="d-flex flex-column h-100">
+  <div class="col hp">
+    <div class="card h-100 shadow-sm" style="border-radius:30px 30px 4px 4px; position: relative;">
+      
+      <!-- صورة المنتج -->
+      <div class="product-image-wrapper" style="position: relative; display: block; width: 100%; padding-top: 75%;">
+        <a href="{{href}}" style="display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+          <img loading="lazy"
+               style="border-radius: 31px 31px 0px 0px; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;"
+               src="{{ thumb }}"
+               alt="{{ name }}"
+               title="{{ name }}"
+               class="card-img-top"/>
+        </a>
+        
+        <!-- زر العرض السريع -->
+        <button type="button" 
+                class="quick-view-btn" 
+                data-product-id="{{ product_id }}"
+                aria-label="{{ text_quick_view ?? 'عرض سريع' }}">
+          <i class="fa fa-eye"></i>
+        </button>
+      </div>
+      
+      <!-- شارة الماركة -->
+      {% if brand %}
+        <span class="label-top shadow-sm float-end badge rounded-pill"
+              style="position: absolute; background-color: #000; color: #fff; top: 8px; right: 8px; padding: 3px 6px; font-size: 11px; font-weight: 600; border-radius: 0.25rem; text-transform: uppercase; text-decoration: none;">
+          <a style="background-color: #000; color: #fff !important" href="{{ brand_href }}">{{ brand }}</a>
+        </span>
+      {% endif %}
+      
+      <!-- زر المفضلة (Wishlist) -->
+      <div class="wishlist-thumb-{{ product_id }}">
+        <span id="wishlist-spa-{{ product_id }}"></span>
+        {% if totalwishlist > 0 %}
+          <span style="position: absolute; top: 8px; left: 8px; padding: 3px 6px; font-weight: 600; border-radius: 0.25rem; text-transform: uppercase; text-decoration: none; background: transparent; border: none; font-size: 25px; margin-top: 8px; z-index: 9; color: #e42709; cursor: pointer;">
+            <i class="addwishlist fa-solid fa-heart"></i>
+          </span>
+        {% else %}
+          <span style="position: absolute; top: 8px; left: 8px; padding: 3px 6px; font-weight: 600; border-radius: 0.25rem; text-transform: uppercase; text-decoration: none; background: transparent; border: none; font-size: 25px; margin-top: 8px; z-index: 9; color: #e42709; cursor: pointer;">
+            <i class="addwishlist fa-regular fa-heart"></i>
+          </span>
+        {% endif %}
+        <input type="hidden" name="product_id" value="{{ product_id }}" />
+      </div>
+      
+      <!-- محتوى الكارت -->
+      <div class="card-body" style="padding: 0px 4px;padding-bottom: 45px;">
+        
+        <!-- اسم التصنيف (إن أردت إظهاره كشارة Badge) -->
+        {% if category %}
+          <span class="badge bg-light text-dark me-1"
+                style="font-size: 0.75rem; width: 100%; background-color: #e2e2e273 !important; text-align: center;">
+            <a href="{{ category_href }}"
+               style="color: #000 !important; text-decoration: none;">
+              {{ category }}
+            </a>
+          </span>
+        {% endif %}
+        
+        <!-- عنوان المنتج -->
+        <div class="card-title text-center" style="min-height: 40px; padding-bottom: 0px;">
+          <a style="line-height: 15px; padding-inline: 0px; font-weight: 900; color: #0f1740 !important; font-size: 11px; min-height: 75px;"
+             class="text-black text-center" target="_blank" href="{{ href }}">
+            {{ name }}
+          </a>
+        </div>
+        
+        <!-- منطقة السعر -->
+        <div class="price-block d-flex justify-content-between align-items-center mb-2">
+          <div>
+            {% if price %}
+              {% if special %}
+                <span class="special-price" style="font-weight: bold; color: #222;">{{ special }}</span><br>
+                <span class="old-price" style="text-decoration: line-through; color: #65788d; font-size: 0.9em;">{{ price }}</span>
+              {% else %}
+                <br>
+                <span class="price" style="font-weight: bold; color: #222;">{{ price }}</span>
+              {% endif %}
+            {% endif %}
+          </div>
+          
+          <!-- أيقونات التلميحات (الوحدات/ الباقات/ خصومات الكمية) -->
+          <div class="product-hints d-flex align-items-center gap-2" style="margin-bottom: 0.5rem;">
+            {% if units|length > 1 %}
+              <div class="hint-icon unit-info"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   data-bs-html="true"
+                   title="{{ text_available_units }}: {{ units|length }}<br>
+                          {% for unit in units %}
+                            &#8226; {{ unit.unit_name }}<br>
+                          {% endfor %}">
+                <i class="fa fa-info-circle" style="color: #333;"></i>
+              </div>
+            {% endif %}
+            
+            {% if bundles|length > 0 %}
+              <div class="hint-icon bundle-info"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   title="{{ text_bundle }}">
+                <i class="fa fa-gift" style="color: #333;"></i>
+              </div>
+            {% endif %}
+            
+            {% if product_quantity_discounts|length > 0 %}
+              <div class="hint-icon discount-info"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   title="{{ text_quantity_discounts }}">
+                <i class="fa fa-percent" style="color: #333;"></i>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <!-- زر السلة / عرض التفاصيل -->
+        <div class="d-grid gap-2 my-2">
+          {# إذا كان هناك خيارات أو أكثر من وحدة أو باقات أو خصومات => نعرض زر "عرض التفاصيل" فقط #}
+          {% set has_config = (options|length > 0) or (units|length > 1) or (bundles|length > 0) or (product_quantity_discounts|length > 0) %}
+          
+          {% if has_config %}
+            <!-- زر ينقل لصفحة المنتج للتفاصيل وأيضًا للعرض السريع -->
+            <button type="button"
+                   class="btn btn-warning bold-btn quick-view-trigger"
+                   data-product-id="{{ product_id }}"
+                   style="position: relative;z-index: 999;color: #000 !important;font-size: 12px;width: 100%;position: absolute;bottom: 0px;margin-inline-start: -4px;height: 45px;line-height: 30px;">
+              {{ text_view_details ?? 'عرض التفاصيل' }}
+            </button>
+          {% else %}
+            <!-- إن لم توجد أي خيارات/وحدات متعددة/باقات/خصومات كمية -->
+            {% if quantity < 1 %}
+              <!-- زر إشعار توفر -->
+              <button type="submit"
+                      formaction="{{ add_to_waitlist }}"
+                      class="btn btn-warning bold-btn"
+                      style="position: relative;z-index: 999;color: #000 !important;font-size: 12px;width: 100%;position: absolute;bottom: 0px;margin-inline-start: -4px;height: 45px;line-height: 30px;">
+                {{ button_add_wailist ?? 'أشعرني عند التوفر' }}
+              </button>
+            {% else %}
+              <!-- زر إضافة للسلة -->
+              <button type="submit"
+                      formaction="{{ add_to_cart }}"
+                      class="btn btn-warning bold-btn"
+                      style="position: relative;z-index: 999;color: #000 !important;font-size: 12px;width: 100%;position: absolute;bottom: 0px;margin-inline-start: -4px;height: 45px;line-height: 30px;">
+                {{ button_cart ?? 'أضف إلى السلة' }}
+              </button>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <input type="hidden" name="product_id" value="{{ product_id }}" />
+  <input type="hidden" name="quantity" value="{{ minimum }}" />
+  
+  <!-- سكربت المفضلة فقط -->
+  <script type="text/javascript">
+    $(document).ready(function() {
+      // تفعيل أداة التلميح (Tooltip)
+      $('[data-bs-toggle="tooltip"]').tooltip();
+    });
+    
+    // زر الإضافة للمفضلة
+    $(document).on('click', '.wishlist-thumb-{{ product_id }} i', function() {
+      var product_id = '{{ product_id }}';
+      $.ajax({
+        url: 'index.php?route=account/wishlist/swpid&language=ar',
+        data: 'product_id=' + product_id,
+        type: "post",
+        cache: false,
+        success: function(json) {
+          $('.alert-dismissible').remove();
+          if (json['redirect']) {
+            location = json['redirect'].replaceAll('&amp;', '&');
+          }
+          if (typeof json['error'] == 'string') {
+            $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+          }
+          if (typeof json['error'] == 'object') {
+            if (json['error']['warning']) {
+              $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error']['warning'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            }
+            for (var key in json['error']) {
+              $('#input-' + key.replaceAll('_', '-')).addClass('is-invalid');
+              $('#error-' + key.replaceAll('_', '-')).html(json['error'][key]).addClass('d-block');
+            }
+          }
+          if (json['success']) {
+            $('#alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-circle-check"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            $('.wishlist-thumb-{{ product_id }}').find("i").toggleClass("fa-solid fa-regular");
+          }
+          setTimeout(function() {
+            $('#alert').html('');
+            $('.alert-dismissible').remove();
+          }, 3000);
+        }
+      });
+    });
+  </script>
+</form>

@@ -1,0 +1,175 @@
+<div class="tab-pane" id="tab-movement">
+  <div class="alert alert-info">
+    <i class="fa fa-info-circle"></i> {{ text_movement_info }}
+  </div>
+  
+  <div class="row">
+    <div class="col-md-9">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-exchange"></i> {{ text_movement_history }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="table-responsive">
+            <table id="stock-movements" class="table table-striped table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th class="text-center">{{ column_date_added }}</th>
+                  <th class="text-center">{{ column_type }}</th>
+                  <th class="text-center">{{ column_quantity }}</th>
+                  <th class="text-center">{{ column_unit }}</th>
+                  <th class="text-center">{{ column_branch }}</th>
+                  <th class="text-center">{{ column_reference }}</th>
+                  <th class="text-center">{{ column_user }}</th>
+                  <th class="text-center">{{ column_cost }}</th>
+                  <th class="text-center">{{ column_new_cost }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- سيتم تحميل البيانات عبر JavaScript -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="text-center" id="movement-pagination">
+            <!-- سيتم تحميل الترقيم هنا -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- تاريخ تكلفة المنتج -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-money"></i> {{ text_cost_history }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="table-responsive">
+            <table id="cost-history" class="table table-striped table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th class="text-center">{{ column_date_added }}</th>
+                  <th class="text-center">{{ column_unit }}</th>
+                  <th class="text-center">{{ text_cost_change }}</th>
+                  <th class="text-center">{{ text_change_reason }}</th>
+                  <th class="text-center">{{ column_user }}</th>
+                  <th class="text-center">{{ text_notes }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- سيتم تحميل البيانات عبر JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_movement_filter }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label for="movement-type-filter">{{ text_filter_by_type }}</label>
+            <select id="movement-type-filter" class="form-control">
+              <option value="">{{ text_all_types }}</option>
+              <option value="purchase">{{ text_purchase }}</option>
+              <option value="sale">{{ text_sale }}</option>
+              <option value="adjustment_increase">{{ text_adjustment_increase }}</option>
+              <option value="adjustment_decrease">{{ text_adjustment_decrease }}</option>
+              <option value="transfer_in">{{ text_transfer_in }}</option>
+              <option value="transfer_out">{{ text_transfer_out }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="movement-branch-filter">{{ text_filter_by_branch }}</label>
+            <select id="movement-branch-filter" class="form-control">
+              <option value="">{{ text_all_branches }}</option>
+              {% for branch in branches %}
+              <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="movement-date-filter">{{ text_filter_by_date }}</label>
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="input-group date">
+                  <input type="text" id="movement-date-from" class="form-control" placeholder="{{ text_from_date }}" data-date-format="YYYY-MM-DD">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="input-group date">
+                  <input type="text" id="movement-date-to" class="form-control" placeholder="{{ text_to_date }}" data-date-format="YYYY-MM-DD">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="text-center">
+            <button type="button" id="apply-movement-filter" class="btn btn-primary">
+              <i class="fa fa-filter"></i> {{ button_apply }}
+            </button>
+            <button type="button" id="reset-movement-filter" class="btn btn-default">
+              <i class="fa fa-refresh"></i> {{ button_reset }}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel panel-info">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-chart-bar"></i> {{ text_movement_stats }}</h3>
+        </div>
+        <div class="panel-body">
+          <div id="movement-stats">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="well well-sm text-center">
+                  <h4>{{ text_total_incoming }}</h4>
+                  <span id="total-incoming" class="stat-value text-success">0</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="well well-sm text-center">
+                  <h4>{{ text_total_outgoing }}</h4>
+                  <span id="total-outgoing" class="stat-value text-danger">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="well well-sm">
+              <h4>{{ text_movement_frequency }}</h4>
+              <div id="movement-frequency-chart" style="height: 150px;">
+                <!-- سيتم تحميل الرسم البياني هنا -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Help Section -->
+  <div class="help-section panel panel-info" style="margin-top: 20px;">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_movement_help }}</h3>
+    </div>
+    <div class="panel-body">
+      <p>{{ text_movement_help_intro }}</p>
+      <ul>
+        <li><strong>{{ text_movement_types }}:</strong> {{ text_movement_types_help }}</li>
+        <li><strong>{{ text_movement_filters }}:</strong> {{ text_movement_filters_help }}</li>
+        <li><strong>{{ text_movement_stats }}:</strong> {{ text_movement_stats_help }}</li>
+      </ul>
+      <div class="alert alert-info">
+        <i class="fa fa-info-circle"></i> {{ text_movement_help_tip }}
+      </div>
+    </div>
+  </div>
+</div>

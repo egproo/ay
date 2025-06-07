@@ -1,0 +1,1161 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" id="button-save" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa-solid fa-save"></i>
+        </button>
+        <button type="button" id="button-send" data-bs-toggle="tooltip" title="{{ button_send }}" class="btn btn-success"{% if communication_type != 'email' %} style="display:none"{% endif %}>
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+        <button type="button" id="button-schedule" data-bs-toggle="tooltip" title="{{ button_schedule }}" class="btn btn-warning">
+          <i class="fa-solid fa-calendar-plus"></i>
+        </button>
+        <button type="button" id="button-follow-up" data-bs-toggle="tooltip" title="{{ button_follow_up }}" class="btn btn-info"{% if not communication_id %} disabled{% endif %}>
+          <i class="fa-solid fa-clock"></i>
+        </button>
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-cog"></i> {{ text_actions }}
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" id="btn-search"><i class="fa-solid fa-search"></i> {{ button_search }}</a></li>
+            <li><a class="dropdown-item" href="#" id="btn-export"><i class="fa-solid fa-download"></i> {{ button_export }}</a></li>
+            <li><a class="dropdown-item" href="#" id="btn-reports"><i class="fa-solid fa-chart-bar"></i> {{ button_reports }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" id="btn-statistics"><i class="fa-solid fa-chart-line"></i> {{ text_statistics }}</a></li>
+            <li><a class="dropdown-item" href="#" id="btn-dashboard"><i class="fa-solid fa-tachometer-alt"></i> {{ text_dashboard }}</a></li>
+          </ul>
+        </div>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-secondary">
+          <i class="fa-solid fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header">
+        <i class="fa-solid fa-comments"></i> {{ text_form }}
+        {% if communication_id %}
+          <span class="badge bg-{{ status == 'pending' ? 'warning' : (status == 'completed' ? 'success' : 'info') }} ms-2">
+            {{ status_text }}
+          </span>
+          <span class="badge bg-{{ priority == 'low' ? 'secondary' : (priority == 'medium' ? 'primary' : (priority == 'high' ? 'warning' : 'danger')) }} ms-1">
+            {{ priority_text }}
+          </span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <form id="form-communication">
+          <input type="hidden" name="communication_id" value="{{ communication_id }}">
+
+          <!-- معلومات أساسية -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="row mb-3">
+                <label for="input-supplier" class="col-sm-3 col-form-label required">{{ entry_supplier }}</label>
+                <div class="col-sm-9">
+                  <select name="supplier_id" id="input-supplier" class="form-select">
+                    <option value="">{{ text_select }}</option>
+                    {% for supplier in suppliers %}
+                      <option value="{{ supplier.supplier_id }}"{% if supplier.supplier_id == supplier_id %} selected{% endif %}>{{ supplier.name }}</option>
+                    {% endfor %}
+                  </select>
+                  {% if error_supplier %}
+                    <div class="text-danger">{{ error_supplier }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-communication-type" class="col-sm-3 col-form-label required">{{ entry_communication_type }}</label>
+                <div class="col-sm-9">
+                  <select name="communication_type" id="input-communication-type" class="form-select">
+                    <option value="email"{% if communication_type == 'email' %} selected{% endif %}>{{ text_email }}</option>
+                    <option value="phone"{% if communication_type == 'phone' %} selected{% endif %}>{{ text_phone }}</option>
+                    <option value="meeting"{% if communication_type == 'meeting' %} selected{% endif %}>{{ text_meeting }}</option>
+                    <option value="message"{% if communication_type == 'message' %} selected{% endif %}>{{ text_message }}</option>
+                    <option value="video_call"{% if communication_type == 'video_call' %} selected{% endif %}>{{ text_video_call }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-direction" class="col-sm-3 col-form-label">{{ entry_direction }}</label>
+                <div class="col-sm-9">
+                  <select name="direction" id="input-direction" class="form-select">
+                    <option value="outgoing"{% if direction == 'outgoing' %} selected{% endif %}>{{ text_outgoing }}</option>
+                    <option value="incoming"{% if direction == 'incoming' %} selected{% endif %}>{{ text_incoming }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="row mb-3">
+                <label for="input-communication-date" class="col-sm-3 col-form-label required">{{ entry_communication_date }}</label>
+                <div class="col-sm-9">
+                  <input type="date" name="communication_date" value="{{ communication_date }}" id="input-communication-date" class="form-control"/>
+                  {% if error_communication_date %}
+                    <div class="text-danger">{{ error_communication_date }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-communication-time" class="col-sm-3 col-form-label">{{ entry_communication_time }}</label>
+                <div class="col-sm-9">
+                  <input type="time" name="communication_time" value="{{ communication_time }}" id="input-communication-time" class="form-control"/>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-priority" class="col-sm-3 col-form-label">{{ entry_priority }}</label>
+                <div class="col-sm-9">
+                  <select name="priority" id="input-priority" class="form-select">
+                    <option value="low"{% if priority == 'low' %} selected{% endif %}>{{ text_low }}</option>
+                    <option value="medium"{% if priority == 'medium' %} selected{% endif %}>{{ text_medium }}</option>
+                    <option value="high"{% if priority == 'high' %} selected{% endif %}>{{ text_high }}</option>
+                    <option value="urgent"{% if priority == 'urgent' %} selected{% endif %}>{{ text_urgent }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- معلومات الاتصال -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">{{ text_contact_info }}</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <label for="input-contact-person" class="form-label">{{ entry_contact_person }}</label>
+                  <input type="text" name="contact_person" value="{{ contact_person }}" placeholder="{{ entry_contact_person }}" id="input-contact-person" class="form-control"/>
+                </div>
+                <div class="col-md-4">
+                  <label for="input-contact-email" class="form-label">{{ entry_contact_email }}</label>
+                  <input type="email" name="contact_email" value="{{ contact_email }}" placeholder="{{ entry_contact_email }}" id="input-contact-email" class="form-control"/>
+                </div>
+                <div class="col-md-4">
+                  <label for="input-contact-phone" class="form-label">{{ entry_contact_phone }}</label>
+                  <input type="text" name="contact_phone" value="{{ contact_phone }}" placeholder="{{ entry_contact_phone }}" id="input-contact-phone" class="form-control"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- الموضوع والمحتوى -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">{{ text_communication_content }}</h5>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <label for="input-subject" class="col-sm-2 col-form-label required">{{ entry_subject }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="subject" value="{{ subject }}" placeholder="{{ entry_subject }}" id="input-subject" class="form-control"/>
+                  {% if error_subject %}
+                    <div class="text-danger">{{ error_subject }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-content" class="col-sm-2 col-form-label required">{{ entry_content }}</label>
+                <div class="col-sm-10">
+                  <textarea name="content" rows="8" placeholder="{{ entry_content }}" id="input-content" class="form-control">{{ content }}</textarea>
+                  {% if error_content %}
+                    <div class="text-danger">{{ error_content }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label for="input-tags" class="col-sm-2 col-form-label">{{ entry_tags }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="tags" value="{{ tags }}" placeholder="{{ entry_tags }}" id="input-tags" class="form-control"/>
+                  <div class="form-text">{{ help_tags }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- المرفقات -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">{{ text_attachments }}</h5>
+              <button type="button" id="button-add-attachment" class="btn btn-sm btn-outline-primary">{{ button_add_attachment }}</button>
+            </div>
+            <div class="card-body">
+              <div id="attachments-container">
+                {% if attachments %}
+                  {% for attachment in attachments %}
+                    <div class="attachment-item mb-2 p-2 border rounded">
+                      <div class="row align-items-center">
+                        <div class="col-md-8">
+                          <i class="fa-solid fa-file"></i>
+                          <span>{{ attachment.original_name }}</span>
+                          <small class="text-muted">({{ attachment.file_size|number_format }} bytes)</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                          <a href="{{ attachment.download_url }}" class="btn btn-sm btn-outline-primary">{{ button_download }}</a>
+                          <button type="button" class="btn btn-sm btn-outline-danger remove-attachment">{{ button_remove }}</button>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              <input type="file" id="file-upload" multiple style="display: none;">
+            </div>
+          </div>
+
+          <!-- المشاركون -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">{{ text_participants }}</h5>
+              <button type="button" id="button-add-participant" class="btn btn-sm btn-outline-primary">{{ button_add_participant }}</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="participants-table">
+                  <thead>
+                    <tr>
+                      <th>{{ column_user }}</th>
+                      <th>{{ column_role }}</th>
+                      <th>{{ column_required }}</th>
+                      <th>{{ column_action }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if participants %}
+                      {% for participant in participants %}
+                        <tr>
+                          <td>
+                            <select name="participants[{{ loop.index0 }}][user_id]" class="form-select">
+                              {% for user in users %}
+                                <option value="{{ user.user_id }}"{% if user.user_id == participant.user_id %} selected{% endif %}>{{ user.name }}</option>
+                              {% endfor %}
+                            </select>
+                          </td>
+                          <td>
+                            <input type="text" name="participants[{{ loop.index0 }}][role]" value="{{ participant.role }}" class="form-control">
+                          </td>
+                          <td>
+                            <select name="participants[{{ loop.index0 }}][is_required]" class="form-select">
+                              <option value="1"{% if participant.is_required %} selected{% endif %}>{{ text_yes }}</option>
+                              <option value="0"{% if not participant.is_required %} selected{% endif %}>{{ text_no }}</option>
+                            </select>
+                          </td>
+                          <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-participant">{{ button_remove }}</button>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- المتابعة -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">{{ text_follow_up }}</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="input-follow-up-date" class="form-label">{{ entry_follow_up_date }}</label>
+                  <input type="date" name="follow_up_date" value="{{ follow_up_date }}" id="input-follow-up-date" class="form-control"/>
+                </div>
+                <div class="col-md-6">
+                  <label for="input-status" class="form-label">{{ entry_status }}</label>
+                  <select name="status" id="input-status" class="form-select">
+                    <option value="pending"{% if status == 'pending' %} selected{% endif %}>{{ text_pending }}</option>
+                    <option value="completed"{% if status == 'completed' %} selected{% endif %}>{{ text_completed }}</option>
+                    <option value="cancelled"{% if status == 'cancelled' %} selected{% endif %}>{{ text_cancelled }}</option>
+                    <option value="follow_up"{% if status == 'follow_up' %} selected{% endif %}>{{ text_follow_up_status }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-12">
+                  <label for="input-follow-up-notes" class="form-label">{{ entry_follow_up_notes }}</label>
+                  <textarea name="follow_up_notes" rows="3" placeholder="{{ entry_follow_up_notes }}" id="input-follow-up-notes" class="form-control">{{ follow_up_notes }}</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- إعدادات إضافية -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">{{ text_additional_settings }}</h5>
+            </div>
+            <div class="card-body">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_confidential" value="1" id="input-confidential"{% if is_confidential %} checked{% endif %}>
+                <label class="form-check-label" for="input-confidential">{{ entry_confidential }}</label>
+                <div class="form-text">{{ help_confidential }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- معلومات إضافية -->
+          {% if communication_id %}
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">{{ text_additional_info }}</h5>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <p><strong>{{ text_created_by }}:</strong> {{ created_by_name }}</p>
+                    <p><strong>{{ text_created_date }}:</strong> {{ created_date }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    {% if modified_by_name %}
+                      <p><strong>{{ text_modified_by }}:</strong> {{ modified_by_name }}</p>
+                      <p><strong>{{ text_modified_date }}:</strong> {{ modified_date }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal للمتابعة -->
+<div class="modal fade" id="modal-follow-up" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_add_follow_up }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-follow-up">
+          <div class="mb-3">
+            <label for="modal-follow-up-date" class="form-label">{{ entry_follow_up_date }}</label>
+            <input type="date" id="modal-follow-up-date" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label for="modal-follow-up-notes" class="form-label">{{ entry_follow_up_notes }}</label>
+            <textarea id="modal-follow-up-notes" rows="4" class="form-control"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="button-save-follow-up">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+var participant_row = {{ participants|length|default(0) }};
+
+// تبديل نوع التواصل
+$('#input-communication-type').on('change', function() {
+    if ($(this).val() == 'email') {
+        $('#button-send').show();
+    } else {
+        $('#button-send').hide();
+    }
+});
+
+// حفظ التواصل
+$('#button-save').on('click', function() {
+    var formData = new FormData($('#form-communication')[0]);
+
+    $.ajax({
+        url: 'index.php?route=supplier/communication&user_token={{ user_token }}',
+        type: 'post',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-save').button('loading');
+        },
+        complete: function() {
+            $('#button-save').button('reset');
+        },
+        success: function(json) {
+            $('.alert-dismissible').remove();
+
+            if (json['error']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            }
+
+            if (json['success']) {
+                $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+
+                if (json['communication_id']) {
+                    $('input[name="communication_id"]').val(json['communication_id']);
+                    $('#button-follow-up').prop('disabled', false);
+                }
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// إرسال إيميل
+$('#button-send').on('click', function() {
+    if (confirm('{{ text_confirm_send }}')) {
+        $.ajax({
+            url: 'index.php?route=supplier/communication/send&user_token={{ user_token }}',
+            type: 'post',
+            data: $('#form-communication').serialize(),
+            dataType: 'json',
+            success: function(json) {
+                if (json['success']) {
+                    alert(json['success']);
+                } else if (json['error']) {
+                    alert(json['error']);
+                }
+            }
+        });
+    }
+});
+
+// إضافة مرفق
+$('#button-add-attachment').on('click', function() {
+    $('#file-upload').click();
+});
+
+$('#file-upload').on('change', function() {
+    var files = this.files;
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var html = '<div class="attachment-item mb-2 p-2 border rounded">';
+        html += '<div class="row align-items-center">';
+        html += '<div class="col-md-8">';
+        html += '<i class="fa-solid fa-file"></i>';
+        html += '<span>' + file.name + '</span>';
+        html += '<small class="text-muted">(' + file.size + ' bytes)</small>';
+        html += '</div>';
+        html += '<div class="col-md-4 text-end">';
+        html += '<button type="button" class="btn btn-sm btn-outline-danger remove-attachment">{{ button_remove }}</button>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        $('#attachments-container').append(html);
+    }
+});
+
+// حذف مرفق
+$(document).on('click', '.remove-attachment', function() {
+    $(this).closest('.attachment-item').remove();
+});
+
+// إضافة مشارك
+$('#button-add-participant').on('click', function() {
+    var html = '<tr>';
+    html += '<td><select name="participants[' + participant_row + '][user_id]" class="form-select">';
+    {% for user in users %}
+    html += '<option value="{{ user.user_id }}">{{ user.name }}</option>';
+    {% endfor %}
+    html += '</select></td>';
+    html += '<td><input type="text" name="participants[' + participant_row + '][role]" class="form-control"></td>';
+    html += '<td><select name="participants[' + participant_row + '][is_required]" class="form-select">';
+    html += '<option value="1">{{ text_yes }}</option>';
+    html += '<option value="0">{{ text_no }}</option>';
+    html += '</select></td>';
+    html += '<td><button type="button" class="btn btn-danger btn-sm remove-participant">{{ button_remove }}</button></td>';
+    html += '</tr>';
+
+    $('#participants-table tbody').append(html);
+    participant_row++;
+});
+
+// حذف مشارك
+$(document).on('click', '.remove-participant', function() {
+    $(this).closest('tr').remove();
+});
+
+// إضافة متابعة
+$('#button-follow-up').on('click', function() {
+    $('#modal-follow-up').modal('show');
+});
+
+$('#button-save-follow-up').on('click', function() {
+    var communication_id = $('input[name="communication_id"]').val();
+    var follow_up_date = $('#modal-follow-up-date').val();
+    var follow_up_notes = $('#modal-follow-up-notes').val();
+
+    $.ajax({
+        url: 'index.php?route=supplier/communication/addFollowUp&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            communication_id: communication_id,
+            follow_up_date: follow_up_date,
+            follow_up_notes: follow_up_notes
+        },
+        dataType: 'json',
+        success: function(json) {
+            $('#modal-follow-up').modal('hide');
+
+            if (json['success']) {
+                $('#input-follow-up-date').val(follow_up_date);
+                $('#input-follow-up-notes').val(follow_up_notes);
+                $('#input-status').val('follow_up');
+                alert(json['success']);
+            } else if (json['error']) {
+                alert(json['error']);
+            }
+        }
+    });
+});
+
+// جدولة التواصل
+$('#button-schedule').on('click', function() {
+    // فتح نافذة جدولة التواصل
+    window.open('index.php?route=supplier/communication/schedule&user_token={{ user_token }}', '_blank', 'width=800,height=600');
+});
+
+// تحديث معلومات الاتصال عند تغيير المورد
+$('#input-supplier').on('change', function() {
+    var supplier_id = $(this).val();
+
+    if (supplier_id) {
+        $.ajax({
+            url: 'index.php?route=supplier/communication/getSupplierInfo&user_token={{ user_token }}',
+            type: 'post',
+            data: {supplier_id: supplier_id},
+            dataType: 'json',
+            success: function(json) {
+                if (json['supplier']) {
+                    $('#input-contact-email').val(json['supplier']['email']);
+                    $('#input-contact-phone').val(json['supplier']['telephone']);
+                }
+            }
+        });
+    }
+});
+
+// البحث المتقدم
+$('#btn-search').on('click', function(e) {
+    e.preventDefault();
+    showAdvancedSearchModal();
+});
+
+// تصدير البيانات
+$('#btn-export').on('click', function(e) {
+    e.preventDefault();
+
+    var format = prompt('{{ text_select_export_format }}\n1. CSV\n2. Excel\n3. PDF', 'csv');
+    if (format && ['csv', 'excel', 'pdf'].includes(format.toLowerCase())) {
+        var url = 'index.php?route=supplier/communication/export&user_token={{ user_token }}&format=' + format.toLowerCase();
+
+        // إضافة فلاتر إضافية إذا كانت متوفرة
+        var filters = getExportFilters();
+        if (filters) {
+            url += '&' + filters;
+        }
+
+        window.open(url, '_blank');
+    }
+});
+
+// التقارير
+$('#btn-reports').on('click', function(e) {
+    e.preventDefault();
+    showReportsModal();
+});
+
+// الإحصائيات
+$('#btn-statistics').on('click', function(e) {
+    e.preventDefault();
+    showStatisticsModal();
+});
+
+// لوحة التحكم
+$('#btn-dashboard').on('click', function(e) {
+    e.preventDefault();
+    showDashboardModal();
+});
+
+// إضافة متابعة
+$('#button-follow-up').on('click', function(e) {
+    e.preventDefault();
+
+    if (!$('input[name="communication_id"]').val()) {
+        alert('{{ error_communication_not_found }}');
+        return;
+    }
+
+    showFollowUpModal();
+});
+
+// الحصول على فلاتر التصدير
+function getExportFilters() {
+    var filters = [];
+
+    if ($('#input-supplier').val()) {
+        filters.push('supplier_ids[]=' + $('#input-supplier').val());
+    }
+
+    if ($('#input-communication-type').val()) {
+        filters.push('communication_types[]=' + $('#input-communication-type').val());
+    }
+
+    if ($('#input-communication-date').val()) {
+        filters.push('date_from=' + $('#input-communication-date').val());
+        filters.push('date_to=' + $('#input-communication-date').val());
+    }
+
+    return filters.join('&');
+}
+
+// عرض مودال البحث المتقدم
+function showAdvancedSearchModal() {
+    var modalHtml = `
+        <div class="modal fade" id="searchModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ text_advanced_search }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="search-form">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ text_search_text }}</label>
+                                    <input type="text" name="search_text" class="form-control" placeholder="{{ text_search_placeholder }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ entry_supplier }}</label>
+                                    <select name="supplier_ids[]" class="form-select" multiple>
+                                        {% for supplier in suppliers %}
+                                        <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ entry_communication_type }}</label>
+                                    <select name="communication_types[]" class="form-select" multiple>
+                                        <option value="email">{{ text_email }}</option>
+                                        <option value="phone">{{ text_phone }}</option>
+                                        <option value="meeting">{{ text_meeting }}</option>
+                                        <option value="message">{{ text_message }}</option>
+                                        <option value="video_call">{{ text_video_call }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ entry_status }}</label>
+                                    <select name="statuses[]" class="form-select" multiple>
+                                        <option value="pending">{{ text_pending }}</option>
+                                        <option value="completed">{{ text_completed }}</option>
+                                        <option value="cancelled">{{ text_cancelled }}</option>
+                                        <option value="follow_up">{{ text_follow_up_status }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ entry_priority }}</label>
+                                    <select name="priorities[]" class="form-select" multiple>
+                                        <option value="low">{{ text_low }}</option>
+                                        <option value="medium">{{ text_medium }}</option>
+                                        <option value="high">{{ text_high }}</option>
+                                        <option value="urgent">{{ text_urgent }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ entry_direction }}</label>
+                                    <select name="directions[]" class="form-select" multiple>
+                                        <option value="incoming">{{ text_incoming }}</option>
+                                        <option value="outgoing">{{ text_outgoing }}</option>
+                                        <option value="internal">{{ text_internal }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ text_date_range }}</label>
+                                    <select name="date_range" class="form-select">
+                                        <option value="">{{ text_select }}</option>
+                                        <option value="today">{{ text_today }}</option>
+                                        <option value="yesterday">{{ text_yesterday }}</option>
+                                        <option value="this_week">{{ text_this_week }}</option>
+                                        <option value="last_week">{{ text_last_week }}</option>
+                                        <option value="this_month">{{ text_this_month }}</option>
+                                        <option value="last_month">{{ text_last_month }}</option>
+                                        <option value="this_year">{{ text_this_year }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">{{ text_date_from }}</label>
+                                    <input type="date" name="date_from" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">{{ text_date_to }}</label>
+                                    <input type="date" name="date_to" class="form-control">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="has_attachments" value="1" class="form-check-input" id="has-attachments">
+                                        <label class="form-check-label" for="has-attachments">{{ text_has_attachments }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="has_follow_up" value="1" class="form-check-input" id="has-follow-up">
+                                        <label class="form-check-label" for="has-follow-up">{{ text_has_follow_up }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="is_overdue" value="1" class="form-check-input" id="is-overdue">
+                                        <label class="form-check-label" for="is-overdue">{{ text_is_overdue }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+                        <button type="button" class="btn btn-primary" id="btn-search-execute">{{ button_search }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#searchModal').modal('show');
+
+    // تنفيذ البحث
+    $('#btn-search-execute').on('click', function() {
+        var searchData = $('#search-form').serialize();
+
+        $.ajax({
+            url: 'index.php?route=supplier/communication/search&user_token={{ user_token }}',
+            type: 'post',
+            data: searchData,
+            dataType: 'json',
+            success: function(json) {
+                if (json['success'] && json['data']) {
+                    displaySearchResults(json['data'], json['total']);
+                    $('#searchModal').modal('hide');
+                } else if (json['error']) {
+                    alert(json['error']);
+                }
+            },
+            error: function() {
+                alert('{{ text_ajax_error }}');
+            }
+        });
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#searchModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض مودال التقارير
+function showReportsModal() {
+    var modalHtml = `
+        <div class="modal fade" id="reportsModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ text_reports }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ text_date_from }}</label>
+                                <input type="date" id="report-date-from" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ text_date_to }}</label>
+                                <input type="date" id="report-date-to" class="form-control">
+                            </div>
+                        </div>
+                        <div class="text-center mb-3">
+                            <button type="button" class="btn btn-primary" id="btn-generate-reports">{{ button_generate_reports }}</button>
+                        </div>
+                        <div id="reports-content"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#reportsModal').modal('show');
+
+    // تنفيذ التقارير
+    $('#btn-generate-reports').on('click', function() {
+        var reportData = {
+            date_from: $('#report-date-from').val(),
+            date_to: $('#report-date-to').val()
+        };
+
+        $.ajax({
+            url: 'index.php?route=supplier/communication/reports&user_token={{ user_token }}',
+            type: 'post',
+            data: reportData,
+            dataType: 'json',
+            success: function(json) {
+                if (json['success'] && json['reports']) {
+                    displayReports(json['reports']);
+                } else if (json['error']) {
+                    alert(json['error']);
+                }
+            },
+            error: function() {
+                alert('{{ text_ajax_error }}');
+            }
+        });
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#reportsModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض مودال الإحصائيات
+function showStatisticsModal() {
+    var modalHtml = `
+        <div class="modal fade" id="statisticsModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ text_statistics }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="statistics-content">
+                            <div class="text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">{{ text_loading }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#statisticsModal').modal('show');
+
+    // تحميل الإحصائيات
+    $.ajax({
+        url: 'index.php?route=supplier/communication/statistics&user_token={{ user_token }}',
+        type: 'get',
+        dataType: 'json',
+        success: function(json) {
+            if (json['success'] && json['statistics']) {
+                displayStatistics(json['statistics']);
+            } else if (json['error']) {
+                $('#statistics-content').html('<div class="alert alert-danger">' + json['error'] + '</div>');
+            }
+        },
+        error: function() {
+            $('#statistics-content').html('<div class="alert alert-danger">{{ text_ajax_error }}</div>');
+        }
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#statisticsModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض مودال المتابعة
+function showFollowUpModal() {
+    var modalHtml = `
+        <div class="modal fade" id="followUpModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ text_add_follow_up }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="follow-up-form">
+                            <div class="mb-3">
+                                <label class="form-label">{{ entry_follow_up_date }}</label>
+                                <input type="date" name="follow_up_date" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">{{ entry_follow_up_notes }}</label>
+                                <textarea name="notes" class="form-control" rows="4" placeholder="{{ help_follow_up }}"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+                        <button type="button" class="btn btn-primary" id="btn-add-follow-up">{{ button_add }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#followUpModal').modal('show');
+
+    // إضافة المتابعة
+    $('#btn-add-follow-up').on('click', function() {
+        var followUpData = $('#follow-up-form').serialize();
+        followUpData += '&communication_id=' + $('input[name="communication_id"]').val();
+
+        $.ajax({
+            url: 'index.php?route=supplier/communication/addFollowUp&user_token={{ user_token }}',
+            type: 'post',
+            data: followUpData,
+            dataType: 'json',
+            success: function(json) {
+                if (json['success']) {
+                    alert(json['success']);
+                    $('#followUpModal').modal('hide');
+                    location.reload();
+                } else if (json['error']) {
+                    alert(json['error']);
+                }
+            },
+            error: function() {
+                alert('{{ text_ajax_error }}');
+            }
+        });
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#followUpModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض نتائج البحث
+function displaySearchResults(data, total) {
+    var resultsHtml = `
+        <div class="modal fade" id="resultsModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ text_search_results }} (${total})</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>{{ column_subject }}</th>
+                                        <th>{{ column_supplier }}</th>
+                                        <th>{{ column_type }}</th>
+                                        <th>{{ column_direction }}</th>
+                                        <th>{{ column_priority }}</th>
+                                        <th>{{ column_status }}</th>
+                                        <th>{{ column_date }}</th>
+                                        <th>{{ column_action }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+    `;
+
+    data.forEach(function(communication) {
+        resultsHtml += `
+            <tr>
+                <td>${communication.subject}</td>
+                <td>${communication.supplier_name}</td>
+                <td>${communication.communication_type}</td>
+                <td>${communication.direction}</td>
+                <td>
+                    <span class="badge bg-${communication.priority === 'urgent' ? 'danger' : (communication.priority === 'high' ? 'warning' : 'secondary')}">
+                        ${communication.priority}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-${communication.status === 'completed' ? 'success' : (communication.status === 'pending' ? 'warning' : 'secondary')}">
+                        ${communication.status}
+                    </span>
+                </td>
+                <td>${communication.communication_date}</td>
+                <td>
+                    <a href="${communication.view}" class="btn btn-sm btn-info">{{ button_view }}</a>
+                    <a href="${communication.edit}" class="btn btn-sm btn-primary">{{ button_edit }}</a>
+                </td>
+            </tr>
+        `;
+    });
+
+    resultsHtml += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(resultsHtml);
+    $('#resultsModal').modal('show');
+
+    // إزالة المودال عند الإغلاق
+    $('#resultsModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض التقارير
+function displayReports(reports) {
+    var reportsHtml = `
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ text_summary_report }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4>${reports.summary.total || 0}</h4>
+                                    <p>{{ text_total_communications }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4>${reports.summary.completed || 0}</h4>
+                                    <p>{{ text_completed_communications }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4>${reports.summary.pending || 0}</h4>
+                                    <p>{{ text_pending_communications }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <h4>${reports.summary.follow_up || 0}</h4>
+                                    <p>{{ text_follow_up_required }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('#reports-content').html(reportsHtml);
+}
+
+// عرض الإحصائيات
+function displayStatistics(stats) {
+    var statisticsHtml = `
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ text_communication_analytics }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <h4>${stats.basic.today || 0}</h4>
+                                    <p>{{ text_today_communications }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <h4>${stats.basic.this_week || 0}</h4>
+                                    <p>{{ text_this_week }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <h4>${stats.basic.this_month || 0}</h4>
+                                    <p>{{ text_this_month }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>{{ text_overdue_follow_ups }}</h6>
+                                <h4 class="text-danger">${stats.overdue_follow_ups || 0}</h4>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>{{ text_average_response_time }}</h6>
+                                <h4 class="text-info">${stats.avg_response_time || 0} {{ text_hours }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('#statistics-content').html(statisticsHtml);
+}
+
+// حفظ تلقائي
+var autoSaveTimeout;
+$('#form-communication input, #form-communication select, #form-communication textarea').on('change', function() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(function() {
+        if ($('input[name="communication_id"]').val()) {
+            $('#button-save').trigger('click');
+        }
+    }, 3000); // حفظ تلقائي بعد 3 ثوان
+});
+
+// تفعيل التلميحات
+$(document).ready(function() {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+//--></script>
+
+{{ footer }}

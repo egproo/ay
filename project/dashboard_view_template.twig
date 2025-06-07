@@ -1,0 +1,339 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-info" onclick="refreshDashboard();">
+          <i class="fa fa-refresh"></i>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_install %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_install }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats Row -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-shopping-cart fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.orders_today|default(0) }}</div>
+                <div>{{ text_orders_today }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-green">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-money fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.revenue_today|number_format(2) }}</div>
+                <div>{{ text_revenue_today }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-yellow">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-users fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.total_customers|default(0) }}</div>
+                <div>{{ text_total_customers }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-red">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-exclamation-triangle fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ stats.low_stock_items|default(0) }}</div>
+                <div>{{ text_low_stock_items }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Analytics Row -->
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-line-chart"></i> {{ text_sales_chart }}
+          </div>
+          <div class="panel-body">
+            <canvas id="salesChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-bar-chart"></i> {{ text_orders_chart }}
+          </div>
+          <div class="panel-body">
+            <canvas id="ordersChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial & Analytics Row -->
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-calculator"></i> {{ text_financial_overview }}
+          </div>
+          <div class="panel-body">
+            <div class="list-group">
+              <div class="list-group-item">
+                <span class="badge">{{ financial.monthly_revenue|number_format(2) }}</span>
+                {{ text_monthly_revenue }}
+              </div>
+              <div class="list-group-item">
+                <span class="badge 
+                  {% if financial.revenue_growth > 0 %}badge-success{% elseif financial.revenue_growth < 0 %}badge-danger{% else %}badge-default{% endif %}">
+                  {{ financial.revenue_growth }}%
+                </span>
+                {{ text_revenue_growth }}
+              </div>
+              <div class="list-group-item">
+                <span class="badge">{{ financial.estimated_profit|number_format(2) }}</span>
+                {{ text_estimated_profit }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-cubes"></i> {{ text_inventory_analytics }}
+          </div>
+          <div class="panel-body">
+            <div class="list-group">
+              <div class="list-group-item">
+                <span class="badge">{{ inventory.total_products|default(0) }}</span>
+                {{ text_total_products }}
+              </div>
+              <div class="list-group-item">
+                <span class="badge badge-warning">{{ inventory.low_stock_count|default(0) }}</span>
+                {{ text_low_stock_items }}
+              </div>
+              <div class="list-group-item">
+                <span class="badge">{{ inventory.inventory_value|number_format(2) }}</span>
+                {{ text_inventory_value }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-users"></i> {{ text_customer_analytics }}
+          </div>
+          <div class="panel-body">
+            <div class="list-group">
+              <div class="list-group-item">
+                <span class="badge badge-success">{{ customers.new_customers|default(0) }}</span>
+                {{ text_new_customers }}
+              </div>
+              <div class="list-group-item">
+                <span class="badge">{{ customers.returning_customers|default(0) }}</span>
+                {{ text_returning_customers }}
+              </div>
+              <div class="list-group-item">
+                <span class="badge">{{ customers.retention_rate|default(0) }}%</span>
+                {{ text_retention_rate }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Data Row -->
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-list"></i> {{ text_recent_orders }}
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>{{ column_order_id }}</th>
+                    <th>{{ column_customer }}</th>
+                    <th>{{ column_total }}</th>
+                    <th>{{ column_status }}</th>
+                    <th>{{ column_action }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if recent_orders %}
+                    {% for order in recent_orders %}
+                    <tr>
+                      <td>{{ order.order_id }}</td>
+                      <td>{{ order.customer }}</td>
+                      <td>{{ order.total|number_format(2) }}</td>
+                      <td>{{ order.status }}</td>
+                      <td><a href="{{ order.view }}" class="btn btn-xs btn-info">{{ button_view }}</a></td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="5" class="text-center">{{ text_no_recent_orders }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <i class="fa fa-warning"></i> {{ text_low_stock_products }}
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>{{ column_product }}</th>
+                    <th>{{ column_model }}</th>
+                    <th>{{ column_quantity }}</th>
+                    <th>{{ column_action }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if low_stock_products %}
+                    {% for product in low_stock_products %}
+                    <tr class="
+                      {% if product.urgency == 'critical' %}danger
+                      {% elseif product.urgency == 'high' %}warning
+                      {% else %}info{% endif %}">
+                      <td>{{ product.name }}</td>
+                      <td>{{ product.model }}</td>
+                      <td>{{ product.quantity }}</td>
+                      <td><a href="{{ product.edit }}" class="btn btn-xs btn-primary">{{ button_edit }}</a></td>
+                    </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td colspan="4" class="text-center">{{ text_no_low_stock }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sales Chart
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: {{ sales_chart.labels|json_encode|raw }},
+        datasets: [{
+            label: '{{ text_sales }}',
+            data: {{ sales_chart.data|json_encode|raw }},
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Orders Chart
+const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+const ordersChart = new Chart(ordersCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ orders_chart.labels|json_encode|raw }},
+        datasets: [{
+            label: '{{ text_orders }}',
+            data: {{ orders_chart.data|json_encode|raw }},
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+function refreshDashboard() {
+    location.reload();
+}
+</script>
+
+{{ footer }}

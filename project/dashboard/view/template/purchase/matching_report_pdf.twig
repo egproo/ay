@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ text_matching_report }}</title>
+    <style type="text/css">
+        @page {
+            size: landscape;
+            margin: 15mm;
+        }
+        body {
+            font-family: Arial, 'sans-serif';
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            font-size: 11pt;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .title {
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .order-details {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .order-details td {
+            padding: 5px;
+            vertical-align: top;
+        }
+        .table-container {
+            margin-bottom: 20px;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: right;
+            font-size: 10pt;
+        }
+        table.data-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .po-header {
+            background-color: #d9edf7 !important;
+            color: #31708f;
+        }
+        .receipt-header {
+            background-color: #dff0d8 !important;
+            color: #3c763d;
+        }
+        .invoice-header {
+            background-color: #fcf8e3 !important;
+            color: #8a6d3b;
+        }
+        .mismatch {
+            background-color: #fff3cd;
+        }
+        .matched {
+            color: #3c763d;
+        }
+        .variance {
+            color: #8a6d3b;
+            font-weight: bold;
+        }
+        .variance-negative {
+            color: #a94442;
+        }
+        .variance-positive {
+            color: #3c763d;
+        }
+        .footer {
+            text-align: center;
+            font-size: 9pt;
+            color: #777;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ترويسة التقرير -->
+        <div class="header">
+            <div class="title">{{ text_matching_report }}</div>
+        </div>
+        
+        <!-- تفاصيل أمر الشراء -->
+        <table class="order-details">
+            <tr>
+                <td width="33%"><strong>{{ text_po_number }}:</strong> {{ order.po_number }}</td>
+                <td width="33%"><strong>{{ text_supplier }}:</strong> {{ order.supplier_name }}</td>
+                <td width="33%"><strong>{{ text_order_date }}:</strong> {{ order.order_date }}</td>
+            </tr>
+        </table>
+        
+        <!-- جدول المطابقة -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">{{ column_product }}</th>
+                        <th colspan="2" class="po-header">{{ text_purchase_order }}</th>
+                        <th colspan="2" class="receipt-header">{{ text_receipt }}</th>
+                        <th colspan="2" class="invoice-header">{{ text_invoice }}</th>
+                        <th rowspan="2">{{ column_variance }}</th>
+                        <th rowspan="2">{{ column_notes }}</th>
+                    </tr>
+                    <tr>
+                        <th class="po-header">{{ column_po_quantity }}</th>
+                        <th class="po-header">{{ column_po_price }}</th>
+                        <th class="receipt-header">{{ column_received_quantity }}</th>
+                        <th class="receipt-header">{{ column_received_date }}</th>
+                        <th class="invoice-header">{{ column_invoice_quantity }}</th>
+                        <th class="invoice-header">{{ column_invoice_price }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in matching_items %}
+                    <tr class="{% if item.has_variance %}mismatch{% endif %}">
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.po_quantity }} {{ item.unit_name }}</td>
+                        <td>{{ item.po_price_formatted }}</td>
+                        <td>{{ item.received_quantity|default(0) }} {{ item.unit_name }}</td>
+                        <td>{{ item.last_receipt_date|default('-') }}</td>
+                        <td>{{ item.invoiced_quantity|default(0) }} {{ item.unit_name }}</td>
+                        <td>{{ item.invoice_price_formatted|default('-') }}</td>
+                        <td>
+                            {% if item.has_variance %}
+                                <div class="variance">
+                                    {% if item.qty_variance != 0 %}
+                                        <div class="{% if item.qty_variance < 0 %}variance-negative{% else %}variance-positive{% endif %}">
+                                            {{ text_qty }}: {{ item.qty_variance }}
+                                        </div>
+                                    {% endif %}
+                                    {% if item.price_variance != 0 %}
+                                        <div class="{% if item.price_variance < 0 %}variance-negative{% else %}variance-positive{% endif %}">
+                                            {{ text_price }}: {{ item.price_variance_formatted }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="matched">{{ text_matched }}</div>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.variance_notes }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- ملخص الاستلام والفواتير -->
+        <div class="table-container">
+            <div style="width: 48%; float: right; margin-right: 1%;">
+                <h3>{{ text_receipts }}</h3>
+                {% if receipts %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{{ column_receipt_number }}</th>
+                            <th>{{ column_receipt_date }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for receipt in receipts %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ receipt.receipt_number }}</td>
+                            <td>{{ receipt.receipt_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>{{ text_no_receipts }}</p>
+                {% endif %}
+            </div>
+            
+            <div style="width: 48%; float: left; margin-left: 1%;">
+                <h3>{{ text_invoices }}</h3>
+                {% if invoices %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{{ column_invoice_number }}</th>
+                            <th>{{ column_invoice_date }}</th>
+                            <th>{{ column_invoice_amount }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ invoice.invoice_number }}</td>
+                            <td>{{ invoice.invoice_date }}</td>
+                            <td>{{ invoice.invoice_amount_formatted }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>{{ text_no_invoices }}</p>
+                {% endif %}
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        
+        <!-- تذييل التقرير -->
+        <div class="footer">
+            {{ text_matching_report }} - {{ order.po_number }} - {{ print_date }}
+        </div>
+    </div>
+</body>
+</html>

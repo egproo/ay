@@ -1,0 +1,127 @@
+<div class="node-config-form" id="node-config-form" data-node-id="{{ node_id }}">
+  <input type="hidden" name="node_id" value="{{ node_id }}">
+  <input type="hidden" name="node_type" value="approval">
+  
+  <div class="form-group">
+    <label for="input-node-name">{{ text_node_name }}</label>
+    <input type="text" name="node_name" value="{{ name }}" placeholder="{{ text_node_name }}" id="input-node-name" class="form-control">
+  </div>
+  
+  <div class="form-group">
+    <label for="input-node-description">{{ text_node_description }}</label>
+    <textarea name="node_description" rows="3" placeholder="{{ text_node_description }}" id="input-node-description" class="form-control">{{ description }}</textarea>
+  </div>
+  
+  <div class="form-group">
+    <label>{{ text_approver_type }}</label>
+    <div class="radio">
+      <label>
+        <input type="radio" name="approver_type" value="user" {% if approver_type == 'user' %}checked="checked"{% endif %}>
+        {{ text_user }}
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="approver_type" value="group" {% if approver_type == 'group' %}checked="checked"{% endif %}>
+        {{ text_user_group }}
+      </label>
+    </div>
+  </div>
+  
+  <div class="form-group approver-user" style="{% if approver_type != 'user' %}display: none;{% endif %}">
+    <label for="input-approver-user">{{ text_user }}</label>
+    <select name="approver_user_id" id="input-approver-user" class="form-control">
+      <option value="0">{{ text_select }}</option>
+      {% for user in users %}
+      <option value="{{ user.user_id }}" {% if user.user_id == approver_user_id %}selected="selected"{% endif %}>{{ user.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  <div class="form-group approver-group" style="{% if approver_type != 'group' %}display: none;{% endif %}">
+    <label for="input-approver-group">{{ text_user_group }}</label>
+    <select name="approver_group_id" id="input-approver-group" class="form-control">
+      <option value="0">{{ text_select }}</option>
+      {% for user_group in user_groups %}
+      <option value="{{ user_group.user_group_id }}" {% if user_group.user_group_id == approver_group_id %}selected="selected"{% endif %}>{{ user_group.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="input-approval-type">{{ text_approval_type }}</label>
+    <select name="approval_type" id="input-approval-type" class="form-control">
+      <option value="any_one" {% if approval_type == 'any_one' %}selected="selected"{% endif %}>{{ text_any_one }}</option>
+      <option value="all" {% if approval_type == 'all' %}selected="selected"{% endif %}>{{ text_all }}</option>
+      <option value="percentage" {% if approval_type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+      <option value="sequential" {% if approval_type == 'sequential' %}selected="selected"{% endif %}>{{ text_sequential }}</option>
+    </select>
+  </div>
+  
+  <div class="form-group approval-percentage" style="{% if approval_type != 'percentage' %}display: none;{% endif %}">
+    <label for="input-approval-percentage">{{ text_approval_percentage }}</label>
+    <div class="input-group">
+      <input type="number" name="approval_percentage" value="{{ approval_percentage }}" placeholder="{{ text_approval_percentage }}" id="input-approval-percentage" class="form-control" min="1" max="100">
+      <span class="input-group-addon">%</span>
+    </div>
+  </div>
+  
+  <div class="form-group">
+    <label for="input-deadline-days">{{ text_deadline_days }}</label>
+    <input type="number" name="deadline_days" value="{{ deadline_days }}" placeholder="{{ text_deadline_days }}" id="input-deadline-days" class="form-control" min="0">
+    <p class="help-block">{{ help_deadline_days }}</p>
+  </div>
+  
+  <div class="form-group">
+    <label for="input-reminder-days">{{ text_reminder_days }}</label>
+    <input type="number" name="reminder_days" value="{{ reminder_days }}" placeholder="{{ text_reminder_days }}" id="input-reminder-days" class="form-control" min="0">
+    <p class="help-block">{{ help_reminder_days }}</p>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$(document).ready(function() {
+  // Toggle approver fields based on type
+  $('input[name="approver_type"]').on('change', function() {
+    if ($(this).val() == 'user') {
+      $('.approver-user').show();
+      $('.approver-group').hide();
+    } else {
+      $('.approver-user').hide();
+      $('.approver-group').show();
+    }
+  });
+  
+  // Toggle approval percentage field
+  $('#input-approval-type').on('change', function() {
+    if ($(this).val() == 'percentage') {
+      $('.approval-percentage').show();
+    } else {
+      $('.approval-percentage').hide();
+    }
+  });
+  
+  // Initialize user autocomplete
+  $('input[name=\'user\']').autocomplete({
+    source: function(request, response) {
+      $.ajax({
+        url: 'index.php?route=user/user/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+        dataType: 'json',
+        success: function(json) {
+          response($.map(json, function(item) {
+            return {
+              label: item['name'],
+              value: item['user_id']
+            }
+          }));
+        }
+      });
+    },
+    select: function(item) {
+      $('input[name=\'user\']').val(item['label']);
+      $('input[name=\'approver_user_id\']').val(item['value']);
+      return false;
+    }
+  });
+});
+//--></script> 

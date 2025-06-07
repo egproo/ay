@@ -1,0 +1,533 @@
+<div class="modal-header">
+    <h5 class="modal-title">
+        {% if quotation.quotation_id %}
+            {{ text_edit_quotation }} #{{ quotation.quotation_number }}
+        {% else %}
+            {{ text_add_quotation }}
+        {% endif %}
+    </h5>
+    <button type="button" class="close" data-dismiss="modal">&times;</button>
+</div>
+
+<div class="modal-body">
+    <form id="form-quotation">
+        {% if quotation.quotation_id %}
+            <input type="hidden" name="quotation_id" value="{{ quotation.quotation_id }}">
+        {% endif %}
+        <input type="hidden" name="requisition_id" value="{{ requisition_id }}">
+
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" href="#tab-general" data-toggle="tab">
+                    {{ tab_general }}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#tab-items" data-toggle="tab">
+                    {{ tab_items }}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#tab-documents" data-toggle="tab">
+                    {{ tab_documents }}
+                    {% if quotation.documents_count %}
+                        <span class="badge bg-info">{{ quotation.documents_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            {% if quotation.quotation_id %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#tab-history" data-toggle="tab">
+                        {{ tab_history }}
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <div class="tab-content">
+            <!-- General Tab -->
+            <div class="tab-pane active" id="tab-general">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ entry_supplier }}</label>
+                        <select name="supplier_id" class="form-control select2-supplier" required>
+                            {% if quotation.supplier_id %}
+                                <option value="{{ quotation.supplier_id }}" selected>
+                                    {{ quotation.supplier_name }}
+                                </option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">{{ entry_reference }}</label>
+                        <input type="text" name="reference" class="form-control" 
+                               value="{{ quotation.reference }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ entry_validity_date }}</label>
+                        <input type="date" name="validity_date" class="form-control" 
+                               value="{{ quotation.validity_date }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">{{ entry_expected_delivery }}</label>
+                        <input type="date" name="expected_delivery" class="form-control"
+                               value="{{ quotation.expected_delivery }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">{{ entry_currency }}</label>
+                        <select name="currency_code" class="form-control" required>
+                            {% for currency in currencies %}
+                                <option value="{{ currency.code }}"
+                                    {% if currency.code == quotation.currency_code %}selected{% endif %}>
+                                    {{ currency.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">{{ entry_payment_terms }}</label>
+                        <select name="payment_term_id" class="form-control">
+                            <option value="">{{ text_select }}</option>
+                            {% for term in payment_terms %}
+                                <option value="{{ term.payment_term_id }}"
+                                    {% if term.payment_term_id == quotation.payment_term_id %}selected{% endif %}>
+                                    {{ term.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label">{{ entry_notes }}</label>
+                        <textarea name="notes" class="form-control" rows="3">{{ quotation.notes }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Tab -->
+            <div class="tab-pane" id="tab-items">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="quotation-items">
+                        <thead>
+                            <tr>
+                                <th>{{ column_product }}</th>
+                                <th>{{ column_quantity }}</th>
+                                <th>{{ column_unit }}</th>
+                                <th>{{ column_unit_price }}</th>
+                                <th>{{ column_tax }}</th>
+                                <th>{{ column_discount }}</th>
+                                <th>{{ column_total }}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if quotation_items %}
+                                {% for item in quotation_items %}
+                                    {{ include('purchase/quotation_item_row.twig') }}
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="8" class="text-end">
+                                    <button type="button" class="btn btn-primary" onclick="addQuotationItem();">
+                                        <i class="fas fa-plus"></i> {{ button_add_item }}
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="text-end">{{ text_subtotal }}</td>
+                                <td colspan="2" class="text-end">
+                                    <span id="quotation-subtotal">
+                                        {{ quotation.currency_code }} {{ quotation.subtotal|number_format(4) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="text-end">{{ text_tax }}</td>
+                                <td colspan="2" class="text-end">
+                                    <span id="quotation-tax">
+                                        {{ quotation.currency_code }} {{ quotation.tax_total|number_format(4) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="6" class="text-end">{{ text_total }}</td>
+                                <td colspan="2" class="text-end">
+                                    <span id="quotation-total">
+                                        {{ quotation.currency_code }} {{ quotation.total_amount|number_format(4) }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div class="tab-pane" id="tab-documents">
+                <div class="file-drop-zone mb-3">
+                    <div class="drop-zone-message text-center p-4">
+                        <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                        <p>{{ text_drag_drop_files }}</p>
+                        <button type="button" class="btn btn-outline-primary" id="button-upload">
+                            {{ button_upload }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="document-list row" id="document-list">
+                    {% if quotation.documents %}
+                        {% for doc in quotation.documents %}
+                            <div class="col-md-4 mb-3" id="document-{{ doc.document_id }}">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="document-icon mb-2">
+                                            <i class="fas fa-{{ doc.icon }} fa-2x"></i>
+                                        </div>
+                                        <h6 class="document-name">{{ doc.original_name }}</h6>
+                                        <p class="document-info small text-muted">
+                                            {{ doc.size_formatted }}
+                                            <br>
+                                            {{ doc.uploaded_at }}
+                                        </p>
+                                        <div class="btn-group">
+                                            <a href="{{ doc.download_url }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-danger"
+                                                    onclick="deleteDocument({{ doc.document_id }});">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            {% if quotation.quotation_id %}
+                <div class="tab-pane" id="tab-history">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>{{ column_date }}</th>
+                                    <th>{{ column_user }}</th>
+                                    <th>{{ column_action }}</th>
+                                    <th>{{ column_description }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if quotation.history %}
+                                    {% for history in quotation.history %}
+                                        <tr>
+                                            <td>{{ history.created_at }}</td>
+                                            <td>{{ history.user }}</td>
+                                            <td>{{ history.action }}</td>
+                                            <td>{{ history.description }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">{{ text_no_history }}</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">
+        {{ button_close }}
+    </button>
+    <button type="button" class="btn btn-primary" onclick="saveQuotation();">
+        {{ button_save }}
+    </button>
+</div>
+
+<!-- Template for new item row -->
+<template id="template-quotation-item">
+    {{ include('purchase/quotation_item_row.twig', {'item': []}) }}
+</template>
+
+<script type="text/javascript">
+$('.select2-supplier').select2({
+    placeholder: '{{ text_select_supplier }}',
+    ajax: {
+        url: 'index.php?route=purchase/supplier/autocomplete&user_token={{ user_token }}',
+        dataType: 'json',
+        delay: 250,
+        data: function(params) {
+            return {
+                filter_name: params.term
+            };
+        },
+        processResults: function(data) {
+            return {
+                results: data
+            };
+        },
+        cache: true
+    }
+});
+
+function addQuotationItem() {
+    var template = document.querySelector('#template-quotation-item');
+    var clone = template.content.cloneNode(true);
+    $('#quotation-items tbody').append(clone);
+    initializeRow($('#quotation-items tbody tr:last'));
+}
+
+function deleteQuotationItem(element) {
+    $(element).closest('tr').remove();
+    calculateTotals();
+}
+
+function initializeRow($row) {
+    // Initialize product select2
+    $row.find('.select2-product').select2({
+        placeholder: '{{ text_select_product }}',
+        ajax: {
+            url: 'index.php?route=catalog/product/autocomplete&user_token={{ user_token }}',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    filter_name: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data
+                };
+            },
+            cache: true
+        }
+    }).on('select2:select', function(e) {
+        var $row = $(this).closest('tr');
+        loadProductDetails(e.params.data.id, $row);
+    });
+
+    // Initialize other components
+    initializeCalculations($row);
+}
+
+function loadProductDetails(productId, $row) {
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/getProductDetails&user_token={{ user_token }}',
+        type: 'get',
+        data: {
+            product_id: productId
+        },
+        dataType: 'json',
+        success: function(json) {
+            var $unitSelect = $row.find('select[name$="[unit_id]"]');
+            $unitSelect.empty();
+
+            if (json.units) {
+                json.units.forEach(function(unit) {
+                    $unitSelect.append(new Option(unit.text, unit.id));
+                });
+            }
+
+            if (json.last_purchase_price) {
+                $row.find('input[name$="[unit_price]"]').val(json.last_purchase_price);
+            }
+
+            if (json.tax_rate) {
+                $row.find('input[name$="[tax_rate]"]').val(json.tax_rate);
+            }
+
+            calculateRowTotal($row);
+        }
+    });
+}
+
+function initializeCalculations($row) {
+    $row.find('input[name$="[quantity]"], input[name$="[unit_price]"], input[name$="[tax_rate]"], input[name$="[discount]"]').on('input', function() {
+        calculateRowTotal($row);
+    });
+}
+
+function calculateRowTotal($row) {
+    var quantity = parseFloat($row.find('input[name$="[quantity]"]').val()) || 0;
+    var unitPrice = parseFloat($row.find('input[name$="[unit_price]"]').val()) || 0;
+    var taxRate = parseFloat($row.find('input[name$="[tax_rate]"]').val()) || 0;
+    var discount = parseFloat($row.find('input[name$="[discount]"]').val()) || 0;
+
+    var subtotal = quantity * unitPrice;
+    var discountAmount = (subtotal * discount) / 100;
+    var afterDiscount = subtotal - discountAmount;
+    var taxAmount = (afterDiscount * taxRate) / 100;
+    var total = afterDiscount + taxAmount;
+
+    $row.find('.item-total').html('{{ quotation.currency_code }} ' + total.toFixed(4));
+    $row.find('input[name$="[total]"]').val(total.toFixed(4));
+
+    calculateTotals();
+}
+
+function calculateTotals() {
+    var subtotal = 0;
+    var taxTotal = 0;
+    var total = 0;
+
+    $('#quotation-items tbody tr').each(function() {
+        var quantity = parseFloat($(this).find('input[name$="[quantity]"]').val()) || 0;
+        var unitPrice = parseFloat($(this).find('input[name$="[unit_price]"]').val()) || 0;
+        var taxRate = parseFloat($(this).find('input[name$="[tax_rate]"]').val()) || 0;
+        var discount = parseFloat($(this).find('input[name$="[discount]"]').val()) || 0;
+
+        var rowSubtotal = quantity * unitPrice;
+        var discountAmount = (rowSubtotal * discount) / 100;
+        var afterDiscount = rowSubtotal - discountAmount;
+        var taxAmount = (afterDiscount * taxRate) / 100;
+
+        subtotal += afterDiscount;
+        taxTotal += taxAmount;
+        total += afterDiscount + taxAmount;
+    });
+
+    $('#quotation-subtotal').html('{{ quotation.currency_code }} ' + subtotal.toFixed(4));
+    $('#quotation-tax').html('{{ quotation.currency_code }} ' + taxTotal.toFixed(4));
+    $('#quotation-total').html('{{ quotation.currency_code }} ' + total.toFixed(4));
+}
+
+// Initialize existing rows
+$('#quotation-items tbody tr').each(function() {
+    initializeRow($(this));
+});
+
+// File upload handling
+$('#button-upload').on('click', function() {
+    $('#form-upload').remove();
+    
+    $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" /></form>');
+
+    $('#form-upload input[name=\'file\']').trigger('click');
+    
+    $('#form-upload input[name=\'file\']').on('change', function() {
+        uploadFile();
+    });
+});
+
+$('.file-drop-zone').on('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $(this).addClass('drag-over');
+});
+
+$('.file-drop-zone').on('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $(this).removeClass('drag-over');
+});
+
+$('.file-drop-zone').on('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $(this).removeClass('drag-over');
+    
+    var files = e.originalEvent.dataTransfer.files;
+    if (files.length > 0) {
+        uploadFile(files[0]);
+    }
+});
+
+function uploadFile(file) {
+    var formData = new FormData();
+    formData.append('file', file || $('#form-upload input[name=\'file\']')[0].files[0]);
+    formData.append('quotation_id', $('input[name="quotation_id"]').val());
+
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/uploadDocument&user_token={{ user_token }}',
+        type: 'post',
+        data: formData,
+        dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        beforeSend: function() {
+            $('#button-upload').prop('disabled', true);
+        },
+        complete: function() {
+            $('#button-upload').prop('disabled', false);
+        },
+        success: function(json) {
+            if (json.error) {
+                alert(json.error);
+            }
+            if (json.success) {
+                $('#document-list').append(json.html);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+function deleteDocument(documentId) {
+    if (confirm('{{ text_confirm_delete_document }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/quotation/deleteDocument&user_token={{ user_token }}',
+            type: 'post',
+            data: { document_id: documentId },
+            dataType: 'json',
+            success: function(json) {
+                if (json.error) {
+                    alert(json.error);
+                }
+                if (json.success) {
+                    $('#document-' + documentId).remove();
+                }
+            }
+        });
+    }
+}
+
+function saveQuotation() {
+    $.ajax({
+        url: 'index.php?route=purchase/quotation/save&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-quotation').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('.alert').remove();
+            $('.modal-content').prepend('<div class="alert alert-info"><i class="fas fa-circle-notch fa-spin"></i> {{ text_saving }}</div>');
+        },
+        complete: function() {
+            $('.alert-info').remove();
+        },
+        success: function(json) {
+            if (json.error) {
+                $('.modal-content').prepend('<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ' + json.error + '</div>');
+            }
+            if (json.success) {
+                $('.modal-content').prepend('<div class="alert alert-success"><i class="fas fa-check-circle"></i> ' + json.success + '</div>');
+                setTimeout(function() {
+                    $('#modal-quotation').modal('hide');
+                    loadQuotations();
+                }, 1000);
+            }
+        }
+    });
+}
+</script>

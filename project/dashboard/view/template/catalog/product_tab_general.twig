@@ -1,0 +1,74 @@
+<div class="tab-pane active" id="tab-general">
+  <ul class="nav nav-tabs" id="language">
+    {% for language in languages %}
+    <li{% if loop.first %} class="active"{% endif %}><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}" /> {{ language.name }}</a></li>
+    {% endfor %}
+  </ul>
+  <div class="tab-content">
+    {% for language in languages %}
+    <div class="tab-pane{% if loop.first %} active{% endif %}" id="language{{ language.language_id }}">
+      <div class="form-group required">
+        <label class="col-sm-2 control-label" for="input-name{{ language.language_id }}">{{ entry_name }}</label>
+        <div class="col-sm-10">
+          <input type="text" name="product_description[{{ language.language_id }}][name]" value="{{ product_description[language.language_id] ? product_description[language.language_id].name }}" placeholder="{{ entry_name }}" id="input-name{{ language.language_id }}" class="form-control" />
+          {% if error_name[language.language_id] %}
+          <div class="text-danger">{{ error_name[language.language_id] }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-2 control-label" for="input-description{{ language.language_id }}">{{ entry_description }}</label>
+        <div class="col-sm-10">
+          <textarea name="product_description[{{ language.language_id }}][description]" placeholder="{{ entry_description }}" id="input-description{{ language.language_id }}" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].description }}</textarea>
+        </div>
+      </div>
+      <div class="form-group required">
+        <label class="col-sm-2 control-label" for="input-meta-title{{ language.language_id }}">{{ entry_meta_title }}</label>
+        <div class="col-sm-10">
+          <input type="text" name="product_description[{{ language.language_id }}][meta_title]" value="{{ product_description[language.language_id] ? product_description[language.language_id].meta_title }}" placeholder="{{ entry_meta_title }}" id="input-meta-title{{ language.language_id }}" class="form-control" />
+          {% if error_meta_title[language.language_id] %}
+          <div class="text-danger">{{ error_meta_title[language.language_id] }}</div>
+          {% endif %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-2 control-label" for="input-meta-description{{ language.language_id }}">{{ entry_meta_description }}</label>
+        <div class="col-sm-10">
+          <textarea name="product_description[{{ language.language_id }}][meta_description]" rows="5" placeholder="{{ entry_meta_description }}" id="input-meta-description{{ language.language_id }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].meta_description }}</textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-2 control-label" for="input-meta-keyword{{ language.language_id }}">{{ entry_meta_keyword }}</label>
+        <div class="col-sm-10">
+          <textarea name="product_description[{{ language.language_id }}][meta_keyword]" rows="5" placeholder="{{ entry_meta_keyword }}" id="input-meta-keyword{{ language.language_id }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].meta_keyword }}</textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-2 control-label" for="input-permalink{{ language.language_id }}"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"/> {{ text_seo_permalink }}</label>
+        <div class="col-sm-10">
+          <input type="text" name="product_seo_url[0][{{ language.language_id }}]" value="{% if product_seo_url[0][language.language_id] %}{{ product_seo_url[0][language.language_id] }}{% endif %}" placeholder="{{ entry_keyword }}" class="form-control"/>
+          {% if error_keyword[0][language.language_id] %}
+          <div class="text-danger">{{ error_keyword[0][language.language_id] }}</div>
+          {% endif %}
+        </div>
+      </div>                  
+    </div>
+    {% endfor %}
+  </div>
+  
+  <!-- قسم المساعدة -->
+  <div class="help-section panel panel-info" style="margin-top: 20px;">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_general_info_help }}</h3>
+    </div>
+    <div class="panel-body">
+      <p>{{ text_general_help_intro }}</p>
+      <ul>
+        <li><strong>{{ text_product_name }}:</strong> {{ text_product_name_help }}</li>
+        <li><strong>{{ text_product_description }}:</strong> {{ text_product_description_help }}</li>
+        <li><strong>{{ text_meta_data }}:</strong> {{ text_meta_data_help }}</li>
+        <li><strong>{{ text_seo_url }}:</strong> {{ text_seo_url_help }}</li>
+      </ul>
+    </div>
+  </div>
+</div>

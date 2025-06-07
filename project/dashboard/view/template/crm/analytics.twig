@@ -1,0 +1,135 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- Filters -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <form id="filter-form" class="form-inline">
+          <div class="form-group">
+            <label>{{ text_date_start }}</label>
+            <div class='input-group date' id='filter_date_start'>
+              <input type='text' name="filter_date_start" class="form-control" placeholder="YYYY-MM-DD" />
+              <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>{{ text_date_end }}</label>
+            <div class='input-group date' id='filter_date_end'>
+              <input type='text' name="filter_date_end" class="form-control" placeholder="YYYY-MM-DD" />
+              <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+            </div>
+          </div>
+          <button type="button" id="btn-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+          <button type="button" id="btn-reset" class="btn btn-default"><i class="fa fa-eraser"></i> {{ button_reset }}</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel panel-default" style="margin-top:10px;">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_overview }}</h3>
+      </div>
+      <div class="panel-body" id="analytics-overview">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="well well-sm">
+              <h4>{{ text_total_leads }}</h4>
+              <p id="stat-leads">0</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="well well-sm">
+              <h4>{{ text_total_opportunities }}</h4>
+              <p id="stat-opportunities">0</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="well well-sm">
+              <h4>{{ text_total_deals_closed_won }}</h4>
+              <p id="stat-deals-won">0</p>
+            </div>
+          </div>
+        </div>
+      
+          <div class="col-sm-6">
+            <div class="well well-sm">
+              <h4>{{ text_total_visits }}</h4>
+              <p id="stat-visits">0</p>
+            </div>
+          </div>
+        </div>
+        
+        
+      
+    </div>
+  </div>
+</div>
+
+{{ footer }}
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#filter_date_start').datetimepicker({ format: 'YYYY-MM-DD' });
+    $('#filter_date_end').datetimepicker({ format: 'YYYY-MM-DD', useCurrent:false });
+
+    $("#filter_date_start").on("dp.change", function (e) {
+        $('#filter_date_end').data("DateTimePicker").minDate(e.date);
+    });
+    $("#filter_date_end").on("dp.change", function (e) {
+        $('#filter_date_start').data("DateTimePicker").maxDate(e.date);
+    });
+
+    function loadAnalytics() {
+        $.ajax({
+            url: "{{ ajax_stats_url }}",
+            type: "POST",
+            data: {
+                user_token: "{{ user_token }}",
+                filter_date_start: $('input[name="filter_date_start"]').val(),
+                filter_date_end: $('input[name="filter_date_end"]').val()
+            },
+            dataType: "json",
+            success:function(json) {
+                if (json.error) {
+                    toastr.error(json.error);
+                } else {
+                    $('#stat-leads').text(json.leads);
+                    $('#stat-opportunities').text(json.opportunities);
+                    $('#stat-deals-won').text(json.deals_won);
+                    $('#stat-visits').text(json.visits);
+                }
+            },
+            error:function(){
+                toastr.error("{{ text_ajax_error }}");
+            }
+        });
+    }
+
+    $('#btn-filter').on('click', function() {
+        loadAnalytics();
+    });
+    $('#btn-reset').on('click', function() {
+        $('input[name="filter_date_start"]').val('');
+        $('input[name="filter_date_end"]').val('');
+        loadAnalytics();
+    });
+
+    loadAnalytics(); // Load on page start
+});
+</script>

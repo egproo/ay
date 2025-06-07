@@ -1,0 +1,503 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+    
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        {% if can_add %}
+        <a href="{{ add }}" class="btn btn-primary"><i class="fa fa-plus"></i> {{ button_add }}</a>
+        {% endif %}
+        {% if can_copy %}
+        <button type="button" data-toggle="tooltip" title="{{ button_copy }}" class="btn btn-default" onclick="$('#form-blog').attr('action', '{{ copy }}').submit()"><i class="fa fa-copy"></i></button>
+        {% endif %}
+        {% if can_delete %}
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-blog').submit() : false;"><i class="fa fa-trash-o"></i></button>
+        {% endif %}
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <!-- Estadísticas del blog -->
+    <div class="row dashboard-stats">
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-newspaper-o fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="total-posts">{{ stats.total }}</div>
+                <div>{{ text_total_posts }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-check-circle fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="published-posts">{{ stats.published }}</div>
+                <div>{{ text_published_posts }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-pencil fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="draft-posts">{{ stats.drafts }}</div>
+                <div>{{ text_draft_posts }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-comments fa-5x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge" id="total-comments">{{ stats.comments }}</div>
+                <div>{{ text_comments }} ({{ stats.active_comments }} {{ text_active }})</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Filtros del blog -->
+    <div class="panel panel-default filter-panel">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-title" class="control-label">{{ column_title }}</label>
+              <input type="text" name="filter_title" value="{{ filter_title }}" placeholder="{{ entry_title }}" id="filter-title" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-status" class="control-label">{{ column_status }}</label>
+              <select name="filter_status" id="filter-status" class="form-control">
+                <option value="">{{ text_all_statuses }}</option>
+                <option value="1"{% if filter_status == '1' %} selected="selected"{% endif %}>{{ text_enabled }}</option>
+                <option value="0"{% if filter_status == '0' %} selected="selected"{% endif %}>{{ text_disabled }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-category" class="control-label">{{ column_category }}</label>
+              <select name="filter_category" id="filter-category" class="form-control select2">
+                <option value="">{{ text_all_categories }}</option>
+                {% for category in categories_list %}
+                <option value="{{ category.category_id }}"{% if filter_category == category.category_id %} selected="selected"{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-date-start" class="control-label">{{ entry_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="filter-date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label for="filter-date-end" class="control-label">{{ entry_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="filter-date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label">&nbsp;</label>
+              <div>
+                <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+                <button type="button" id="button-clear-filter" class="btn btn-default"><i class="fa fa-eraser"></i> {{ button_clear }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Administración de entradas del blog -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-blog">
+            <table class="table table-bordered table-hover" id="blog-posts-table">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">{{ column_title }}</td>
+                  <td class="text-left">{{ column_author }}</td>
+                  <td class="text-left">{{ column_category }}</td>
+                  <td class="text-center">{{ column_status }}</td>
+                  <td class="text-center">{{ column_date_published }}</td>
+                  <td class="text-center">{{ column_hits }}</td>
+                  <td class="text-center">{{ column_comments }}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody id="post-list">
+                <!-- Esta sección será cargada por AJAX -->
+              </tbody>
+            </table>
+          </form>
+        </div>
+        <div class="row">
+          <div class="col-sm-6 text-left" id="pagination-container"></div>
+          <div class="col-sm-6 text-right" id="results-info"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style type="text/css">
+.dashboard-stats .panel {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-stats .panel:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+}
+
+.dashboard-stats .panel-heading {
+  border-radius: 3px;
+  padding: 15px;
+}
+
+.dashboard-stats .huge {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.dashboard-stats .fa-5x {
+  font-size: 4em;
+  opacity: 0.7;
+}
+
+.filter-panel {
+  margin-bottom: 20px;
+}
+
+.filter-panel .panel-heading {
+  background-color: #f8f8f8;
+}
+
+.post-status {
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+#blog-posts-table th {
+  background-color: #f5f5f5;
+}
+
+/* Estilos para las estadísticas */
+.panel-primary .panel-heading {
+  background-color: #337ab7;
+  border-color: #337ab7;
+  color: #fff;
+}
+
+.panel-success .panel-heading {
+  background-color: #5cb85c;
+  border-color: #5cb85c;
+  color: #fff;
+}
+
+.panel-info .panel-heading {
+  background-color: #5bc0de;
+  border-color: #5bc0de;
+  color: #fff;
+}
+
+.panel-warning .panel-heading {
+  background-color: #f0ad4e;
+  border-color: #f0ad4e;
+  color: #fff;
+}
+
+/* Overlay para carga */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  font-size: 3em;
+  color: #337ab7;
+}
+</style>
+
+<!-- Overlay de carga -->
+<div id="loading-overlay" class="loading-overlay" style="display: none;">
+  <div class="loading-spinner">
+    <i class="fa fa-spinner fa-spin"></i>
+  </div>
+</div>
+
+<script type="text/javascript">
+/**
+ * BlogManager - Objeto para la gestión de blog
+ */
+var BlogManager = {
+  user_token: '{{ user_token }}',
+  
+  /**
+   * Inicialización del gestor de blog
+   */
+  init: function() {
+    this.initializeFilters();
+    this.setupEventHandlers();
+    this.loadPosts();
+  },
+  
+  /**
+   * Inicializar los filtros y componentes
+   */
+  initializeFilters: function() {
+    // Inicializar Select2 para categorías
+    $('.select2').select2({
+      placeholder: '{{ text_select }}',
+      allowClear: true
+    });
+    
+    // Inicializar datepickers
+    $('.date').datetimepicker({
+      pickTime: false,
+      format: 'YYYY-MM-DD'
+    });
+  },
+  
+  /**
+   * Configurar los manejadores de eventos
+   */
+  setupEventHandlers: function() {
+    var self = this;
+    
+    // Eventos para los filtros con actualización en tiempo real
+    $('#filter-title, #filter-status, #filter-category').on('change keyup', function() {
+      self.loadPosts();
+    });
+    
+    // Eventos para los filtros de fecha (con retraso)
+    $('.date').on('dp.change', function() {
+      setTimeout(function() {
+        self.loadPosts();
+      }, 300);
+    });
+    
+    // Botón de filtro
+    $('#button-filter').on('click', function() {
+      self.loadPosts();
+    });
+    
+    // Botón de limpiar filtro
+    $('#button-clear-filter').on('click', function() {
+      $('#filter-title').val('');
+      $('#filter-status').val('');
+      $('#filter-category').val('').trigger('change');
+      $('#filter-date-start').val('');
+      $('#filter-date-end').val('');
+      self.loadPosts();
+    });
+  },
+  
+  /**
+   * Mostrar el overlay de carga
+   */
+  showLoading: function() {
+    $('#loading-overlay').fadeIn(200);
+  },
+  
+  /**
+   * Ocultar el overlay de carga
+   */
+  hideLoading: function() {
+    $('#loading-overlay').fadeOut(200);
+  },
+  
+/**
+   * Cargar las entradas del blog con los filtros actuales
+   * @param {number} page - Página a cargar (opcional)
+   */
+  loadPosts: function(page) {
+    this.showLoading();
+    
+    // Obtener valores de los filtros
+    var filter_title = $('#filter-title').val();
+    var filter_status = $('#filter-status').val();
+    var filter_category = $('#filter-category').val();
+    var filter_date_start = $('#filter-date-start').val();
+    var filter_date_end = $('#filter-date-end').val();
+    
+    $.ajax({
+      url: 'index.php?route=catalog/blog/ajaxList&user_token=' + this.user_token,
+      type: 'GET',
+      data: {
+        filter_title: filter_title,
+        filter_status: filter_status,
+        filter_category: filter_category,
+        filter_date_start: filter_date_start,
+        filter_date_end: filter_date_end,
+        page: page || 1
+      },
+      dataType: 'json',
+      success: function(json) {
+        BlogManager.renderPosts(json);
+        BlogManager.updateStatistics(json.stats);
+        BlogManager.hideLoading();
+      },
+      error: function(xhr, status, error) {
+        console.error("Error al cargar los posts: " + error);
+        BlogManager.hideLoading();
+        
+        // Mostrar mensaje de error
+        alert('{{ error_ajax }}');
+      }
+    });
+  },
+  
+  /**
+   * Renderizar la lista de entradas
+   * @param {Object} json - Datos JSON recibidos del servidor
+   */
+  renderPosts: function(json) {
+    var html = '';
+    
+    if (json.posts && json.posts.length > 0) {
+      for (var i = 0; i < json.posts.length; i++) {
+        var post = json.posts[i];
+        html += '<tr>';
+        html += '  <td class="text-center"><input type="checkbox" name="selected[]" value="' + post.post_id + '" /></td>';
+        html += '  <td class="text-left">' + post.title + '</td>';
+        html += '  <td class="text-left">' + post.author + '</td>';
+        html += '  <td class="text-left">' + post.categories + '</td>';
+        html += '  <td class="text-center"><span class="label label-' + post.status_class + ' post-status">' + post.status + '</span></td>';
+        html += '  <td class="text-center">' + post.date_published + '</td>';
+        html += '  <td class="text-center">' + post.hits + '</td>';
+        html += '  <td class="text-center">' + post.comments + '</td>';
+        html += '  <td class="text-right">';
+        html += '    <div class="btn-group" style="min-width: 65px;">';
+        
+        if (post.can_edit) {
+          html += '      <a href="' + post.edit + '" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-sm"><i class="fa fa-pencil"></i></a>';
+        }
+        
+        if (post.can_delete) {
+          html += '      <a href="' + post.delete + '" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger btn-sm" onclick="return confirm(\'{{ text_confirm }}\');"><i class="fa fa-trash-o"></i></a>';
+        }
+        
+        html += '    </div>';
+        html += '  </td>';
+        html += '</tr>';
+      }
+    } else {
+      html = '<tr><td class="text-center" colspan="9">{{ text_no_results }}</td></tr>';
+    }
+    
+    $('#post-list').html(html);
+    
+    // Actualizar paginación
+    $('#pagination-container').html(json.pagination);
+    $('#results-info').html(json.results);
+    
+    // Inicializar tooltips para los nuevos botones
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Agregar evento a los enlaces de paginación
+    $('#pagination-container a').on('click', function(e) {
+      e.preventDefault();
+      var page = $(this).attr('href').split('page=')[1];
+      BlogManager.loadPosts(page);
+    });
+  },
+  
+  /**
+   * Actualizar las estadísticas del panel
+   * @param {Object} stats - Estadísticas recibidas del servidor
+   */
+  updateStatistics: function(stats) {
+    if (stats) {
+      $('#total-posts').text(stats.total);
+      $('#published-posts').text(stats.published);
+      $('#draft-posts').text(stats.drafts);
+      $('#total-comments').text(stats.comments);
+    }
+  }
+};
+
+// Inicializar cuando el documento esté listo
+$(document).ready(function() {
+  BlogManager.init();
+});
+</script>
+
+{{ footer }}

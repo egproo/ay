@@ -1,0 +1,23 @@
+{{ header }}{{ column_left }}
+<div id="content" class="container-fluid">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+    </div>
+  </div>
+  {% if error_warning %}
+  <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+  {% endif %}
+  <form action="{{ action }}" method="post">
+    <div class="form-group row">
+      <label class="col-sm-2 control-label" for="input-year">{{ entry_year }}</label>
+      <div class="col-sm-4">
+        <input type="text" name="year" id="input-year" class="form-control" placeholder="{{ entry_year }}" />
+      </div>
+    </div>
+    <div class="text-right">
+      <button type="submit" class="btn btn-primary">{{ button_filter }}</button>
+    </div>
+  </form>
+</div>
+{{ footer }}

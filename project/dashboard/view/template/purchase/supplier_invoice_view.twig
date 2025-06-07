@@ -1,0 +1,185 @@
+{# Modal Header #}
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title">{{ text_invoice_view }} #{{ invoice.invoice_number }}</h4>
+</div>
+
+{# Modal Body #}
+<div class="modal-body">
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#tab-invoice-details" data-toggle="tab">{{ text_invoice_details }}</a></li>
+    <li><a href="#tab-invoice-items" data-toggle="tab">{{ text_items }}</a></li>
+    <li><a href="#tab-invoice-history" data-toggle="tab">{{ text_history }}</a></li>
+    <li><a href="#tab-invoice-documents" data-toggle="tab">{{ text_documents }}</a></li>
+  </ul>
+
+  <div class="tab-content" style="padding-top: 20px;">
+    {# Details Tab #}
+    <div class="tab-pane active" id="tab-invoice-details">
+      <table class="table table-bordered">
+        <tr>
+          <td><strong>{{ text_invoice_number }}</strong></td>
+          <td>{{ invoice.invoice_number }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_purchase_order }}</strong></td>
+          <td>{% if invoice.po_id %}<a href="{{ link('purchase/order/view', 'user_token=' ~ user_token ~ '&po_id=' ~ invoice.po_id, true) }}" target="_blank">{{ invoice.po_number }}</a>{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_supplier }}</strong></td>
+          <td>{{ invoice.supplier_name }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_invoice_date }}</strong></td>
+          <td>{{ invoice.invoice_date }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_due_date }}</strong></td>
+          <td>{{ invoice.due_date }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_currency }}</strong></td>
+          <td>{{ invoice.currency_code }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_status }}</strong></td>
+          <td><span class="label label-{{ invoice.status_class }}">{{ invoice.status_text }}</span></td>
+        </tr>
+         <tr>
+          <td><strong>{{ text_journal_entry }}</strong></td>
+          <td>{% if invoice.journal_id %}<a href="{{ link('accounts/journal/edit', 'user_token=' ~ user_token ~ '&journal_id=' ~ invoice.journal_id, true) }}" target="_blank">#{{ invoice.journal_id }}</a>{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_notes }}</strong></td>
+          <td>{{ invoice.notes }}</td>
+        </tr>
+        <tr>
+          <td><strong>{{ text_created_by }}</strong></td>
+          <td>{{ invoice.created_by_name }} ({{ invoice.created_at }})</td>
+        </tr>
+      </table>
+      <table class="table table-bordered pull-right" style="width: 300px;">
+          <tr>
+              <td><strong>{{ text_subtotal }}</strong></td>
+              <td class="text-right">{{ invoice.subtotal }}</td>
+          </tr>
+          {# Add Tax/Discount rows if needed #}
+          <tr>
+              <td><strong>{{ text_tax }}</strong></td>
+              <td class="text-right">{{ invoice.tax_amount }}</td>
+          </tr>
+          <tr>
+              <td><strong>{{ text_total }}</strong></td>
+              <td class="text-right"><strong>{{ invoice.total_amount }}</strong></td>
+          </tr>
+      </table>
+      <div class="clearfix"></div>
+    </div>
+
+    {# Items Tab #}
+    <div class="tab-pane" id="tab-invoice-items">
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>{{ column_product }}</th>
+              <th class="text-right">{{ column_quantity }}</th>
+              <th class="text-right">{{ column_unit_price }}</th>
+              <th class="text-right">{{ column_total }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if items %}
+              {% for item in items %}
+              <tr>
+                <td>{{ item.product_name }}</td>
+                <td class="text-right">{{ item.quantity|number_format(2) }} {{ item.unit_name }}</td>
+                <td class="text-right">{{ item.unit_price_formatted }}</td>
+                <td class="text-right">{{ item.line_total_formatted }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center">{{ text_no_items }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {# History Tab #}
+    <div class="tab-pane" id="tab-invoice-history">
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>{{ column_date }}</th>
+              <th>{{ column_user }}</th>
+              <th>{{ column_action_type }}</th>
+              <th>{{ column_description }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if history %}
+              {% for entry in history %}
+              <tr>
+                <td>{{ entry.created_at|date('Y-m-d H:i:s') }}</td>
+                <td>{{ entry.user_name }}</td>
+                <td>{{ entry.action }}</td>
+                <td>{{ entry.description }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center">{{ text_no_history }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {# Documents Tab #}
+    <div class="tab-pane" id="tab-invoice-documents">
+      {# TODO: Implement document display similar to other modules #}
+       <div class="alert alert-info">{{ text_no_documents }}</div>
+    </div>
+  </div>
+</div>
+
+{# Modal Footer #}
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+  {# Add action buttons based on status and permissions #}
+  {% if can_edit %}
+    <button type="button" class="btn btn-primary" id="edit-invoice-btn" data-invoice-id="{{ invoice.invoice_id }}">
+      <i class="fa fa-pencil"></i> {{ button_edit }}
+    </button>
+  {% endif %}
+  {% if can_approve %}
+    <button type="button" class="btn btn-success" onclick="InvoiceManager.approveInvoice({{ invoice.invoice_id }});">
+      <i class="fa fa-check"></i> {{ button_approve }}
+    </button>
+  {% endif %}
+  {% if can_reject %}
+    <button type="button" class="btn btn-warning" onclick="InvoiceManager.rejectInvoice({{ invoice.invoice_id }});">
+      <i class="fa fa-times"></i> {{ button_reject }}
+    </button>
+  {% endif %}
+   {% if can_pay %}
+    <a href="{{ link('finance/payment_voucher/add', 'user_token=' ~ user_token ~ '&invoice_id=' ~ invoice.invoice_id, true) }}" target="_blank" class="btn btn-success">
+        <i class="fa fa-money"></i> {{ button_pay }}
+    </a>
+  {% endif %}
+  {% if can_print %}
+     {# <button type="button" class="btn btn-default" onclick="InvoiceManager.printInvoice({{ invoice.invoice_id }});">
+        <i class="fa fa-print"></i> {{ button_print }}
+      </button> #}
+  {% endif %}
+  {% if can_delete %}
+     <button type="button" class="btn btn-danger" onclick="InvoiceManager.deleteInvoice({{ invoice.invoice_id }});">
+        <i class="fa fa-trash"></i> {{ button_delete }}
+      </button>
+  {% endif %}
+</div>

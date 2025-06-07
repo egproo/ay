@@ -1,0 +1,105 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-settings" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-cog"></i> {{ heading_title_settings }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-settings" class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-ai-model">{{ entry_ai_model }}</label>
+            <div class="col-sm-10">
+              <select name="ai_model" id="input-ai-model" class="form-control">
+                <option value="default" {% if ai_model == 'default' %}selected="selected"{% endif %}>Default</option>
+                <option value="advanced" {% if ai_model == 'advanced' %}selected="selected"{% endif %}>Advanced</option>
+                <option value="expert" {% if ai_model == 'expert' %}selected="selected"{% endif %}>Expert</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_save_history }}</label>
+            <div class="col-sm-10">
+              <label class="radio-inline">
+                <input type="checkbox" name="ai_save_history" value="1" {% if ai_save_history %}checked="checked"{% endif %} />
+                {{ text_yes }}
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_suggestions }}</label>
+            <div class="col-sm-10">
+              <label class="radio-inline">
+                <input type="checkbox" name="ai_suggestions" value="1" {% if ai_suggestions %}checked="checked"{% endif %} />
+                {{ text_yes }}
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_auto_complete }}</label>
+            <div class="col-sm-10">
+              <label class="radio-inline">
+                <input type="checkbox" name="ai_auto_complete" value="1" {% if ai_auto_complete %}checked="checked"{% endif %} />
+                {{ text_yes }}
+              </label>
+            </div>
+          </div>
+          <fieldset>
+            <legend>{{ text_data_access }}</legend>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ entry_access_sales }}</label>
+              <div class="col-sm-10">
+                <label class="radio-inline">
+                  <input type="checkbox" name="ai_access_sales" value="1" {% if ai_access_sales %}checked="checked"{% endif %} />
+                  {{ text_yes }}
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ entry_access_inventory }}</label>
+              <div class="col-sm-10">
+                <label class="radio-inline">
+                  <input type="checkbox" name="ai_access_inventory" value="1" {% if ai_access_inventory %}checked="checked"{% endif %} />
+                  {{ text_yes }}
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ entry_access_customers }}</label>
+              <div class="col-sm-10">
+                <label class="radio-inline">
+                  <input type="checkbox" name="ai_access_customers" value="1" {% if ai_access_customers %}checked="checked"{% endif %} />
+                  {{ text_yes }}
+                </label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ entry_access_reports }}</label>
+              <div class="col-sm-10">
+                <label class="radio-inline">
+                  <input type="checkbox" name="ai_access_reports" value="1" {% if ai_access_reports %}checked="checked"{% endif %} />
+                  {{ text_yes }}
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

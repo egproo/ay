@@ -1,0 +1,133 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-tag" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-tag" class="form-horizontal">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+            {% if tag_posts is defined and tag_posts %}
+            <li><a href="#tab-posts" data-toggle="tab">{{ tab_posts }}</a></li>
+            {% endif %}
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab-general">
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+                  {% if error_name %}
+                  <div class="text-danger">{{ error_name }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-slug">{{ entry_slug }}</label>
+                <div class="col-sm-10">
+                  <div class="input-group">
+                    <input type="text" name="slug" value="{{ slug }}" placeholder="{{ entry_slug }}" id="input-slug" class="form-control" />
+                    <span class="input-group-btn">
+                      <button type="button" id="button-generate-slug" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_generate }}</button>
+                    </span>
+                  </div>
+                  {% if error_slug %}
+                  <div class="text-danger">{{ error_slug }}</div>
+                  {% endif %}
+                  <span class="help-block">{{ help_slug }}</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">{{ column_posts }}</label>
+                <div class="col-sm-10">
+                  <div class="well well-sm">
+                    <h4><span class="badge">{{ tag_posts|length|default(0) }}</span> {{ text_posts_using_tag|default('المقالات التي تستخدم هذا الوسم') }}</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% if tag_posts is defined and tag_posts %}
+            <div class="tab-pane" id="tab-posts">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td class="text-left">{{ column_title }}</td>
+                      <td class="text-center">{{ column_status }}</td>
+                      <td class="text-center">{{ column_date_published }}</td>
+                      <td class="text-right">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for post in tag_posts %}
+                    <tr>
+                      <td class="text-left">{{ post.title }}</td>
+                      <td class="text-center">
+                        {% if post.status %}
+                        <span class="label label-success">{{ text_enabled }}</span>
+                        {% else %}
+                        <span class="label label-danger">{{ text_disabled }}</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-center">{{ post.date_published }}</td>
+                      <td class="text-right">
+                        <a href="index.php?route=catalog/blog/edit&user_token={{ user_token }}&post_id={{ post.post_id }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+// توليد slug تلقائياً
+$('#button-generate-slug').on('click', function() {
+  var name = $('#input-name').val();
+  if (name) {
+    $.ajax({
+      url: 'index.php?route=catalog/blog_tag/generateSlug&user_token={{ user_token }}',
+      type: 'POST',
+      data: { title: name },
+      dataType: 'json',
+      success: function(json) {
+        if (json.success) {
+          $('#input-slug').val(json.slug);
+        }
+      }
+    });
+  }
+});
+//--></script>
+
+{{ footer }}

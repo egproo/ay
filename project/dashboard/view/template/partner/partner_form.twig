@@ -1,0 +1,113 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-partner" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-partner" class="form-horizontal">
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+              {% if error_name %}
+              <div class="text-danger">{{ error_name }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-type">{{ entry_type }}</label>
+            <div class="col-sm-10">
+              <select name="type" id="input-type" class="form-control">
+                {% for key, value in partnership_types %}
+                  {% if key == type %}
+                    <option value="{{ key }}" selected="selected">{{ value }}</option>
+                  {% else %}
+                    <option value="{{ key }}">{{ value }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+              {% if error_type %}
+              <div class="text-danger">{{ error_type }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-percentage">{{ entry_percentage }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="percentage" value="{{ percentage }}" placeholder="{{ entry_percentage }}" id="input-percentage" class="form-control" />
+              {% if error_percentage %}
+              <div class="text-danger">{{ error_percentage }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-profit-percentage">{{ entry_profit_percentage }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="profit_percentage" value="{{ profit_percentage }}" placeholder="{{ entry_profit_percentage }}" id="input-profit-percentage" class="form-control" />
+              {% if error_profit_percentage %}
+              <div class="text-danger">{{ error_profit_percentage }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-initial-investment">{{ entry_initial_investment }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="initial_investment" value="{{ initial_investment }}" placeholder="{{ entry_initial_investment }}" id="input-initial-investment" class="form-control" />
+              {% if error_initial_investment %}
+              <div class="text-danger">{{ error_initial_investment }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-current-balance">{{ entry_current_balance }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="current_balance" value="{{ current_balance }}" placeholder="{{ entry_current_balance }}" id="input-current-balance" class="form-control" readonly />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-account-number">{{ entry_account_number }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="account_number" value="{{ account_number }}" placeholder="{{ entry_account_number }}" id="input-account-number" class="form-control" readonly />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-control">
+                {% if status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

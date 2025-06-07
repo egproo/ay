@@ -1,0 +1,135 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ cancel_url }}" class="btn btn-default"><i class="fa fa-reply"></i> {{ text_cancel }}</a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-sitemap"></i> {{ text_workflow_designer }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="workflow-meta">
+          <div class="form-group">
+            <label class="control-label" for="workflow-name">{{ text_name }}</label>
+            <input type="text" name="name" value="{{ workflow_name }}" placeholder="{{ text_name }}" id="workflow-name" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="workflow-description">{{ text_description }}</label>
+            <textarea name="description" rows="3" placeholder="{{ text_description }}" id="workflow-description" class="form-control">{{ workflow_description }}</textarea>
+          </div>
+        </div>
+        
+        <!-- Workflow Designer Container -->
+        <div id="workflow-container" class="workflow-container" 
+             data-workflow-id="{{ workflow_id }}" 
+             data-workflow-data="{{ workflow_data }}"
+             data-save-url="{{ save_url }}"
+             data-delete-url="{{ delete_url }}">
+          
+          <!-- Toolbar -->
+          <div class="workflow-toolbar">
+            <button type="button" id="workflow-save" class="btn btn-primary">
+              <i class="fa fa-save"></i> {{ text_save }}
+            </button>
+            <button type="button" id="workflow-new" class="btn btn-default">
+              <i class="fa fa-file-o"></i> {{ text_new }}
+            </button>
+            {% if workflow_id %}
+            <button type="button" id="workflow-delete" class="btn btn-danger">
+              <i class="fa fa-trash-o"></i> {{ text_delete }}
+            </button>
+            {% endif %}
+          </div>
+          
+          <!-- Node Palette -->
+          <div class="workflow-palette">
+            <div class="workflow-palette-title">{{ text_nodes }}</div>
+            <div class="workflow-palette-item workflow-node" data-node-type="start">
+              <i class="fa fa-play-circle"></i> {{ text_node_start }}
+            </div>
+            <div class="workflow-palette-item workflow-node" data-node-type="end">
+              <i class="fa fa-stop-circle"></i> {{ text_node_end }}
+            </div>
+            <div class="workflow-palette-item workflow-node" data-node-type="task">
+              <i class="fa fa-tasks"></i> {{ text_node_task }}
+            </div>
+            <div class="workflow-palette-item workflow-node" data-node-type="decision">
+              <i class="fa fa-code-fork"></i> {{ text_node_decision }}
+            </div>
+            <div class="workflow-palette-item workflow-node" data-node-type="email">
+              <i class="fa fa-envelope"></i> {{ text_node_email }}
+            </div>
+            <div class="workflow-palette-item workflow-node" data-node-type="delay">
+              <i class="fa fa-clock-o"></i> {{ text_node_delay }}
+            </div>
+          </div>
+          
+          <!-- Canvas -->
+          <div class="workflow-canvas"></div>
+          
+          <!-- Property Panel -->
+          <div id="property-panel" class="workflow-property-panel">
+            <div class="workflow-property-panel-header">
+              <span id="property-panel-title">{{ text_properties }}</span>
+              <span id="property-panel-close" class="workflow-property-panel-close">&times;</span>
+            </div>
+            <div class="workflow-property-panel-body">
+              <input type="hidden" id="property-node-id" value="" />
+              <div id="property-panel-fields"></div>
+            </div>
+            <div class="workflow-property-panel-footer">
+              <button type="button" id="property-panel-apply" class="btn btn-primary">
+                {{ text_apply }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Zoom Controls -->
+          <div class="workflow-zoom-controls">
+            <button type="button" id="workflow-zoom-in" class="btn btn-default" title="{{ text_zoom_in }}">
+              <i class="fa fa-search-plus"></i>
+            </button>
+            <button type="button" id="workflow-zoom-out" class="btn btn-default" title="{{ text_zoom_out }}">
+              <i class="fa fa-search-minus"></i>
+            </button>
+            <button type="button" id="workflow-fit" class="btn btn-default" title="{{ text_fit }}">
+              <i class="fa fa-arrows-alt"></i>
+            </button>
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden templates and helpers -->
+<script type="text/javascript">
+  // Pass translated strings to JavaScript
+  var workflowTranslations = {
+    confirmDelete: '{{ text_confirm_delete }}',
+    confirmNew: '{{ text_confirm_new }}',
+    workflowSaved: '{{ text_workflow_saved }}',
+    errorSaving: '{{ text_error_saving }}'
+  };
+</script>
+
+{{ footer }} 

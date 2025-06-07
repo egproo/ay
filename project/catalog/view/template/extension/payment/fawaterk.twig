@@ -1,0 +1,384 @@
+<style>
+    .cc-selector-2 {
+        text-align: center;
+    }
+
+    .payment-methods-invoices .cc-selector-2 {
+        width: 33.33%;
+    }
+
+    .payment-methods-invoices {
+        width: 100%;
+    }
+
+    .cc-selector input {
+        margin: 0;
+        padding: 0;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .cc-selector-2 input {
+        position: absolute;
+        z-index: 999;
+    }
+
+    .cc-selector-2 input:active + .drinkcard-cc, .cc-selector input:active + .drinkcard-cc {
+        opacity: .9;
+    }
+
+    .cc-selector-2 input:checked + .drinkcard-cc, .cc-selector input:checked + .drinkcard-cc {
+        -webkit-filter: none;
+        -moz-filter: none;
+        filter: none;
+    }
+
+    .drinkcard-cc {
+        cursor: pointer;
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        width: 200px;
+        height: 70px;
+        -webkit-transition: all 100ms ease-in;
+        -moz-transition: all 100ms ease-in;
+        transition: all 100ms ease-in;
+        -webkit-filter: brightness(1.8) grayscale(1) opacity(.7);
+        -moz-filter: brightness(1.8) grayscale(1) opacity(.7);
+        filter: brightness(1.8) grayscale(1) opacity(.7);
+    }
+
+    .drinkcard-cc:hover {
+        -webkit-filter: brightness(1.2) grayscale(.5) opacity(.9);
+        -moz-filter: brightness(1.2) grayscale(.5) opacity(.9);
+        filter: brightness(1.2) grayscale(.5) opacity(.9);
+    }
+
+    /* Extras */
+    /*a:visited{color:#888}*/
+    /*a{color:#444;text-decoration:none;}*/
+    /*p{margin-bottom:.3em;}*/
+    /* * { font-family:monospace; } */
+    .cc-selector-2 input {
+        margin: 5px 0 0 12px;
+        opacity: 0;
+
+    }
+
+    .cc-selector-2 label {
+        margin-left: 7px;
+    }
+
+    span.cc {
+        color: #6d84b4
+    }
+
+    #invoiceForm .cc-selector-2 input[type="radio"] {
+        opacity: 0;
+    }
+
+    .payment-methods-invoices {
+        overflow: hidden;
+    }
+
+    .payment-methods-invoices__slider .owl-stage {
+        padding-left: 0 !important;
+    }
+
+    @media (min-width: 769px) {
+        .owl-carousel {
+            display: flex;
+        }
+
+    }
+
+    @media (max-width: 768px) {
+        .drinkcard-cc:hover {
+            filter: brightness(1.8) grayscale(1) opacity(.7) !important;
+        }
+
+        .drinkcard-cc:hover {
+            filter: brightness(1.8) grayscale(1) opacity(.7) !important;
+        }
+
+        .cc-selector-2 input:checked + .drinkcard-cc {
+            filter: none !important;
+        }
+
+        .payment-methods-invoices .cc-selector-2 {
+            width: auto;
+        }
+
+        /* .drinkcard-cc{
+            width: 100%;
+        } */
+        .drinkcard-cc {
+            width: 180px;
+        }
+
+        .row.owl-carousel {
+            margin: 0;
+        }
+
+    }
+
+    .cc-selector-2 {
+        text-align: center;
+    }
+
+    .payment-methods-invoices .cc-selector-2 {
+        width: 33.33%;
+    }
+
+    .payment-methods-invoices {
+        width: 100%;
+    }
+
+    .cc-selector input {
+        margin: 0;
+        padding: 0;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .cc-selector-2 input {
+        position: absolute;
+        z-index: 999;
+    }
+
+    .cc-selector-2 input:active + .drinkcard-cc, .cc-selector input:active + .drinkcard-cc {
+        opacity: .9;
+    }
+
+    .cc-selector-2 input:checked + .drinkcard-cc, .cc-selector input:checked + .drinkcard-cc {
+        -webkit-filter: none;
+        -moz-filter: none;
+        filter: none;
+    }
+
+    .drinkcard-cc {
+        cursor: pointer;
+        background-size: contain;
+        background-repeat: no-repeat;
+        display: inline-block;
+        width: 200px;
+        height: 70px;
+        -webkit-transition: all 100ms ease-in;
+        -moz-transition: all 100ms ease-in;
+        transition: all 100ms ease-in;
+        -webkit-filter: brightness(1.8) grayscale(1) opacity(.7);
+        -moz-filter: brightness(1.8) grayscale(1) opacity(.7);
+        filter: brightness(1.8) grayscale(1) opacity(.7);
+    }
+
+    .drinkcard-cc:hover {
+        -webkit-filter: brightness(1.2) grayscale(.5) opacity(.9);
+        -moz-filter: brightness(1.2) grayscale(.5) opacity(.9);
+        filter: brightness(1.2) grayscale(.5) opacity(.9);
+    }
+
+    /* Extras */
+    /*a:visited{color:#888}*/
+    /*a{color:#444;text-decoration:none;}*/
+    /*p{margin-bottom:.3em;}*/
+    /* * { font-family:monospace; } */
+    .cc-selector-2 input {
+        margin: 5px 0 0 12px;
+        opacity: 0;
+
+    }
+
+    .cc-selector-2 label {
+        margin-left: 7px;
+    }
+
+    span.cc {
+        color: #6d84b4
+    }
+
+    #invoiceForm .cc-selector-2 input[type="radio"] {
+        opacity: 0;
+    }
+
+    .payment-methods-invoices {
+        overflow: hidden;
+    }
+
+</style>
+<div class="invoice-box">
+    <strong class="form-group">Choose Payment Method</strong>
+    <br><br>
+    <form id="paymentForm" method="POST" action="{{ createPaymentUrl }}">
+        <div class="row" style="align-items: center;">
+            <div class="payment-methods-invoices">
+                <div class="row">
+                    {% for paymentMethod in paymentMethods %}
+                        <div class="col-md-4 cc-selector-2">
+                            <input {{ (loop.first) ? "checked" : "" }} id="{{ paymentMethod["name_en"] }}"
+                                                                       class="paymentMethodClass"
+                                                                       type="radio"
+                                                                       name="chosenPaymentMethod"
+                                                                       value="{{ paymentMethod["paymentId"] }}">
+                            <label class="drinkcard-cc {{ paymentMethod["name_en"] }}"
+                                   style="background-image: url({{ paymentMethod["logo"] }})"
+                                   for="{{ paymentMethod["name_en"] }}"></label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div id="paymentMethodElement"></div>
+    </form>
+    <div class="buttons">
+        <div class="pull-right">
+            <input type="button" value="{{ button_confirm }}" id="buttonConfirm" data-loading-text="{{ text_loading }}"
+                   class="btn btn-primary"/>
+        </div>
+    </div>
+</div>
+<script>
+    function handelRedirectTo(response) {
+        window.location.href = response.redirectTo;
+    }
+
+    /*======================================================================*/
+    function handelPaymentModal(response) {
+        var paymentModal = transactionsModal({
+            modalContent: response.paymentMessage,
+            icon: "fa fa-check-circle",
+            redirectUrl: response.successUrl
+        });
+        $("#paymentMethodElement").html(paymentModal);
+        $("#transactionModal").modal({
+            show: true,
+            keyboard: false,
+        });
+    }
+
+    /*======================================================================*/
+    function invokeMeezaRequest(event) {
+        event.preventDefault();
+        var mobileWalletNumber = $("#customerMobileWallet").val();
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'mobileWalletNumber',
+            value: mobileWalletNumber
+        }).appendTo('form');
+
+        $("#meezaModal").modal("hide");
+
+        executePayment();
+    }
+
+    $(document).on("click", "#meezaConfirmButton", invokeMeezaRequest);
+
+    /*======================================================================*/
+    function submitPayRequest() {
+        var checkedPaymentMethod = $('input[name="chosenPaymentMethod"]:checked').val();
+
+        if (checkedPaymentMethod == 4) {
+            var meezaModalHtml = meezaModal();
+            $("#paymentMethodElement").html(meezaModalHtml);
+            $("#meezaModal").modal({
+                show: true,
+                keyboard: false,
+            });
+        } else {
+            executePayment();
+        }
+    }
+
+    $(document).on("click", "#buttonConfirm", submitPayRequest);
+
+    /*======================================================================*/
+    function executePayment() {
+        $("#buttonConfirm").prop("disabled", true).text("{{ text_loading }}");
+
+        var request = $.ajax({
+            url: $("#paymentForm").attr("action"),
+            type: "POST",
+            dataType: "JSON",
+            data: $("#paymentForm").serialize(),
+            success: function (response) {
+                var methodToInvoke = response.functionToInvoke;
+                window[methodToInvoke](response);
+            },
+            error: function (jqXHR, error, errorThrown) {
+                var errorMessageHtml = ``,
+                    errorsMessages = jqXHR.responseJSON.errors,
+                    errorHtmlElement = '<ul>';
+
+                $.each(errorsMessages, (key, data) => {
+                    errorHtmlElement += `<li>${data}</li>`;
+                });
+
+                errorHtmlElement += '</ul>';
+                errorMessageHtml += errorHtmlElement;
+
+                var paymentModal = transactionsModal({
+                    modalContent: errorMessageHtml,
+                    icon: "fa fa-times-circle",
+                    redirectUrl: jqXHR.responseJSON.errorUrl
+                });
+                $("#paymentMethodElement").html(paymentModal);
+                $("#transactionModal").modal({
+                    show: true,
+                    keyboard: false,
+                });
+            }
+        });
+
+        request.always((response) => {
+            $("#buttonConfirm").prop("disabled", false).text("{{ button_confirm }}");
+        });
+    }
+
+    /*======================================================================*/
+    function transactionsModal(modalConfig) {
+
+        return `
+        <!-- Modal-->
+        <div class="modal fade" id="transactionModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                          <div class="text-center text-success">
+                             <i class="${modalConfig.icon}"></i>
+                          </div>
+                          <br />
+                          ${modalConfig.modalContent}
+                    </div>
+                    <div class="modal-footer">
+                       <a href="${modalConfig.redirectUrl}" class="btn btn-primary">OK</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+`;
+    }
+
+    /*======================================================================*/
+    function meezaModal() {
+        return `
+        <!-- Modal-->
+        <div class="modal fade" id="meezaModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdrop" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                           <label>Enter Your Wallet Mobile Number</label>
+                          <input class="form-control" id="customerMobileWallet">
+                    </div>
+                    <div class="modal-footer">
+                       <button type="button" id="meezaConfirmButton" class="btn btn-primary">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+           `;
+
+    }
+
+    /*=====================================================================*/
+</script>

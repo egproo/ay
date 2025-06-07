@@ -1,0 +1,130 @@
+    {% if userdevice == 'pc' %} 
+<div class="dropdown d-grid">
+ 
+<button type="button" data-bs-toggle="dropdown" data-loading-text="{{ text_loading }}" class="btn btn-lg btn-inverse btn-block dropdown-toggle" style="background-color: unset;border: none !important; background-image: unset;">
+  <i style="color: #f99f1e !important; font-size: 50px; line-height: 25px;" class="fa fa-shopping-bag"></i>
+  <span id="cart-total" class="">{{ text_items }}</span>
+</button>
+    {% else %}
+<div class="dropdown d-grid" style="max-width:50px">    
+<button type="button" data-bs-toggle="dropdown" data-loading-text="{{ text_loading }}" class="dropdown-toggle" style="max-width:50px;padding: 0px;margin: 0px;--bs-btn-padding-x:unset;background-color: unset;border: none !important; background-image: unset;">
+  <i style="color: #f99f1e !important; font-size: 35px; line-height: 25px;" class="fa fa-shopping-bag"></i>
+  <span id="cart-total" class="">{{ text_items }}</span>
+</button>
+   {% endif %}
+
+
+  <ul class="dropdown-menu pull-right">
+    {% if products or vouchers %}
+      <li>
+        <div class="table-responsive" >
+        <table class="table table-sm table-striped" style="
+    max-width: 95vw;
+">
+
+            <tr>
+              <td class="text-center">{{column_image}}</td>
+              <td class="text-center">{{column_name}}</td>
+              <td class="text-center">{{column_quantity}}</td>
+              <td class="text-center">{{column_total}}</td>
+              <td class="text-center">
+              </td>
+            </tr>
+            
+          {% for product in products %}
+            <tr>
+              <td class="text-center">{% if product.thumb %}<a style="color:#0b2646" href="{{ product.href }}"><img width="60" height="60" src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}" class="img-thumbnail"/></a>{% endif %}</td>
+              <td class="text-start"><a style="color:#0b2646" href="{{ product.href }}">{{ product.name }}</a>
+                    <br/>
+                    <small> - {{ text_unit }}: {{ product.unit }}</small>
+                {% if product.option %}
+                  {% for option in product.option %}
+                    <br/>
+                    <small> - {{ option.name }}: {{ option.value }}</small>
+                  {% endfor %}
+                  
+                {% endif %}
+                {% if product.reward %}
+                  <br/>
+                  <small> - {{ text_points }}: {{ product.reward }}</small>
+                {% endif %}
+                {% if product.subscription %}
+                  <br/>
+                  <small> - {{ text_subscription }}: {{ product.subscription }}</small>
+                {% endif %}
+              </td>
+              <td class="text-end">x {{ product.quantity }}</td>
+              <td class="text-end">{{ product.total }}</td>
+              <td class="text-end">
+                      <button style="padding: 1px;" type="button" data-bs-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger" onclick="cart.remove('{{ product.cart_id }}');"><i style="font-size:22px"  class="fa fa-times-circle"></i></button>
+
+              </td>
+            </tr>
+          {% endfor %}
+
+          {% for voucher in vouchers %}
+            <tr>
+              <td class="text-center"></td>
+              <td class="text-start">{{ voucher.description }}</td>
+              <td class="text-end">x&nbsp;1</td>
+              <td class="text-end">{{ voucher.amount }}</td>
+              <td class="text-end">
+                <form action="{{ voucher_remove }}" method="post" data-oc-toggle="ajax" data-oc-load="{{ list }}" data-oc-target="#header-cart">
+                  <input type="hidden" name="key" value="{{ voucher.key }}"/>
+                  <button type="submit" data-bs-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa-solid fa-circle-xmark"></i></button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+
+        </table>
+        </div>
+        <div>
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered" style="
+    max-width: 95vw;
+">
+            {% for total in totals %}
+              <tr>
+                <td class="text-end" style="padding-inline-end:20px"><strong>{{ total.title }}</strong></td>
+                <td class="text-start" style="padding-inline-start:20px">{{ total.text }}</td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>  
+        <div  style="
+    max-width: 95vw;
+"  class="table-responsive">
+        
+          <div class="text-start">
+              <a style="color:#0b2646"  href="{{ cart }}"><strong style="
+background-color: var(--bs-warning);
+    height: 40px;
+    line-height: 40px;
+    display: inline-block;
+    width: 46%;
+    color: #000 !important;
+    text-align: center;
+    border-radius: 8px;
+"><i class="fa fa-shopping-bag"></i> {{ text_cart }}</strong></a>&nbsp;&nbsp;&nbsp;
+
+<div style="color:#0b2646;display: inline;cursor: pointer;" class="floatcart"><strong class="floatcart" style="
+    background-color: green;
+    height: 40px;
+    line-height: 40px;
+    display: inline-block;
+    width: 48%;
+    color: #fff !important;
+    text-align: center;
+    border-radius: 8px;
+"><i class="fa-solid fa-share floatcart"></i> {{ text_checkout }}</strong></div></div>
+        </div>
+        </div>
+      </li>
+    {% else %}
+      <li>
+        <p class="text-center">{{ text_no_results }}</p>
+      </li>
+    {% endif %}
+  </ul>
+</div>

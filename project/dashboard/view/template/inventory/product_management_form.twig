@@ -1,0 +1,723 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-product" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i>
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - {{ text_form }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product" class="form-horizontal">
+
+          <!-- ألسنة التبويب -->
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+              <a href="#tab-general" aria-controls="tab-general" role="tab" data-toggle="tab">
+                <i class="fa fa-info-circle"></i> {{ tab_general }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#tab-pricing" aria-controls="tab-pricing" role="tab" data-toggle="tab">
+                <i class="fa fa-money"></i> {{ tab_pricing }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#tab-inventory" aria-controls="tab-inventory" role="tab" data-toggle="tab">
+                <i class="fa fa-cubes"></i> {{ tab_inventory }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#tab-units" aria-controls="tab-units" role="tab" data-toggle="tab">
+                <i class="fa fa-balance-scale"></i> {{ tab_units }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#tab-options" aria-controls="tab-options" role="tab" data-toggle="tab">
+                <i class="fa fa-sliders"></i> {{ tab_options }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#tab-barcodes" aria-controls="tab-barcodes" role="tab" data-toggle="tab">
+                <i class="fa fa-qrcode"></i> {{ tab_barcodes }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#tab-data" aria-controls="tab-data" role="tab" data-toggle="tab">
+                <i class="fa fa-cog"></i> {{ tab_data }}
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#tab-statistics" aria-controls="tab-statistics" role="tab" data-toggle="tab">
+                <i class="fa fa-bar-chart"></i> {{ tab_statistics }}
+              </a>
+            </li>
+          </ul>
+
+          <!-- محتوى الألسنة -->
+          <div class="tab-content" style="margin-top: 15px;">
+
+            <!-- لسان المعلومات الأساسية -->
+            <div role="tabpanel" class="tab-pane active" id="tab-general">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="form-group required">
+                    <label class="col-sm-3 control-label" for="input-name">{{ entry_name }}</label>
+                    <div class="col-sm-9">
+                      <input type="text" name="product_description[1][name]" value="{{ product_description[1].name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" required />
+                      {% if error_name %}
+                      <div class="text-danger">{{ error_name }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="input-description">{{ entry_description }}</label>
+                    <div class="col-sm-9">
+                      <textarea name="product_description[1][description]" rows="5" placeholder="{{ entry_description }}" id="input-description" class="form-control">{{ product_description[1].description }}</textarea>
+                    </div>
+                  </div>
+
+                  <div class="form-group required">
+                    <label class="col-sm-3 control-label" for="input-model">{{ entry_model }}</label>
+                    <div class="col-sm-6">
+                      <input type="text" name="model" value="{{ model }}" placeholder="{{ entry_model }}" id="input-model" class="form-control" required />
+                      {% if error_model %}
+                      <div class="text-danger">{{ error_model }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-sm-3">
+                      <button type="button" class="btn btn-info btn-block" id="generate-model">
+                        <i class="fa fa-magic"></i> توليد تلقائي
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group required">
+                    <label class="col-sm-3 control-label" for="input-sku">{{ entry_sku }}</label>
+                    <div class="col-sm-6">
+                      <input type="text" name="sku" value="{{ sku }}" placeholder="{{ entry_sku }}" id="input-sku" class="form-control" required />
+                      {% if error_sku %}
+                      <div class="text-danger">{{ error_sku }}</div>
+                      {% endif %}
+                    </div>
+                    <div class="col-sm-3">
+                      <button type="button" class="btn btn-success btn-block" id="generate-sku">
+                        <i class="fa fa-magic"></i> {{ button_generate_sku }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="input-manufacturer">{{ entry_manufacturer }}</label>
+                    <div class="col-sm-9">
+                      <select name="manufacturer_id" id="input-manufacturer" class="form-control">
+                        <option value="">{{ text_none }}</option>
+                        {% for manufacturer in manufacturers %}
+                        <option value="{{ manufacturer.manufacturer_id }}"{% if manufacturer.manufacturer_id == manufacturer_id %} selected="selected"{% endif %}>{{ manufacturer.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">{{ entry_status }}</label>
+                    <div class="col-sm-9">
+                      <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary{% if status %} active{% endif %}">
+                          <input type="radio" name="status" value="1"{% if status %} checked="checked"{% endif %} /> {{ text_enabled }}
+                        </label>
+                        <label class="btn btn-default{% if not status %} active{% endif %}">
+                          <input type="radio" name="status" value="0"{% if not status %} checked="checked"{% endif %} /> {{ text_disabled }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">صورة المنتج</h4>
+                    </div>
+                    <div class="panel-body text-center">
+                      <div id="image-preview">
+                        {% if image %}
+                        <img src="{{ image }}" alt="" class="img-thumbnail" style="max-width: 200px;" />
+                        {% else %}
+                        <div class="image-placeholder">
+                          <i class="fa fa-camera fa-3x text-muted"></i>
+                          <p class="text-muted">لا توجد صورة</p>
+                        </div>
+                        {% endif %}
+                      </div>
+                      <input type="hidden" name="image" value="{{ image }}" id="input-image" />
+                      <br>
+                      <button type="button" class="btn btn-primary" id="button-image">
+                        <i class="fa fa-upload"></i> اختيار صورة
+                      </button>
+                      <button type="button" class="btn btn-danger" id="button-clear-image">
+                        <i class="fa fa-trash"></i> مسح
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- لسان التسعير المتقدم -->
+            <div role="tabpanel" class="tab-pane" id="tab-pricing">
+              <div class="row">
+                <div class="col-md-6">
+                  <fieldset>
+                    <legend>أسعار التكلفة والأساس</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-cost-price">{{ entry_cost_price }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="cost_price" value="{{ cost_price }}" placeholder="0.00" id="input-cost-price" class="form-control" step="0.01" />
+                        <div class="help-block">{{ help_cost_price }}</div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-basic-price">{{ entry_basic_price }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="basic_price" value="{{ basic_price }}" placeholder="0.00" id="input-basic-price" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-margin">{{ entry_margin_percentage }}</label>
+                      <div class="col-sm-5">
+                        <input type="number" name="margin_percentage" value="{{ margin_percentage }}" placeholder="0" id="input-margin" class="form-control" step="0.1" />
+                      </div>
+                      <div class="col-sm-3">
+                        <button type="button" class="btn btn-info btn-block" id="calculate-from-margin">
+                          <i class="fa fa-calculator"></i> حساب
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-markup">{{ entry_markup_percentage }}</label>
+                      <div class="col-sm-5">
+                        <input type="number" name="markup_percentage" value="{{ markup_percentage }}" placeholder="0" id="input-markup" class="form-control" step="0.1" />
+                      </div>
+                      <div class="col-sm-3">
+                        <button type="button" class="btn btn-info btn-block" id="calculate-from-markup">
+                          <i class="fa fa-calculator"></i> حساب
+                        </button>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <div class="col-md-6">
+                  <fieldset>
+                    <legend>الأسعار المتخصصة</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-offer-price">{{ entry_offer_price }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="offer_price" value="{{ offer_price }}" placeholder="0.00" id="input-offer-price" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-wholesale-price">{{ entry_wholesale_price }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="wholesale_price" value="{{ wholesale_price }}" placeholder="0.00" id="input-wholesale-price" class="form-control" step="0.01" />
+                        <div class="help-block">{{ help_wholesale_price }}</div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-semi-wholesale-price">{{ entry_semi_wholesale_price }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="semi_wholesale_price" value="{{ semi_wholesale_price }}" placeholder="0.00" id="input-semi-wholesale-price" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-pos-price">{{ entry_pos_price }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="pos_price" value="{{ pos_price }}" placeholder="0.00" id="input-pos-price" class="form-control" step="0.01" />
+                        <div class="help-block">{{ help_pos_price }}</div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-online-price">{{ entry_online_price }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="online_price" value="{{ online_price }}" placeholder="0.00" id="input-online-price" class="form-control" step="0.01" />
+                        <div class="help-block">{{ help_online_price }}</div>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <div class="well">
+                    <button type="button" class="btn btn-success btn-block" id="auto-calculate-pricing">
+                      <i class="fa fa-magic"></i> {{ button_calculate_pricing }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- لسان إدارة المخزون -->
+            <div role="tabpanel" class="tab-pane" id="tab-inventory">
+              <div class="row">
+                <div class="col-md-6">
+                  <fieldset>
+                    <legend>الكميات والمستويات</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-quantity">{{ entry_available_quantity }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="available_quantity" value="{{ available_quantity }}" placeholder="0" id="input-quantity" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-reorder-level">{{ entry_reorder_level }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="reorder_level" value="{{ reorder_level }}" placeholder="0" id="input-reorder-level" class="form-control" />
+                        <div class="help-block">{{ help_reorder_level }}</div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-max-stock">{{ entry_max_stock_level }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="max_stock_level" value="{{ max_stock_level }}" placeholder="1000" id="input-max-stock" class="form-control" />
+                        <div class="help-block">{{ help_max_stock_level }}</div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-location">{{ entry_location }}</label>
+                      <div class="col-sm-8">
+                        <input type="text" name="location" value="{{ location }}" placeholder="{{ entry_location }}" id="input-location" class="form-control" />
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <div class="col-md-6">
+                  <fieldset>
+                    <legend>التكاليف والإعدادات</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-avg-cost">{{ entry_avg_cost }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="avg_cost" value="{{ avg_cost }}" placeholder="0.00" id="input-avg-cost" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-last-cost">{{ entry_last_cost }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="last_cost" value="{{ last_cost }}" placeholder="0.00" id="input-last-cost" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-standard-cost">{{ entry_standard_cost }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="standard_cost" value="{{ standard_cost }}" placeholder="0.00" id="input-standard-cost" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label">{{ entry_subtract }}</label>
+                      <div class="col-sm-8">
+                        <div class="checkbox">
+                          <label>
+                            <input type="checkbox" name="subtract" value="1"{% if subtract %} checked="checked"{% endif %} />
+                            {{ help_subtract }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-stock-status">{{ entry_stock_status }}</label>
+                      <div class="col-sm-8">
+                        <select name="stock_status_id" id="input-stock-status" class="form-control">
+                          {% for stock_status in stock_statuses %}
+                          <option value="{{ stock_status.stock_status_id }}"{% if stock_status.stock_status_id == stock_status_id %} selected="selected"{% endif %}>{{ stock_status.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+
+            <!-- لسان الوحدات والتحويلات -->
+            <div role="tabpanel" class="tab-pane" id="tab-units">
+              <div class="row">
+                <div class="col-md-6">
+                  <fieldset>
+                    <legend>الوحدة الأساسية</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-base-unit">{{ entry_base_unit }}</label>
+                      <div class="col-sm-8">
+                        <select name="base_unit_id" id="input-base-unit" class="form-control">
+                          <option value="">{{ text_select }}</option>
+                          {% for unit in units %}
+                          <option value="{{ unit.unit_id }}"{% if unit.unit_id == base_unit_id %} selected="selected"{% endif %}>{{ unit.name }} ({{ unit.symbol }})</option>
+                          {% endfor %}
+                        </select>
+                        <div class="help-block">{{ help_base_unit }}</div>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">وحدات بديلة</h4>
+                    </div>
+                    <div class="panel-body">
+                      <div id="alternative-units">
+                        <!-- سيتم تحميل الوحدات البديلة ديناميكياً -->
+                      </div>
+                      <button type="button" class="btn btn-success btn-sm" id="add-unit">
+                        <i class="fa fa-plus"></i> {{ button_add_unit }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">جدول التحويلات</h4>
+                    </div>
+                    <div class="panel-body">
+                      <div id="conversion-table">
+                        <p class="text-muted text-center">اختر الوحدة الأساسية لعرض التحويلات</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- لسان الخيارات والمتغيرات -->
+            <div role="tabpanel" class="tab-pane" id="tab-options">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">
+                    خيارات المنتج
+                    <button type="button" class="btn btn-success btn-xs pull-right" id="add-option">
+                      <i class="fa fa-plus"></i> {{ button_add_option }}
+                    </button>
+                  </h4>
+                </div>
+                <div class="panel-body">
+                  <div id="product-options">
+                    <!-- سيتم إضافة الخيارات ديناميكياً -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- لسان الباركود المتعدد -->
+            <div role="tabpanel" class="tab-pane" id="tab-barcodes">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">
+                        باركودات المنتج
+                        <button type="button" class="btn btn-success btn-xs pull-right" id="add-barcode">
+                          <i class="fa fa-plus"></i> {{ button_add_barcode }}
+                        </button>
+                      </h4>
+                    </div>
+                    <div class="panel-body">
+                      <div id="product-barcodes">
+                        <!-- سيتم إضافة الباركودات ديناميكياً -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">إعدادات الباركود التلقائي</h4>
+                    </div>
+                    <div class="panel-body">
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" name="auto_generate_barcode" value="1" />
+                          {{ entry_auto_generate_barcode }}
+                        </label>
+                        <div class="help-block">{{ help_auto_generate_barcode }}</div>
+                      </div>
+
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" name="include_units_barcode" value="1" />
+                          {{ entry_include_units_barcode }}
+                        </label>
+                        <div class="help-block">{{ help_include_units_barcode }}</div>
+                      </div>
+
+                      <div class="checkbox">
+                        <label>
+                          <input type="checkbox" name="include_options_barcode" value="1" />
+                          {{ entry_include_options_barcode }}
+                        </label>
+                        <div class="help-block">{{ help_include_options_barcode }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- لسان البيانات التقنية -->
+            <div role="tabpanel" class="tab-pane" id="tab-data">
+              <div class="row">
+                <div class="col-md-6">
+                  <fieldset>
+                    <legend>الأكواد والمعرفات</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-upc">{{ entry_upc }}</label>
+                      <div class="col-sm-8">
+                        <input type="text" name="upc" value="{{ upc }}" placeholder="{{ entry_upc }}" id="input-upc" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-ean">{{ entry_ean }}</label>
+                      <div class="col-sm-8">
+                        <input type="text" name="ean" value="{{ ean }}" placeholder="{{ entry_ean }}" id="input-ean" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-jan">{{ entry_jan }}</label>
+                      <div class="col-sm-8">
+                        <input type="text" name="jan" value="{{ jan }}" placeholder="{{ entry_jan }}" id="input-jan" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-isbn">{{ entry_isbn }}</label>
+                      <div class="col-sm-8">
+                        <input type="text" name="isbn" value="{{ isbn }}" placeholder="{{ entry_isbn }}" id="input-isbn" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-mpn">{{ entry_mpn }}</label>
+                      <div class="col-sm-8">
+                        <input type="text" name="mpn" value="{{ mpn }}" placeholder="{{ entry_mpn }}" id="input-mpn" class="form-control" />
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+
+                <div class="col-md-6">
+                  <fieldset>
+                    <legend>الأبعاد والوزن</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-weight">{{ entry_weight }}</label>
+                      <div class="col-sm-5">
+                        <input type="number" name="weight" value="{{ weight }}" placeholder="0.00" id="input-weight" class="form-control" step="0.01" />
+                      </div>
+                      <div class="col-sm-3">
+                        <select name="weight_class_id" class="form-control">
+                          {% for weight_class in weight_classes %}
+                          <option value="{{ weight_class.weight_class_id }}"{% if weight_class.weight_class_id == weight_class_id %} selected="selected"{% endif %}>{{ weight_class.title }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-length">{{ entry_length }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="length" value="{{ length }}" placeholder="0.00" id="input-length" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-width">{{ entry_width }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="width" value="{{ width }}" placeholder="0.00" id="input-width" class="form-control" step="0.01" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-height">{{ entry_height }}</label>
+                      <div class="col-sm-5">
+                        <input type="number" name="height" value="{{ height }}" placeholder="0.00" id="input-height" class="form-control" step="0.01" />
+                      </div>
+                      <div class="col-sm-3">
+                        <select name="length_class_id" class="form-control">
+                          {% for length_class in length_classes %}
+                          <option value="{{ length_class.length_class_id }}"{% if length_class.length_class_id == length_class_id %} selected="selected"{% endif %}>{{ length_class.title }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                  </fieldset>
+
+                  <fieldset>
+                    <legend>إعدادات أخرى</legend>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-tax-class">{{ entry_tax_class }}</label>
+                      <div class="col-sm-8">
+                        <select name="tax_class_id" id="input-tax-class" class="form-control">
+                          <option value="0">{{ text_none }}</option>
+                          {% for tax_class in tax_classes %}
+                          <option value="{{ tax_class.tax_class_id }}"{% if tax_class.tax_class_id == tax_class_id %} selected="selected"{% endif %}>{{ tax_class.title }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-date-available">{{ entry_date_available }}</label>
+                      <div class="col-sm-8">
+                        <input type="date" name="date_available" value="{{ date_available }}" id="input-date-available" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label" for="input-sort-order">{{ entry_sort_order }}</label>
+                      <div class="col-sm-8">
+                        <input type="number" name="sort_order" value="{{ sort_order }}" placeholder="0" id="input-sort-order" class="form-control" />
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+            </div>
+
+            <!-- لسان الإحصائيات -->
+            <div role="tabpanel" class="tab-pane" id="tab-statistics">
+              {% if product_id %}
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">إحصائيات المبيعات</h4>
+                    </div>
+                    <div class="panel-body">
+                      <div id="sales-statistics">
+                        <!-- سيتم تحميل الإحصائيات ديناميكياً -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="panel panel-success">
+                    <div class="panel-heading">
+                      <h4 class="panel-title">إحصائيات المخزون</h4>
+                    </div>
+                    <div class="panel-body">
+                      <div id="inventory-statistics">
+                        <!-- سيتم تحميل الإحصائيات ديناميكياً -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% else %}
+              <div class="alert alert-info text-center">
+                <i class="fa fa-info-circle"></i>
+                الإحصائيات ستكون متاحة بعد حفظ المنتج
+              </div>
+              {% endif %}
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // توليد SKU تلقائي
+    $('#generate-sku').on('click', function() {
+        $.ajax({
+            url: '{{ generate_sku }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                $('#input-sku').val(json.sku);
+            }
+        });
+    });
+
+    // حساب التسعير التلقائي
+    $('#auto-calculate-pricing, #calculate-from-margin, #calculate-from-markup').on('click', function() {
+        var cost_price = $('#input-cost-price').val();
+        var margin = $('#input-margin').val();
+        var markup = $('#input-markup').val();
+
+        if (cost_price > 0) {
+            $.ajax({
+                url: '{{ calculate_pricing }}',
+                type: 'GET',
+                data: {
+                    cost_price: cost_price,
+                    margin_percentage: margin,
+                    markup_percentage: markup
+                },
+                dataType: 'json',
+                success: function(json) {
+                    if (json.basic_price) $('#input-basic-price').val(json.basic_price.toFixed(2));
+                    if (json.wholesale_price) $('#input-wholesale-price').val(json.wholesale_price.toFixed(2));
+                    if (json.semi_wholesale_price) $('#input-semi-wholesale-price').val(json.semi_wholesale_price.toFixed(2));
+                    if (json.pos_price) $('#input-pos-price').val(json.pos_price.toFixed(2));
+                    if (json.online_price) $('#input-online-price').val(json.online_price.toFixed(2));
+                }
+            });
+        } else {
+            alert('يرجى إدخال سعر التكلفة أولاً');
+        }
+    });
+});
+</script>
+
+{{ footer }}

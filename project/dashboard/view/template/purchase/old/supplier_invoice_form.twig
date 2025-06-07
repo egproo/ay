@@ -1,0 +1,68 @@
+{% extends "common/column_left.twig" %}
+{% block content %}
+<div class="page-header">
+  <div class="container-fluid">
+    <h1>{{ heading_title }} - {{ text_form }}</h1>
+    <ul class="breadcrumb">
+      <li><a href="{{ home }}">{{ text_home }}</a></li>
+      <li><a href="{{ cancel }}">{{ heading_title }}</a></li>
+    </ul>
+  </div>
+</div>
+<div class="container-fluid">
+  <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-invoice" class="form-horizontal">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="col-sm-2 control-label" for="input-invoice-number">{{ entry_invoice_number }}</label>
+          <div class="col-sm-10">
+            <input type="text" name="invoice_number" value="{{ invoice_number }}" id="input-invoice-number" class="form-control" />
+          </div>
+        </div>
+        <!-- Add rest of fields similarly -->
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>PO Item ID</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit</th>
+              <th>Price</th>
+              <th>Tax %</th>
+              <th>Disc %</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="invoice-items">
+          {% if invoice_items %}
+            {% for item in invoice_items %}
+            <tr>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][po_item_id]" value="{{ item.po_item_id }}" class="form-control" /></td>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][product_id]" value="{{ item.product_id }}" class="form-control" /></td>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][quantity]" value="{{ item.quantity }}" class="form-control" /></td>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][unit_id]" value="{{ item.unit_id }}" class="form-control" /></td>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][unit_price]" value="{{ item.unit_price }}" class="form-control" /></td>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][tax_rate]" value="{{ item.tax_rate }}" class="form-control" /></td>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][discount_rate]" value="{{ item.discount_rate }}" class="form-control" /></td>
+              <td><input type="text" name="invoice_items[{{ loop.index0 }}][total_price]" value="{{ item.total_price }}" class="form-control" /></td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center">No Items</td>
+            </tr>
+          {% endif %}
+          </tbody>
+        </table>
+      </div>
+      <div class="panel-footer">
+        <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        <a href="{{ cancel }}" class="btn btn-default">{{ button_cancel }}</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

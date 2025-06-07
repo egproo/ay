@@ -1,0 +1,335 @@
+{{ header }}{{ column_left }}
+{#
+/**
+ * AYM ERP System: Purchase Order Tracking Update Form
+ *
+ * نموذج تحديث تتبع أوامر الشراء - مطور بجودة عالمية
+ *
+ * الميزات المتقدمة:
+ * - تحديث حالة التتبع
+ * - إدارة مواعيد التسليم
+ * - إضافة ملاحظات التتبع
+ * - واجهة مستخدم متجاوبة
+ * - تكامل مع Bootstrap 3.3
+ *
+ * @package    AYM ERP
+ * @author     AYM Development Team
+ * @copyright  2024 AYM ERP Systems
+ * @license    Commercial License
+ * @version    1.0.0
+ * @since      2024-01-15
+ */
+#}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-tracking" data-toggle="tooltip" title="حفظ التحديث" class="btn btn-primary">
+          <i class="fa fa-save"></i> حفظ
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="إلغاء" class="btn btn-default">
+          <i class="fa fa-reply"></i> إلغاء
+        </a>
+      </div>
+      <h1>{{ heading_title }} - {{ text_form }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {# رسائل التنبيه #}
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-edit"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-tracking" class="form-horizontal">
+          
+          {# معلومات أمر الشراء الأساسية #}
+          {% if order %}
+          <div class="row">
+            <div class="col-md-12">
+              <div class="panel panel-info">
+                <div class="panel-heading">
+                  <h4 class="panel-title">{{ text_order_details }}</h4>
+                </div>
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-md-3">
+                      <strong>{{ column_po_number }}:</strong><br>
+                      <span class="text-primary">{{ order.po_number }}</span>
+                    </div>
+                    <div class="col-md-3">
+                      <strong>{{ column_supplier }}:</strong><br>
+                      {{ order.supplier_name }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>{{ column_order_date }}:</strong><br>
+                      {{ order.order_date }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>{{ column_total }}:</strong><br>
+                      <span class="text-success">{{ order.total_amount }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          {# نموذج تحديث التتبع #}
+          <div class="row">
+            <div class="col-md-8">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">{{ button_update_status }}</h4>
+                </div>
+                <div class="panel-body">
+                  
+                  {# تغيير الحالة #}
+                  <div class="form-group required">
+                    <label class="col-sm-3 control-label" for="input-status">{{ entry_status_change }}</label>
+                    <div class="col-sm-9">
+                      <select name="status_change" id="input-status" class="form-control" required>
+                        <option value="">{{ text_select }}</option>
+                        {% for status in statuses %}
+                        <option value="{{ status.value }}" {% if status_change == status.value %}selected{% endif %}>
+                          {{ status.text }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                      <span class="help-block">اختر الحالة الجديدة لأمر الشراء</span>
+                    </div>
+                  </div>
+
+                  {# التسليم المتوقع #}
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="input-expected-delivery">{{ entry_expected_delivery }}</label>
+                    <div class="col-sm-9">
+                      <div class="input-group date">
+                        <input type="text" name="expected_delivery_date" value="{{ expected_delivery_date }}" 
+                               placeholder="{{ entry_expected_delivery }}" id="input-expected-delivery" 
+                               class="form-control" data-date-format="YYYY-MM-DD" />
+                        <span class="input-group-btn">
+                          <button type="button" class="btn btn-default">
+                            <i class="fa fa-calendar"></i>
+                          </button>
+                        </span>
+                      </div>
+                      <span class="help-block">{{ help_expected_delivery }}</span>
+                    </div>
+                  </div>
+
+                  {# التسليم الفعلي #}
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="input-actual-delivery">{{ entry_actual_delivery }}</label>
+                    <div class="col-sm-9">
+                      <div class="input-group date">
+                        <input type="text" name="actual_delivery_date" value="{{ actual_delivery_date }}" 
+                               placeholder="{{ entry_actual_delivery }}" id="input-actual-delivery" 
+                               class="form-control" data-date-format="YYYY-MM-DD" />
+                        <span class="input-group-btn">
+                          <button type="button" class="btn btn-default">
+                            <i class="fa fa-calendar"></i>
+                          </button>
+                        </span>
+                      </div>
+                      <span class="help-block">{{ help_actual_delivery }}</span>
+                    </div>
+                  </div>
+
+                  {# ملاحظات التتبع #}
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label" for="input-notes">{{ entry_notes }}</label>
+                    <div class="col-sm-9">
+                      <textarea name="notes" rows="4" placeholder="{{ entry_notes }}" 
+                                id="input-notes" class="form-control">{{ notes }}</textarea>
+                      <span class="help-block">{{ help_tracking_notes }}</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              {# معلومات الحالة الحالية #}
+              <div class="panel panel-warning">
+                <div class="panel-heading">
+                  <h4 class="panel-title">{{ text_current_status }}</h4>
+                </div>
+                <div class="panel-body">
+                  {% if order %}
+                  <div class="content-group">
+                    <strong>{{ column_status }}:</strong><br>
+                    <span class="label label-info">{{ order.status }}</span>
+                  </div>
+                  
+                  <div class="content-group">
+                    <strong>{{ column_current_status }}:</strong><br>
+                    <span class="label label-primary">{{ order.current_status }}</span>
+                  </div>
+
+                  {% if order.expected_delivery_date %}
+                  <div class="content-group">
+                    <strong>{{ column_expected_delivery }}:</strong><br>
+                    {{ order.expected_delivery_date }}
+                  </div>
+                  {% endif %}
+
+                  {% if order.actual_delivery_date %}
+                  <div class="content-group">
+                    <strong>{{ column_actual_delivery }}:</strong><br>
+                    <span class="text-success">{{ order.actual_delivery_date }}</span>
+                  </div>
+                  {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+
+              {# معلومات مساعدة #}
+              <div class="panel panel-info">
+                <div class="panel-heading">
+                  <h4 class="panel-title">معلومات مساعدة</h4>
+                </div>
+                <div class="panel-body">
+                  <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i>
+                    {{ info_tracking_help }}
+                  </div>
+                  
+                  <div class="alert alert-warning">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    {{ info_status_flow }}
+                  </div>
+                </div>
+              </div>
+
+              {# أزرار سريعة #}
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title">إجراءات سريعة</h4>
+                </div>
+                <div class="panel-body">
+                  <div class="btn-group-vertical btn-block">
+                    <button type="button" class="btn btn-success btn-sm" onclick="setDelivered()">
+                      <i class="fa fa-check"></i> تم التسليم
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm" onclick="setPartiallyReceived()">
+                      <i class="fa fa-clock-o"></i> استلام جزئي
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="setCancelled()">
+                      <i class="fa fa-times"></i> إلغاء الأمر
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// تهيئة منتقي التاريخ
+$('.input-group.date').datetimepicker({
+    language: 'ar',
+    pickTime: false,
+    format: 'YYYY-MM-DD'
+});
+
+// الإجراءات السريعة
+function setDelivered() {
+    $('#input-status').val('fully_received');
+    $('#input-actual-delivery').val(moment().format('YYYY-MM-DD'));
+    $('#input-notes').val('تم التسليم بالكامل');
+}
+
+function setPartiallyReceived() {
+    $('#input-status').val('partially_received');
+    $('#input-notes').val('تم الاستلام الجزئي');
+}
+
+function setCancelled() {
+    if (confirm('هل أنت متأكد من إلغاء هذا الأمر؟')) {
+        $('#input-status').val('cancelled');
+        $('#input-notes').val('تم إلغاء الأمر');
+    }
+}
+
+// التحقق من صحة النموذج
+$('#form-tracking').on('submit', function(e) {
+    var status = $('#input-status').val();
+    
+    if (!status) {
+        e.preventDefault();
+        alert('يرجى اختيار حالة التتبع');
+        $('#input-status').focus();
+        return false;
+    }
+    
+    // التحقق من تاريخ التسليم الفعلي
+    var actualDelivery = $('#input-actual-delivery').val();
+    if (actualDelivery && status !== 'fully_received' && status !== 'partially_received') {
+        if (!confirm('لقد أدخلت تاريخ تسليم فعلي. هل تريد تغيير الحالة إلى "تم الاستلام"؟')) {
+            e.preventDefault();
+            return false;
+        } else {
+            $('#input-status').val('fully_received');
+        }
+    }
+});
+
+// تحديث الحالة تلقائياً عند إدخال تاريخ التسليم الفعلي
+$('#input-actual-delivery').on('change', function() {
+    var actualDate = $(this).val();
+    var currentStatus = $('#input-status').val();
+    
+    if (actualDate && (currentStatus === '' || currentStatus === 'sent_to_vendor' || currentStatus === 'confirmed_by_vendor')) {
+        $('#input-status').val('fully_received');
+        if ($('#input-notes').val() === '') {
+            $('#input-notes').val('تم التسليم في ' + actualDate);
+        }
+    }
+});
+
+// تنبيه للأوامر المتأخرة
+{% if order and order.is_overdue %}
+$(document).ready(function() {
+    $('.panel-warning').removeClass('panel-warning').addClass('panel-danger');
+    $('.panel-danger .panel-body').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> {{ warning_overdue }}</div>');
+});
+{% endif %}
+
+// تنبيه للتسليمات القريبة
+{% if order and order.is_upcoming %}
+$(document).ready(function() {
+    $('.panel-info .panel-body').prepend('<div class="alert alert-warning"><i class="fa fa-clock-o"></i> {{ warning_upcoming }}</div>');
+});
+{% endif %}
+</script>
+
+{{ footer }}

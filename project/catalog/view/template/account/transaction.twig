@@ -1,0 +1,74 @@
+{{ header }}
+<div id="account-transaction" class="container">
+  <div class="row">{{ column_left }}
+    <div id="content" class="col" style="padding-left:10px;padding-right:10px;padding-top:10px">{{ content_top }}
+          <ul class="nav nav-tabs">
+            <li class="nav-item"><a href="#tab-transaction-balance" data-bs-toggle="tab" class="nav-link active">{{column_rsed}}</a></li>
+            <li class="nav-item"><a href="#tab-transaction-list" data-bs-toggle="tab" class="nav-link">{{column_rsed_list}}</a></li>
+
+          </ul>                
+              <div class="tab-content">
+                <div id="tab-transaction-balance" class="tab-pane active">
+<div class="table-responsive">
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <td colspan="2" class="text-center">{{column_currency}}</td>
+        <td class="text-center">{{ column_balance }}</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% if balances %}
+
+        {% for balancex in balances %}
+          <tr>
+            <td colspan="2" class="text-center">{{ balancex.currency }}</td>
+            <td class="text-center">{{ balancex.balance }}</td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+                </div>        
+                <div id="tab-transaction-list" class="tab-pane">
+<div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            <td class="text-start">{{ column_date_added }}</td>
+            <td class="text-start">{{ column_description }}</td>
+            <td class="text-end">{{ column_amount }}</td>
+          </tr>
+        </thead>
+        <tbody>
+          {% if transactions %}
+            {% for transaction in transactions %}
+              <tr>
+                <td class="text-start">{{ transaction.date_added }}</td>
+                <td class="text-start">{{ transaction.description }}</td>
+                <td class="text-end">{{ transaction.amount }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td class="text-center" colspan="3">{{ text_no_results }}</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+</div>
+      <div class="row mb-3">
+        <div class="col-sm-6 text-start">{{ pagination }}</div>
+        <div class="col-sm-6 text-end">{{ results }}</div>
+      </div>
+                </div>  
+              </div>  
+                
+
+
+      <div class="text-end"><a href="{{ continue }}" class="btn btn-primary">{{ button_continue }}</a></div>
+      {{ content_bottom }}</div>
+    {{ column_right }}</div>
+</div>
+{{ footer }}

@@ -1,0 +1,502 @@
+{# صفحة الاشتراك الرئيسية #}
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="row" x-data="subscriptionDashboard()">
+      <!-- معلومات الاشتراك -->
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_subscription_info }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-box">
+                  <span class="info-box-icon bg-blue"><i class="fa fa-star"></i></span>
+                  <div class="info-box-content">
+                    <span class="info-box-text">{{ text_current_plan }}</span>
+                    <span class="info-box-number">{{ subscription.plan_name|default('—') }}</span>
+                    <div class="progress">
+                      <div class="progress-bar progress-bar-blue" style="width: 100%"></div>
+                    </div>
+                    <span class="progress-description">
+                      {% if subscription.status_formatted %}
+                      <span class="label {% if subscription.status == 'active' %}label-success{% elseif subscription.status == 'expired' %}label-danger{% else %}label-warning{% endif %}">
+                        {{ subscription.status_formatted }}
+                      </span>
+                      {% endif %}
+                      
+                      {% if subscription.expiry_date_formatted %}
+                      <span class="pull-right">{{ text_expiry }}: {{ subscription.expiry_date_formatted }}</span>
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
+                
+                {% if subscription_expiring %}
+                <div class="alert alert-warning">
+                  <i class="fa fa-exclamation-triangle"></i> {{ text_expire_warning|format(days_left) }}
+                  <a href="{{ renew_url }}" class="btn btn-warning btn-sm pull-right">{{ button_renew }}</a>
+                </div>
+                {% endif %}
+                
+                <div class="btn-group btn-group-justified margin-top-10">
+                  <div class="btn-group">
+                    <a href="{{ upgrade_url }}" class="btn btn-primary">
+                      <i class="fa fa-arrow-up"></i> {{ button_upgrade }}
+                    </a>
+                  </div>
+                  <div class="btn-group">
+                    <a href="{{ renew_url }}" class="btn btn-success">
+                      <i class="fa fa-refresh"></i> {{ button_renew }}
+                    </a>
+                  </div>
+                  <div class="btn-group">
+                    <a href="{{ invoice_url }}" class="btn btn-info">
+                      <i class="fa fa-file-text-o"></i> {{ button_view_invoices }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- إحصائيات الاستخدام -->
+              <div class="col-md-6">
+                <h4>{{ text_usage }}</h4>
+                <div class="usage-stats" id="usage-container">
+                  {% if usage %}
+                    {% for resource_key, resource in usage %}
+                      <div class="usage-item">
+                        <div class="usage-label">
+                          <span class="pull-left">
+                            {% if resource_key == 'storage' %}
+                              <i class="fa fa-hdd-o"></i> {{ text_storage }}
+                            {% elseif resource_key == 'traffic' %}
+                              <i class="fa fa-exchange"></i> {{ text_traffic }}
+                            {% elseif resource_key == 'orders' %}
+                              <i class="fa fa-shopping-cart"></i> {{ text_orders }}
+                            {% elseif resource_key == 'products' %}
+                              <i class="fa fa-cubes"></i> {{ text_products }}
+                            {% endif %}
+                          </span>
+                          <span class="pull-right">{{ resource.used_formatted }} / {{ resource.limit_formatted }}</span>
+                          <div class="clearfix"></div>
+                        </div>
+                        <div class="progress progress-sm">
+                          <div class="progress-bar progress-bar-{% if resource.percentage >= 90 %}danger{% elseif resource.percentage >= 70 %}warning{% else %}success{% endif %}" role="progressbar" 
+                               aria-valuenow="{{ resource.percentage }}" aria-valuemin="0" aria-valuemax="100" 
+                               style="width: {{ resource.percentage }}%">
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                    <button type="button" class="btn btn-default btn-sm pull-right" @click="refreshUsage">
+                      <i class="fa fa-refresh" :class="{ 'fa-spin': loading }"></i> {{ text_refresh }}
+                    </button>
+                  {% else %}
+                    <div class="alert alert-info">{{ text_no_usage_data }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ميزات الخطة -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-check-square-o"></i> {{ text_features }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if subscription and subscription.features_array %}
+              <ul class="list-group">
+                {% for feature in subscription.features_array %}
+                  <li class="list-group-item">
+                    <i class="fa fa-check text-success"></i> {{ feature }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <div class="alert alert-info">{{ text_no_features }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- سجل الاشتراكات -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-history"></i> {{ text_history }}</h3>
+          </div>
+          <div class="panel-body">
+            {% if subscription_history %}
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>{{ text_date }}</th>
+                      <th>{{ text_plan }}</th>
+                      <th>{{ text_price }}</th>
+                      <th>{{ text_status }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in subscription_history %}
+                      <tr>
+                        <td>{{ item.date_formatted }}</td>
+                        <td>{{ item.plan_name }}</td>
+                        <td>{{ item.price_formatted|default('-') }}</td>
+                        <td>
+                          <span class="label {% if item.status == 'active' %}label-success{% elseif item.status == 'expired' %}label-danger{% else %}label-warning{% endif %}">
+                            {{ item.status_formatted }}
+                          </span>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="alert alert-info">{{ text_no_history }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- خطط الترقية المتاحة -->
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-arrow-up"></i> {{ text_upgrade_options }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              {% if plans %}
+                {% for plan in plans %}
+                  {% if plan.plan_id != subscription.plan_id %}
+                    <div class="col-md-4">
+                      <div class="panel panel-default {% if plan.recommended %}panel-primary{% endif %}">
+                        {% if plan.recommended %}
+                        <div class="ribbon"><span>{{ text_recommended }}</span></div>
+                        {% endif %}
+                        
+                        <div class="panel-heading text-center">
+                          <h3>{{ plan.plan_name }}</h3>
+                        </div>
+                        <div class="panel-body text-center">
+                          <div class="plan-icon">
+                            <i class="fa {{ plan.icon }} fa-4x"></i>
+                          </div>
+                          <div class="plan-price">
+                            <h3>{{ plan.price_formatted }}</h3>
+                            <p class="text-muted">{{ text_per_month }}</p>
+                          </div>
+                          <div class="plan-features">
+                            <ul class="list-unstyled">
+                              {% for feature in plan.features_array %}
+                                <li><i class="fa fa-check text-success"></i> {{ feature }}</li>
+                              {% endfor %}
+                            </ul>
+                          </div>
+                          <a href="{{ upgrade_url ~ '&plan_id=' ~ plan.plan_id }}" class="btn btn-{% if plan.recommended %}primary{% else %}default{% endif %} btn-block">
+                            {{ button_upgrade }}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                <div class="alert alert-info">{{ text_no_upgrade_options }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- قسم المساعدة -->
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_need_help }}</h3>
+          </div>
+          <div class="panel-body">
+            <p>{{ text_contact_help }}</p>
+            <a href="{{ contact_support_url }}" class="btn btn-info">
+              <i class="fa fa-life-ring"></i> {{ button_contact_support }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+function subscriptionDashboard() {
+  return {
+    loading: false,
+    refreshUsage: function() {
+      this.loading = true;
+      fetch('{{ fetch_usage_url }}')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // تحديث واجهة المستخدم بالبيانات الجديدة
+            const usageContainer = document.getElementById('usage-container');
+            let html = '';
+            
+            for (const [key, resource] of Object.entries(data.usage)) {
+              let iconClass = '';
+              let resourceLabel = '';
+              
+              if (key === 'storage') {
+                iconClass = 'fa-hdd-o';
+                resourceLabel = '{{ text_storage }}';
+              } else if (key === 'traffic') {
+                iconClass = 'fa-exchange';
+                resourceLabel = '{{ text_traffic }}';
+              } else if (key === 'orders') {
+                iconClass = 'fa-shopping-cart';
+                resourceLabel = '{{ text_orders }}';
+              } else if (key === 'products') {
+                iconClass = 'fa-cubes';
+                resourceLabel = '{{ text_products }}';
+              }
+              
+              let progressColor = 'success';
+              if (resource.percentage >= 90) {
+                progressColor = 'danger';
+              } else if (resource.percentage >= 70) {
+                progressColor = 'warning';
+              }
+              
+              html += `
+                <div class="usage-item">
+                  <div class="usage-label">
+                    <span class="pull-left">
+                      <i class="fa ${iconClass}"></i> ${resourceLabel}
+                    </span>
+                    <span class="pull-right">${resource.used_formatted} / ${resource.limit_formatted}</span>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="progress progress-sm">
+                    <div class="progress-bar progress-bar-${progressColor}" role="progressbar" 
+                         aria-valuenow="${resource.percentage}" aria-valuemin="0" aria-valuemax="100" 
+                         style="width: ${resource.percentage}%">
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+            
+            html += `
+              <button type="button" class="btn btn-default btn-sm pull-right" @click="refreshUsage">
+                <i class="fa fa-refresh" :class="{ 'fa-spin': loading }"></i> {{ text_refresh }}
+              </button>
+            `;
+            
+            usageContainer.innerHTML = html;
+          } else {
+            alert(data.error || 'Error refreshing usage data');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error refreshing usage data');
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    }
+  };
+}
+</script>
+
+<style type="text/css">
+.margin-top-10 {
+  margin-top: 10px;
+}
+.info-box {
+  display: block;
+  min-height: 90px;
+  background: #fff;
+  width: 100%;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+  border-radius: 2px;
+  margin-bottom: 15px;
+}
+.info-box-icon {
+  border-top-left-radius: 2px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 2px;
+  display: block;
+  float: left;
+  height: 90px;
+  width: 90px;
+  text-align: center;
+  font-size: 45px;
+  line-height: 90px;
+  background: rgba(0,0,0,0.2);
+}
+.info-box-content {
+  padding: 5px 10px;
+  margin-left: 90px;
+}
+.info-box-text {
+  display: block;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+.info-box-number {
+  display: block;
+  font-weight: bold;
+  font-size: 18px;
+}
+.bg-blue {
+  background-color: #0073b7 !important;
+  color: #fff !important;
+}
+.usage-item {
+  margin-bottom: 15px;
+}
+.usage-label {
+  margin-bottom: 5px;
+}
+html[dir="rtl"] .info-box-icon {
+  float: right;
+  border-top-right-radius: 2px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 2px;
+}
+html[dir="rtl"] .info-box-content {
+  margin-right: 90px;
+  margin-left: 0;
+}
+.plan-icon {
+  margin: 15px 0;
+  color: #3c8dbc;
+}
+.plan-price {
+  margin: 15px 0;
+}
+.plan-features {
+  margin: 20px 0;
+  text-align: left;
+}
+html[dir="rtl"] .plan-features {
+  text-align: right;
+}
+.panel-primary {
+  border-color: #3c8dbc;
+}
+.panel-primary > .panel-heading {
+  background-color: #3c8dbc;
+  border-color: #3c8dbc;
+  color: #fff;
+}
+.ribbon {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  z-index: 1;
+  overflow: hidden;
+  width: 75px;
+  height: 75px;
+  text-align: right;
+}
+.ribbon span {
+  font-size: 10px;
+  font-weight: bold;
+  color: #FFF;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 20px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  width: 100px;
+  display: block;
+  background: #79A70A;
+  background: linear-gradient(#9BC90D 0%, #79A70A 100%);
+  box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 1);
+  position: absolute;
+  top: 19px;
+  right: -21px;
+}
+.ribbon span::before {
+  content: "";
+  position: absolute;
+  left: 0px;
+  top: 100%;
+  z-index: -1;
+  border-left: 3px solid #79A70A;
+  border-right: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  border-top: 3px solid #79A70A;
+}
+.ribbon span::after {
+  content: "";
+  position: absolute;
+  right: 0px;
+  top: 100%;
+  z-index: -1;
+  border-left: 3px solid transparent;
+  border-right: 3px solid #79A70A;
+  border-bottom: 3px solid transparent;
+  border-top: 3px solid #79A70A;
+}
+html[dir="rtl"] .ribbon {
+  left: -5px;
+  right: auto;
+  text-align: left;
+}
+html[dir="rtl"] .ribbon span {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  left: -21px;
+  right: auto;
+}
+html[dir="rtl"] .ribbon span::before {
+  right: 0px;
+  left: auto;
+  border-right: 3px solid #79A70A;
+  border-left: 3px solid transparent;
+}
+html[dir="rtl"] .ribbon span::after {
+  left: 0px;
+  right: auto;
+  border-right: 3px solid transparent;
+  border-left: 3px solid #79A70A;
+}
+</style>
+
+{{ footer }}

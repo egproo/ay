@@ -1,0 +1,129 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                {% if can_modify %}
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_add_transaction }}" class="btn btn-primary" onclick="location = '{{ add_transaction_url }}'">
+                    <i class="fas fa-plus"></i> {{ button_add_transaction }}
+                </button>
+                {% endif %}
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light" onclick="location = '{{ back }}'">
+                    <i class="fas fa-reply"></i>
+                </button>
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        {% if success %}
+        <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- معلومات الخزنة -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-info-circle"></i> {{ text_cash_info }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">{{ entry_name }}</label>
+                    <div class="col-sm-10">
+                        <div class="form-control-plaintext">{{ cash_info.name }}</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">{{ entry_code }}</label>
+                    <div class="col-sm-10">
+                        <div class="form-control-plaintext">{{ cash_info.code }}</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">{{ entry_responsible }}</label>
+                    <div class="col-sm-10">
+                        <div class="form-control-plaintext">{{ cash_info.responsible_user }}</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">{{ entry_balance }}</label>
+                    <div class="col-sm-10">
+                        <div class="form-control-plaintext">{{ cash_info.balance }}</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-sm-2 col-form-label">{{ entry_status }}</label>
+                    <div class="col-sm-10">
+                        <div class="form-control-plaintext">
+                            {% if cash_info.status %}
+                            <span class="badge bg-success">{{ text_enabled }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ text_disabled }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- حركات الخزنة -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h4><i class="fas fa-exchange-alt"></i> {{ text_transactions }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ column_date }}</th>
+                                <th>{{ column_type }}</th>
+                                <th>{{ column_amount }}</th>
+                                <th>{{ column_reference }}</th>
+                                <th>{{ column_note }}</th>
+                                <th>{{ column_created_by }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if cash_transactions %}
+                            {% for transaction in cash_transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at }}</td>
+                                <td>
+                                    {% if transaction.transaction_type == 'cash_in' %}
+                                    <span class="badge bg-success">{{ text_cash_in }}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ text_cash_out }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">{{ transaction.amount }}</td>
+                                <td>{{ transaction.reference }}</td>
+                                <td>{{ transaction.note }}</td>
+                                <td>{{ transaction.created_by }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="6">{{ text_no_results }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ footer }}

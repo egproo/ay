@@ -1,0 +1,453 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="طباعة التقرير" class="btn btn-info" onclick="window.print();">
+          <i class="fa fa-print"></i>
+        </button>
+        <button type="button" data-toggle="tooltip" title="تصدير Excel" class="btn btn-success" onclick="exportToExcel()">
+          <i class="fa fa-file-excel-o"></i>
+        </button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - {{ text_usage_report }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    
+    <!-- ملخص التقرير -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-bar-chart"></i> ملخص تقرير استخدام الوحدات
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-3">
+                <div class="stat-box text-center">
+                  <i class="fa fa-balance-scale fa-3x text-primary"></i>
+                  <h3>{{ usage_report|length }}</h3>
+                  <p>إجمالي الوحدات المستخدمة</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-box text-center">
+                  <i class="fa fa-cubes fa-3x text-success"></i>
+                  <h3>{{ usage_report|reduce((carry, item) => carry + item.products_count, 0) }}</h3>
+                  <p>إجمالي المنتجات المرتبطة</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-box text-center">
+                  <i class="fa fa-exchange fa-3x text-info"></i>
+                  <h3>{{ usage_report|reduce((carry, item) => carry + item.movements_count, 0) }}</h3>
+                  <p>إجمالي الحركات</p>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="stat-box text-center">
+                  <i class="fa fa-qrcode fa-3x text-warning"></i>
+                  <h3>{{ usage_report|reduce((carry, item) => carry + item.barcodes_count, 0) }}</h3>
+                  <p>إجمالي الباركود</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- الرسم البياني -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-pie-chart"></i> توزيع استخدام الوحدات
+            </h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="usage-chart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-trophy"></i> أكثر الوحدات استخداماً
+            </h3>
+          </div>
+          <div class="panel-body">
+            {% set top_units = usage_report|slice(0, 5) %}
+            {% for unit in top_units %}
+            <div class="progress-item">
+              <div class="clearfix">
+                <span class="pull-left"><strong>{{ unit.name }}</strong> ({{ unit.symbol }})</span>
+                <span class="pull-right">{{ unit.products_count }} منتج</span>
+              </div>
+              <div class="progress progress-sm">
+                {% set max_products = top_units[0].products_count %}
+                {% set percentage = max_products > 0 ? (unit.products_count / max_products * 100) : 0 %}
+                <div class="progress-bar progress-bar-success" style="width: {{ percentage }}%"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- جدول التقرير التفصيلي -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-table"></i> تقرير استخدام الوحدات التفصيلي
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped" id="usage-table">
+                <thead>
+                  <tr>
+                    <th class="text-center">#</th>
+                    <th>اسم الوحدة</th>
+                    <th class="text-center">الرمز</th>
+                    <th>نوع الوحدة</th>
+                    <th class="text-center">عدد المنتجات</th>
+                    <th class="text-center">عدد الباركود</th>
+                    <th class="text-center">عدد الحركات</th>
+                    <th class="text-center">كمية آخر 30 يوم</th>
+                    <th class="text-center">آخر استخدام</th>
+                    <th class="text-center">مستوى الاستخدام</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if usage_report %}
+                  {% for index, unit in usage_report %}
+                  <tr>
+                    <td class="text-center">{{ index + 1 }}</td>
+                    <td>
+                      <strong>{{ unit.name }}</strong>
+                      {% if unit.unit_type %}
+                      <br><small class="text-muted">{{ unit.unit_type }}</small>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      <span class="label label-info">{{ unit.symbol }}</span>
+                    </td>
+                    <td>
+                      <span class="label label-primary">{{ unit.unit_type }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-success">{{ unit.products_count|number_format }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-info">{{ unit.barcodes_count|number_format }}</span>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge badge-warning">{{ unit.movements_count|number_format }}</span>
+                    </td>
+                    <td class="text-center">
+                      {% if unit.total_quantity_30_days %}
+                      <span class="badge badge-primary">{{ unit.total_quantity_30_days|number_format(2) }}</span>
+                      {% else %}
+                      <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      {% if unit.last_used_date %}
+                      <small>{{ unit.last_used_date|date('d/m/Y') }}</small>
+                      {% else %}
+                      <span class="text-muted">لم تستخدم</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-center">
+                      {% set total_usage = unit.products_count + unit.movements_count %}
+                      {% if total_usage > 100 %}
+                      <span class="label label-success">عالي</span>
+                      {% elseif total_usage > 10 %}
+                      <span class="label label-warning">متوسط</span>
+                      {% elseif total_usage > 0 %}
+                      <span class="label label-info">منخفض</span>
+                      {% else %}
+                      <span class="label label-danger">غير مستخدم</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr>
+                    <td colspan="10" class="text-center text-muted">لا توجد بيانات استخدام</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- تحليل الاستخدام -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-exclamation-triangle"></i> الوحدات غير المستخدمة
+            </h3>
+          </div>
+          <div class="panel-body">
+            {% set unused_units = usage_report|filter(unit => unit.products_count == 0 and unit.movements_count == 0) %}
+            {% if unused_units|length > 0 %}
+            <div class="alert alert-warning">
+              <strong>تحذير:</strong> يوجد {{ unused_units|length }} وحدة غير مستخدمة في النظام
+            </div>
+            <ul class="list-unstyled">
+              {% for unit in unused_units|slice(0, 10) %}
+              <li>
+                <i class="fa fa-circle-o text-warning"></i> 
+                {{ unit.name }} ({{ unit.symbol }})
+              </li>
+              {% endfor %}
+              {% if unused_units|length > 10 %}
+              <li class="text-muted">... و {{ unused_units|length - 10 }} وحدة أخرى</li>
+              {% endif %}
+            </ul>
+            {% else %}
+            <div class="alert alert-success">
+              <i class="fa fa-check-circle"></i> جميع الوحدات مستخدمة في النظام
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-lightbulb-o"></i> توصيات التحسين
+            </h3>
+          </div>
+          <div class="panel-body">
+            <ul class="list-unstyled">
+              {% if unused_units|length > 0 %}
+              <li>
+                <i class="fa fa-check text-success"></i> 
+                فكر في حذف الوحدات غير المستخدمة لتبسيط النظام
+              </li>
+              {% endif %}
+              
+              {% set low_usage_units = usage_report|filter(unit => unit.products_count > 0 and unit.products_count < 5) %}
+              {% if low_usage_units|length > 0 %}
+              <li>
+                <i class="fa fa-check text-info"></i> 
+                راجع الوحدات قليلة الاستخدام ({{ low_usage_units|length }} وحدة)
+              </li>
+              {% endif %}
+              
+              {% set no_recent_usage = usage_report|filter(unit => unit.last_used_date is empty and unit.products_count > 0) %}
+              {% if no_recent_usage|length > 0 %}
+              <li>
+                <i class="fa fa-check text-warning"></i> 
+                هناك {{ no_recent_usage|length }} وحدة لم تستخدم مؤخراً
+              </li>
+              {% endif %}
+              
+              <li>
+                <i class="fa fa-check text-primary"></i> 
+                أكثر الوحدات استخداماً: {{ usage_report[0].name ?? 'غير محدد' }}
+              </li>
+              
+              <li>
+                <i class="fa fa-check text-success"></i> 
+                معدل الاستخدام العام: جيد
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<style>
+.stat-box {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-box h3 {
+  margin: 10px 0 5px 0;
+  font-weight: bold;
+}
+
+.stat-box p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.progress-item {
+  margin-bottom: 15px;
+}
+
+.progress-sm {
+  height: 10px;
+  margin-bottom: 5px;
+}
+
+.badge-success { background-color: #5cb85c; }
+.badge-info { background-color: #5bc0de; }
+.badge-warning { background-color: #f0ad4e; }
+.badge-primary { background-color: #337ab7; }
+
+@media print {
+    .page-header, .breadcrumb, .btn, .panel-footer {
+        display: none !important;
+    }
+    
+    .panel {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    
+    .row {
+        page-break-inside: avoid;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // إنشاء الرسم البياني
+    createUsageChart();
+    
+    // تأثيرات بصرية للإحصائيات
+    animateStats();
+});
+
+function createUsageChart() {
+    var ctx = document.getElementById('usage-chart').getContext('2d');
+    
+    // إعداد البيانات
+    var labels = [];
+    var data = [];
+    var colors = [];
+    
+    {% for unit in usage_report|slice(0, 10) %}
+    labels.push('{{ unit.name }}');
+    data.push({{ unit.products_count }});
+    colors.push('hsl(' + ({{ loop.index0 }} * 36) + ', 70%, 60%)');
+    {% endfor %}
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 10
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            var percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' منتج (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function animateStats() {
+    $('.stat-box h3').each(function() {
+        var $this = $(this);
+        var finalValue = parseInt($this.text().replace(/,/g, ''));
+        
+        if (!isNaN(finalValue)) {
+            $this.text('0');
+            
+            $({ counter: 0 }).animate({ counter: finalValue }, {
+                duration: 2000,
+                easing: 'swing',
+                step: function() {
+                    $this.text(Math.ceil(this.counter).toLocaleString());
+                }
+            });
+        }
+    });
+}
+
+function exportToExcel() {
+    // تحويل الجدول إلى CSV
+    var csv = [];
+    var rows = document.querySelectorAll("#usage-table tr");
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll("td, th");
+        
+        for (var j = 0; j < cols.length; j++) {
+            var cellText = cols[j].innerText.replace(/"/g, '""');
+            row.push('"' + cellText + '"');
+        }
+        
+        csv.push(row.join(","));
+    }
+    
+    // تنزيل الملف
+    var csvFile = new Blob(["\ufeff" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var downloadLink = document.createElement("a");
+    downloadLink.download = "تقرير_استخدام_الوحدات_" + new Date().toISOString().slice(0, 10) + ".csv";
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
+
+{{ footer }}

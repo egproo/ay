@@ -1,0 +1,195 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-price-agreement').submit() : false;"><i class="fa fa-trash-o"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="well">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-agreement-name">{{ filter_agreement_name }}</label>
+                <input type="text" name="filter_agreement_name" value="{{ filter_agreement_name }}" placeholder="{{ filter_agreement_name }}" id="input-agreement-name" class="form-control" />
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-supplier">{{ filter_supplier }}</label>
+                <select name="filter_supplier_id" id="input-supplier" class="form-control">
+                  <option value="">{{ text_all_suppliers }}</option>
+                  {% for supplier in suppliers %}
+                  {% if supplier.supplier_id == filter_supplier_id %}
+                  <option value="{{ supplier.supplier_id }}" selected="selected">{{ supplier.name }}</option>
+                  {% else %}
+                  <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label class="control-label" for="input-status">{{ filter_status }}</label>
+                <select name="filter_status" id="input-status" class="form-control">
+                  <option value=""></option>
+                  {% if filter_status == '1' %}
+                  <option value="1" selected="selected">{{ text_enabled }}</option>
+                  {% else %}
+                  <option value="1">{{ text_enabled }}</option>
+                  {% endif %}
+                  {% if filter_status == '0' %}
+                  <option value="0" selected="selected">{{ text_disabled }}</option>
+                  {% else %}
+                  <option value="0">{{ text_disabled }}</option>
+                  {% endif %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-date-start">{{ filter_date_start }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ filter_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                  <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label" for="input-date-end">{{ filter_date_end }}</label>
+                <div class="input-group date">
+                  <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ filter_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                  <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 text-right">
+              <button type="button" id="button-filter" class="btn btn-primary pull-right"><i class="fa fa-search"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+        <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-price-agreement">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                  <td class="text-left">{% if sort == 'pa.agreement_name' %}<a href="{{ sort_agreement_name }}" class="{{ order|lower }}">{{ column_agreement_name }}</a>{% else %}<a href="{{ sort_agreement_name }}">{{ column_agreement_name }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 's.name' %}<a href="{{ sort_supplier }}" class="{{ order|lower }}">{{ column_supplier }}</a>{% else %}<a href="{{ sort_supplier }}">{{ column_supplier }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'pa.start_date' %}<a href="{{ sort_start_date }}" class="{{ order|lower }}">{{ column_start_date }}</a>{% else %}<a href="{{ sort_start_date }}">{{ column_start_date }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'pa.end_date' %}<a href="{{ sort_end_date }}" class="{{ order|lower }}">{{ column_end_date }}</a>{% else %}<a href="{{ sort_end_date }}">{{ column_end_date }}</a>{% endif %}</td>
+                  <td class="text-left">{% if sort == 'pa.status' %}<a href="{{ sort_status }}" class="{{ order|lower }}">{{ column_status }}</a>{% else %}<a href="{{ sort_status }}">{{ column_status }}</a>{% endif %}</td>
+                  <td class="text-right">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% if price_agreements %}
+                {% for price_agreement in price_agreements %}
+                <tr>
+                  <td class="text-center">{% if price_agreement.price_agreement_id in selected %}<input type="checkbox" name="selected[]" value="{{ price_agreement.price_agreement_id }}" checked="checked" />{% else %}<input type="checkbox" name="selected[]" value="{{ price_agreement.price_agreement_id }}" />{% endif %}</td>
+                  <td class="text-left">{{ price_agreement.agreement_name }}</td>
+                  <td class="text-left">{{ price_agreement.supplier_name }}</td>
+                  <td class="text-left">{{ price_agreement.start_date }}</td>
+                  <td class="text-left">{{ price_agreement.end_date }}</td>
+                  <td class="text-left">{{ price_agreement.status }}</td>
+                  <td class="text-right">
+                    <a href="{{ price_agreement.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+        <div class="row">
+          <div class="col-sm-6 text-left">{{ pagination }}</div>
+          <div class="col-sm-6 text-right">{{ results }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=supplier/price_agreement&user_token={{ user_token }}';
+    
+    var filter_agreement_name = $('input[name=\'filter_agreement_name\']').val();
+    
+    if (filter_agreement_name) {
+        url += '&filter_agreement_name=' + encodeURIComponent(filter_agreement_name);
+    }
+    
+    var filter_supplier_id = $('select[name=\'filter_supplier_id\']').val();
+    
+    if (filter_supplier_id !== '') {
+        url += '&filter_supplier_id=' + filter_supplier_id;
+    }
+    
+    var filter_status = $('select[name=\'filter_status\']').val();
+    
+    if (filter_status !== '') {
+        url += '&filter_status=' + filter_status;
+    }
+    
+    var filter_date_start = $('input[name=\'filter_date_start\']').val();
+    
+    if (filter_date_start) {
+        url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+    }
+    
+    var filter_date_end = $('input[name=\'filter_date_end\']').val();
+    
+    if (filter_date_end) {
+        url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+    }
+    
+    location = url;
+});
+
+$('.date').datetimepicker({
+    language: '{{ datepicker }}',
+    pickTime: false
+});
+//--></script>
+
+{{ footer }}

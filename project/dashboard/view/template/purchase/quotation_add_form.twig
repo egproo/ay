@@ -1,0 +1,184 @@
+<form id="form-add-quotation">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h4 class="modal-title">{{ text_add }}</h4>
+    </div>
+    <div class="modal-body">
+        <!-- Requisition Info (Read-only) -->
+        <div class="well">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>{{ text_requisition_number }}</label>
+                        <select name="requisition_id" class="form-control select2-requisition" required>
+                            <option value="">{{ text_select_requisition }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>{{ text_supplier }}</label>
+                        <select name="supplier_id" class="form-control select2-supplier" required>
+                            <option value="">{{ text_select_supplier }}</option>
+                            {% for supplier in suppliers %}
+                                <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>{{ entry_validity_date }}</label>
+                        <input type="date" name="validity_date" class="form-control">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>{{ entry_currency }}</label>
+                        <select name="currency_id" class="form-control" onchange="updateExchangeRate(this.value)">
+                            {% for currency in currencies %}
+                                <option value="{{ currency.currency_id }}" data-rate="{{ currency.value }}">
+                                    {{ currency.title }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+             <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>{{ entry_payment_terms }}</label>
+                        <textarea name="payment_terms" rows="3" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label>{{ entry_delivery_terms }}</label>
+                        <textarea name="delivery_terms" rows="3" class="form-control"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tax and Discount Settings -->
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>{{ entry_tax_included }}</label>
+                    <select name="tax_included" class="form-control" id="tax-included">
+                        <option value="0">{{ text_tax_excluded }}</option>
+                        <option value="1">{{ text_tax_included }}</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label>{{ entry_tax_rate }}</label>
+                    <input type="number" step="0.01" name="tax_rate" id="tax-rate" class="form-control" value="0">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>{{ entry_discount_type }}</label>
+                    <select name="discount_type" class="form-control" id="discount-type">
+                        <option value="none">{{ text_no_discount }}</option>
+                        <option value="fixed">{{ text_fixed_discount }}</option>
+                        <option value="percentage">{{ text_percent_discount }}</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>{{ entry_discount_value }}</label>
+                    <input type="number" step="0.01" name="discount_value" id="discount-value" class="form-control" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="quotation-items">
+                <thead>
+                    <tr>
+                        <th>{{ column_product }}</th>
+                        <th>{{ column_quantity }}</th>
+                        <th>{{ column_unit }}</th>
+                        <th>{{ column_unit_price }}</th>
+                         <th>{{ column_discount }}</th>
+                        <th>{{ column_tax }}</th>
+                        <th>{{ column_line_total }}</th>
+                        <th width="50"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                 <tfoot>
+                    <tr>
+                        <td colspan="6" class="text-right"><strong>{{ text_subtotal }}</strong></td>
+                        <td colspan="2"><input type="text" id="subtotal" class="form-control" readonly></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" class="text-right"><strong>{{ text_discount }}</strong></td>
+                        <td colspan="2"><input type="text" id="total-discount" class="form-control" readonly></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" class="text-right"><strong>{{ text_tax }}</strong></td>
+                        <td colspan="2"><input type="text" id="total-tax" class="form-control" readonly></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" class="text-right"><strong>{{ text_total }}</strong></td>
+                        <td colspan="2"><input type="text" id="grand-total" class="form-control" readonly></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+            <label>{{ entry_notes }}</label>
+            <textarea name="notes" rows="3" class="form-control"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+        <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+    </div>
+</form>
+<template id="item-row-template">
+    <tr>
+        <td>
+            <select name="items[{INDEX}][product_id]" class="form-control select2-product" required>
+                <option value="">{{ text_select_product }}</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" step="0.01" name="items[{INDEX}][quantity]" class="form-control calc-trigger item-quantity" value="1" min="0.01" required>
+        </td>
+        <td>
+            <select name="items[{INDEX}][unit_id]" class="form-control select2-unit" required>
+                <!-- Will be populated when product is selected -->
+            </select>
+        </td>
+        <td>
+            <input type="number" step="0.01" name="items[{INDEX}][unit_price]" class="form-control calc-trigger item-price" value="0" min="0" required>
+        </td>
+         <td>
+            <div class="input-group">
+                <select name="items[{INDEX}][discount_type]" class="form-control input-sm calc-trigger item-discount-type">
+                    <option value="none">{{ text_no_discount }}</option>
+                    <option value="fixed">{{ text_fixed }}</option>
+                    <option value="percentage">{{ text_percentage }}</option>
+                </select>
+                <input type="number" step="0.01" name="items[{INDEX}][discount_value]" class="form-control input-sm calc-trigger item-discount-value" value="0">
+            </div>
+        </td>
+         <td>
+            <input type="number" step="0.01" name="items[{INDEX}][tax_rate]" class="form-control calc-trigger item-tax" value="0">
+        </td>
+        <td>
+            <input type="text" class="form-control line-total" readonly>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this)"><i class="fa fa-trash"></i></button>
+        </td>
+    </tr>
+</template>

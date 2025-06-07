@@ -1,0 +1,209 @@
+{{ header }}
+<div id="product-search" class="container" style="margin-top:10px">
+  <div class="row">{{ column_left }}
+    <div id="content" class="col">{{ content_top }}
+
+      {% if products %}
+        <div id="display-control" class="row">
+          <div class="col-lg-2 offset-lg-1 col-1">
+            <div class="btn-group">
+              <button id="toggle-filters" class="btn btn-dark"><i class="fa-solid fa-filter"></i></button>
+            </div>
+          </div>
+          <div class="col-lg-4 offset-lg-1 col-5">
+            <div class="input-group mb-3">
+              <div class="input-group">
+                <select id="input-sort" class="form-select">
+                    <option value="">-- {{text_sort}} --</option>
+                    {% for sorts in sorts %}
+                        <option value="{{ sorts.href }}" {% if sorts.value == '%s-%s'|format(sort, order) %} selected{% endif %}>{{ sorts.text }}</option>
+                    {% endfor %}
+                </select>  
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-3 col-4">
+            <div class="input-group mb-3">
+              <div class="input-group">
+                <select id="input-limit" class="form-select">
+                    <option value="">-- {{text_limit}} --</option>
+                    {% for limits in limits %}
+                        <option value="{{ limits.href }}" {% if limits.value == limit %} selected{% endif %}>{{ limits.text }}</option>
+                    {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="product-list" class="row"></div>
+
+        <div id="filters-panel" class="offcanvas offcanvas-start" tabindex="-1">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title">{{ text_filter }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+          </div>
+          <div class="offcanvas-body">
+            {% for filter_group in filter_groups %}
+              <div class="filter-group mb-3">
+                <h4 style="font-size: 16px;color: #000;font-weight: 900;">{{ filter_group.name }}</h4>
+                {% for filter in filter_group.filter %}
+                  <div class="form-check">
+                    <input type="checkbox" name="filter[]" value="{{ filter.filter_id }}" id="input-filter-{{ filter.filter_id }}" class="form-check-input"{% if filter.filter_id in filter_category %} checked{% endif %}/>
+                    <label for="input-filter-{{ filter.filter_id }}" class="form-check-label">{{ filter.name }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: center;">
+          <button id="load-more" class="btn btn-warning bold-btn" style="display: none; margin: 20px auto;background-color: orange !important;color:#000 !important;width: 80%;height: 40px;font-size: 18px;" onclick="loadMoreProducts(true)">Load More Products</button>
+        </div>
+
+        <script>
+          let currentPage = 1;
+          let currentSort = getParameterByName('sort') || 'p.sort_order-ASC';
+          let currentLimit = getParameterByName('limit') || 20;
+          let currentFilters = getParameterByName('filter') || '';
+          let loading = false;
+          let hasMoreData = true;
+          let initialLoad = true;
+
+          function getParameterByName(name, url = window.location.href) {
+              name = name.replace(/[\[\]]/g, '\\$&');
+              var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                  results = regex.exec(url);
+              if (!results) return null;
+              if (!results[2]) return '';
+              return decodeURIComponent(results[2].replace(/\+/g, ' '));
+          }
+
+          function updateProducts(sort, limit, filters) {
+              currentSort = sort || currentSort;
+              currentLimit = limit || currentLimit;
+              currentFilters = filters !== undefined ? filters : currentFilters;
+              currentPage = 1; // Reset page count when filters change
+              document.getElementById('product-list').innerHTML = ''; // Clear existing products
+              loadMoreProducts(true);
+          }
+
+          function loadMoreProducts(initialLoad = false) {
+              if (!initialLoad && (!hasMoreData || loading)) return;
+              loading = true;
+              document.getElementById('load-more').disabled = true;
+
+              let url = `index.php?route=product/search&ajax=1&page=${currentPage}&sort=${currentSort}&limit=${currentLimit}&filter=${currentFilters}&search={{ search }}&description={{ description }}&category_id={{ category_id }}&sub_category={{ sub_category }}`;
+
+              fetch(url)
+                  .then(response => response.json())
+                  .then(data => {
+                      handleData(data);
+                  })
+                  .catch(error => {
+                      console.error('Error:', error);
+                      finalizeLoading();
+                  });
+          }
+
+          function handleData(data) {
+              if (data.endOfData) {
+                  hasMoreData = false;
+                  document.getElementById('load-more').style.display = 'none';
+              } else {
+                  document.getElementById('load-more').style.display = 'block';
+              }
+              if (data.products) {
+                  data.products.forEach(productHtml => {
+                      document.getElementById('product-list').insertAdjacentHTML('beforeend', '<div class="col-6 col-sm-6 col-md-3 col-xl-2">'+productHtml+'</div>');
+                  });
+                  currentPage++;
+				  initializeProductOptions();
+              }
+              finalizeLoading();
+          }
+		function initializeProductOptions() {
+			document.querySelectorAll('.show-options-btn').forEach(button => {
+				button.addEventListener('click', function() {
+					const targetId = this.getAttribute('data-target');
+					const optionsDiv = document.getElementById(targetId);
+					if (optionsDiv) {
+						optionsDiv.classList.toggle('d-none');
+					}
+				});
+			});
+		}
+          function finalizeLoading() {
+              loading = false;
+              document.getElementById('load-more').innerHTML = 'Load More Products';
+              document.getElementById('load-more').disabled = false;
+          }
+
+          document.addEventListener('DOMContentLoaded', function() {
+              document.getElementById('input-sort').addEventListener('change', function() {
+                  updateProducts(this.value, currentLimit, currentFilters);
+              });
+
+              document.getElementById('input-limit').addEventListener('change', function() {
+                  updateProducts(currentSort, this.value, currentFilters);
+              });
+
+              document.getElementById('toggle-filters').addEventListener('click', function() {
+                  let filtersPanel = new bootstrap.Offcanvas(document.getElementById('filters-panel'));
+                  filtersPanel.show();
+              });
+
+              document.querySelectorAll('input[name="filter[]"]').forEach(filter => {
+                  filter.addEventListener('change', function() {
+                      // Collect all checked filters
+                      let selectedFilters = Array.from(document.querySelectorAll('input[name="filter[]"]:checked')).map(el => el.value).join(',');
+
+                      // Update the products list based on the selected filters
+                      updateProducts(currentSort, currentLimit, selectedFilters);
+
+                      // Close the filters panel
+                      let filtersPanel = bootstrap.Offcanvas.getInstance(document.getElementById('filters-panel'));
+                      filtersPanel.hide();
+                  });
+              });
+              initializeProductOptions();
+              loadMoreProducts(true);
+          });
+        </script>
+      {% endif %}        
+
+      {% if not products %}
+        <p>{{ text_no_results }}</p>
+        <div class="text-end"><a href="{{ continue }}" class="btn btn-primary">{{ button_continue }}</a></div>
+      {% endif %}
+      {{ content_bottom }}</div>
+    {{ column_right }}</div>
+</div>
+<style>
+#filters-panel {
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.offcanvas-body {
+    opacity: 1 !important;
+}
+.card {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.product-optionsx {
+    transition: max-height 0.3s ease-out;
+}
+
+.product-optionsx.d-none {
+    transition: max-height 0.5s ease-in;
+}
+</style>
+{{ footer }}

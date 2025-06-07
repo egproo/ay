@@ -1,0 +1,144 @@
+<div class="node-config-form" id="node-config-form" data-node-id="{{ node_id }}">
+  <input type="hidden" name="node_id" value="{{ node_id }}">
+  <input type="hidden" name="node_type" value="notification">
+  
+  <div class="form-group">
+    <label for="input-node-name">{{ text_node_name }}</label>
+    <input type="text" name="node_name" value="{{ name }}" placeholder="{{ text_node_name }}" id="input-node-name" class="form-control">
+  </div>
+  
+  <div class="form-group">
+    <label for="input-node-description">{{ text_node_description }}</label>
+    <textarea name="node_description" rows="3" placeholder="{{ text_node_description }}" id="input-node-description" class="form-control">{{ description }}</textarea>
+  </div>
+  
+  <div class="form-group">
+    <label for="input-notification-type">{{ text_notification_type }}</label>
+    <select name="notification_type" id="input-notification-type" class="form-control">
+      <option value="system" {% if notification_type == 'system' %}selected="selected"{% endif %}>{{ text_system }}</option>
+      <option value="order" {% if notification_type == 'order' %}selected="selected"{% endif %}>{{ text_order }}</option>
+      <option value="customer" {% if notification_type == 'customer' %}selected="selected"{% endif %}>{{ text_customer }}</option>
+      <option value="alert" {% if notification_type == 'alert' %}selected="selected"{% endif %}>{{ text_alert }}</option>
+      <option value="message" {% if notification_type == 'message' %}selected="selected"{% endif %}>{{ text_message }}</option>
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="input-notification-title">{{ text_notification_title }}</label>
+    <input type="text" name="notification_title" value="{{ notification_title }}" placeholder="{{ text_notification_title }}" id="input-notification-title" class="form-control">
+  </div>
+  
+  <div class="form-group">
+    <label for="input-notification-message">{{ text_notification_message }}</label>
+    <textarea name="notification_message" rows="5" placeholder="{{ text_notification_message }}" id="input-notification-message" class="form-control">{{ notification_message }}</textarea>
+    <p class="help-block">{{ help_notification_message }}</p>
+  </div>
+  
+  <div class="form-group">
+    <label for="input-notification-priority">{{ text_notification_priority }}</label>
+    <select name="notification_priority" id="input-notification-priority" class="form-control">
+      <option value="low" {% if notification_priority == 'low' %}selected="selected"{% endif %}>{{ text_low }}</option>
+      <option value="normal" {% if notification_priority == 'normal' %}selected="selected"{% endif %}>{{ text_normal }}</option>
+      <option value="high" {% if notification_priority == 'high' %}selected="selected"{% endif %}>{{ text_high }}</option>
+      <option value="urgent" {% if notification_priority == 'urgent' %}selected="selected"{% endif %}>{{ text_urgent }}</option>
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label>{{ text_notification_recipients }}</label>
+    <div class="radio">
+      <label>
+        <input type="radio" name="recipient_type" value="specific_users" {% if recipient_type == 'specific_users' %}checked="checked"{% endif %}>
+        {{ text_specific_users }}
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="recipient_type" value="user_group" {% if recipient_type == 'user_group' %}checked="checked"{% endif %}>
+        {{ text_user_group }}
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+        <input type="radio" name="recipient_type" value="all_users" {% if recipient_type == 'all_users' %}checked="checked"{% endif %}>
+        {{ text_all_users }}
+      </label>
+    </div>
+  </div>
+  
+  <div class="form-group recipient-specific-users" style="{% if recipient_type != 'specific_users' %}display: none;{% endif %}">
+    <label for="input-recipients">{{ text_select_users }}</label>
+    <input type="text" name="recipient_user" value="" placeholder="{{ text_select_users }}" id="input-recipient-user" class="form-control" autocomplete="off">
+    <div id="recipient-users" class="well well-sm" style="height: 150px; overflow: auto;">
+      {% for recipient_user in recipient_users %}
+      <div id="recipient-user{{ recipient_user.user_id }}"><i class="fa fa-minus-circle"></i> {{ recipient_user.name }}
+        <input type="hidden" name="recipient_users[]" value="{{ recipient_user.user_id }}">
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <div class="form-group recipient-user-group" style="{% if recipient_type != 'user_group' %}display: none;{% endif %}">
+    <label for="input-recipient-group">{{ text_user_group }}</label>
+    <select name="recipient_group_id" id="input-recipient-group" class="form-control">
+      <option value="0">{{ text_select }}</option>
+      {% for user_group in user_groups %}
+      <option value="{{ user_group.user_group_id }}" {% if user_group.user_group_id == recipient_group_id %}selected="selected"{% endif %}>{{ user_group.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="input-notification-link">{{ text_notification_link }}</label>
+    <input type="text" name="notification_link" value="{{ notification_link }}" placeholder="{{ text_notification_link }}" id="input-notification-link" class="form-control">
+    <p class="help-block">{{ help_notification_link }}</p>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$(document).ready(function() {
+  // Toggle recipient fields based on type
+  $('input[name="recipient_type"]').on('change', function() {
+    var recipientType = $(this).val();
+    
+    $('.recipient-specific-users, .recipient-user-group').hide();
+    
+    if (recipientType == 'specific_users') {
+      $('.recipient-specific-users').show();
+    } else if (recipientType == 'user_group') {
+      $('.recipient-user-group').show();
+    }
+  });
+  
+  // User autocomplete
+  $('input[name=\'recipient_user\']').autocomplete({
+    source: function(request, response) {
+      $.ajax({
+        url: 'index.php?route=user/user/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+        dataType: 'json',
+        success: function(json) {
+          response($.map(json, function(item) {
+            return {
+              label: item['name'],
+              value: item['user_id']
+            }
+          }));
+        }
+      });
+    },
+    select: function(item) {
+      $('input[name=\'recipient_user\']').val('');
+      
+      $('#recipient-user' + item['value']).remove();
+      
+      $('#recipient-users').append('<div id="recipient-user' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="recipient_users[]" value="' + item['value'] + '" /></div>');
+      
+      return false;
+    }
+  });
+  
+  $('#recipient-users').delegate('.fa-minus-circle', 'click', function() {
+    $(this).parent().remove();
+  });
+});
+//--></script> 

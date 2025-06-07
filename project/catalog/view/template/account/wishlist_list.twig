@@ -1,0 +1,29 @@
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <td class="text-center"><strong>{{ column_name }}</strong></td>
+          <td class="text-center"><strong>{{ column_action }}</strong></td>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td class="text-center">
+               {% if product.thumb %}<a style="display:inline-block" href="{{ product.href }}"><img height="60" src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}"/></a>{% endif %}
+            
+                <a style="
+    color: #0f1740;line-height:60px;display:inline-block
+" href="{{ product.href }}">{{ product.name }}</a></td>
+            <td class="text-center">
+              <form method="post" data-oc-toggle="ajax" data-oc-load="{{ wishlist }}" data-oc-target="#wishlist">
+                <input type="hidden" name="product_id" value="{{ product.product_id }}"/> <input type="hidden" name="quantity" value="{{ product.minimum }}"/>
+                <button type="submit" formaction="{{ remove }}" data-bs-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa-solid fa-circle-xmark fa-fw"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+

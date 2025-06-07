@@ -1,0 +1,429 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger">{{ error_warning }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="panel-title">
+          <i class="fa fa-users"></i> {{ text_list }}
+        </div>
+      </div>
+      <div class="panel-body">
+        <!-- filters -->
+        <form id="form-filter" class="form-inline" style="margin-bottom: 15px;">
+          <label for="filter_type">{{ entry_meeting_type }}</label>
+          <select id="filter_type" class="form-control" style="margin-right:10px;">
+            <option value="">{{ text_all_types }}</option>
+            <option value="board" {{ filter_type=='board' ? 'selected':'' }}>Board</option>
+            <option value="review" {{ filter_type=='review' ? 'selected':'' }}>Review</option>
+            <option value="general" {{ filter_type=='general' ? 'selected':'' }}>General</option>
+          </select>
+          <button type="button" id="btn-filter" class="btn btn-primary">
+            <i class="fa fa-filter"></i> {{ button_filter }}
+          </button>
+
+          {% if can_add %}
+          <button type="button" id="btn-add" class="btn btn-success" style="margin-left:20px;">
+            <i class="fa fa-plus"></i> {{ button_add }}
+          </button>
+          {% endif %}
+        </form>
+
+        <!-- table -->
+        <table id="table-meetings" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_meeting_id }}</th>
+              <th>{{ column_meeting_type }}</th>
+              <th>{{ column_title }}</th>
+              <th>{{ column_meeting_date }}</th>
+              <th>{{ column_location }}</th>
+              <th>{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit Meeting -->
+<div class="modal fade" id="modalMeeting" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formMeeting">
+        <div class="modal-header">
+          <h4 class="modal-title">{{ text_modal_add }}</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="meeting_id" id="meeting_id" value="" />
+
+          <div class="form-group">
+            <label>{{ entry_meeting_type }}</label>
+            <select class="form-control" name="meeting_type" id="meeting_type">
+              <option value="">-none-</option>
+              <option value="board">Board</option>
+              <option value="review">Review</option>
+              <option value="general">General</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>{{ entry_title }} <span style="color:red">*</span></label>
+            <input type="text" class="form-control" name="title" id="title" required />
+          </div>
+          <div class="form-group">
+            <label>{{ entry_meeting_date }}</label>
+            <input type="datetime-local" class="form-control" name="meeting_date" id="meeting_date" />
+          </div>
+          <div class="form-group">
+            <label>{{ entry_location }}</label>
+            <input type="text" class="form-control" name="location" id="location" />
+          </div>
+          <div class="form-group">
+            <label>{{ entry_agenda }}</label>
+            <textarea class="form-control" name="agenda" id="agenda" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>{{ entry_decisions }}</label>
+            <textarea class="form-control" name="decisions" id="decisions" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if can_add_attendee or can_delete_attendee %}
+<!-- Modal: Attendees -->
+<div class="modal fade" id="modalAttendees" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{ text_meeting_attendees }}</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+         <div id="attendees-container"></div>
+         
+         {% if can_add_attendee %}
+         <hr/>
+         <form id="formAttendee" class="form-inline">
+           <input type="hidden" name="meeting_id" id="att_meeting_id" value="" />
+
+           <div class="form-group" style="margin-right:10px;">
+             <label>{{ text_user_id }}</label>
+             <input type="number" class="form-control" name="user_id" placeholder="User ID" style="width:100px;" />
+           </div>
+           <div class="form-group" style="margin-right:10px;">
+             <label>{{ text_external_name }}</label>
+             <input type="text" class="form-control" name="external_name" placeholder="External Guest" style="width:120px;" />
+           </div>
+           <div class="form-group" style="margin-right:10px;">
+             <label>{{ text_role_in_meeting }}</label>
+             <input type="text" class="form-control" name="role_in_meeting" placeholder="Role" style="width:100px;" />
+           </div>
+           <div class="form-group" style="margin-right:10px;">
+             <label>{{ text_presence_status }}</label>
+             <select name="presence_status" class="form-control">
+               <option value="attended">{{ text_attended }}</option>
+               <option value="excused">{{ text_excused }}</option>
+               <option value="absent">{{ text_absent }}</option>
+             </select>
+           </div>
+           <button type="submit" class="btn btn-success" style="margin-left:10px;">
+             <i class="fa fa-plus"></i> {{ text_add_attendee }}
+           </button>
+         </form>
+         {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+(function($){
+  'use strict';
+  let tableMeetings;
+
+  $(document).ready(function(){
+    // Init DataTable
+    tableMeetings = $('#table-meetings').DataTable({
+      ajax:{
+        url:"index.php?route=governance/meetings/ajaxList&user_token={{ user_token }}",
+        type:"POST",
+        data:function(d){
+          d.filter_type = $('#filter_type').val();
+        },
+        dataSrc:function(json){
+          if(json.error){ 
+            toastr.error(json.error);
+            return [];
+          }
+          return json.data;
+        }
+      },
+      columns:[
+        {data:'meeting_id'},
+        {data:'meeting_type'},
+        {data:'title'},
+        {data:'meeting_date'},
+        {data:'location'},
+        {
+          data:null,
+          orderable:false,
+          render:function(data,type,row){
+            let btns = '';
+            {% if can_edit %}
+            btns += `<button class="btn btn-info btn-sm btn-edit" data-id="${row.meeting_id}">
+                      <i class="fa fa-pencil"></i> {{ button_edit }}
+                     </button> `;
+            {% endif %}
+            {% if can_delete %}
+            btns += `<button class="btn btn-danger btn-sm btn-delete" data-id="${row.meeting_id}">
+                      <i class="fa fa-trash"></i> {{ button_delete }}
+                     </button> `;
+            {% endif %}
+
+            {% if can_add_attendee or can_delete_attendee %}
+            btns += `<button class="btn btn-warning btn-sm btn-attendees" data-id="${row.meeting_id}">
+                      <i class="fa fa-users"></i> {{ text_attendees }}
+                     </button>`;
+            {% endif %}
+
+            return btns;
+          }
+        }
+      ]
+    });
+
+    // Filter
+    $('#btn-filter').on('click', function(){
+      tableMeetings.ajax.reload();
+    });
+
+    // ADD
+    $('#btn-add').on('click', function(){
+      clearForm();
+      $('#modalMeeting .modal-title').text('{{ text_modal_add }}');
+      $('#modalMeeting').modal('show');
+    });
+
+    // EDIT
+    $('#table-meetings').on('click','.btn-edit',function(){
+      let mid = $(this).data('id');
+      editMeeting(mid);
+    });
+
+    // DELETE
+    $('#table-meetings').on('click','.btn-delete',function(){
+      let mid = $(this).data('id');
+      if(confirm('{{ text_confirm_delete }}')){
+        $.ajax({
+          url:"index.php?route=governance/meetings/ajaxDelete&user_token={{ user_token }}",
+          type:"POST",
+          data:{meeting_id:mid},
+          dataType:"json",
+          success:function(json){
+            if(json.error){ toastr.error(json.error); }
+            else {
+              toastr.success(json.success);
+              tableMeetings.ajax.reload(null,false);
+            }
+          }
+        });
+      }
+    });
+
+    // Show Attendees
+    $('#table-meetings').on('click','.btn-attendees',function(){
+      let mid = $(this).data('id');
+      $('#att_meeting_id').val(mid);
+      loadAttendees(mid);
+      $('#modalAttendees').modal('show');
+    });
+
+    // Save (Add/Edit)
+    $('#formMeeting').on('submit',function(e){
+      e.preventDefault();
+      let formData = $(this).serializeArray();
+      let mid = $('#meeting_id').val();
+      let urlReq = '';
+      if(mid==''){
+        urlReq = "index.php?route=governance/meetings/ajaxAdd&user_token={{ user_token }}";
+      } else {
+        urlReq = "index.php?route=governance/meetings/ajaxEdit&user_token={{ user_token }}";
+      }
+
+      $.ajax({
+        url:urlReq,
+        type:'POST',
+        data:formData,
+        dataType:'json',
+        success:function(json){
+          if(json.error){ toastr.error(json.error); }
+          else {
+            toastr.success(json.success);
+            $('#modalMeeting').modal('hide');
+            tableMeetings.ajax.reload(null,false);
+          }
+        }
+      });
+    });
+
+    // Add Attendee
+    $('#formAttendee').on('submit',function(e){
+      e.preventDefault();
+      let dataAtt = $(this).serializeArray();
+      let mid = $('#att_meeting_id').val();
+      $.ajax({
+        url:"index.php?route=governance/meetings/ajaxAddAttendee&user_token={{ user_token }}",
+        type:'POST',
+        data:dataAtt,
+        dataType:'json',
+        success:function(json){
+          if(json.error){ toastr.error(json.error); }
+          else {
+            toastr.success(json.success);
+            loadAttendees(mid); // reload
+          }
+        }
+      });
+    });
+
+    // Remove attendee
+    $('#attendees-container').on('click','.btn-remove-attendee', function(){
+      let att_id = $(this).data('id');
+      let mid = $('#att_meeting_id').val();
+      if(confirm('{{ text_confirm_delete }}')){
+        $.ajax({
+          url:"index.php?route=governance/meetings/ajaxRemoveAttendee&user_token={{ user_token }}",
+          type:'POST',
+          data:{attendee_id:att_id},
+          dataType:'json',
+          success:function(json){
+            if(json.error){ toastr.error(json.error); }
+            else {
+              toastr.success(json.success);
+              loadAttendees(mid);
+            }
+          }
+        });
+      }
+    });
+
+  }); // end doc ready
+
+  function editMeeting(meeting_id){
+    $.ajax({
+      url:"index.php?route=governance/meetings/getOne&user_token={{ user_token }}",
+      type:'POST',
+      data:{meeting_id},
+      dataType:'json',
+      success:function(json){
+        if(json.error){
+          toastr.error(json.error);
+        } else if(json.success){
+          let m = json.data;
+          clearForm();
+          $('#meeting_id').val(m.meeting_id);
+          $('#meeting_type').val(m.meeting_type);
+          $('#title').val(m.title);
+          // convert date if needed
+          if(m.meeting_date) {
+            // تحويل meeting_date لصيغة datetime-local
+            let dt = m.meeting_date.replace(' ','T');
+            $('#meeting_date').val(dt);
+          }
+          $('#location').val(m.location);
+          $('#agenda').val(m.agenda);
+          $('#decisions').val(m.decisions);
+
+          $('#modalMeeting .modal-title').text('{{ text_modal_edit }} #'+m.meeting_id);
+          $('#modalMeeting').modal('show');
+        }
+      }
+    });
+  }
+
+  function clearForm(){
+    $('#formMeeting')[0].reset();
+    $('#meeting_id').val('');
+  }
+
+  function loadAttendees(meeting_id){
+    $.ajax({
+      url:"index.php?route=governance/meetings/ajaxGetAttendees&user_token={{ user_token }}",
+      type:'POST',
+      data:{meeting_id},
+      dataType:'json',
+      success:function(json){
+        if(json.error){
+          toastr.error(json.error);
+          $('#attendees-container').html('');
+        } else {
+          let list = json.data;
+          let html = `<table class="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>User ID</th>
+                            <th>External Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+          list.forEach(item=>{
+            html += `<tr>
+                       <td>${item.attendee_id}</td>
+                       <td>${item.user_id} - ${item.full_name || ''}</td>
+                       <td>${item.external_name || ''}</td>
+                       <td>${item.role_in_meeting || ''}</td>
+                       <td>${item.presence_status}</td>
+                       <td>`;
+            {% if can_delete_attendee %}
+            html += `<button class="btn btn-danger btn-sm btn-remove-attendee" data-id="${item.attendee_id}">
+                       <i class="fa fa-trash"></i> {{ text_delete }}
+                     </button>`;
+            {% endif %}
+            html += `</td></tr>`;
+          });
+          html += `</tbody></table>`;
+
+          $('#attendees-container').html(html);
+        }
+      }
+    });
+  }
+
+})(jQuery);
+</script>
+
+{{ footer }}

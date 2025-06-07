@@ -1,0 +1,412 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_back }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+        <button type="button" id="button-reply" data-toggle="tooltip" title="{{ button_reply }}" class="btn btn-primary"><i class="fa fa-reply"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_message }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="message-header">
+          <div class="row">
+            <div class="col-md-8">
+              <h3>{{ message.subject }}</h3>
+            </div>
+            <div class="col-md-4 text-right">
+              <span class="text-muted">{{ message.date_added }}</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <hr>
+              <div class="message-meta">
+                <strong>{{ text_from }}:</strong> {{ message.sender }} ({{ message.sender_email }})
+                <br>
+                <strong>{{ text_to }}:</strong> {{ message.recipient }} ({{ message.recipient_email }})
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <div class="message-body">
+          {{ message.message }}
+        </div>
+        {% if message.attachments %}
+        <hr>
+        <div class="message-attachments">
+          <h4>{{ text_attachments }}</h4>
+          <ul class="list-unstyled">
+            {% for attachment in message.attachments %}
+            <li><i class="fa fa-paperclip"></i> <a href="{{ attachment.href }}">{{ attachment.name }} ({{ attachment.size }})</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    {% if message_history %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_history }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="timeline">
+          {% for history in message_history %}
+          <div class="timeline-item">
+            <div class="timeline-badge"><i class="fa fa-envelope"></i></div>
+            <div class="timeline-panel">
+              <div class="timeline-heading">
+                <h4 class="timeline-title">{{ history.subject }}</h4>
+                <p><small class="text-muted"><i class="fa fa-clock-o"></i> {{ history.date_added }}</small></p>
+                <p><small class="text-muted"><strong>{{ text_from }}:</strong> {{ history.sender }}</small></p>
+                <p><small class="text-muted"><strong>{{ text_to }}:</strong> {{ history.recipient }}</small></p>
+              </div>
+              <div class="timeline-body">
+                <p>{{ history.message }}</p>
+                {% if history.attachments %}
+                <hr>
+                <div class="message-attachments">
+                  <h4>{{ text_attachments }}</h4>
+                  <ul class="list-unstyled">
+                    {% for attachment in history.attachments %}
+                    <li><i class="fa fa-paperclip"></i> <a href="{{ attachment.href }}">{{ attachment.name }} ({{ attachment.size }})</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  
+  <div id="modal-reply" class="modal fade">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">{{ text_reply }}</h4>
+        </div>
+        <div class="modal-body">
+          <form id="form-reply" class="form-horizontal">
+            <input type="hidden" name="parent_id" value="{{ message.message_id }}" />
+            <input type="hidden" name="to_id" value="{{ message.sender_id }}" />
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-to">{{ entry_to }}</label>
+              <div class="col-sm-10">
+                <input type="text" value="{{ message.sender }}" id="input-to" class="form-control" readonly />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-subject">{{ entry_subject }}</label>
+              <div class="col-sm-10">
+                <input type="text" name="subject" value="RE: {{ message.subject }}" placeholder="{{ entry_subject }}" id="input-subject" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="input-message">{{ entry_message }}</label>
+              <div class="col-sm-10">
+                <textarea name="message" placeholder="{{ entry_message }}" id="input-message" class="form-control" rows="8"></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{ entry_attachment }}</label>
+              <div class="col-sm-10">
+                <button type="button" id="button-upload" class="btn btn-default"><i class="fa fa-upload"></i> {{ button_upload }}</button>
+                <ul id="attachment-list" class="list-unstyled"></ul>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="button-save-draft" class="btn btn-default pull-left"><i class="fa fa-save"></i> {{ button_save_draft }}</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+          <button type="button" id="button-send" class="btn btn-primary">{{ button_send }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style type="text/css">
+.timeline {
+  position: relative;
+  padding: 20px 0;
+  list-style: none;
+}
+
+.timeline:before {
+  content: " ";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  margin-left: -1.5px;
+  background-color: #eeeeee;
+}
+
+.timeline > li {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.timeline-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  margin-left: -25px;
+  text-align: center;
+  background-color: #1e91cf;
+  z-index: 100;
+  color: #fff;
+  border-radius: 50%;
+}
+
+.timeline-panel {
+  position: relative;
+  width: 46%;
+  float: left;
+  border: 1px solid #d3d3d3;
+  border-radius: 2px;
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+.timeline-item:nth-child(even) .timeline-panel {
+  float: right;
+}
+
+.timeline-item:nth-child(odd) .timeline-panel:before {
+  border-left-width: 0;
+  border-right-width: 15px;
+  left: -15px;
+  right: auto;
+}
+
+.timeline-item:nth-child(even) .timeline-panel:before {
+  border-left-width: 15px;
+  border-right-width: 0;
+  right: -15px;
+  left: auto;
+}
+
+.timeline-title {
+  margin-top: 0;
+  color: inherit;
+}
+
+.timeline-body > p,
+.timeline-body > ul {
+  margin-bottom: 0;
+}
+
+.timeline-body > p + p {
+  margin-top: 5px;
+}
+
+@media (max-width: 767px) {
+  .timeline:before {
+    left: 40px;
+  }
+  
+  .timeline-badge {
+    left: 40px;
+    margin-left: 0;
+  }
+  
+  .timeline-panel {
+    width: calc(100% - 90px);
+    float: right;
+  }
+  
+  .timeline-item:nth-child(odd) .timeline-panel:before {
+    border-left-width: 15px;
+    border-right-width: 0;
+    right: -15px;
+    left: auto;
+  }
+}
+</style>
+
+<script type="text/javascript"><!--
+$('#button-reply').on('click', function() {
+  $('#form-reply')[0].reset();
+  $('#attachment-list').empty();
+  
+  $('#modal-reply').modal('show');
+});
+
+$('#button-send').on('click', function() {
+  $.ajax({
+    url: 'index.php?route=tool/messaging/send&user_token={{ user_token }}',
+    type: 'post',
+    dataType: 'json',
+    data: $('#form-reply').serialize() + getAttachments(),
+    beforeSend: function() {
+      $('#button-send').button('loading');
+    },
+    complete: function() {
+      $('#button-send').button('reset');
+    },
+    success: function(json) {
+      $('.alert, .text-danger').remove();
+      $('.form-group').removeClass('has-error');
+      
+      if (json['error']) {
+        if (json['error']['subject']) {
+          $('#input-subject').parent().addClass('has-error');
+          $('#input-subject').after('<div class="text-danger">' + json['error']['subject'] + '</div>');
+        }
+        
+        if (json['error']['message']) {
+          $('#input-message').parent().addClass('has-error');
+          $('#input-message').after('<div class="text-danger">' + json['error']['message'] + '</div>');
+        }
+      }
+      
+      if (json['success']) {
+        $('#modal-reply').modal('hide');
+        
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-save-draft').on('click', function() {
+  $.ajax({
+    url: 'index.php?route=tool/messaging/saveDraft&user_token={{ user_token }}',
+    type: 'post',
+    dataType: 'json',
+    data: $('#form-reply').serialize() + getAttachments(),
+    beforeSend: function() {
+      $('#button-save-draft').button('loading');
+    },
+    complete: function() {
+      $('#button-save-draft').button('reset');
+    },
+    success: function(json) {
+      $('.alert, .text-danger').remove();
+      $('.form-group').removeClass('has-error');
+      
+      if (json['error']) {
+        if (json['error']['subject']) {
+          $('#input-subject').parent().addClass('has-error');
+          $('#input-subject').after('<div class="text-danger">' + json['error']['subject'] + '</div>');
+        }
+      }
+      
+      if (json['success']) {
+        $('#modal-reply').modal('hide');
+        
+        $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        
+        setTimeout(function() {
+          location.reload();
+        }, 1000);
+      }
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+  });
+});
+
+$('#button-upload').on('click', function() {
+  $('#form-upload').remove();
+  
+  $('body').prepend('<form enctype="multipart/form-data" id="form-upload" style="display: none;"><input type="file" name="file" /></form>');
+  
+  $('#form-upload input[name=\'file\']').trigger('click');
+  
+  if (typeof timer != 'undefined') {
+    clearInterval(timer);
+  }
+  
+  timer = setInterval(function() {
+    if ($('#form-upload input[name=\'file\']').val() != '') {
+      clearInterval(timer);
+      
+      $.ajax({
+        url: 'index.php?route=tool/messaging/upload&user_token={{ user_token }}',
+        type: 'post',
+        dataType: 'json',
+        data: new FormData($('#form-upload')[0]),
+        cache: false,
+        contentType: false,
+        processData: false,
+        beforeSend: function() {
+          $('#button-upload').button('loading');
+        },
+        complete: function() {
+          $('#button-upload').button('reset');
+        },
+        success: function(json) {
+          if (json['error']) {
+            alert(json['error']);
+          }
+          
+          if (json['success']) {
+            alert(json['success']);
+            
+            $('#attachment-list').append('<li id="attachment-' + json['attachment_id'] + '">' + json['name'] + ' (' + json['size'] + ') <button type="button" class="btn btn-danger btn-xs" onclick="$(\'#attachment-' + json['attachment_id'] + '\').remove();"><i class="fa fa-trash-o"></i></button><input type="hidden" name="attachment[]" value="' + json['attachment_id'] + '" /></li>');
+          }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+          alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+      });
+    }
+  }, 500);
+});
+
+function getAttachments() {
+  var attachments = '';
+  
+  $('input[name^=\'attachment\']').each(function() {
+    attachments += '&attachment[]=' + $(this).val();
+  });
+  
+  return attachments;
+}
+//--></script>
+{{ footer }} 

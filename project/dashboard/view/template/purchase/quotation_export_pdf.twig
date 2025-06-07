@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ heading_title }}</title>
+  <style type="text/css">
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 10pt;
+      color: #333;
+    }
+    
+    h1, h2, h3 {
+      margin: 10px 0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    
+    table th, table td {
+      border: 1px solid #ddd;
+      padding:.5em;
+      text-align: left;
+    }
+    
+    table th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    
+    .bg-success {
+      background-color: #dff0d8;
+    }
+    
+    .text-right {
+      text-align: right;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .header {
+      margin-bottom: 20px;
+    }
+    
+    .company-info {
+      margin-bottom: 10px;
+    }
+    
+    .report-info {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>{{ heading_title }}</h1>
+    <div class="company-info">
+      <strong>{{ config_name }}</strong>
+    </div>
+    <div class="report-info">
+      {{ text_date }}
+    </div>
+  </div>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>{{ column_quotation_number }}</th>
+        <th>{{ column_requisition_number }}</th>
+        <th>{{ column_supplier }}</th>
+        <th>{{ column_total }}</th>
+        <th>{{ column_status }}</th>
+        <th>{{ text_validity_date }}</th>
+        <th>{{ column_date_added }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for quotation in quotations %}
+      <tr>
+        <td>{{ quotation.quotation_number }}</td>
+        <td>{{ quotation.requisition_number }}</td>
+        <td>{{ quotation.supplier_name }}</td>
+        <td class="text-right">{{ quotation.total_formatted }}</td>
+        <td>{{ quotation.status_text }}</td>
+        <td>{{ quotation.validity_date }}</td>
+        <td>{{ quotation.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

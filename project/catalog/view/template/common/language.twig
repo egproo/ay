@@ -1,0 +1,7 @@
+
+      {% for language in languages %}
+
+        <a  style="font-size: 18px;"  href="{{ language.href }}" class="currencylangtxt d-inline">{{ language.name }}</a>
+        {% if not loop.last %} <span style="font-size:18px;color:#fff">/</span>{% endif %}
+
+      {% endfor %}

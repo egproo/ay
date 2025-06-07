@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة الانتقاء - طلب رقم {{ order.order_id }}</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-logo {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        
+        .document-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .order-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .customer-info {
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .products-table th,
+        .products-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: right;
+        }
+        
+        .products-table th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .products-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .barcode {
+            font-family: 'Courier New', monospace;
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .option-item {
+            font-size: 10px;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        
+        .quantity-box {
+            width: 40px;
+            height: 25px;
+            border: 1px solid #333;
+            display: inline-block;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+        }
+        
+        .location-highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            border: 1px solid #333;
+            width: 200px;
+            height: 80px;
+            text-align: center;
+            padding-top: 60px;
+            font-size: 11px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 10px;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+        
+        .status-available {
+            background-color: #28a745;
+        }
+        
+        .status-shortage {
+            background-color: #dc3545;
+        }
+        
+        .priority-urgent {
+            border-right: 4px solid #dc3545;
+        }
+        
+        .priority-high {
+            border-right: 4px solid #fd7e14;
+        }
+        
+        .priority-normal {
+            border-right: 4px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">
+        <i class="fa fa-print"></i> طباعة
+    </button>
+    
+    <div class="header">
+        <img src="{{ company_logo }}" alt="شعار الشركة" class="company-logo">
+        <div class="document-title">قائمة انتقاء المنتجات</div>
+        <div>PICKING LIST</div>
+    </div>
+    
+    <div class="order-info priority-{{ order.priority|default('normal') }}">
+        <div class="info-row">
+            <span class="info-label">رقم الطلب:</span>
+            <span>#{{ order.order_id }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">تاريخ الطلب:</span>
+            <span>{{ order.date_added }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">تاريخ الطباعة:</span>
+            <span>{{ "now"|date("Y-m-d H:i:s") }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">المطبوع بواسطة:</span>
+            <span>{{ user_name|default('النظام') }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">إجمالي المنتجات:</span>
+            <span>{{ order.products|length }} منتج</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">إجمالي الكمية:</span>
+            <span>{{ order.total_quantity }} قطعة</span>
+        </div>
+    </div>
+    
+    <div class="customer-info">
+        <div class="section-title">معلومات العميل</div>
+        <div class="info-row">
+            <span class="info-label">اسم العميل:</span>
+            <span>{{ order.customer_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">رقم الهاتف:</span>
+            <span>{{ order.telephone }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">عنوان التسليم:</span>
+            <span>
+                {{ order.shipping_address_1 }}
+                {% if order.shipping_address_2 %}, {{ order.shipping_address_2 }}{% endif %}
+                , {{ order.shipping_city }}, {{ order.shipping_zone }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="section-title">قائمة المنتجات للانتقاء</div>
+    
+    <table class="products-table">
+        <thead>
+            <tr>
+                <th style="width: 5%">#</th>
+                <th style="width: 25%">اسم المنتج</th>
+                <th style="width: 10%">الموديل</th>
+                <th style="width: 8%">الوحدة</th>
+                <th style="width: 15%">الخيارات</th>
+                <th style="width: 8%">الكمية</th>
+                <th style="width: 12%">الباركود</th>
+                <th style="width: 12%">الموقع</th>
+                <th style="width: 5%">✓</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in order.products %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    <strong>{{ product.name }}</strong>
+                    <span class="status-indicator {% if product.can_fulfill %}status-available{% else %}status-shortage{% endif %}"></span>
+                </td>
+                <td>{{ product.model }}</td>
+                <td>{{ product.unit_name|default('قطعة') }}</td>
+                <td>
+                    {% if product.options %}
+                        {% for option in product.options %}
+                        <div class="option-item">
+                            <strong>{{ option.option_name }}:</strong> {{ option.option_value_name }}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <span style="color: #6c757d;">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="quantity-box">{{ product.quantity }}</div>
+                </td>
+                <td>
+                    {% if product.specific_barcode %}
+                    <div class="barcode">{{ product.specific_barcode }}</div>
+                    <small>({{ product.specific_barcode_type }})</small>
+                    {% else %}
+                        <span style="color: #6c757d;">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if product.stock_location %}
+                    <span class="location-highlight">{{ product.stock_location }}</span>
+                    {% else %}
+                        <span style="color: #6c757d;">غير محدد</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="width: 20px; height: 20px; border: 1px solid #333;"></div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if order.special_instructions %}
+    <div class="customer-info">
+        <div class="section-title">تعليمات خاصة</div>
+        <p>{{ order.special_instructions }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="signature-section">
+        <div>
+            <div class="signature-box">
+                توقيع المنتقي
+            </div>
+            <div style="text-align: center; margin-top: 5px;">
+                التاريخ: ___________
+            </div>
+        </div>
+        
+        <div>
+            <div class="signature-box">
+                توقيع المراجع
+            </div>
+            <div style="text-align: center; margin-top: 5px;">
+                التاريخ: ___________
+            </div>
+        </div>
+        
+        <div>
+            <div class="signature-box">
+                توقيع المعبئ
+            </div>
+            <div style="text-align: center; margin-top: 5px;">
+                التاريخ: ___________
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>تم إنشاء هذه القائمة تلقائياً بواسطة نظام إدارة المخزون والشحن</p>
+        <p>للاستفسارات: {{ company_phone|default('') }} | {{ company_email|default('') }}</p>
+    </div>
+    
+    <script>
+        // طباعة تلقائية عند تحميل الصفحة (اختياري)
+        // window.onload = function() { window.print(); }
+        
+        // إضافة تاريخ الطباعة
+        document.addEventListener('DOMContentLoaded', function() {
+            var now = new Date();
+            var dateString = now.toLocaleDateString('ar-SA') + ' ' + now.toLocaleTimeString('ar-SA');
+            // يمكن استخدام هذا لتحديث التاريخ ديناميكياً
+        });
+    </script>
+</body>
+</html>

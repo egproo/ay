@@ -1,0 +1,324 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-transfer').toggleClass('d-none');" class="btn btn-light d-md-none"><i class="fas fa-filter"></i></button>
+        <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+        <button type="submit" form="form-transfer" formaction="{{ delete }}" data-bs-toggle="tooltip" title="{{ button_delete }}" onclick="return confirm('{{ text_confirm }}');" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="row">
+      <div id="filter-transfer" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ text_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label">{{ entry_reference }}</label>
+              <input type="text" name="filter_reference" value="{{ filter_reference }}" placeholder="{{ entry_reference }}" id="input-reference" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ entry_from_branch }}</label>
+              <select name="filter_from_branch" id="input-from-branch" class="form-select">
+                <option value=""></option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_from_branch %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ entry_to_branch }}</label>
+              <select name="filter_to_branch" id="input-to-branch" class="form-select">
+                <option value=""></option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_to_branch %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-select">
+                <option value=""></option>
+                <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>{{ text_pending }}</option>
+                <option value="confirmed" {% if filter_status == 'confirmed' %}selected{% endif %}>{{ text_confirmed }}</option>
+                <option value="in_transit" {% if filter_status == 'in_transit' %}selected{% endif %}>{{ text_in_transit }}</option>
+                <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>{{ text_completed }}</option>
+                <option value="cancelled" {% if filter_status == 'cancelled' %}selected{% endif %}>{{ text_cancelled }}</option>
+                <option value="rejected" {% if filter_status == 'rejected' %}selected{% endif %}>{{ text_rejected }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ entry_date_start }}</label>
+              <input type="date" name="filter_date_start" value="{{ filter_date_start }}" id="input-date-start" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">{{ entry_date_end }}</label>
+              <input type="date" name="filter_date_end" value="{{ filter_date_end }}" id="input-date-end" class="form-control"/>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-light"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-list"></i> {{ text_list }}</div>
+          <div class="card-body">
+            <form id="form-transfer" method="post">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', $(this).prop('checked'));" class="form-check-input"/></td>
+                      <td>{{ column_reference }}</td>
+                      <td>{{ column_from_branch }}</td>
+                      <td>{{ column_to_branch }}</td>
+                      <td>{{ column_date }}</td>
+                      <td>{{ column_status }}</td>
+                      <td>{{ column_created_by }}</td>
+                      <td class="text-end">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if transfers %}
+                      {% for transfer in transfers %}
+                        <tr>
+                          <td class="text-center"><input type="checkbox" name="selected[]" value="{{ transfer.transfer_id }}" class="form-check-input"/></td>
+                          <td>{{ transfer.reference_number }}</td>
+                          <td>{{ transfer.from_branch_name }}</td>
+                          <td>{{ transfer.to_branch_name }}</td>
+                          <td>{{ transfer.transfer_date }}</td>
+                          <td>
+                            {% if transfer.status == 'pending' %}
+                              <span class="badge bg-warning">{{ text_pending }}</span>
+                            {% elseif transfer.status == 'confirmed' %}
+                              <span class="badge bg-info">{{ text_confirmed }}</span>
+                            {% elseif transfer.status == 'in_transit' %}
+                              <span class="badge bg-primary">{{ text_in_transit }}</span>
+                            {% elseif transfer.status == 'completed' %}
+                              <span class="badge bg-success">{{ text_completed }}</span>
+                            {% elseif transfer.status == 'cancelled' %}
+                              <span class="badge bg-danger">{{ text_cancelled }}</span>
+                            {% elseif transfer.status == 'rejected' %}
+                              <span class="badge bg-danger">{{ text_rejected }}</span>
+                            {% endif %}
+                          </td>
+                          <td>{{ transfer.created_by_name }}</td>
+                          <td class="text-end">
+                            <div class="btn-group">
+                              <a href="{{ transfer.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fas fa-pencil-alt"></i></a>
+                              {% if transfer.status == 'pending' %}
+                                <button type="button" data-transfer-id="{{ transfer.transfer_id }}" data-bs-toggle="tooltip" title="{{ button_approve }}" class="btn btn-success btn-approve"><i class="fas fa-check"></i></button>
+                                <button type="button" data-transfer-id="{{ transfer.transfer_id }}" data-bs-toggle="tooltip" title="{{ button_reject }}" class="btn btn-danger btn-reject"><i class="fas fa-times"></i></button>
+                              {% endif %}
+                              {% if transfer.status == 'confirmed' %}
+                                <button type="button" data-transfer-id="{{ transfer.transfer_id }}" data-bs-toggle="tooltip" title="{{ button_in_transit }}" class="btn btn-info btn-in-transit"><i class="fas fa-truck"></i></button>
+                              {% endif %}
+                              {% if transfer.status == 'in_transit' %}
+                                <button type="button" data-transfer-id="{{ transfer.transfer_id }}" data-bs-toggle="tooltip" title="{{ button_complete }}" class="btn btn-success btn-complete"><i class="fas fa-check-double"></i></button>
+                              {% endif %}
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr>
+                        <td class="text-center" colspan="8">{{ text_no_results }}</td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </form>
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+	var url = 'index.php?route=inventory/transfer&user_token={{ user_token }}';
+
+	var filter_reference = $('#input-reference').val();
+	if (filter_reference) {
+		url += '&filter_reference=' + encodeURIComponent(filter_reference);
+	}
+
+	var filter_from_branch = $('#input-from-branch').val();
+	if (filter_from_branch) {
+		url += '&filter_from_branch=' + encodeURIComponent(filter_from_branch);
+	}
+
+	var filter_to_branch = $('#input-to-branch').val();
+	if (filter_to_branch) {
+		url += '&filter_to_branch=' + encodeURIComponent(filter_to_branch);
+	}
+
+	var filter_status = $('#input-status').val();
+	if (filter_status) {
+		url += '&filter_status=' + encodeURIComponent(filter_status);
+	}
+
+	var filter_date_start = $('#input-date-start').val();
+	if (filter_date_start) {
+		url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+	}
+
+	var filter_date_end = $('#input-date-end').val();
+	if (filter_date_end) {
+		url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+	}
+
+	location = url;
+});
+
+// تأكيد التحويل
+$('.btn-approve').on('click', function() {
+    var transfer_id = $(this).data('transfer-id');
+
+    if (confirm('{{ text_confirm_approve }}')) {
+        $.ajax({
+            url: 'index.php?route=inventory/transfer/approve&user_token={{ user_token }}&transfer_id=' + transfer_id,
+            dataType: 'json',
+            beforeSend: function() {
+                $('.btn-approve[data-transfer-id="' + transfer_id + '"]').prop('disabled', true);
+            },
+            complete: function() {
+                $('.btn-approve[data-transfer-id="' + transfer_id + '"]').prop('disabled', false);
+            },
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    alert(json['success']);
+                    location.reload();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+});
+
+// رفض التحويل
+$('.btn-reject').on('click', function() {
+    var transfer_id = $(this).data('transfer-id');
+
+    if (confirm('{{ text_confirm_reject }}')) {
+        $.ajax({
+            url: 'index.php?route=inventory/transfer/reject&user_token={{ user_token }}&transfer_id=' + transfer_id,
+            dataType: 'json',
+            beforeSend: function() {
+                $('.btn-reject[data-transfer-id="' + transfer_id + '"]').prop('disabled', true);
+            },
+            complete: function() {
+                $('.btn-reject[data-transfer-id="' + transfer_id + '"]').prop('disabled', false);
+            },
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    alert(json['success']);
+                    location.reload();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+});
+
+// تحديث حالة التحويل إلى قيد النقل
+$('.btn-in-transit').on('click', function() {
+    var transfer_id = $(this).data('transfer-id');
+
+    if (confirm('{{ text_confirm_in_transit }}')) {
+        $.ajax({
+            url: 'index.php?route=inventory/transfer/inTransit&user_token={{ user_token }}&transfer_id=' + transfer_id,
+            dataType: 'json',
+            beforeSend: function() {
+                $('.btn-in-transit[data-transfer-id="' + transfer_id + '"]').prop('disabled', true);
+            },
+            complete: function() {
+                $('.btn-in-transit[data-transfer-id="' + transfer_id + '"]').prop('disabled', false);
+            },
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    alert(json['success']);
+                    location.reload();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+});
+
+// تحديث حالة التحويل إلى مكتمل
+$('.btn-complete').on('click', function() {
+    var transfer_id = $(this).data('transfer-id');
+
+    if (confirm('{{ text_confirm_complete }}')) {
+        $.ajax({
+            url: 'index.php?route=inventory/transfer/complete&user_token={{ user_token }}&transfer_id=' + transfer_id,
+            dataType: 'json',
+            beforeSend: function() {
+                $('.btn-complete[data-transfer-id="' + transfer_id + '"]').prop('disabled', true);
+            },
+            complete: function() {
+                $('.btn-complete[data-transfer-id="' + transfer_id + '"]').prop('disabled', false);
+            },
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    alert(json['success']);
+                    location.reload();
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+    }
+});
+</script>
+{{ footer }}

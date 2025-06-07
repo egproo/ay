@@ -1,0 +1,37 @@
+{{ header }}{{ column_left }}
+
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>  
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+  width:100%;
+} 
+
+.select2-container{width:100% !important;}
+</style>
+
+
+    <div class="container">
+        <h1 class="text-center">نموذج طباعة قائمة المركز المالي</h1>
+        <form action="{{ action }}" method="post" id="form-balance-sheet">
+            <div class="form-group">
+                <label for="start_date">تاريخ البداية</label>
+                <input type="date" name="start_date" id="start_date" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">تاريخ النهاية</label>
+                <input type="date" name="end_date" id="end_date" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">طباعة</button>
+        </form>
+    </div>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{{footer}}
+
+

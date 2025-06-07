@@ -1,0 +1,34 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      {% for report in reports %}
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5 class="mb-0">{{ report.name }}</h5>
+            </div>
+            <div class="card-body">
+              <p>{{ report.description }}</p>
+            </div>
+            <div class="card-footer text-end">
+              <a href="{{ report.href }}" class="btn btn-primary">{{ button_filter }}</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{{ footer }}

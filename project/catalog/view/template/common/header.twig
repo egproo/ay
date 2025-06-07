@@ -1,0 +1,2888 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}" style="overflow-x: hidden;">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{{ title }}</title>
+  <base href="{{ base }}"/>
+  {% if description %}
+    <meta name="description" content="{{ description }}"/>
+  {% endif %}
+  {% if keywords %}
+    <meta name="keywords" content="{{ keywords }}"/>
+  {% endif %}
+  <meta name="csrf-token" content="{{ csrf_token|default('') }}">
+
+</head>
+
+<body style="position: relative; width: 100vw; overflow-x: hidden; max-width: 100vw; color:#000; background-color: rgba(246, 246, 246, 1);">
+
+  {% for style in styles %}
+    <link href="{{ style.href }}" type="text/css" rel="{{ style.rel }}" media="{{ style.media }}"/>
+  {% endfor %}
+  {% for link in links %}
+    <link href="{{ link.href }}" rel="{{ link.rel }}"/>
+  {% endfor %}  
+  <link href="{{ icons }}?ver=1.000115" type="text/css" rel="stylesheet"/>
+
+  {% if direction=="rtl" %}
+    {% if userdevice == 'pc' %}  
+       <link href="catalog/view/stylesheet/main-a.css?ver=1.000115" type="text/css" rel="stylesheet"/>
+    {% else %}
+       <link href="catalog/view/stylesheet/mainm-a.css?ver=1.000115" type="text/css" rel="stylesheet"/>
+    {% endif %} 
+  {% else %}
+    {% if userdevice == 'pc' %}  
+      <link href="catalog/view/stylesheet/main.css?ver=1.000115" type="text/css" rel="stylesheet"/>
+    {% else %}
+      <link href="catalog/view/stylesheet/mainm.css?ver=1.000115" type="text/css" rel="stylesheet"/>
+    {% endif %}
+  {% endif %}
+
+{% if direction == 'rtl' %}
+<style>
+@-webkit-keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+@keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+/* RTL styles */
+.saving-badge {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  transform: rotate(5deg);
+  animation: badgePulse 2s infinite;
+}
+#paypal_card_form .card-label {
+  text-align: right !important;
+}
+.swiper-backface-hidden .swiper-slide {
+  padding-bottom: 15px;
+}
+.product-optionsx {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 1);
+  width: 100%;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  border-radius: 30px 30px 0 0;
+  padding: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.alert-danger a {
+  color: #a60707 !important;
+}
+#quick-checkout-sidebar {
+  right: -100%;
+  position: fixed;
+  top: 0;
+  width: 99%;
+  border-inline-end: 1% solid #000;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: right 0.4s ease;
+  z-index: 9999;
+  padding: 20px;
+  overflow-y: auto;
+}
+#quick-checkout-sidebar.show {
+  right: 0;
+  z-index:999999999999;
+}
+#quick-checkout-sidebar .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+}
+#quick-checkout-sidebar .form-group {
+  margin-bottom: 15px;
+}
+#quick-checkout-sidebar .form-group label {
+  font-weight: bold;
+}
+#quick-checkout-sidebar .form-group input,
+#quick-checkout-sidebar .form-group select {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+#quick-checkout-sidebar .form-group input:required,
+#quick-checkout-sidebar .form-group select:required {
+  border-left: 4px solid #d9534f;
+}
+#quick-checkout-sidebar .total {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+#quick-checkout-sidebar .btn-primary {
+  background-color: #0275d8;
+  border-color: #0275d8;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  width: 100%;
+  margin-top: 20px;
+  cursor: pointer;
+}
+#quick-checkout-sidebar .btn-primary:hover {
+  background-color: #025aa5;
+  border-color: #01549b;
+}
+#quick-checkout-sidebar .form-group input.error,
+#quick-checkout-sidebar .form-group select.error {
+  border-color: #d9534f;
+}
+#quick-checkout-sidebar .error-message {
+  color: #d9534f;
+  font-size: 14px;
+  margin-top: 5px;
+}
+input[type="checkbox"] {
+  position: relative;
+  top: 2px;
+  box-sizing: content-box;
+  height: 25px;
+  width: 25px;
+  margin: 0 5px 0 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  border-radius: 2px;
+  background-color: #fff;
+  border: 1px solid #115c80;
+}
+input[type="checkbox"]:before {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:after {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:checked:before {
+  width: 10px;
+  height: 15px;
+  margin: 2px 7px;
+  border-bottom: 4px solid #115c80;
+  border-right: 4px solid #115c80;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:checked::after,
+.checkbox input[type="checkbox"]:checked::after,
+.checkbox-inline input[type="checkbox"]:checked::after {
+  content: '';
+}
+.form-check { line-height: 38px; }
+.form-check label {
+  font-size: 15px;
+  font-weight: normal;
+  padding-inline-start: 10px;
+}
+</style>
+{% else %}
+<style>
+/* LTR styles */
+@-webkit-keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+@keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+.saving-badge {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  transform: rotate(5deg);
+  animation: badgePulse 2s infinite;
+}
+#paypal_card_form .card-label {
+  text-align: left !important;
+}
+.product-optionsx {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 1);
+  width: 100%;
+  z-index: 999;
+  top: 0;
+  left: 0;
+  border-radius: 30px 30px 0 0;
+  padding: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.swiper-backface-hidden .swiper-slide {
+  padding-bottom: 15px;
+}
+.alert-danger a {
+  color: #a60707 !important;
+}
+#quick-checkout-sidebar {
+  right: -100%;
+  position: fixed;
+  top: 0;
+  width: 90%;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: right 0.4s ease;
+  z-index: 9999;
+  padding: 20px;
+  overflow-y: auto;
+}
+#quick-checkout-sidebar.show {
+  right: 0;
+  z-index:999999999999;
+}
+#quick-checkout-sidebar .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+}
+#quick-checkout-sidebar .form-group {
+  margin-bottom: 15px;
+}
+#quick-checkout-sidebar .form-group label {
+  font-weight: bold;
+}
+#quick-checkout-sidebar .form-group input,
+#quick-checkout-sidebar .form-group select {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+#quick-checkout-sidebar .form-group input:required,
+#quick-checkout-sidebar .form-group select:required {
+  border-left: 4px solid #d9534f;
+}
+#quick-checkout-sidebar .total {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+#quick-checkout-sidebar .btn-primary {
+  background-color: #0275d8;
+  border-color: #0275d8;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  width: 100%;
+  margin-top: 20px;
+  cursor: pointer;
+}
+#quick-checkout-sidebar .btn-primary:hover {
+  background-color: #025aa5;
+  border-color: #01549b;
+}
+#quick-checkout-sidebar .form-group input.error,
+#quick-checkout-sidebar .form-group select.error {
+  border-color: #d9534f;
+}
+#quick-checkout-sidebar .error-message {
+  color: #d9534f;
+  font-size: 14px;
+  margin-top: 5px;
+}
+input[type="checkbox"] {
+  position: relative;
+  top: 2px;
+  box-sizing: content-box;
+  height: 25px;
+  width: 25px;
+  margin: 0 5px 0 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  border-radius: 2px;
+  background-color: #fff;
+  border: 1px solid #115c80;
+}
+input[type="checkbox"]:before {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:after {
+  content: '';
+  display: block;
+  transition: transform 200ms;
+}
+input[type="checkbox"]:checked:before {
+  width: 10px;
+  height: 15px;
+  margin: 2px 7px;
+  border-bottom: 4px solid #115c80;
+  border-right: 4px solid #115c80;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:checked::after,
+.checkbox input[type="checkbox"]:checked::after,
+.checkbox-inline input[type="checkbox"]:checked::after {
+  content: '';
+}
+.form-check { line-height: 38px; }
+.form-check label {
+  font-size: 15px;
+  font-weight: normal;
+  padding-inline-start: 10px;
+}
+</style>
+{% endif %}
+
+<script src="{{ jquery }}?ver=1.000115" type="text/javascript"></script>
+<script src="catalog/view/javascript/common.js?ver=1.000115" type="text/javascript"></script>
+{% for script in scripts %}
+  <script src="{{ script.href }}" type="text/javascript"></script>
+{% endfor %}
+{% for analytic in analytics %}
+  {{ analytic }}
+{% endfor %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" integrity="sha512-aNMyYYxdIxIaot0Y1/PLuEu3eipGCmsEUBrUq+7aVyPGMFH8z0eTP0tkqAvv34fzN6z+201d3T8HPb1svWSKHQ==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+{% if userdevice == 'pc' %}
+<div id="alert" class="toast-container position-fixed top-0 end-0 p-3"></div>
+<header>
+  <div class="container-fluid menuhover" style="background-color:#131921; --bs-gutter-x: 0;">
+    <div class="row" style=" --bs-gutter-x: 0;">
+      <div class="col-lg-1 col-md-1 col-sm-8 col-12 menuhover" style="line-height: 57px;color: #fff;text-align: center;">
+        <div id="logo">
+          {% if logo %}
+            <a href="{{ home }}"><img height="57" width="57" src="{{ logo }}" title="{{ name }}" alt="{{ name }}" class="img-fluid"/></a>
+          {% else %}
+            <h1><a href="{{ home }}">{{ name }}</a></h1>
+          {% endif %}
+        </div>
+      </div>
+      {% if currency %}
+      <div class="col-lg-5 col-md-5 col-sm-12 menuhover" style="line-height: 57px;color: #fff;text-align: center;">{{ search }}</div>
+      <div class="col-lg-1 col-md-1 col-sm-6 menuhover" style="line-height: 57px;color: #fff;text-align: center;border-inline-end: .5px solid #ffffff45;">{{ currency }}</div>
+      {% else %}
+      <div class="col-lg-6 col-md-6 col-sm-12 menuhover" style="line-height: 57px;color: #fff;text-align: center;">{{ search }}</div>
+      {% endif %}
+      <div class="col-lg-1 col-md-1 col-sm-6 menuhover" style="line-height: 57px;color: #fff;text-align: center;border-inline-end: .5px solid #ffffff45;">{{ language }}</div>
+      <div class="col-lg-1 col-md-1 col-sm-4 menuhover" style="line-height: 57px;color: #fff;min-width: 11.2%;text-align: center;border-inline-end: .5px solid #ffffff45;">
+        <div class="dropdown">
+          <a style="font-size: 14px;" href="#" class="dropdown-toggle" data-bs-toggle="dropdown"><i class="fa-solid fas fa-tags"></i> <span class="d-inline">{{ text_allproducts }}</span> <i class="fa-solid fa-caret-down"></i></a>
+          <ul class="dropdown-menu dropdown-menu-right">
+            {% if not logged %}
+              <li><a style="font-size: 14px;" href="{{ allproducts }}" class="dropdown-item">{{ text_allproducts }}</a></li>
+            {% else %}
+              <li><a style="font-size: 14px;" href="{{ allproducts }}" class="dropdown-item">{{ text_allproducts }}</a></li>
+              <li><a style="font-size: 14px;" href="{{ order }}" class="dropdown-item">{{ text_order }}</a></li>
+              <li><a style="font-size: 14px;" href="{{ transaction }}" class="dropdown-item">{{ text_transaction }}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-1 col-md-1 col-sm-4 menuhover" style="line-height: 57px;color: #fff;min-width: 11.5%;text-align: center;border-inline-end: .5px solid #ffffff45;">
+        <div class="dropdown">
+          <a style="font-size: 14px;" href="#" class="dropdown-toggle" data-bs-toggle="dropdown"><i class="fa-solid fa-user"></i> <span class="d-inline">{{ text_account }}</span> <i class="fa-solid fa-caret-down"></i></a>
+          <ul class="dropdown-menu dropdown-menu-right">
+            {% if not logged %}
+              <li><a style="font-size: 14px;" href="{{ register }}" class="dropdown-item">{{ text_register }}</a></li>
+              <li><a style="font-size: 14px;" href="{{ login }}" class="dropdown-item">{{ text_login }}</a></li>
+            {% else %}
+              <li><a style="font-size: 14px;" href="{{ account }}" class="dropdown-item">{{ text_account }}</a></li>
+              <li><a style="font-size: 14px;" href="{{ logout }}" class="dropdown-item">{{ text_logout }}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <div id="header-cart" class="col-lg-1 col-md-1 col-sm-4 menuhover" style="text-align: center; margin: 0 auto; margin-top: 15px;">
+        {{ cart }}
+      </div>
+    </div>
+  </div>
+</header>
+<main style="background-color: rgba(246, 246, 246, 1);">
+  {{menu}}
+  <div style="cursor: pointer; z-index: 999999999; position: fixed; bottom: 20px; left: 30px; border-radius: 50%; background: #f99f1e; width: 40px; height: 40px; line-height: 40px; text-align: center; padding:2px" class="floatcart">
+    <i style="font-size:20px;color:#000" class="fa-solid fa-basket-shopping"></i>
+    <span style="font-size: 11px; background:red" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="carttotalproductscount">
+      {{ carttotalproductscount }}
+    </span>
+  </div>
+  <div id="checkoutSide"></div>
+  <a title="whatsapp" target="_blank" href="https://api.whatsapp.com/send/?phone=201092029485">
+    <div style="z-index: 999999999; position: fixed; bottom: 20px; right: 30px; border-radius: 50%; padding: 8px 12px; background: #eee;" class="pulsexxx">
+      <i style="font-size:30px; line-height: 1; color: green;" class="fab fa-whatsapp"></i>
+    </div>
+  </a>
+  
+{% if direction == 'rtl' %}
+<style>
+.bundlebadgeegproo{font-size: 0.9rem;z-index: 99;left: -15px !important;bottom: 0px !important;border-radius: 14px 50px 15px 0px;display: none;}    
+</style>
+    {% else %}
+<style>
+.bundlebadgeegproo{font-size: 0.9rem;z-index: 99;right: -15px !important;bottom: 0px !important;border-radius: 14px 50px 15px 0px;display: none;}    
+</style>
+{% endif %}
+
+{% else %}
+<!-- Mobile header -->
+
+{% if direction == 'rtl' %}
+<style>
+.bundlebadgeegproo{font-size: 0.9rem;z-index: 99;left: -15px !important;bottom: 0px !important;border-radius: 14px 50px 15px 0px;display: none;}    
+
+.logodiv {
+    padding-inline-start: 70px;
+}
+</style>
+    {% else %}
+<style>
+.bundlebadgeegproo{font-size: 0.9rem;z-index: 99;right: -15px !important;bottom: 0px !important;border-radius: 14px 50px 15px 0px;display: none;}    
+.logodiv {
+    padding-inline-start: 70px;
+}
+</style>
+{% endif %}
+<style>
+#search .form-control-lg {
+    height: 35px !important;
+    background-color: #fff !important;
+    z-index: 1;
+}
+
+body > footer > div:nth-child(3) > div > div:nth-child(1){margin-bottom:10px;margin-top:10px;}
+.iconsocial{5px 10px !important}
+ #input-limit,#input-sort{
+    font-size: 9px !important;
+    font-weight: 900  !important;
+    line-height: 24px  !important;
+    color: #000  !important;
+}
+
+</style>
+<header>
+  <div class="container-fluid" style="background-color:#000; margin-inline-start:2px; margin-inline-end:2px; --bs-gutter-x: 0; margin-left: 0px; margin-right: 0px; padding-right: 0px; padding-left: 0px;">
+    <div class="row align-items-center" style="--bs-gutter-x: 0;">
+      <div class="col-7 text-center logodiv menuhover">
+        <div id="logo">
+          {% if logo %}
+            <a href="{{ home }}"><img height="57" width="57" style="padding: 4px;" src="{{ logo }}" title="{{ name }}" alt="{{ name }}" class="img-fluid"/></a>
+          {% else %}
+            <h1><a href="{{ home }}">{{ name }}</a></h1>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-4 menuhover" style="width: calc(100vw - 60% - 50px); padding-inline-start: 5px; padding-inline-end: 2%; text-align: center;">
+        {{ language }}
+      </div>
+      <div class="col-1 text-end menuhover" style="width:50px; min-width:50px; max-width:50px; padding-inline-start: 0px; padding-inline-center: 0px;">
+        <div id="header-cart" style="margin-top: 5px;">{{ cart }}</div>
+      </div>
+    </div>
+  </div>
+</header>
+<style>
+/* Additional mobile styles */
+.menuhover:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+#header-cart .dropdown-menu {
+  width: 100vw;
+  top: 9px !important;
+  overflow-x: hidden;
+}
+#header-cart[dir="rtl"]  .dropdown-menu {
+  left: 10px;
+  right: auto;
+}
+#header-cart[dir="ltr"]  .dropdown-menu {
+  right: 10px;
+  left: auto;
+}
+#search {
+  border-radius: 0px;
+  padding: 0px !important;
+  margin-top: -1px !important;
+}
+#search .form-control-lg, #search .btn-lg {
+  border-radius: 0px;
+  text-align: center !important;
+}
+#logo img {
+  max-width: calc(100vw - 80% - 74px) !important;
+  position: relative;
+  float: inline-start;
+  z-index: 20;
+  margin-inline-start: 22px;
+  margin-inline-end: 12px;
+}
+.logodiv {
+  max-width: calc(100vw - 8.3% - 74px) !important;
+}
+.offerscontent { background-color: #f99f1e !important; text-align: center; }
+.accountcontent { background-color: #f99f1e !important; text-align: center; }
+.mobile-header-bottom { background-color: #000 !important; text-align: center; border-top: .5px solid #ffffff45; }
+.offerscontent .subnav .nav-link, .accountcontent .subnav .nav-link {
+  color: #000 !important;
+  font-size: 10px;
+  text-align: center;
+}
+.mobile-header-bottom .nav-link {
+  color: #fff !important;
+  border: 1px solid transparent;
+  border-radius: 0px;
+  font-size: 10px;
+  text-align: center;
+  padding-right: 2px;
+  padding-left: 2px;
+  max-width: 100%;
+}
+.mobile-header-bottom .nav-link.active {
+  background-color: #000 !important;
+  border: none;
+  border-bottom: 1px solid #fff;
+  border-radius: 0px;
+  font-size: 10px;
+  text-align: center;
+  font-weight: 900;
+}
+.offerscontent .subnav .nav-link.active {
+  background-color: #000 !important;
+  color: #fff !important;
+  border: 1px solid #000;
+  border-radius: 0px;
+  font-size:10px;
+  text-align:center;
+}
+.accountcontent .subnav .nav-link.active {
+  background-color: #000 !important;
+  color: #fff !important;
+  border: 1px solid #000;
+  border-radius: 0px;
+  font-size: 10px;
+  text-align:center;
+}
+.offerscontent > ul > li:nth-child(1) { width: 33%; border-radius: 0px; }
+.offerscontent > ul > li:nth-child(2) { width: 34%; border-radius: 0px; border-right: .5px solid #ffffff45; border-left: .5px solid #ffffff45; }
+.offerscontent > ul > li:nth-child(3) { width: 33%; border-radius: 0px; }
+.accountcontent > ul > li:nth-child(1) {
+  text-align:center; width:33.3%; line-height: 30px; border-radius: 0px;
+}
+.accountcontent > ul > li:nth-child(2) {
+  text-align:center; width:33.3%; line-height: 30px; border-radius: 0px; border-right: .5px solid #ffffff45; border-left: .5px solid #ffffff45;
+}
+.accountcontent > ul > li:nth-child(3) {
+  text-align:center; width:33.4%; line-height: 30px; border-radius: 0px;
+}
+.mobile-header-bottom > ul > li:nth-child(1) {
+  width:23%; border-radius: 0px; line-height: 30px;
+}
+.mobile-header-bottom > ul > li:nth-child(2) {
+  width:25%; border-radius: 0px; line-height: 30px; border-right: .5px solid #ffffff45; border-left: .5px solid #ffffff45;
+}
+.mobile-header-bottom > ul > li:nth-child(3) {
+  width:25%; border-radius: 0px; line-height: 30px; border-right: .5px solid #ffffff45; border-left: .5px solid #ffffff45;
+}
+.mobile-header-bottom > ul > li:nth-child(4) {
+  width:27%; border-radius: 0px; line-height: 30px;
+}
+.accountcontent ul, .offerscontent ul, .mobile-header-bottom ul {
+  margin-bottom: 0px;
+  padding-inline-start: 0px;
+}
+.mobile-header-bottom > .tab-content h2 {
+  color: #000;
+  font-size: 15px;
+  margin-bottom: 0px;
+}
+.mobile-header-bottom > .tab-content p {
+  color: #555;
+}
+.offerscontent > .tab-content {
+  background-color: #fff !important;
+}
+.accountcontent > .tab-content {
+  background-color: #fff !important;
+}
+.offerscontent > .nav-link.active {
+  border: 1px solid #000 !important;
+  background-color: transparent;
+  border-radius: 0px;
+  font-size: 11px;
+}
+.offerscontent .subnav,
+.offerscontent {
+  padding: 0px !important;
+}
+.accountcontent > .nav-link.active {
+  border: 1px solid #000 !important;
+  background-color: transparent;
+  border-radius: 0px;
+  font-size: 11px;
+}
+.accountcontent .subnav,
+.accountcontent {
+  padding: 0px !important;
+}
+.subheadertabs {
+  margin-bottom: 7px !important;
+  padding: 5px 10px !important;
+  text-align:center;
+}
+
+.currencylangtxt {
+  font-size:11px !important;
+  line-height:38px;
+}
+.offcanvas-body {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out 1s; /* تأخير الانتقال لمدة 5 ثوانٍ */
+}
+.show.offcanvas-end .offcanvas-body {
+  opacity: 1;
+}
+#cart-total {
+  position: absolute;
+  left: 52%;
+  transform: translateX(-50%);
+  top: 13px;
+  background-color: #000;
+  width: 30px;
+  height: 25px;
+  border-radius: 50%;
+  color: #fff;
+  line-height: 16px;
+  padding: 1px 13px;
+  text-align: center;
+}
+.justlink a::after {
+  background-image: none !important;
+  transform: none !important;
+}
+.justlink a {
+  text-align: center !important;
+  padding-inline-end: 0px !important;
+  padding-inline-start: 0px !important;
+  margin-inline-start: 0px !important;
+  margin-inline-end: 0px !important;
+  display: block;
+}
+.nav-link {
+  padding:2px !important;
+}
+#search .form-control-lg {
+  height: 35px !important;
+}
+#button-cart {
+  width: calc(100% - 35px);
+}
+</style>
+
+<header class="mobile-header-bottom" id="mobile-header-bottom">
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" id="tab-search" data-bs-toggle="tab" href="#searchcontent" role="tab" title="{{ text_xsearch }}">{{ text_xsearch }}
+        <i style="padding-inline-start: 10px; line-height: 30px;" class="fa-solid fa-magnifying-glass"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="tab-account" data-bs-toggle="tab" href="#accountcontent" role="tab" title="{{ text_account }}">{{ text_account }}
+        <i style="padding-inline-start: 10px; line-height: 30px;" class="fa-solid fa-user"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a title="setting" class="nav-link" id="tab-setting" data-bs-toggle="tab" href="#settingcontent" role="tab">
+        {{ text_setting }}
+        <i style="padding-inline-start: 10px; line-height: 30px;" class="fa-solid fa-gear"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a title="cards" class="nav-link" id="tab-setting" href="{{ allproducts }}" role="tab">
+        {{ text_allproducts }}
+        <i style="padding-inline-start: 10px; line-height: 30px;" class="fa-solid fa-tags"></i>
+      </a>
+    </li>
+  </ul>
+
+  <div class="tab-content headertabs">
+    <div class="tab-pane fade show active" id="searchcontent" role="tabpanel">
+      {{ search }}
+    </div>
+    <div class="accountcontent tab-pane fade" id="accountcontent" role="tabpanel">
+      <ul class="nav nav-tabs subnav">
+        <li class="nav-item">
+          {% if not logged %}
+            <a class="nav-link active" href="{{ register }}">{{ text_register }}</a>
+          {% else %}
+            <a class="nav-link active" href="{{ account }}">{{ text_account }}</a>
+          {% endif %}
+        </li>
+        <li class="nav-item">
+          {% if not logged %}
+            <a class="nav-link" href="{{ login }}">{{ text_login }}</a>
+          {% else %}
+            <a class="nav-link" href="{{ logout }}">{{ text_logout }}</a>
+          {% endif %}
+        </li>
+        <li class="nav-item text-center">
+          <a class="nav-link text-center" href="{{ myorders }}">{{ text_myorders }}</a>
+        </li>
+      </ul>
+    </div>
+    <div class="tab-pane fade" id="settingcontent" role="tabpanel">
+      <span style="line-height: 36px; color: #fff; width:calc((100vw /3) - 5px); display: inline-block; border-inline-end: .5px solid #ffffff45;">{{ text_textaffilate }}</span>
+      <span style="line-height: 36px; color: #fff; width:calc((100vw /3) - 5px); display: inline-block; border-inline-end: .5px solid #ffffff45;">{{ text_myaddress }}</span>
+      <span style="line-height: 36px; color: #fff; width:calc((100vw /3) - 5px); display: inline-block;">
+        {{ text_dashboard }}
+      </span>
+    </div>
+  </div>
+</header>
+<main>
+  <div id="alert" class="toast-container position-fixed top-0 end-0 p-3"></div>
+{% if categories %}
+<div class="neo-mobile-menu-container">
+  <!-- زر فتح القائمة مع تأثير النبض -->
+  <button id="neo-menu-toggle" class="neo-menu-toggle" aria-label="فتح القائمة">
+    <span class="neo-menu-icon">
+      <span class="neo-menu-line"></span>
+      <span class="neo-menu-line"></span>
+      <span class="neo-menu-line"></span>
+    </span>
+  </button>
+  
+  <!-- خلفية متلاشية عند فتح القائمة -->
+  <div class="neo-menu-overlay"></div>
+  
+  <!-- حاوية القائمة الرئيسية -->
+  <div class="neo-menu">
+    <div class="neo-menu-header">
+      <h2 class="neo-menu-title">{{ text_category }}</h2>
+      <button class="neo-menu-close" aria-label="إغلاق القائمة">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- شريط البحث المدمج في القائمة -->
+    <div class="neo-menu-search">
+      <div class="neo-search-container">
+        <svg class="neo-search-icon" viewBox="0 0 24 24" width="20" height="20">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+        </svg>
+        <input type="text" class="neo-search-input" placeholder="ابحث في الأقسام..." aria-label="البحث">
+      </div>
+    </div>
+    
+    <!-- قائمة الفئات -->
+    <div class="neo-categories">
+      <!-- قائمة للعروض الخاصة -->
+      <div class="neo-category-item featured">
+        <a href="{{ specials }}" class="neo-category-link" title="{{ text_specials }}">
+          <div class="neo-category-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"></path>
+            </svg>
+          </div>
+          <div class="neo-category-text">
+            <span class="neo-category-name">{{ text_special }}</span>
+            <span class="neo-category-desc">تصفح أحدث العروض والتخفيضات</span>
+          </div>
+          <div class="neo-category-indicator">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path>
+            </svg>
+          </div>
+        </a>
+      </div>
+      
+      <!-- قائمة الفئات الديناميكية -->
+      {% for category in categories %}
+        <div class="neo-category-item {% if category.children %}has-children{% endif %}">
+          <div class="neo-category-header" data-category-id="{{ category.id }}">
+            <div class="neo-category-icon">
+              {% if category.image %}
+                
+              <a href="{{ category.href }}" class="neo-category-link" title="{{ category.name }}">
+                <img src="{{ category.image }}" alt="{{ category.name }}" width="24" height="24" class="neo-category-img">
+              </a>
+              
+              {% else %}
+
+              <a href="{{ category.href }}" class="neo-category-link" title="{{ category.name }}">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                  <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path>
+                </svg>
+              </a>
+              
+              {% endif %}
+            </div>
+            <div class="neo-category-text">
+              
+              <a href="{{ category.href }}" class="neo-category-link" title="{{ category.name }}">
+                <span class="neo-category-name" style="margin-inline-start:10px;    white-space: nowrap;font-size:0.9rem">{{ category.name }}</span>
+              </a>
+              
+            </div>
+            {% if category.children %}
+              <div class="neo-category-toggle">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"></path>
+                </svg>
+              </div>
+            {% else %}
+              <a href="{{ category.href }}" class="neo-category-link-icon" title="{{ category.name }}">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"></path>
+                </svg>
+              </a>
+            {% endif %}
+            
+          </div>
+         
+          {% if category.children %}
+            <div class="neo-subcategories" id="subcategory-{{ category.id }}">
+              <div class="neo-subcategories-grid">
+                {% for children in category.children|batch(2) %}
+                  {% for child in children %}
+                    <div class="neo-subcategory-item">
+                      <a href="{{ child.href }}" class="neo-subcategory-link" title="{{ child.name }}" childid="{{ child.childid }}" catid="{{ child.catid }}">
+                        <div class="neo-subcategory-media">
+                          {% if child.image %}
+                            <img src="{{ child.image }}" alt="{{ child.name }}" class="neo-subcategory-img">
+                          {% endif %}
+                        </div>
+                        <div class="neo-subcategory-name">{{ child.name }}</div>
+                      </a>
+                    </div>
+                  {% endfor %}
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- شريط تنقل سريع -->
+    <div class="neo-quick-access">
+      <a href="{{ home }}" class="neo-quick-item" title="الرئيسية">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+        </svg>
+        <span>الرئيسية</span>
+      </a>
+      <a href="{{ wishlist }}" class="neo-quick-item" title="المفضلة">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zm-4.4 15.55l-.1.1-.1-.1C7.14 14.24 4 11.39 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5c2 0 3.5 1.5 3.5 3.5 0 2.89-3.14 5.74-7.9 10.05z"></path>
+        </svg>
+        <span>المفضلة</span>
+      </a>
+      <a href="{{ account }}" class="neo-quick-item" title="حسابي">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path>
+        </svg>
+        <span>حسابي</span>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!-- ميزة إضافية: شريط إشعارات -->
+<div class="neo-notification-bar">
+  <div class="neo-notification-content">
+    <div class="neo-notification-slider">
+      <div class="neo-notification-slide">توصيل مجاني للطلبات أكثر من 500 جنيه</div>
+      <div class="neo-notification-slide">خصم 15% على الطلبات الجديدة، استخدم كود: NEW15</div>
+      <div class="neo-notification-slide">تابعنا للحصول على آخر العروض</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<style>
+/* ===== تنسيقات قائمة الموبايل العصرية ===== */
+:root {
+  --primary-color: #3a86ff;
+  --secondary-color: #ff006e;
+  --accent-color: #fb5607;
+  --text-color: #333333;
+  --light-text: #767676;
+  --background-color: #ffffff;
+  --dark-background: #f8f9fa;
+  --border-radius: 12px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+}
+
+/* تنسيقات أساسية */
+.neo-mobile-menu-container {
+  position: relative;
+  font-family: 'Cairo', 'Tajawal', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.neo-mobile-menu-container * {
+  box-sizing: border-box;
+}
+
+/* زر القائمة المبتكر */
+.neo-menu-toggle {
+  position: fixed;
+  top: 10px;
+  left: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 2%;
+  background-color: var(--background-color);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.neo-menu-toggle:active {
+  transform: scale(0.95);
+}
+
+.neo-menu-icon {
+  width: 12px;
+  height: 18px;
+  padding:0px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.neo-menu-line {
+  width: 100%;
+  height: 2px;
+  background-color: var(--text-color);
+  border-radius: 5px;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+/* التخلية عندما تكون القائمة مفتوحة */
+.neo-menu-toggle.active .neo-menu-line:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.neo-menu-toggle.active .neo-menu-line:nth-child(2) {
+  opacity: 0;
+}
+
+.neo-menu-toggle.active .neo-menu-line:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* تأثير النبض على زر القائمة */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(58, 134, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(58, 134, 255, 0);
+  }
+}
+
+.neo-menu-toggle:not(.active) {
+  animation: pulse 2s infinite;
+}
+
+/* خلفية متلاشية */
+.neo-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.neo-menu-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* حاوية القائمة الرئيسية */
+.neo-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 85%;
+  max-width: 360px;
+  height: 100%;
+  background-color: var(--background-color);
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  transform: translateX(105%);
+  transition: transform var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-top-left-radius: 24px;
+  border-bottom-left-radius: 24px;
+}
+
+.neo-menu.active {
+  transform: translateX(0);
+}
+
+/* رأس القائمة */
+.neo-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.neo-menu-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: var(--font-semibold);
+  color: var(--text-color);
+}
+
+.neo-menu-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #f2f2f2;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.neo-menu-close:hover {
+  background-color: #e5e5e5;
+}
+
+.neo-menu-close svg {
+  fill: var(--text-color);
+}
+
+/* البحث المدمج */
+.neo-menu-search {
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.neo-search-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 25px;
+  padding: 8px 15px;
+  transition: box-shadow var(--transition-fast);
+}
+
+.neo-search-container:focus-within {
+  box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+.neo-search-icon {
+  fill: var(--light-text);
+  margin-right: 10px;
+}
+
+.neo-search-input {
+  flex: 1;
+  border: none;
+  background-color: transparent;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  outline: none;
+  padding: 8px 0;
+}
+
+.neo-search-input::placeholder {
+  color: var(--light-text);
+}
+
+/* قائمة الفئات */
+.neo-categories {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+  /* تنعيم التمرير */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* تخصيص شريط التمرير */
+.neo-categories::-webkit-scrollbar {
+  width: 5px;
+}
+
+.neo-categories::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.neo-categories::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 10px;
+}
+
+.neo-categories::-webkit-scrollbar-thumb:hover {
+  background: #b1b1b1;
+}
+
+/* تنسيق الفئات */
+.neo-category-item {
+  margin: 5px 15px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.neo-category-item:hover, .neo-category-item:active {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.neo-category-item.featured {
+  background: linear-gradient(45deg,orangered, #f99f1e);
+  
+
+  
+}
+
+.neo-category-header, .neo-category-link {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  text-decoration: none;
+  color: var(--text-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.neo-category-item.featured .neo-category-link {
+  color: black;
+}
+
+.neo-category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.neo-category-item.featured .neo-category-icon {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.neo-category-icon svg {
+  fill: var(--primary-color);
+}
+
+.neo-category-item.featured .neo-category-icon svg {
+  fill: black;
+}
+
+.neo-category-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.neo-category-text {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.neo-category-name {
+  display: block;
+  font-size: 1rem;
+  font-weight: var(--font-medium);
+  margin-bottom: 2px;
+}
+
+.neo-category-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--light-text);
+}
+
+.neo-category-item.featured .neo-category-desc {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.neo-category-toggle, .neo-category-link-icon, .neo-category-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.neo-category-item.featured .neo-category-indicator {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.neo-category-toggle svg, .neo-category-link-icon svg, .neo-category-indicator svg {
+  fill: var(--text-color);
+  transition: transform var(--transition-normal);
+}
+
+.neo-category-item.featured .neo-category-indicator svg {
+  fill: black;
+}
+
+.neo-category-header[aria-expanded="true"] .neo-category-toggle {
+  background-color: rgba(58, 134, 255, 0.1);
+}
+
+.neo-category-header[aria-expanded="true"] .neo-category-toggle svg {
+  transform: rotate(180deg);
+  fill: var(--primary-color);
+}
+
+/* الفئات الفرعية */
+.neo-subcategories {
+  height: 0;
+  overflow: hidden;
+  transition: height var(--transition-normal);
+  background-color: #f9f9f9;
+}
+
+.neo-subcategories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 15px;
+}
+
+.neo-subcategory-item {
+  background-color: #ffffff;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.neo-subcategory-item:hover, .neo-subcategory-item:active {
+  transform: scale(1.02);
+}
+
+.neo-subcategory-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text-color);
+  height: 100%;
+}
+
+.neo-subcategory-media {
+  position: relative;
+  padding-top: 75%; /* نسبة العرض إلى الارتفاع 4:3 */
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.neo-subcategory-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-normal);
+}
+
+.neo-subcategory-link:hover .neo-subcategory-img {
+  transform: scale(1.05);
+}
+
+.neo-subcategory-name {
+  padding: 12px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: var(--font-medium);
+}
+
+/* شريط التنقل السريع */
+.neo-quick-access {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 60px;
+}
+
+.neo-quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--light-text);
+  font-size: 0.8rem;
+  position: relative;
+  transition: color var(--transition-fast);
+}
+
+.neo-quick-item svg {
+  fill: var(--light-text);
+  transition: fill var(--transition-fast), transform var(--transition-fast);
+  margin-bottom: 5px;
+}
+
+.neo-quick-item:hover, .neo-quick-item.active {
+  color: var(--primary-color);
+}
+
+.neo-quick-item:hover svg, .neo-quick-item.active svg {
+  fill: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.neo-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--secondary-color);
+  color: white;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+/* شريط الإشعارات */
+.neo-notification-bar {
+  position: relative;
+  background: linear-gradient(45deg,orangered, #f99f1e);
+  color: white;
+  padding: 10px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.neo-notification-content {
+  width: 100%;
+  overflow: hidden;
+}
+.neo-notification-slider {
+  display: flex;
+  transition: transform var(--transition-slow);
+}
+.neo-notification-slide {
+  flex: 0 0 100%;
+  text-align: center;
+  padding: 0 20px;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: var(--font-medium);
+}
+
+/* تأثيرات الحركة المبتكرة */
+@keyframes floatAnimation {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.neo-category-icon {
+  animation: floatAnimation 3s ease-in-out infinite;
+}
+
+/* تأثير موجة خطية متحركة */
+.neo-category-item.featured::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: waveAnimation 2s infinite;
+}
+
+@keyframes waveAnimation {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* تكيف مع الشاشات المختلفة */
+@media (max-width: 360px) {
+  .neo-subcategories-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* دعم الوضع المظلم (يمكن تفعيله متى ما تريد) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #f1f1f1;
+    --light-text: #a0a0a0;
+    --background-color: #121212;
+    --dark-background: #1e1e1e;
+  }
+  
+  .neo-menu-line {
+    background-color: var(--text-color);
+  }
+  
+  .neo-category-item, .neo-subcategory-item {
+    background-color: #1e1e1e;
+  }
+  
+  .neo-category-icon, .neo-search-container, .neo-subcategory-media {
+    background-color: #2c2c2c;
+  }
+  
+  .neo-menu-close {
+    background-color: #2c2c2c;
+  }
+  
+  .neo-quick-access {
+    background-color: #1a1a1a;
+  }
+  
+  .neo-subcategories {
+    background-color: #181818;
+  }
+}
+
+/* تدعم الواجهات التي تعتمد RTL */
+.neo-mobile-menu-container[dir="rtl"] .neo-menu-toggle {
+  left: auto;
+  right: 15px;
+}
+
+
+
+.neo-mobile-menu-container[dir="rtl"] .neo-menu {
+  right: auto;
+  left: 0;
+  transform: translateX(-105%);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-menu.active {
+  transform: translateX(0);
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-search-icon {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-category-icon {
+  margin-right: 0;
+  margin-left: 15px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-category-text {
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.neo-mobile-menu-container[dir="rtl"] .neo-badge {
+  right: auto;
+  left: -5px;
+}    
+</style>
+
+<script>
+/**
+ * قائمة الموبايل المبتكرة - 2025
+ * نظام القوائم المتطور مع تأثيرات وتفاعلات حديثة
+ */
+document.addEventListener('DOMContentLoaded', function() {
+  // العناصر الرئيسية
+  const menuToggle = document.getElementById('neo-menu-toggle');
+  const menu = document.querySelector('.neo-menu');
+  const menuOverlay = document.querySelector('.neo-menu-overlay');
+  const menuClose = document.querySelector('.neo-menu-close');
+  const categoryHeaders = document.querySelectorAll('.neo-category-header');
+  const searchInput = document.querySelector('.neo-search-input');
+  const notificationSlider = document.querySelector('.neo-notification-slider');
+  const notificationSlides = document.querySelectorAll('.neo-notification-slide');
+  
+  // متغيرات التتبع
+  let currentSlide = 0;
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let lastFocusedElement = null;
+  let subcategoryHeights = {};
+  
+  // تهيئة القائمة
+  initMenu();
+  
+  /**
+   * تهيئة القائمة وإضافة مستمعي الأحداث
+   */
+  function initMenu() {
+    // حفظ ارتفاعات الفئات الفرعية
+    document.querySelectorAll('.neo-subcategories').forEach(subcategory => {
+      const id = subcategory.id;
+      const content = subcategory.querySelector('.neo-subcategories-grid');
+      subcategoryHeights[id] = content.offsetHeight;
+      subcategory.style.height = '0px';
+    });
+    
+    // إضافة مستمعي الأحداث
+    menuToggle.addEventListener('click', toggleMenu);
+    menuClose.addEventListener('click', closeMenu);
+    menuOverlay.addEventListener('click', closeMenu);
+    
+    // مستمعو أحداث للفئات
+    categoryHeaders.forEach(header => {
+      header.addEventListener('click', toggleSubcategory);
+      
+      // إضافة خصائص aria للوصول
+      header.setAttribute('aria-expanded', 'false');
+      const categoryId = header.getAttribute('data-category-id');
+      if (categoryId) {
+        const subcategoryId = 'subcategory-' + categoryId;
+        header.setAttribute('aria-controls', subcategoryId);
+      }
+    });
+    
+    // مستمع البحث
+    if (searchInput) {
+      searchInput.addEventListener('input', handleSearch);
+    }
+    
+    // بدء تشغيل مؤقت شريط الإشعارات
+    startNotificationSlider();
+    
+    // إضافة دعم الإيماءات
+    setupTouchEvents();
+    
+    // إضافة التكيف مع وضع RTL
+    setupRTLSupport();
+    
+    // إضافة مستمع لوضع الشاشة الكاملة
+    setupFullscreenSupport();
+  }
+  
+  /**
+   * فتح/إغلاق القائمة الرئيسية
+   */
+  function toggleMenu() {
+    const isOpen = menu.classList.contains('active');
+    
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  }
+  
+  /**
+   * فتح القائمة مع تأثيرات
+   */
+  function openMenu() {
+    // حفظ العنصر الذي كان مركزًا
+    lastFocusedElement = document.activeElement;
+    
+    // تفعيل القائمة
+    menuToggle.classList.add('active');
+    menu.classList.add('active');
+    menuOverlay.classList.add('active');
+    
+    // منع التمرير في الخلفية
+    document.body.style.overflow = 'hidden';
+    
+    // تأثير ظهور تدريجي للعناصر
+    animateMenuItems();
+    
+    // تركيز البحث بعد فترة قصيرة
+    setTimeout(() => {
+      if (searchInput) searchInput.focus();
+    }, 400);
+    
+    // إعلان للمستخدمين الذين يستخدمون قارئ الشاشة
+    announceToScreenReader('تم فتح القائمة');
+  }
+  
+  /**
+   * إغلاق القائمة مع تأثيرات
+   */
+  function closeMenu() {
+    menuToggle.classList.remove('active');
+    menu.classList.remove('active');
+    menuOverlay.classList.remove('active');
+    
+    // إعادة التمرير
+    document.body.style.overflow = '';
+    
+    // إعادة التركيز إلى العنصر السابق
+    if (lastFocusedElement) {
+      setTimeout(() => {
+        lastFocusedElement.focus();
+      }, 300);
+    }
+    
+    // إعلان للمستخدمين الذين يستخدمون قارئ الشاشة
+    announceToScreenReader('تم إغلاق القائمة');
+  }
+  
+  /**
+   * التبديل بين عرض وإخفاء الفئات الفرعية
+   * @param {Event} event حدث النقر
+   */
+  function toggleSubcategory(event) {
+    // تجاهل النقرات على الروابط
+    if (event.target.classList.contains('neo-category-link-icon') || 
+        event.target.closest('.neo-category-link-icon')) {
+      return;
+    }
+    
+    const header = this;
+    const categoryId = header.getAttribute('data-category-id');
+    
+    if (!categoryId) return;
+    
+    const subcategoryId = `subcategory-${categoryId}`;
+    const subcategory = document.getElementById(subcategoryId);
+    
+    if (!subcategory) return;
+    
+    const isExpanded = header.getAttribute('aria-expanded') === 'true';
+    
+    // تحديث حالة aria
+    header.setAttribute('aria-expanded', !isExpanded);
+    
+    // تطبيق التأثير
+    if (isExpanded) {
+      // إغلاق الفئة الفرعية
+      anime({
+        targets: subcategory,
+        height: 0,
+        duration: 300,
+        easing: 'easeOutCubic',
+        complete: function() {
+          subcategory.style.visibility = 'hidden';
+        }
+      });
+    } else {
+      // فتح الفئة الفرعية
+      subcategory.style.visibility = 'visible';
+      anime({
+        targets: subcategory,
+        height: subcategoryHeights[subcategoryId],
+        duration: 400,
+        easing: 'easeOutCubic'
+      });
+      
+      // إغلاق الفئات الفرعية الأخرى المفتوحة
+      document.querySelectorAll('.neo-category-header[aria-expanded="true"]').forEach(openHeader => {
+        if (openHeader !== header) {
+          const openCategoryId = openHeader.getAttribute('data-category-id');
+          const openSubcategoryId = `subcategory-${openCategoryId}`;
+          const openSubcategory = document.getElementById(openSubcategoryId);
+          
+          if (openSubcategory) {
+            openHeader.setAttribute('aria-expanded', 'false');
+            anime({
+              targets: openSubcategory,
+              height: 0,
+              duration: 300,
+              easing: 'easeOutCubic',
+              complete: function() {
+                openSubcategory.style.visibility = 'hidden';
+              }
+            });
+          }
+        }
+      });
+    }
+    
+    // تأثير نبض رائع على أيقونة الفئة
+    anime({
+      targets: header.querySelector('.neo-category-icon'),
+      scale: [1, 1.2, 1],
+      duration: 400,
+      easing: 'easeInOutBack'
+    });
+  }
+  
+  /**
+   * معالجة البحث في الفئات
+   */
+  function handleSearch() {
+    const searchQuery = searchInput.value.toLowerCase().trim();
+    const categoryItems = document.querySelectorAll('.neo-category-item');
+    
+    if (searchQuery === '') {
+      // إعادة عرض كل الفئات
+      categoryItems.forEach(item => {
+        item.style.display = '';
+        item.style.opacity = '1';
+        item.style.transform = 'translateY(0)';
+      });
+      return;
+    }
+    
+    // تأثير لطيف أثناء البحث
+    anime({
+      targets: '.neo-category-item',
+      opacity: 0.5,
+      translateY: 10,
+      duration: 200,
+      easing: 'easeOutQuad',
+      complete: function() {
+        // فلترة العناصر
+        categoryItems.forEach(item => {
+          const categoryName = item.querySelector('.neo-category-name').textContent.toLowerCase();
+          const subcategoryNames = Array.from(item.querySelectorAll('.neo-subcategory-name'))
+            .map(name => name.textContent.toLowerCase());
+          
+          const matchesCategory = categoryName.includes(searchQuery);
+          const matchesSubcategory = subcategoryNames.some(name => name.includes(searchQuery));
+          
+          if (matchesCategory || matchesSubcategory) {
+            item.style.display = '';
+            
+            // تمييز النص المطابق
+            if (matchesCategory) {
+              highlightText(item.querySelector('.neo-category-name'), searchQuery);
+            }
+            
+            // إظهار الفئات الفرعية إذا كانت تحتوي على نتائج
+            if (matchesSubcategory && !matchesCategory) {
+              const header = item.querySelector('.neo-category-header');
+              if (header && header.getAttribute('aria-expanded') === 'false') {
+                header.click();
+              }
+              
+              // تمييز النص المطابق في الفئات الفرعية
+              item.querySelectorAll('.neo-subcategory-name').forEach(subname => {
+                if (subname.textContent.toLowerCase().includes(searchQuery)) {
+                  highlightText(subname, searchQuery);
+                }
+              });
+            }
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        // إظهار النتائج بتأثير جميل
+        anime({
+          targets: '.neo-category-item[style=""]',
+          opacity: 1,
+          translateY: 0,
+          delay: anime.stagger(50),
+          duration: 300,
+          easing: 'easeOutQuad'
+        });
+      }
+    });
+  }
+  
+  /**
+   * تمييز النص المطابق في نتائج البحث
+   * @param {Element} element العنصر الذي يحتوي على النص
+   * @param {string} query نص البحث
+   */
+  function highlightText(element, query) {
+    const originalText = element.textContent;
+    const lowerText = originalText.toLowerCase();
+    const index = lowerText.indexOf(query);
+    
+    if (index >= 0) {
+      const before = originalText.substring(0, index);
+      const match = originalText.substring(index, index + query.length);
+      const after = originalText.substring(index + query.length);
+      
+      element.innerHTML = `${before}<span class="highlight" style="background-color: rgba(255, 214, 0, 0.3); font-weight: bold;">${match}</span>${after}`;
+    }
+  }
+  
+  /**
+   * تشغيل شريط الإشعارات وتمرير الإشعارات تلقائيًا
+   */
+  function startNotificationSlider() {
+    if (!notificationSlider || notificationSlides.length <= 1) return;
+    
+    setInterval(() => {
+      currentSlide = (currentSlide + 1) % notificationSlides.length;
+      updateNotificationSlider();
+    }, 5000);
+  }
+  
+  /**
+   * تحديث موضع شريط الإشعارات
+   */
+function updateNotificationSlider() {
+  anime({
+    targets: notificationSlider,
+    translateX: '-' + (currentSlide * 100) + '%',
+    duration: 800,
+    easing: 'easeInOutQuad'
+  });
+}
+  
+  /**
+   * تأثير حركي لعناصر القائمة عند فتحها
+   */
+  function animateMenuItems() {
+    // تأثير ظهور تدريجي مع تأخير تدريجي
+    anime({
+      targets: '.neo-categories .neo-category-item',
+      translateY: [20, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(50),
+      duration: 500,
+      easing: 'easeOutCubic'
+    });
+    
+    // تأثير نبضي لأيقونات التنقل السريع
+    anime({
+      targets: '.neo-quick-item',
+      scale: [0.8, 1],
+      opacity: [0, 1],
+      delay: anime.stagger(100, {start: 300}),
+      duration: 600,
+      easing: 'spring(1, 80, 10, 0)'
+    });
+  }
+  
+  /**
+   * إعداد دعم الإيماءات اللمسية
+   */
+  function setupTouchEvents() {
+    // سحب القائمة لإغلاقها
+    menu.addEventListener('touchstart', function(e) {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    menu.addEventListener('touchmove', function(e) {
+      if (!menu.classList.contains('active')) return;
+      
+      const currentX = e.touches[0].clientX;
+      const diff = touchStartX - currentX;
+      
+      // تحريك القائمة مع إصبع المستخدم (للأجهزة RTL وLTR)
+      const isRTL = document.dir === 'rtl' || document.querySelector('.neo-mobile-menu-container[dir="rtl"]');
+      
+      if ((isRTL && diff < 0) || (!isRTL && diff > 0)) {
+        const translateValue = isRTL ? -diff : diff;
+        menu.style.transform = `translateX(${translateValue}px)`;
+        e.preventDefault();
+      }
+    });
+    
+    menu.addEventListener('touchend', function(e) {
+      touchEndX = e.changedTouches[0].clientX;
+      const diff = touchStartX - touchEndX;
+      
+      // إعادة القائمة لموضعها الأصلي
+      menu.style.transform = '';
+      
+      const isRTL = document.dir === 'rtl' || document.querySelector('.neo-mobile-menu-container[dir="rtl"]');
+      
+      // إغلاق القائمة إذا كان السحب كافيًا
+      if ((isRTL && diff < -70) || (!isRTL && diff > 70)) {
+        closeMenu();
+      }
+    });
+    
+    // التمرير السريع بين الفئات
+    const categories = document.querySelector('.neo-categories');
+    if (categories) {
+      let startY, startTime;
+      
+      categories.addEventListener('touchstart', function(e) {
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+      }, { passive: true });
+      
+      categories.addEventListener('touchend', function(e) {
+        const endY = e.changedTouches[0].clientY;
+        const endTime = Date.now();
+        const diffY = startY - endY;
+        const diffTime = endTime - startTime;
+        
+        // تفعيل التمرير السريع إذا كانت الحركة سريعة بما يكفي
+        if (Math.abs(diffY) > 50 && diffTime < 300) {
+          const speed = Math.abs(diffY) / diffTime;
+          const distance = speed * 500; // معامل السرعة
+          
+          anime({
+            targets: categories,
+            scrollTop: categories.scrollTop + (diffY > 0 ? distance : -distance),
+            duration: 800,
+            easing: 'easeOutQuint'
+          });
+        }
+      }, { passive: true });
+    }
+  }
+  
+  /**
+   * إعداد دعم RTL
+   */
+  function setupRTLSupport() {
+    const htmlDir = document.documentElement.dir;
+    const menuContainer = document.querySelector('.neo-mobile-menu-container');
+    
+    if (htmlDir === 'rtl' && menuContainer) {
+      menuContainer.setAttribute('dir', 'rtl');
+    }
+  }
+  
+  /**
+   * إعداد دعم وضع الشاشة الكاملة
+   */
+  function setupFullscreenSupport() {
+    document.addEventListener('fullscreenchange', updateMenuPosition);
+    document.addEventListener('webkitfullscreenchange', updateMenuPosition);
+    document.addEventListener('mozfullscreenchange', updateMenuPosition);
+    document.addEventListener('MSFullscreenChange', updateMenuPosition);
+    
+    window.addEventListener('resize', function() {
+      // إعادة حساب ارتفاعات الفئات الفرعية
+      document.querySelectorAll('.neo-subcategories').forEach(subcategory => {
+        const id = subcategory.id;
+        const expanded = subcategory.closest('.neo-category-item').querySelector('.neo-category-header').getAttribute('aria-expanded') === 'true';
+        
+        if (!expanded) {
+          const content = subcategory.querySelector('.neo-subcategories-grid');
+          subcategory.style.height = 'auto';
+          subcategoryHeights[id] = content.offsetHeight;
+          subcategory.style.height = '0px';
+        }
+      });
+    });
+  }
+  
+  /**
+   * تحديث موضع القائمة عند تغير وضع الشاشة
+   */
+  function updateMenuPosition() {
+    if (menu.classList.contains('active')) {
+      menu.style.transition = 'none';
+      menu.style.transform = '';
+      setTimeout(() => {
+        menu.style.transition = '';
+      }, 100);
+    }
+  }
+  
+  /**
+   * إعلان للمستخدمين الذين يستخدمون قارئ الشاشة
+   * @param {string} message الرسالة المراد إعلانها
+   */
+  function announceToScreenReader(message) {
+    let announcer = document.getElementById('sr-announcer');
+    
+    if (!announcer) {
+      announcer = document.createElement('div');
+      announcer.id = 'sr-announcer';
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.className = 'sr-only';
+      announcer.style.position = 'absolute';
+      announcer.style.width = '1px';
+      announcer.style.height = '1px';
+      announcer.style.padding = '0';
+      announcer.style.margin = '-1px';
+      announcer.style.overflow = 'hidden';
+      announcer.style.clip = 'rect(0, 0, 0, 0)';
+      announcer.style.whiteSpace = 'nowrap';
+      announcer.style.border = '0';
+      document.body.appendChild(announcer);
+    }
+    
+    announcer.textContent = message;
+  }
+ 
+});
+</script>
+  <div style="cursor: pointer; z-index: 999999999; position: fixed; bottom: 0px; left: 15px; border-radius: 50%; background: #f99f1e; width: 40px; height: 40px; line-height: 40px; text-align: center; padding: 2px;" class="floatcart">
+    <i style="font-size:20px; color:#000" class="fa-solid fa-basket-shopping"></i>
+    <span style="font-size: 11px; background: red;" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" id="carttotalproductscount">
+      {{ carttotalproductscount }}
+    </span>
+  </div>
+  <a title="whatsapp" target="_blank" href="https://api.whatsapp.com/send/?phone=201092029485">
+    <div style="z-index: 999999999; position: fixed; bottom: 0px; right: 15px; border-radius: 50%; padding: 8px 12px; background: #eee;" class="pulsexxx">
+      <i style="font-size:30px; line-height:1; color: green;" class="fab fa-whatsapp"></i>
+    </div>
+  </a>
+
+{% endif %}
+
+<style>
+.live-search {
+  width: 100%;
+  position: absolute;
+  z-index: 1000;
+  padding: 5px 0 20px;
+  margin-top: 40px;
+  background-color: #FFF;
+  border: 1px solid #DDD;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 0 2px 2px #f2f2f2;
+  left: 0;
+  display: none;
+}
+.live-search .loading {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.live-search ul {
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+}
+.live-search ul li {
+  cursor: pointer;
+  padding: 5px;
+  margin: 0px 5px;
+  background-color: #FFF;
+  min-height: 65px;
+  clear: both;
+}
+.live-search ul li:nth-child(even) {
+  background-color: #fff;
+}
+.live-search ul li:hover {
+  background-color: #f2f2f2;
+}
+.live-search ul li a {
+  text-decoration: none;
+  display: block;
+  color: #000;
+  text-align: center;
+}
+.live-search ul li .product-image {
+  float: left;
+  margin-right: 5px;
+}
+.live-search ul li .product-name p {
+  font-weight: normal;
+  font-style: italic;
+  font-size: 10px;
+  color: #555555;
+  margin: 0px;
+  padding: 0px;
+}
+.live-search ul li .product-name {
+  font-weight: bold;
+  float: right;
+  width: 80%;
+}
+.live-search .product-image {
+  width: auto;
+}
+.live-search .product-image img {
+  width: auto;
+}
+</style>
+
+<script src="catalog/view/javascript/live_search/live_search.js?ver=1.000115"></script>
+<script type="text/javascript">
+  //<![CDATA[
+  $(document).ready(function() {
+    var options = {
+      "text_view_all_results": "View all results",
+      "text_empty": "\u062F\u062F\u062F: \u0627\u0633\u062A\u062E\u062F\u0627\u062C \u0628\u0627\u0644\u0639\u0631\u0628\u0627\u062A \u0623\u062E\u0631\u0639\u062F",
+      "module_live_search_show_image": "1",
+      "module_live_search_show_price": "0",
+      "module_live_search_show_description": "0",
+      "module_live_search_min_length": "1",
+      "module_live_search_show_add_button": "0"
+    };
+    LiveSearchJs.init(options);
+  });
+  //]]>
+</script>
+
+<!-- Google Tag Manager -->
+<script>
+  (function(w,d,s,l,i){
+    w[l]=w[l]||[];
+    w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+    var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s), dl=l!='dataLayer'?'&l='+l:''; j.async=true; j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;
+    f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-PG2F7PDH');
+</script>
+<!-- End Google Tag Manager -->
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PG2F7PDH"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<div id="quick-checkout-sidebar" class="sidebarcheckout">
+  <div class="sidebar-header" style="min-height: 32px;">
+    <button id="close-btn" class="close-btn" style="font-size: 24px; background-color: red; border: none; height: 30px; width: 30px; color: #fff; position: absolute; top: 4px; text-align: center;">×</button>
+    {% if not logged %}
+      <button id="login-btn" data-bs-toggle="modal" data-bs-target="#loginModal" class="login-btn" style="font-size: 16px; background-color: green; border: none; height: 30px; color: #fff; position: absolute; top: 4px; left: 50%; transform: translateX(-50%); text-align: center;">{{ text_login }}</button>
+    {% endif %}
+    <span id="side-header-cart" style="position: absolute;top: 19px;left: -30px;">{{cart3}}</span>
+  </div>
+  <div class="sidebar-content">
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">{{ text_login }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" style="max-width: 100vw;overflow: hidden;">
+            <form id="login-form">
+              <div class="mb-3">
+                <label for="login-email" class="form-label">{{ entry_email }}</label>
+                <input type="text" class="form-control" id="login-email" name="email-form" required>
+                <span class="error-message" id="error-email-form"></span>
+              </div>
+              <div class="mb-3">
+                <label for="login-password" class="form-label">{{ entry_password }}</label>
+                <input type="password" class="form-control" id="login-password" name="password-form" required>
+                <span class="error-message" id="error-password-form"></span>
+              </div>
+              <input type="submit" class="btn btn-primary" id="login-submit" value="{{ text_login }}">
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Checkout Form -->
+    <form id="quick-checkout-form">
+      <div class="row g-2">
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-name">{{ text_qcheckout_name }}</label>
+            <input type="text" class="form-control" id="qc-name" name="name" value="{{ session.quick_checkout.name }}" required>
+            <span class="error-message" id="error-name"></span>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-phone">{{ text_qcheckout_phone }}</label>
+            <input type="text" class="form-control" id="qc-phone" name="phone" value="{{ session.quick_checkout.phone }}" required>
+            <span class="error-message" id="error-phone"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-email">{{ text_qcheckout_email }}</label>
+            <input type="email" class="form-control" id="qc-email" name="email" value="{{ session.quick_checkout.email }}">
+            <span class="error-message" id="error-email"></span>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-customer-group">{{ text_qcheckout_customer_group }}</label>
+            <select class="form-control" id="qc-customer-group" name="customer_group" required>
+              <!-- سيتم تحميل القيم الديناميكية هنا -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" id="rin-customer-field" style="display: {% if session.quick_checkout.customer_group == 2 or (session.quick_checkout.customer_group == 1 and session.quick_checkout.total >= 25000) %}block{% else %}none{% endif %};">
+        <label for="qc-rin-customer" id="rin-customer-label">{{ text_qcheckout_rin_customer }}</label>
+        <input type="text" class="form-control" id="qc-rin-customer" name="rin_customer" value="{{ session.quick_checkout.rin_customer }}">
+        <span class="error-message" id="error-rin-customer"></span>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-zone">{{ text_qcheckout_zone }}</label>
+            <select class="form-control" id="qc-zone" name="zone_id" required>
+              <!-- سيتم تحميل القيم الديناميكية هنا -->
+            </select>
+            <span class="error-message" id="error-zone"></span>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-city">{{ text_qcheckout_city }}</label>
+            <input type="text" class="form-control" id="qc-city" name="city" value="{{ session.quick_checkout.city }}" required>
+            <span class="error-message" id="error-city"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-address-1">{{ text_qcheckout_address_1 }}</label>
+            <input type="text" class="form-control" id="qc-address-1" name="address_1" value="{{ session.quick_checkout.address_1 }}" required>
+            <span class="error-message" id="error-address-1"></span>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-address-2">{{ text_qcheckout_address_2 }}</label>
+            <input type="text" class="form-control" id="qc-address-2" name="address_2" value="{{ session.quick_checkout.address_2 }}" required>
+            <span class="error-message" id="error-address-2"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-payment-method">{{ text_qcheckout_payment_method }}</label>
+            <select class="form-control" id="qc-payment-method" name="payment_method_code" required>
+              <!-- سيتم تحميل القيم الديناميكية هنا -->
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-shipping-method">{{ text_qcheckout_shipping_method }}</label>
+            <select class="form-control" id="qc-shipping-method" name="shipping_method_code" required>
+              <!-- سيتم تحميل القيم الديناميكية هنا -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-comment">{{ text_qcheckout_comment }}</label>
+            <textarea style="height:47.2px;" class="form-control" id="qc-comment" name="comment" rows="1">{{ session.quick_checkout.comment }}</textarea>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-xs-6">
+          <div class="form-group mb-3">
+            <label for="qc-coupon">{{ text_qcheckout_coupon }}</label>
+            <input type="text" class="form-control" id="qc-coupon" name="coupon" value="">
+            <span class="error-message" id="error-coupon"></span>
+          </div>
+        </div>
+      </div>
+
+      <div id="qc-totals" class="total">
+        <!-- سيتم تحميل القيم الديناميكية هنا -->
+      </div>
+
+      <div id="qc-payment">
+        <button type="button" class="btn btn-warning bold-btn" id="qc-submit-order" style="background-color: orange !important; color:#000 !important; width:100%; height:50px; font-size:20px;">
+          {{ button_confirm }}
+        </button>
+      </div>
+    </form>
+
+    <!-- Payment Form (hidden) -->
+    <form id="paymentForm" method="post" class="d-none">
+      <input type="hidden" name="order_id" id="hiddenOrderId">
+    </form>
+  </div>
+</div>
+
+<script>
+// تأكد من تحميل jQuery و Bootstrap قبل هذا السكريبت
+document.addEventListener('DOMContentLoaded', function () {
+  const DOM = {
+    quickCheckoutSidebar: document.getElementById('quick-checkout-sidebar'),
+    closeBtn: document.getElementById('close-btn'),
+    submitOrderButton: document.getElementById('qc-submit-order'),
+    customerGroupSelect: document.getElementById('qc-customer-group'),
+    zoneSelect: document.getElementById('qc-zone'),
+    rinCustomerField: document.getElementById('rin-customer-field'),
+    rinCustomerLabel: document.getElementById('rin-customer-label'),
+    couponInput: document.getElementById('qc-coupon'),
+    loginModalElement: document.getElementById('loginModal'),
+    loginForm: document.getElementById('login-form'),
+    loginButton: document.getElementById('login-btn'),
+    checkoutForm: document.getElementById('quick-checkout-form'),
+    totalsContainer: document.getElementById('qc-totals'),
+    paymentForm: document.getElementById('paymentForm'),
+    hiddenOrderId: document.getElementById('hiddenOrderId'),
+    cartTotalProductsCount: document.getElementById('carttotalproductscount'),
+    headerCart: document.getElementById('header-cart'),
+    sideHeaderCart: document.getElementById('side-header-cart'),
+    sideCartTotal: document.getElementById('side-cart-total'),
+    shippingMethodSelect: document.getElementById('qc-shipping-method'),
+    paymentMethodSelect: document.getElementById('qc-payment-method'),
+    nameInput: document.getElementById('qc-name'),
+    phoneInput: document.getElementById('qc-phone'),
+    emailInput: document.getElementById('qc-email'),
+    address1Input: document.getElementById('qc-address-1'),
+    address2Input: document.getElementById('qc-address-2'),
+    cityInput: document.getElementById('qc-city')
+  };
+
+  const loginModal = DOM.loginModalElement ? new bootstrap.Modal(DOM.loginModalElement) : null;
+  let totalAmount = 0;
+  let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+  const ErrorHandler = {
+    displayError: function(key, message) {
+      let errorElement = document.getElementById(`error-${key}`);
+      if (!errorElement) {
+        errorElement = document.createElement('span');
+        errorElement.className = 'error-message text-danger';
+        errorElement.id = `error-${key}`;
+        const inputElement = document.querySelector(`[name="${key}"]`);
+        if (inputElement) {
+          inputElement.parentNode.appendChild(errorElement);
+        }
+      }
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    },
+    clearAllErrors: function() {
+      document.querySelectorAll('.error-message').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
+      });
+    },
+    handleErrors: function(errors) {
+      this.clearAllErrors();
+      if (errors) {
+        for (const key in errors) {
+          if (errors.hasOwnProperty(key)) {
+            this.displayError(key, errors[key]);
+          }
+        }
+      }
+    },
+    removeError: function(key) {
+      const errorElement = document.getElementById(`error-${key}`);
+      if (errorElement) {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+      }
+    }
+  };
+
+  const FormHandler = {
+    populateSelect: function(selectElement, options, selectedValue) {
+      if (selectElement && Array.isArray(options)) {
+        selectElement.innerHTML = '';
+        options.forEach(option => {
+          const optionElement = document.createElement('option');
+          // حسب نوع الخيار (zone_id / customer_group_id / code)
+          optionElement.value = option.zone_id || option.customer_group_id || option.code || '';
+          optionElement.textContent = option.name || option.title || '';
+          selectElement.appendChild(optionElement);
+        });
+        if (selectedValue) {
+          selectElement.value = selectedValue;
+        } else if (options.length > 0) {
+          selectElement.value = options[0].zone_id || options[0].customer_group_id || options[0].code || '';
+        }
+      }
+    },
+    restoreSession: function(session) {
+      for (const key in session) {
+        if (session.hasOwnProperty(key)) {
+          const input = document.querySelector(`[name="${key}"]`);
+          if (input) {
+            input.value = session[key];
+          }
+        }
+      }
+    },
+    toggleRinCustomerField: function(totalAmount) {
+      const customerGroup = DOM.customerGroupSelect.value;
+      if (customerGroup == '2' || (customerGroup == '1' && totalAmount >= 25000)) {
+        DOM.rinCustomerField.style.display = 'block';
+        DOM.rinCustomerLabel.textContent = (customerGroup == '2') 
+             ? '{{ text_rin_tax_id }}' 
+             : '{{ text_rin_national_id }}';
+
+      } else {
+        DOM.rinCustomerField.style.display = 'none';
+      }
+    },
+    updateLoginButton: function(logged) {
+      if (DOM.loginButton) {
+        DOM.loginButton.style.display = logged ? 'none' : 'block';
+      }
+    },
+    displayTotals: function(totals) {
+      if (DOM.totalsContainer) {
+        DOM.totalsContainer.innerHTML = '';
+        totals.forEach(total => {
+          const div = document.createElement('div');
+          div.innerHTML = `<div style="font-size:14px;">${total.title}: 
+            <span style="border-bottom:0.5px dashed #81a585; line-height:45px; padding-bottom:8px;">
+              ${total.text}
+            </span></div>`;
+          DOM.totalsContainer.appendChild(div);
+        });
+      }
+    },
+    validateForm: function() {
+      let isValid = true;
+      const errors = {};
+
+      if (!DOM.nameInput.value.trim()) {
+        errors.name = 'الاسم مطلوب';
+        isValid = false;
+      } else if (DOM.nameInput.value.trim().split(' ').length < 2) {
+        errors.name = 'أدخل اسمك بالكامل وليس الاسم الأول فقط';
+        isValid = false;
+      }
+
+      const phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
+      if (!phoneRegex.test(DOM.phoneInput.value.trim())) {
+        errors.phone = 'رقم الهاتف غير صالح';
+        isValid = false;
+      }
+
+      if (DOM.emailInput.value.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(DOM.emailInput.value.trim())) {
+          errors.email = 'البريد الإلكتروني غير صالح';
+          isValid = false;
+        }
+      }
+
+      if (!DOM.address1Input.value.trim()) {
+        errors.address_1 = 'العنوان مطلوب';
+        isValid = false;
+      }
+
+      if (!DOM.address2Input.value.trim()) {
+        errors.address_2 = 'رقم المبنى مطلوب';
+        isValid = false;
+      }
+
+      if (!DOM.cityInput.value.trim()) {
+        errors.city = 'المدينة مطلوبة';
+        isValid = false;
+      }
+
+      if (!DOM.zoneSelect.value) {
+        errors.zone = 'المنطقة مطلوبة';
+        isValid = false;
+      }
+
+      if (!DOM.paymentMethodSelect.value) {
+        errors.payment_method_code = 'طريقة الدفع مطلوبة';
+        isValid = false;
+      }
+
+      if (!DOM.shippingMethodSelect.value) {
+        errors.shipping_method_code = 'طريقة الشحن مطلوبة';
+        isValid = false;
+      }
+
+      ErrorHandler.handleErrors(errors);
+      return isValid;
+    }
+  };
+
+  const ApiHandler = {
+    loadInitialData: function() {
+      fetch('index.php?route=checkout/quick_checkout/getInitialData', {
+        headers: {
+          'X-CSRF-TOKEN': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (Array.isArray(data.customer_groups)) {
+          FormHandler.populateSelect(DOM.customerGroupSelect, data.customer_groups, data.session_data?.customer_group);
+        }
+        if (Array.isArray(data.zones)) {
+          FormHandler.populateSelect(DOM.zoneSelect, data.zones, data.session_data?.zone_id);
+        }
+        if (Array.isArray(data.payment_methods)) {
+          FormHandler.populateSelect(DOM.paymentMethodSelect, data.payment_methods, data.session_data?.payment_method_code);
+        }
+        if (Array.isArray(data.shipping_methods)) {
+          FormHandler.populateSelect(document.getElementById('qc-shipping-method'), data.shipping_methods, data.session_data.shipping_method);
+        }
+        if (data.session_data) {
+          FormHandler.restoreSession(data.session_data);
+        }
+       // بعد ما تستقبل الداتا
+        if (data.total_raw) {
+            totalAmount = parseFloat(data.total_raw);
+        } else {
+            totalAmount = 0; // في حال ما وصلش
+        }
+        
+        FormHandler.toggleRinCustomerField(totalAmount);
+        FormHandler.updateLoginButton(data.logged);
+
+        if (Array.isArray(data.cart_data.totals.totals)) {
+          FormHandler.displayTotals(data.cart_data.totals.totals);
+        }
+        if (data.errors) {
+          ErrorHandler.handleErrors(data.errors);
+        }
+
+        // هنا التعديل: بدل this.updateSessionAndValidate() نستخدم ApiHandler.updateSessionAndValidate
+        ApiHandler.updateSessionAndValidate();
+      })
+      .catch(error => {
+        console.error('Error loading initial data:', error);
+        ErrorHandler.displayError('general', 'حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.');
+      });
+    },
+    updateSessionAndValidate: function() {
+      const formData = new FormData(DOM.checkoutForm);
+      formData.append('csrf_token', csrfToken);
+      fetch('index.php?route=checkout/quick_checkout/updateSessionAndValidate', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.cart_data && Array.isArray(data.cart_data.totals)) {
+          FormHandler.displayTotals(data.cart_data.totals);
+        }
+        totalAmount = data.cart_data && data.cart_data.total ? parseFloat(data.cart_data.total) : 0;
+        FormHandler.updateLoginButton(data.logged);
+        ErrorHandler.handleErrors(data.errors);
+        if (data.total_raw) {
+            totalAmount = parseFloat(data.total_raw);
+        } else {
+            totalAmount = 0; // في حال ما وصلش
+        }
+        FormHandler.toggleRinCustomerField(totalAmount);
+        
+        if (data.coupon_applied) {
+          DOM.couponInput.value = formData.get('coupon');
+          ErrorHandler.displayError('coupon', 'تم تطبيق الكوبون بنجاح');
+        } else if (data.coupon_message) {
+          DOM.couponInput.value = '';
+          ErrorHandler.displayError('coupon', data.coupon_message);
+        } else {
+          ErrorHandler.removeError('coupon');
+        }
+
+        if (data.shipping_methods) {
+          FormHandler.populateSelect(DOM.shippingMethodSelect, data.shipping_methods, data.session_data?.shipping_method_code);
+        }
+        if (data.payment_methods) {
+          FormHandler.populateSelect(DOM.paymentMethodSelect, data.payment_methods, data.session_data?.payment_method_code);
+        }
+      })
+      .catch(error => {
+        console.error('Error updating session and validating:', error);
+        ErrorHandler.displayError('general', 'حدث خطأ أثناء تحديث البيانات. يرجى المحاولة مرة أخرى.');
+      });
+    },
+    submitOrder: function() {
+      if (!FormHandler.validateForm()) {
+        return;
+      }
+      const formData = new FormData(DOM.checkoutForm);
+      formData.append('csrf_token', csrfToken);
+      fetch('index.php?route=checkout/quick_checkout/submitOrder', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          ErrorHandler.handleErrors(data.error);
+          const firstErrorElement = document.querySelector('.error-message:not(:empty)');
+          if (firstErrorElement) {
+            firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        } else if (data.order_id) {
+          DOM.hiddenOrderId.value = data.order_id;
+          DOM.paymentForm.action = data.paymentUrl;
+          DOM.paymentForm.submit();
+        } else {
+          console.error('Error submitting order:', data);
+          ErrorHandler.displayError('general', 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.');
+        }
+      })
+      .catch(error => {
+        console.error('Error submitting order:', error);
+        ErrorHandler.displayError('general', 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى لاحقًا.');
+      });
+    },
+    login: function(formData) {
+      formData.append('csrf_token', csrfToken);
+      fetch('index.php?route=checkout/quick_checkout/login', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (loginModal) loginModal.hide();
+          ApiHandler.loadInitialData();
+        } else {
+          ErrorHandler.handleErrors(data.errors);
+        }
+      })
+      .catch(error => {
+        console.error('Error logging in:', error);
+        ErrorHandler.displayError('general', 'حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى لاحقًا.');
+      });
+    },
+    applyCoupon: function(coupon) {
+      fetch('index.php?route=checkout/quick_checkout/applyCoupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRF-TOKEN': csrfToken
+        },
+        body: `coupon=${encodeURIComponent(coupon)}&csrf_token=${csrfToken}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          ErrorHandler.displayError('coupon', 'تم تطبيق الكوبون بنجاح');
+          ApiHandler.updateSessionAndValidate();
+        } else if (data.error) {
+          ErrorHandler.displayError('coupon', data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error applying coupon:', error);
+        ErrorHandler.displayError('coupon', 'حدث خطأ أثناء تطبيق الكوبون. يرجى المحاولة مرة أخرى.');
+      });
+    }
+  };
+
+  // Event Listeners
+  $(document).on('click', '.floatcart', function() {
+    DOM.quickCheckoutSidebar.classList.add('show');
+    ApiHandler.loadInitialData();
+  });
+
+  if (DOM.closeBtn) {
+    DOM.closeBtn.addEventListener('click', function () {
+      DOM.quickCheckoutSidebar.classList.remove('show');
+    });
+  }
+
+  if (DOM.submitOrderButton) {
+    DOM.submitOrderButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      ApiHandler.submitOrder();
+    });
+  }
+
+  if (DOM.loginForm) {
+    DOM.loginForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const formData = new FormData(DOM.loginForm);
+      ApiHandler.login(formData);
+    });
+  }
+
+  DOM.checkoutForm.addEventListener('change', function(event) {
+    if (event.target.matches('input, select, textarea')) {
+      ApiHandler.updateSessionAndValidate();
+    }
+  });
+
+
+  DOM.couponInput.addEventListener('blur', function() {
+    ApiHandler.applyCoupon(this.value);
+  });
+
+  DOM.customerGroupSelect.addEventListener('change', function() {
+    ApiHandler.updateSessionAndValidate();
+  });
+
+  DOM.shippingMethodSelect.addEventListener('change', function() {
+    ApiHandler.updateSessionAndValidate();
+  });
+
+  DOM.paymentMethodSelect.addEventListener('change', function() {
+    ApiHandler.updateSessionAndValidate();
+  });
+
+  // حقول الفاليديشن في الوقت الفعلي:
+  DOM.nameInput.addEventListener('input', function() {
+    if (this.value.trim()) {
+      ErrorHandler.removeError('name');
+    }
+  });
+  DOM.phoneInput.addEventListener('input', function() {
+    const phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
+    if (phoneRegex.test(this.value.trim())) {
+      ErrorHandler.removeError('phone');
+    }
+  });
+  DOM.emailInput.addEventListener('input', function() {
+    if (this.value.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(this.value.trim())) {
+        ErrorHandler.removeError('email');
+      }
+    } else {
+      ErrorHandler.removeError('email');
+    }
+  });
+  DOM.address1Input.addEventListener('input', function() {
+    if (this.value.trim()) {
+      ErrorHandler.removeError('address_1');
+    }
+  });
+  DOM.address2Input.addEventListener('input', function() {
+    if (this.value.trim()) {
+      ErrorHandler.removeError('address_2');
+    }
+  });
+  DOM.cityInput.addEventListener('input', function() {
+    if (this.value.trim()) {
+      ErrorHandler.removeError('city');
+    }
+  });
+
+  // Initialize
+  ApiHandler.loadInitialData();
+
+  // دالة تحديث عرض السلة
+  function updateCartDisplay(cartData) {
+    if (DOM.cartTotalProductsCount) {
+      DOM.cartTotalProductsCount.textContent = cartData.total_items;
+    }
+    // يمكن إضافة تحديثات أخرى لعرض محتوى السلة
+  }
+
+  // دالة الرسوم المتحركة عند إضافة المنتج للسلة
+  function animateAddToCart(event) {
+    const product = event.target.closest('.product');
+    if (product) {
+      const productImage = product.querySelector('img');
+      if (productImage) {
+        const flyingImage = productImage.cloneNode();
+        flyingImage.style.position = 'absolute';
+        flyingImage.style.left = `${productImage.getBoundingClientRect().left}px`;
+        flyingImage.style.top = `${productImage.getBoundingClientRect().top}px`;
+        flyingImage.style.width = `${productImage.width}px`;
+        flyingImage.style.height = `${productImage.height}px`;
+        flyingImage.style.zIndex = '1000';
+        document.body.appendChild(flyingImage);
+
+        const cartIcon = document.querySelector('.cart-icon'); // لو فيه أيقونة للسلة
+        if (cartIcon) {
+          const cartRect = cartIcon.getBoundingClientRect();
+          flyingImage.animate([
+            { transform: 'translateX(0) translateY(0) scale(1)' },
+            { transform: `translateX(${cartRect.left - flyingImage.getBoundingClientRect().left}px) translateY(${cartRect.top - flyingImage.getBoundingClientRect().top}px) scale(0.1)` }
+          ], {
+            duration: 1000,
+            easing: 'ease-in-out'
+          }).onfinish = () => {
+            flyingImage.remove();
+            updateCartDisplay(/* بيانات السلة المحدثة */);
+          };
+        }
+      }
+    }
+  }
+
+  // إضافة مستمع الحدث عند الضغط على زر "إضافة للسلة"
+  document.addEventListener('click', function(event) {
+    if (event.target.matches('.add-to-cart-button')) {
+      event.preventDefault();
+      const productId = event.target.dataset.productId;
+      // إضافة المنتج للسلة عبر AJAX
+      // بعد نجاح الإضافة:
+      animateAddToCart(event);
+    }
+  });
+});
+</script>
+
+</body>
+</html>

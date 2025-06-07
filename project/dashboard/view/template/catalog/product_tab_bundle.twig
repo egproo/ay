@@ -1,0 +1,291 @@
+<div class="tab-pane" id="tab-bundle">
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#tab-bundles" data-toggle="tab">{{ text_bundles }}</a></li>
+    <li><a href="#tab-discounts" data-toggle="tab">{{ text_discounts }}</a></li>
+  </ul>
+  
+  <div class="tab-content">
+    <!-- Bundles Section -->
+    <div class="tab-pane active" id="tab-bundles">
+      <div id="bundle-container">
+        {% set bundle_row = 0 %}
+        {% for bundle in product_bundles %}
+          <div class="panel panel-default" id="bundle-card{{ bundle_row }}">
+            <div class="panel-heading">
+              <div class="pull-right">
+                <button type="button" onclick="BundleManager.removeBundle({{ bundle_row }});" class="btn btn-danger btn-xs">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+              <h3 class="panel-title">{{ entry_bundle_name }}</h3>
+            </div>
+            <div class="panel-body">
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ entry_bundle_name }}</label>
+                    <input type="text" name="product_bundle[{{ bundle_row }}][name]" value="{{ bundle.name }}" placeholder="{{ entry_bundle_name }}" class="form-control" />
+                    {% if bundle.bundle_id %}
+                      <input type="hidden" name="product_bundle[{{ bundle_row }}][bundle_id]" value="{{ bundle.bundle_id }}" />
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>{{ entry_discount_type }}</label>
+                    <select name="product_bundle[{{ bundle_row }}][discount_type]" class="form-control">
+                      <option value="percentage" {% if bundle.discount_type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+                      <option value="fixed" {% if bundle.discount_type == 'fixed' %}selected="selected"{% endif %}>{{ text_fixed }}</option>
+                      <option value="product" {% if bundle.discount_type == 'product' %}selected="selected"{% endif %}>{{ text_free_product }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label>{{ entry_bundle_discount_value }}</label>
+                    <input type="text" name="product_bundle[{{ bundle_row }}][discount_value]" value="{{ bundle.discount_value }}" placeholder="{{ entry_bundle_discount_value }}" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label>{{ entry_status }}</label>
+                    <select name="product_bundle[{{ bundle_row }}][status]" class="form-control">
+                      <option value="1" {% if bundle.status %}selected="selected"{% endif %}>{{ text_enabled }}</option>
+                      <option value="0" {% if not bundle.status %}selected="selected"{% endif %}>{{ text_disabled }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <h4>{{ entry_bundle_products }}</h4>
+              <div class="table-responsive mb-3">
+                <table class="table table-bordered" id="bundle-products{{ bundle_row }}">
+                  <thead>
+                    <tr>
+                      <th>{{ entry_product }}</th>
+                      <th>{{ entry_quantity }}</th>
+                      <th>{{ entry_unit }}</th>
+                      <th>{{ text_free }}</th>
+                      <th width="90">{{ text_action }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in bundle.items %}
+                      <tr>
+                        <td>{{ item.name }}
+                          <input type="hidden" name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][product_id]" value="{{ item.product_id }}" />
+                        </td>
+                        <td>
+                          <input type="number" name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][quantity]" value="{{ item.quantity }}" class="form-control" min="1" step="1" />
+                        </td>
+                        <td>
+                          <select name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][unit_id]" class="form-control">
+                            {% for unit in item.units %}
+                              <option value="{{ unit.unit_id }}" {% if unit.unit_id == item.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                            {% endfor %}
+                          </select>
+                        </td>
+                        <td>
+                          <div class="checkbox">
+                            <label>
+                              <input type="checkbox" name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][is_free]" value="1" {% if item.is_free %}checked{% endif %} />
+                            </label>
+                          </div>
+                        </td>
+                        <td>
+                          <button type="button" onclick="$(this).closest('tr').remove();" class="btn btn-danger btn-sm">
+                            <i class="fa fa-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="5">
+                        <div class="input-group">
+                          <input type="text" name="product_bundle[{{ bundle_row }}][product]" value="" placeholder="{{ entry_product }}" id="input-bundle-product{{ bundle_row }}" class="form-control" />
+                          <span class="input-group-btn">
+                            <button type="button" class="btn btn-primary" onclick="BundleManager.searchBundleProduct({{ bundle_row }});">
+                              <i class="fa fa-search"></i>
+                            </button>
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+          {% set bundle_row = bundle_row + 1 %}
+        {% endfor %}
+      </div>
+      <div class="text-center">
+        <button type="button" onclick="BundleManager.addBundle();" class="btn btn-primary">
+          <i class="fa fa-plus-circle"></i> {{ button_bundle_add }}
+        </button>
+      </div>
+    </div>
+    
+    <!-- Discounts Section -->
+    <div class="tab-pane" id="tab-discounts">
+      <div id="discount-container">
+        {% set discount_row = 0 %}
+        {% for discount in product_discounts %}
+          <div class="panel panel-default" id="discount-card{{ discount_row }}">
+            <div class="panel-heading">
+              <div class="pull-right">
+                <button type="button" onclick="DiscountManager.removeDiscount({{ discount_row }});" class="btn btn-danger btn-xs">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+              <h3 class="panel-title">{{ entry_discount_name }}</h3>
+            </div>
+            <div class="panel-body">
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ entry_discount_name }}</label>
+                    <input type="text" name="product_discount[{{ discount_row }}][name]" value="{{ discount.name }}" placeholder="{{ entry_discount_name }}" class="form-control" required />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ entry_discount_type }}</label>
+                    <select name="product_discount[{{ discount_row }}][type]" class="form-control discount-type-select" data-row="{{ discount_row }}">
+                      <option value="buy_x_get_y" {% if discount.type == 'buy_x_get_y' %}selected="selected"{% endif %}>{{ text_buy_x_get_y }}</option>
+                      <option value="buy_x_get_discount" {% if discount.type == 'buy_x_get_discount' %}selected="selected"{% endif %}>{{ text_buy_x_get_discount }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ entry_status }}</label>
+                    <select name="product_discount[{{ discount_row }}][status]" class="form-control">
+                      <option value="1" {% if discount.status %}selected="selected"{% endif %}>{{ text_enabled }}</option>
+                      <option value="0" {% if not discount.status %}selected="selected"{% endif %}>{{ text_disabled }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="panel panel-default discount-details" data-row="{{ discount_row }}">
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label>{{ entry_buy_quantity }}</label>
+                        <input type="number" name="product_discount[{{ discount_row }}][buy_quantity]" value="{{ discount.buy_quantity }}" placeholder="{{ entry_buy_quantity }}" class="form-control" min="1" required />
+                      </div>
+                    </div>
+                    <div class="col-md-3 get-quantity-container" {% if discount.type == 'buy_x_get_discount' %}style="display:none;"{% endif %}>
+                      <div class="form-group">
+                        <label>{{ entry_get_quantity }}</label>
+                        <input type="number" name="product_discount[{{ discount_row }}][get_quantity]" value="{{ discount.get_quantity }}" placeholder="{{ entry_get_quantity }}" class="form-control" min="0" />
+                      </div>
+                    </div>
+                    <div class="col-md-3 discount-type-container" {% if discount.type == 'buy_x_get_y' %}style="display:none;"{% endif %}>
+                      <div class="form-group">
+                        <label>{{ entry_discount_type }}</label>
+                        <select name="product_discount[{{ discount_row }}][discount_type]" class="form-control">
+                          <option value="percentage" {% if discount.discount_type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+                          <option value="fixed" {% if discount.discount_type == 'fixed' %}selected="selected"{% endif %}>{{ text_fixed }}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-3 discount-value-container" {% if discount.type == 'buy_x_get_y' %}style="display:none;"{% endif %}>
+                      <div class="form-group">
+                        <label>{{ entry_discount_value }}</label>
+                        <input type="text" name="product_discount[{{ discount_row }}][discount_value]" value="{{ discount.discount_value }}" placeholder="{{ entry_discount_value }}" class="form-control discount-value-input" required />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ entry_unit }}</label>
+                    <select name="product_discount[{{ discount_row }}][unit_id]" class="form-control">
+                      <option value="0">{{ text_all_units }}</option>
+                      {% for unit in product_units %}
+                        <option value="{{ unit.unit_id }}" {% if discount.unit_id == unit.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ entry_date_start }}</label>
+                    <div class="input-group date">
+                      <input type="text" name="product_discount[{{ discount_row }}][date_start]" value="{{ discount.date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" class="form-control" />
+                      <span class="input-group-btn">
+                        <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>{{ entry_date_end }}</label>
+                    <div class="input-group date">
+                      <input type="text" name="product_discount[{{ discount_row }}][date_end]" value="{{ discount.date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" class="form-control" />
+                      <span class="input-group-btn">
+                        <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>{{ entry_notes }}</label>
+                <textarea name="product_discount[{{ discount_row }}][notes]" class="form-control" rows="2">{{ discount.notes }}</textarea>
+              </div>
+            </div>
+          </div>
+          {% set discount_row = discount_row + 1 %}
+        {% endfor %}
+      </div>
+      <div class="text-center">
+        <button type="button" onclick="DiscountManager.addDiscount();" class="btn btn-primary">
+          <i class="fa fa-plus-circle"></i> {{ button_discount_add }}
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="alert alert-info" style="margin-top: 20px;">
+    <i class="fa fa-info-circle"></i> {{ help_bundle_and_discount }}
+  </div>
+  
+  <!-- Help Section -->
+  <div class="help-section panel panel-info" style="margin-top: 20px;">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_bundles_discounts_help }}</h3>
+    </div>
+    <div class="panel-body">
+      <p>{{ text_bundles_discounts_help_intro }}</p>
+      
+      <h4>{{ text_bundles }}</h4>
+      <ul>
+        <li><strong>{{ text_what_are_bundles }}:</strong> {{ text_bundles_explanation }}</li>
+        <li><strong>{{ text_bundle_discount_types }}:</strong> {{ text_bundle_discount_types_explanation }}</li>
+        <li><strong>{{ text_bundle_products }}:</strong> {{ text_bundle_products_explanation }}</li>
+      </ul>
+      
+      <h4>{{ text_discounts }}</h4>
+      <ul>
+        <li><strong>{{ text_what_are_discounts }}:</strong> {{ text_discounts_explanation }}</li>
+        <li><strong>{{ text_discount_types }}:</strong> {{ text_discount_types_explanation }}</li>
+        <li><strong>{{ text_discount_period }}:</strong> {{ text_discount_period_explanation }}</li>
+      </ul>
+      
+      <div class="alert alert-info">
+        <i class="fa fa-info-circle"></i> {{ text_bundles_discounts_help_tip }}
+      </div>
+    </div>
+  </div>
+</div>

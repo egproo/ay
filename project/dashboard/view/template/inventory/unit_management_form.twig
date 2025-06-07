@@ -1,0 +1,397 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-unit" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i>
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+      <!-- النموذج الأساسي -->
+      <div class="col-md-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-edit"></i> {{ text_form }}</h3>
+          </div>
+          <div class="panel-body">
+            <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-unit" class="form-horizontal">
+              
+              <!-- معلومات الوحدة الأساسية -->
+              <div class="form-group required">
+                <label class="col-sm-3 control-label" for="input-name">{{ entry_name }}</label>
+                <div class="col-sm-9">
+                  <input type="text" name="unit_description[1][name]" value="{{ unit_description[1].name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" required />
+                  {% if error_name %}
+                  <div class="text-danger">{{ error_name }}</div>
+                  {% endif %}
+                  <small class="help-block">{{ help_name }}</small>
+                </div>
+              </div>
+              
+              <div class="form-group required">
+                <label class="col-sm-3 control-label" for="input-symbol">{{ entry_symbol }}</label>
+                <div class="col-sm-9">
+                  <input type="text" name="unit_description[1][symbol]" value="{{ unit_description[1].symbol }}" placeholder="{{ entry_symbol }}" id="input-symbol" class="form-control" required />
+                  {% if error_symbol %}
+                  <div class="text-danger">{{ error_symbol }}</div>
+                  {% endif %}
+                  <small class="help-block">{{ help_symbol }}</small>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="input-description">{{ entry_description }}</label>
+                <div class="col-sm-9">
+                  <textarea name="unit_description[1][description]" rows="3" placeholder="{{ entry_description }}" id="input-description" class="form-control">{{ unit_description[1].description }}</textarea>
+                  <small class="help-block">{{ help_description }}</small>
+                </div>
+              </div>
+              
+              <!-- نوع الوحدة والإعدادات -->
+              <div class="form-group required">
+                <label class="col-sm-3 control-label" for="input-unit-type">{{ entry_unit_type }}</label>
+                <div class="col-sm-9">
+                  <select name="unit_type" id="input-unit-type" class="form-control" required>
+                    <option value="">{{ text_select }}</option>
+                    {% for type_key, type_name in unit_types %}
+                    <option value="{{ type_key }}"{% if type_key == unit_type %} selected="selected"{% endif %}>{{ type_name }}</option>
+                    {% endfor %}
+                  </select>
+                  {% if error_unit_type %}
+                  <div class="text-danger">{{ error_unit_type }}</div>
+                  {% endif %}
+                  <small class="help-block">{{ help_unit_type }}</small>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="input-is-base-unit">{{ entry_is_base_unit }}</label>
+                <div class="col-sm-9">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="is_base_unit" value="1" id="input-is-base-unit"{% if is_base_unit %} checked="checked"{% endif %} />
+                      {{ help_is_base_unit }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="form-group" id="base-unit-group">
+                <label class="col-sm-3 control-label" for="input-base-unit">{{ entry_base_unit }}</label>
+                <div class="col-sm-9">
+                  <select name="base_unit_id" id="input-base-unit" class="form-control">
+                    <option value="">{{ text_none }}</option>
+                    {% for base_unit in base_units %}
+                    <option value="{{ base_unit.unit_id }}"{% if base_unit.unit_id == base_unit_id %} selected="selected"{% endif %}>{{ base_unit.name }} ({{ base_unit.symbol }})</option>
+                    {% endfor %}
+                  </select>
+                  <small class="help-block">{{ help_base_unit }}</small>
+                </div>
+              </div>
+              
+              <div class="form-group required" id="conversion-factor-group">
+                <label class="col-sm-3 control-label" for="input-conversion-factor">{{ entry_conversion_factor }}</label>
+                <div class="col-sm-9">
+                  <div class="input-group">
+                    <input type="number" name="conversion_factor" value="{{ conversion_factor ?: 1 }}" placeholder="1.0000" id="input-conversion-factor" class="form-control" step="0.000001" min="0.000001" required />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#conversion-calculator-modal">
+                        <i class="fa fa-calculator"></i>
+                      </button>
+                    </span>
+                  </div>
+                  {% if error_conversion_factor %}
+                  <div class="text-danger">{{ error_conversion_factor }}</div>
+                  {% endif %}
+                  <small class="help-block">{{ help_conversion_factor }}</small>
+                </div>
+              </div>
+              
+              <!-- الإعدادات العامة -->
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="input-sort-order">{{ entry_sort_order }}</label>
+                <div class="col-sm-9">
+                  <input type="number" name="sort_order" value="{{ sort_order ?: 0 }}" placeholder="0" id="input-sort-order" class="form-control" />
+                  <small class="help-block">{{ help_sort_order }}</small>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="col-sm-3 control-label" for="input-status">{{ entry_is_active }}</label>
+                <div class="col-sm-9">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="is_active" value="1" id="input-status"{% if is_active or is_active == '' %} checked="checked"{% endif %} />
+                      {{ help_is_active }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- الشريط الجانبي -->
+      <div class="col-md-4">
+        <!-- معاينة الوحدة -->
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-eye"></i> معاينة الوحدة</h3>
+          </div>
+          <div class="panel-body">
+            <div id="unit-preview">
+              <div class="text-center text-muted">
+                <i class="fa fa-balance-scale fa-3x"></i>
+                <p>أدخل بيانات الوحدة لرؤية المعاينة</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- الوحدات الشائعة -->
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-star"></i> الوحدات الشائعة</h3>
+          </div>
+          <div class="panel-body">
+            <div class="btn-group-vertical btn-block">
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonUnit('كيلوجرام', 'كجم', 'weight', 1, true)">
+                <i class="fa fa-balance-scale"></i> كيلوجرام (كجم)
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonUnit('جرام', 'جم', 'weight', 0.001, false)">
+                <i class="fa fa-balance-scale"></i> جرام (جم)
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonUnit('قطعة', 'قطعة', 'quantity', 1, true)">
+                <i class="fa fa-cube"></i> قطعة
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonUnit('لتر', 'لتر', 'volume', 1, true)">
+                <i class="fa fa-tint"></i> لتر
+              </button>
+              <button type="button" class="btn btn-default btn-sm" onclick="fillCommonUnit('متر', 'متر', 'length', 1, true)">
+                <i class="fa fa-arrows-h"></i> متر
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- نصائح -->
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-lightbulb-o"></i> نصائح مهمة</h3>
+          </div>
+          <div class="panel-body">
+            <ul class="list-unstyled">
+              <li><i class="fa fa-check text-success"></i> استخدم رموز واضحة ومختصرة</li>
+              <li><i class="fa fa-check text-success"></i> حدد نوع الوحدة بدقة</li>
+              <li><i class="fa fa-check text-success"></i> تأكد من معامل التحويل</li>
+              <li><i class="fa fa-check text-success"></i> اختبر التحويلات قبل الحفظ</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة حاسبة التحويل -->
+<div class="modal fade" id="conversion-calculator-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><i class="fa fa-calculator"></i> حاسبة التحويل</h4>
+      </div>
+      <div class="modal-body">
+        <form id="conversion-form">
+          <div class="form-group">
+            <label for="calc-quantity">الكمية</label>
+            <input type="number" id="calc-quantity" class="form-control" value="1" step="0.000001" />
+          </div>
+          
+          <div class="form-group">
+            <label for="calc-from-unit">من الوحدة</label>
+            <select id="calc-from-unit" class="form-control">
+              <option value="">اختر الوحدة</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="calc-to-unit">إلى الوحدة</label>
+            <select id="calc-to-unit" class="form-control">
+              <option value="">اختر الوحدة</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <button type="button" class="btn btn-primary btn-block" onclick="calculateConversion()">
+              <i class="fa fa-calculator"></i> حساب التحويل
+            </button>
+          </div>
+          
+          <div id="conversion-result" class="alert alert-info" style="display: none;">
+            <strong>النتيجة:</strong> <span id="result-value"></span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" onclick="useCalculatedFactor()">استخدام النتيجة</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تحديث حالة الحقول حسب نوع الوحدة
+    $('#input-is-base-unit').change(function() {
+        if ($(this).is(':checked')) {
+            $('#base-unit-group').hide();
+            $('#conversion-factor-group').hide();
+            $('#input-conversion-factor').val('1');
+        } else {
+            $('#base-unit-group').show();
+            $('#conversion-factor-group').show();
+        }
+    }).trigger('change');
+    
+    // تحديث المعاينة عند تغيير البيانات
+    $('input, select, textarea').on('input change', updatePreview);
+    
+    // تحديث المعاينة الأولية
+    updatePreview();
+    
+    // تحميل الوحدات في حاسبة التحويل
+    loadUnitsForCalculator();
+});
+
+function updatePreview() {
+    var name = $('#input-name').val();
+    var symbol = $('#input-symbol').val();
+    var unitType = $('#input-unit-type option:selected').text();
+    var isBaseUnit = $('#input-is-base-unit').is(':checked');
+    var conversionFactor = $('#input-conversion-factor').val();
+    
+    if (name && symbol) {
+        var html = '<div class="text-center">';
+        html += '<h4><span class="label label-primary">' + symbol + '</span></h4>';
+        html += '<h5>' + name + '</h5>';
+        html += '<p><strong>النوع:</strong> ' + unitType + '</p>';
+        
+        if (isBaseUnit) {
+            html += '<p><span class="label label-success"><i class="fa fa-star"></i> وحدة أساسية</span></p>';
+        } else {
+            html += '<p><strong>معامل التحويل:</strong> ' + conversionFactor + '</p>';
+        }
+        
+        html += '</div>';
+        $('#unit-preview').html(html);
+    } else {
+        $('#unit-preview').html('<div class="text-center text-muted"><i class="fa fa-balance-scale fa-3x"></i><p>أدخل بيانات الوحدة لرؤية المعاينة</p></div>');
+    }
+}
+
+function fillCommonUnit(name, symbol, type, factor, isBase) {
+    $('#input-name').val(name);
+    $('#input-symbol').val(symbol);
+    $('#input-unit-type').val(type);
+    $('#input-conversion-factor').val(factor);
+    $('#input-is-base-unit').prop('checked', isBase).trigger('change');
+    updatePreview();
+}
+
+function loadUnitsForCalculator() {
+    // هذه دالة وهمية - في التطبيق الحقيقي ستحمل الوحدات من الخادم
+    var units = [
+        {id: 1, name: 'كيلوجرام', symbol: 'كجم'},
+        {id: 2, name: 'جرام', symbol: 'جم'},
+        {id: 3, name: 'قطعة', symbol: 'قطعة'},
+        {id: 4, name: 'لتر', symbol: 'لتر'}
+    ];
+    
+    var options = '<option value="">اختر الوحدة</option>';
+    units.forEach(function(unit) {
+        options += '<option value="' + unit.id + '">' + unit.name + ' (' + unit.symbol + ')</option>';
+    });
+    
+    $('#calc-from-unit, #calc-to-unit').html(options);
+}
+
+function calculateConversion() {
+    var quantity = parseFloat($('#calc-quantity').val());
+    var fromUnit = $('#calc-from-unit').val();
+    var toUnit = $('#calc-to-unit').val();
+    
+    if (!quantity || !fromUnit || !toUnit) {
+        alert('يرجى ملء جميع الحقول');
+        return;
+    }
+    
+    if (fromUnit === toUnit) {
+        $('#result-value').text(quantity);
+        $('#conversion-result').show();
+        return;
+    }
+    
+    // هنا ستتم عملية الحساب الفعلية عبر AJAX
+    $.ajax({
+        url: '{{ calculate_conversion }}',
+        type: 'GET',
+        data: {
+            quantity: quantity,
+            from_unit_id: fromUnit,
+            to_unit_id: toUnit
+        },
+        dataType: 'json',
+        success: function(data) {
+            $('#result-value').text(data.formatted_result);
+            $('#conversion-result').show();
+            
+            // حساب معامل التحويل
+            var factor = data.result / quantity;
+            $('#conversion-result').append('<br><strong>معامل التحويل:</strong> ' + factor.toFixed(6));
+        },
+        error: function() {
+            alert('خطأ في حساب التحويل');
+        }
+    });
+}
+
+function useCalculatedFactor() {
+    var resultText = $('#result-value').text();
+    var quantity = parseFloat($('#calc-quantity').val());
+    
+    if (resultText && quantity) {
+        var result = parseFloat(resultText.replace(/,/g, ''));
+        var factor = result / quantity;
+        $('#input-conversion-factor').val(factor.toFixed(6));
+        $('#conversion-calculator-modal').modal('hide');
+        updatePreview();
+    }
+}
+</script>
+
+{{ footer }}

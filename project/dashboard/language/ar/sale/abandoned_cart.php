@@ -1,0 +1,130 @@
+<?php
+// Heading
+$_['heading_title']                = 'السلات المتروكة';
+
+// Text
+$_['text_success']                 = 'تم تعديل السلات المتروكة بنجاح!';
+$_['text_list']                    = 'قائمة السلات المتروكة';
+$_['text_all_statuses']            = 'جميع الحالات';
+$_['text_status_active']           = 'نشط';
+$_['text_status_recovered']        = 'تم استعادته';
+$_['text_status_expired']          = 'منتهي';
+$_['text_all']                     = 'الكل';
+$_['text_yes']                     = 'نعم';
+$_['text_no']                      = 'لا';
+$_['text_guest']                   = 'زائر';
+$_['text_total_abandoned_carts']   = 'إجمالي السلات المتروكة';
+$_['text_potential_revenue']       = 'الإيرادات المحتملة';
+$_['text_recovery_rate']           = 'معدل الاستعادة';
+$_['text_average_cart_value']      = 'متوسط قيمة السلة';
+$_['text_abandoned_carts_over_time'] = 'السلات المتروكة عبر الزمن';
+$_['text_filter']                  = 'تصفية';
+$_['text_actions']                 = 'الإجراءات';
+$_['text_no_results']              = 'لم يتم العثور على سلات متروكة';
+$_['text_confirm_delete']          = 'هل أنت متأكد من رغبتك في حذف السلة/السلات المتروكة المحددة؟';
+$_['text_cart_deleted']            = 'تم حذف السلة المتروكة بنجاح!';
+$_['text_carts_deleted']           = 'تم حذف السلات المتروكة المحددة بنجاح!';
+$_['text_bulk_email']              = 'إرسال رسائل البريد الإلكتروني بالجملة';
+$_['text_bulk_email_info']         = 'سيؤدي هذا إلى إرسال رسائل استعادة إلى جميع السلات المتروكة المحددة التي لديها عناوين بريد إلكتروني للعملاء.';
+$_['text_confirm_bulk_email']      = 'هل أنت متأكد من رغبتك في إرسال رسائل بريد إلكتروني إلى جميع العملاء المحددين؟';
+$_['text_bulk_coupon']             = 'إنشاء كوبونات بالجملة';
+$_['text_bulk_coupon_info']        = 'سيؤدي هذا إلى إنشاء كوبونات استعادة لجميع السلات المتروكة المحددة.';
+$_['text_confirm_bulk_coupon']     = 'هل أنت متأكد من رغبتك في إنشاء كوبونات لجميع العملاء المحددين؟';
+$_['text_email_sent']              = 'تم إرسال البريد الإلكتروني بنجاح!';
+$_['text_default_template']        = 'القالب الافتراضي';
+$_['text_custom_message']          = 'رسالة مخصصة';
+$_['text_cart_count']              = 'عدد السلات';
+$_['text_cart_value']              = 'قيمة السلة';
+$_['text_send_email']              = 'إرسال رسالة استعادة';
+$_['text_send_sms']                = 'إرسال رسالة SMS للاستعادة';
+$_['text_coupon_created']          = 'تم إنشاء الكوبون %s بنجاح!';
+$_['text_sms_sent']                = 'تم إرسال رسالة SMS بنجاح!';
+$_['text_send_whatsapp']           = 'إرسال رسالة واتساب';
+$_['text_whatsapp_sent']           = 'تم إرسال رسالة واتساب بنجاح!';
+$_['text_send_telegram']           = 'إرسال رسالة تليجرام';
+$_['text_telegram_sent']           = 'تم إرسال رسالة تليجرام بنجاح!';
+$_['text_pagination']              = 'عرض %d إلى %d من %d (%d صفحة)';
+$_['text_cart_details']            = 'تفاصيل السلة المتروكة';
+$_['text_customer_details']        = 'تفاصيل العميل';
+$_['text_cart_info']               = 'معلومات السلة';
+$_['text_cart_items']              = 'عناصر السلة';
+$_['text_timeline']                = 'الخط الزمني للاستعادة';
+$_['text_customer_name']           = 'اسم العميل';
+$_['text_customer_email']          = 'البريد الإلكتروني';
+$_['text_customer_telephone']      = 'رقم الهاتف';
+$_['text_customer_group']          = 'مجموعة العميل';
+$_['text_view_customer']           = 'عرض العميل';
+$_['text_guest_customer']          = 'تم إنشاء هذه السلة بواسطة عميل زائر.';
+$_['text_cart_id']                 = 'معرف السلة';
+$_['text_date_created']            = 'تاريخ الإنشاء';
+$_['text_last_activity']           = 'آخر نشاط';
+$_['text_items_count']             = 'عدد العناصر';
+$_['text_total_value']             = 'القيمة الإجمالية';
+$_['text_status']                  = 'الحالة';
+$_['text_email_sent']              = 'تم إرسال البريد الإلكتروني';
+$_['text_recovery_date']           = 'تاريخ الاستعادة';
+$_['text_order_id']                = 'رقم الطلب';
+$_['text_no_items']                = 'لا توجد عناصر في هذه السلة';
+$_['text_total']                   = 'الإجمالي';
+$_['text_email']                   = 'البريد الإلكتروني';
+$_['text_telephone']               = 'رقم الهاتف';
+$_['text_help_placeholders']       = 'يمكنك استخدام العناصر النائبة التالية: {customer_name}, {store_name}, {recovery_url}, {coupon_code}, {cart_total}, {items_count}';
+$_['text_all_items_matched']       = 'تم تحديد جميع العناصر كمطابقة.';
+
+// Column
+$_['column_customer']              = 'العميل';
+$_['column_contact']               = 'معلومات الاتصال';
+$_['column_date_created']          = 'تاريخ الإنشاء';
+$_['column_last_activity']         = 'آخر نشاط';
+$_['column_items']                 = 'العناصر';
+$_['column_total']                 = 'الإجمالي';
+$_['column_email_sent']            = 'تم إرسال البريد';
+$_['column_status']                = 'الحالة';
+$_['column_action']                = 'الإجراء';
+$_['column_product']               = 'المنتج';
+$_['column_model']                 = 'الموديل';
+$_['column_options']               = 'الخيارات';
+$_['column_quantity']              = 'الكمية';
+$_['column_price']                 = 'السعر';
+
+// Entry
+$_['entry_customer']               = 'العميل';
+$_['entry_date_start']             = 'تاريخ البداية';
+$_['entry_date_end']               = 'تاريخ النهاية';
+$_['entry_status']                 = 'الحالة';
+$_['entry_total_min']              = 'الحد الأدنى للإجمالي';
+$_['entry_total_max']              = 'الحد الأقصى للإجمالي';
+$_['entry_email_sent']             = 'تم إرسال البريد';
+$_['entry_template']               = 'القالب';
+$_['entry_custom_message']         = 'رسالة مخصصة';
+$_['entry_include_coupon']         = 'تضمين كوبون استعادة';
+
+// Button
+$_['button_refresh']               = 'تحديث';
+$_['button_create_coupons']        = 'إنشاء كوبونات';
+$_['button_send_emails']           = 'إرسال رسائل بريد';
+$_['button_delete']                = 'حذف';
+$_['button_filter']                = 'تصفية';
+$_['button_clear']                 = 'مسح';
+$_['button_view']                  = 'عرض';
+$_['button_send_email']            = 'إرسال بريد إلكتروني';
+$_['button_send_sms']              = 'إرسال SMS';
+$_['button_create_coupon']         = 'إنشاء كوبون';
+$_['button_send_whatsapp']         = 'إرسال واتساب';
+$_['button_send_telegram']         = 'إرسال تليجرام';
+$_['button_cancel']                = 'إلغاء';
+$_['button_send']                  = 'إرسال';
+$_['button_close']                 = 'إغلاق';
+$_['button_generate']              = 'إنشاء كوبونات';
+
+// Error
+$_['error_permission']             = 'تحذير: أنت لا تملك صلاحية تعديل السلات المتروكة!';
+$_['error_cart_not_found']         = 'خطأ: لم يتم العثور على السلة المتروكة!';
+$_['error_no_email']               = 'خطأ: العميل ليس لديه عنوان بريد إلكتروني!';
+$_['error_no_telephone']           = 'خطأ: العميل ليس لديه رقم هاتف!';
+$_['error_email_not_sent']         = 'خطأ: تعذر إرسال البريد الإلكتروني!';
+$_['error_sms_not_sent']           = 'خطأ: تعذر إرسال رسالة SMS!';
+$_['error_whatsapp_not_sent']      = 'خطأ: تعذر إرسال رسالة واتساب!';
+$_['error_telegram_not_sent']      = 'خطأ: تعذر إرسال رسالة تليجرام!';
+$_['error_coupon_not_created']     = 'خطأ: تعذر إنشاء الكوبون!';
+$_['error_no_selection']           = 'تحذير: لم يتم تحديد أي سلات!';

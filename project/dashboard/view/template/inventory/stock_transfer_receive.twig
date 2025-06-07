@@ -1,0 +1,360 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-receive-transfer" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i> {{ button_receive }}
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }} - استلام النقل</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- معلومات النقل -->
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-info-circle"></i> معلومات النقل</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-3">
+            <strong>رقم النقل:</strong><br>
+            {{ transfer_info.transfer_number }}
+          </div>
+          <div class="col-md-3">
+            <strong>اسم النقل:</strong><br>
+            {{ transfer_info.transfer_name }}
+          </div>
+          <div class="col-md-3">
+            <strong>من الفرع:</strong><br>
+            {{ transfer_info.from_branch_name }}
+          </div>
+          <div class="col-md-3">
+            <strong>إلى الفرع:</strong><br>
+            {{ transfer_info.to_branch_name }}
+          </div>
+        </div>
+        <div class="row" style="margin-top: 15px;">
+          <div class="col-md-3">
+            <strong>تاريخ الطلب:</strong><br>
+            {{ transfer_info.request_date }}
+          </div>
+          <div class="col-md-3">
+            <strong>تاريخ الشحن:</strong><br>
+            {{ transfer_info.ship_date }}
+          </div>
+          <div class="col-md-3">
+            <strong>التاريخ المتوقع:</strong><br>
+            {{ transfer_info.expected_delivery_date }}
+          </div>
+          <div class="col-md-3">
+            <strong>الحالة:</strong><br>
+            <span class="label label-primary">{{ transfer_info.status }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- نموذج الاستلام -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-download"></i> استلام العناصر</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-receive-transfer">
+          
+          <div class="alert alert-info">
+            <i class="fa fa-info-circle"></i>
+            <strong>تعليمات:</strong> يرجى تحديد الكمية المستلمة فعلياً لكل عنصر. إذا كانت الكمية المستلمة مختلفة عن المطلوبة، سيتم إنشاء تسوية تلقائية للفرق.
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">المنتج</th>
+                  <th style="width: 10%;" class="text-center">الكمية المطلوبة</th>
+                  <th style="width: 10%;" class="text-center">الكمية المستلمة</th>
+                  <th style="width: 10%;" class="text-center">الفرق</th>
+                  <th style="width: 10%;" class="text-right">تكلفة الوحدة</th>
+                  <th style="width: 10%;" class="text-right">إجمالي التكلفة</th>
+                  <th style="width: 10%;" class="text-center">رقم الدفعة</th>
+                  <th style="width: 10%;" class="text-center">تاريخ الانتهاء</th>
+                  <th style="width: 15%;">ملاحظات الاستلام</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if transfer_items %}
+                {% for item in transfer_items %}
+                <tr>
+                  <td>
+                    <strong>{{ item.product_name }}</strong>
+                    {% if item.model %}
+                    <br><small class="text-muted">{{ item.model }}</small>
+                    {% endif %}
+                    {% if item.sku %}
+                    <br><small class="text-muted">{{ item.sku }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <span class="badge badge-info">{{ item.quantity }}</span>
+                    {% if item.unit_symbol %}
+                    <br><small class="text-muted">{{ item.unit_symbol }}</small>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    <input type="number" 
+                           name="items[{{ item.item_id }}][received_quantity]" 
+                           value="{{ item.quantity }}" 
+                           class="form-control text-center received-quantity" 
+                           data-item-id="{{ item.item_id }}"
+                           data-requested="{{ item.quantity }}"
+                           data-unit-cost="{{ item.unit_cost }}"
+                           step="0.01" 
+                           min="0" />
+                  </td>
+                  <td class="text-center">
+                    <span class="variance-display" data-item-id="{{ item.item_id }}">0.00</span>
+                  </td>
+                  <td class="text-right">{{ item.unit_cost|number_format(2) }}</td>
+                  <td class="text-right">
+                    <span class="total-cost-display" data-item-id="{{ item.item_id }}">
+                      {{ (item.quantity * item.unit_cost)|number_format(2) }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <input type="text" 
+                           name="items[{{ item.item_id }}][lot_number]" 
+                           value="{{ item.lot_number }}" 
+                           class="form-control text-center" 
+                           placeholder="رقم الدفعة" />
+                  </td>
+                  <td class="text-center">
+                    <input type="date" 
+                           name="items[{{ item.item_id }}][expiry_date]" 
+                           value="{{ item.expiry_date }}" 
+                           class="form-control" />
+                  </td>
+                  <td>
+                    <textarea name="items[{{ item.item_id }}][notes]" 
+                              rows="2" 
+                              class="form-control" 
+                              placeholder="ملاحظات الاستلام">{{ item.received_notes }}</textarea>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                  <td class="text-center" colspan="9">لا توجد عناصر للاستلام</td>
+                </tr>
+                {% endif %}
+              </tbody>
+              <tfoot>
+                <tr class="info">
+                  <td colspan="2" class="text-right"><strong>الإجمالي:</strong></td>
+                  <td class="text-center"><strong id="total-received">0.00</strong></td>
+                  <td class="text-center"><strong id="total-variance">0.00</strong></td>
+                  <td colspan="2" class="text-right"><strong id="total-cost">0.00</strong></td>
+                  <td colspan="3"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          
+          <!-- ملاحظات عامة -->
+          <div class="form-group">
+            <label for="general-notes">ملاحظات عامة حول الاستلام:</label>
+            <textarea name="general_notes" id="general-notes" rows="3" class="form-control" placeholder="أي ملاحظات إضافية حول عملية الاستلام..."></textarea>
+          </div>
+          
+          <!-- معلومات الاستلام -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="received-by">مستلم بواسطة:</label>
+                <input type="text" name="received_by" id="received-by" class="form-control" value="{{ user_name }}" readonly />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="received-date">تاريخ الاستلام:</label>
+                <input type="datetime-local" name="received_date" id="received-date" class="form-control" value="{{ "now"|date('Y-m-d\\TH:i') }}" />
+              </div>
+            </div>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+    
+    <!-- ملخص الاستلام -->
+    <div class="panel panel-success">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-check-circle"></i> ملخص الاستلام</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="text-center">
+              <h4 class="text-primary" id="summary-items">{{ transfer_items|length }}</h4>
+              <small>إجمالي العناصر</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <h4 class="text-info" id="summary-received">0.00</h4>
+              <small>إجمالي الكمية المستلمة</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <h4 class="text-warning" id="summary-variance">0.00</h4>
+              <small>إجمالي الفرق</small>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="text-center">
+              <h4 class="text-success" id="summary-value">0.00</h4>
+              <small>إجمالي القيمة</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.variance-display {
+    font-weight: bold;
+}
+
+.variance-positive {
+    color: #5cb85c;
+}
+
+.variance-negative {
+    color: #d9534f;
+}
+
+.variance-zero {
+    color: #777;
+}
+
+.total-cost-display {
+    font-weight: bold;
+}
+
+.badge-info {
+    background-color: #5bc0de;
+}
+
+.form-control.text-center {
+    text-align: center;
+}
+
+.table > tfoot > tr > td {
+    border-top: 2px solid #ddd;
+    font-weight: bold;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // حساب الفروقات والإجماليات عند تغيير الكمية المستلمة
+    $('.received-quantity').on('input', function() {
+        var itemId = $(this).data('item-id');
+        var requested = parseFloat($(this).data('requested'));
+        var unitCost = parseFloat($(this).data('unit-cost'));
+        var received = parseFloat($(this).val()) || 0;
+        
+        // حساب الفرق
+        var variance = received - requested;
+        var varianceDisplay = $('.variance-display[data-item-id="' + itemId + '"]');
+        
+        varianceDisplay.text(variance.toFixed(2));
+        
+        // تلوين الفرق
+        varianceDisplay.removeClass('variance-positive variance-negative variance-zero');
+        if (variance > 0) {
+            varianceDisplay.addClass('variance-positive');
+        } else if (variance < 0) {
+            varianceDisplay.addClass('variance-negative');
+        } else {
+            varianceDisplay.addClass('variance-zero');
+        }
+        
+        // حساب التكلفة الإجمالية
+        var totalCost = received * unitCost;
+        $('.total-cost-display[data-item-id="' + itemId + '"]').text(totalCost.toFixed(2));
+        
+        // تحديث الإجماليات
+        updateTotals();
+    });
+    
+    // تحديث الإجماليات
+    function updateTotals() {
+        var totalReceived = 0;
+        var totalVariance = 0;
+        var totalCost = 0;
+        
+        $('.received-quantity').each(function() {
+            var received = parseFloat($(this).val()) || 0;
+            var requested = parseFloat($(this).data('requested'));
+            var unitCost = parseFloat($(this).data('unit-cost'));
+            
+            totalReceived += received;
+            totalVariance += (received - requested);
+            totalCost += (received * unitCost);
+        });
+        
+        $('#total-received').text(totalReceived.toFixed(2));
+        $('#total-variance').text(totalVariance.toFixed(2));
+        $('#total-cost').text(totalCost.toFixed(2));
+        
+        // تحديث الملخص
+        $('#summary-received').text(totalReceived.toFixed(2));
+        $('#summary-variance').text(totalVariance.toFixed(2));
+        $('#summary-value').text(totalCost.toFixed(2));
+    }
+    
+    // حساب الإجماليات الأولية
+    updateTotals();
+    
+    // تأكيد الإرسال
+    $('#form-receive-transfer').on('submit', function(e) {
+        var hasVariance = false;
+        $('.variance-display').each(function() {
+            var variance = parseFloat($(this).text());
+            if (variance !== 0) {
+                hasVariance = true;
+                return false;
+            }
+        });
+        
+        if (hasVariance) {
+            if (!confirm('يوجد فروقات في الكميات المستلمة. سيتم إنشاء تسويات تلقائية للفروقات. هل تريد المتابعة؟')) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        
+        return confirm('هل أنت متأكد من استلام هذا النقل؟');
+    });
+});
+</script>
+
+{{ footer }}

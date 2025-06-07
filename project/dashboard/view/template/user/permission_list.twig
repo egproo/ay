@@ -1,0 +1,233 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <h1>{{ heading_title }}</h1>
+    </div>
+  </div>
+  <div class="container-fluid">
+
+    {% if error_warning %}
+    <div class="alert alert-danger">{{ error_warning }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <form id="filter-form">
+            <div class="col-sm-4">
+              <input type="text" name="filter_name" value="{{ filter_name }}" placeholder="{{ entry_filter_name }}" class="form-control">
+            </div>
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-default">{{ button_filter }}</button>
+            </div>
+          </form>
+          <div class="col-sm-6 text-right">
+            <button class="btn btn-primary" id="btn-add">{{ button_add }}</button>
+          </div>
+        </div>
+        <br>
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ entry_name }}</th>
+              <th>{{ entry_key }}</th>
+              <th>{{ entry_type }}</th>
+              <th>{{ button_action }}</th>
+            </tr>
+          </thead>
+          <tbody id="permission-list">
+          {% if permissions %}
+            {% for perm in permissions %}
+            <tr data-id="{{ perm.permission_id }}">
+              <td>{{ perm.name }}</td>
+              <td>{{ perm.key }}</td>
+              <td>{{ perm.type }}</td>
+              <td>
+                <button class="btn btn-sm btn-primary btn-edit">{{ button_edit }}</button>
+                <button class="btn btn-sm btn-danger btn-delete">{{ button_delete }}</button>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="4">{{ text_no_results }}</td></tr>
+          {% endif %}
+          </tbody>
+        </table>
+        <div class="alert alert-info">
+          ** يسمح بتعديل الصلاحيات باضافة مستخدمين او  مجموعات أو ازالتهم
+         <br>** مثلا صلاحية اضافة طلب شراء او فتح الPOS يمكن ان تعين له مستخدم او ادارة كاملة بها مستخدمين
+         <br>** حذف الصلاحيات سيؤثر على عمل النظام 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal لإضافة/تعديل الصلاحية -->
+<div class="modal fade" id="modal-permission" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="form-permission" autocomplete="off">
+      <div class="modal-header">
+        <h4 class="modal-title">{{ text_add }}</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" style="display:none" id="perm-error"></div>
+        <input type="hidden" name="permission_id" value="">
+
+        <div class="form-group">
+          <label>{{ entry_name }}</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>{{ entry_key }}</label>
+          <input type="text" name="key" class="form-control" placeholder="اتركه فارغاً لتوليد تلقائي">
+        </div>
+
+        <div class="form-group">
+          <label>{{ entry_type }}</label>
+          <select name="type" class="form-control">
+            <option value="access">Access</option>
+            <option value="modify">Modify</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>{{ entry_user_groups }}</label><br>
+          {% for ug in user_groups %}
+            <label><input type="checkbox" name="user_group_ids[]" value="{{ ug.user_group_id }}"> {{ ug.name }}</label><br>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          <label>{{ entry_users }}</label><br>
+          {% for u in users %}
+            <label><input type="checkbox" name="user_ids[]" value="{{ u.user_id }}"> {{ u.username }}</label><br>
+          {% endfor %}
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{ footer }}
+
+<script>
+$(document).ready(function(){
+    // فلترة
+    $('#filter-form').submit(function(e){
+        e.preventDefault();
+        var filter_name = $('[name="filter_name"]').val();
+        var url = 'index.php?route=user/permission&user_token={{ user_token }}';
+        if (filter_name) {
+          url += '&filter_name='+encodeURIComponent(filter_name);
+        }
+        location.href = url;
+    });
+
+    // زر إضافة
+    $('#btn-add').click(function(){
+        $('#modal-permission .modal-title').text('{{ text_add }}');
+        $('#form-permission')[0].reset();
+        $('#form-permission [name="permission_id"]').val('');
+        $('#form-permission input[type=checkbox]').prop('checked',false);
+        $('#perm-error').hide();
+        $('#modal-permission').modal('show');
+    });
+
+    // زر تعديل
+    $('.btn-edit').click(function(){
+        var tr = $(this).closest('tr');
+        var pid = tr.data('id');
+        $('#modal-permission .modal-title').text('{{ text_edit }}');
+        $('#form-permission')[0].reset();
+        $('#form-permission input[type=checkbox]').prop('checked',false);
+        $('#perm-error').hide();
+
+        $.ajax({
+            url:'index.php?route=user/permission/loadPermissionAjax&user_token={{ user_token }}&permission_id='+pid,
+            dataType:'json',
+            success:function(json){
+                $('#form-permission [name="permission_id"]').val(json.permission_id);
+                $('#form-permission [name="name"]').val(json.name);
+                $('#form-permission [name="key"]').val(json.key);
+                $('#form-permission [name="type"]').val(json.type);
+                for(var i in json.user_group_ids) {
+                  $('#form-permission [name="user_group_ids[]"][value="'+json.user_group_ids[i]+'"]').prop('checked',true);
+                }
+                for(var i in json.user_ids) {
+                  $('#form-permission [name="user_ids[]"][value="'+json.user_ids[i]+'"]').prop('checked',true);
+                }
+
+                $('#modal-permission').modal('show');
+            }
+        });
+    });
+
+    // زر حذف
+    $('.btn-delete').click(function(){
+        if(!confirm('{{ text_confirm }}')) return;
+        var tr = $(this).closest('tr');
+        var pid = tr.data('id');
+        $.ajax({
+            url:'index.php?route=user/permission/deletePermissionAjax&user_token={{ user_token }}',
+            type:'post',
+            data:{permission_id:pid},
+            dataType:'json',
+            success:function(json){
+                if(json.error) {
+                    alert(json.error);
+                } else {
+                    location.reload();
+                }
+            }
+        });
+    });
+
+    // حفظ الفورم (إضافة/تعديل)
+    $('#form-permission').submit(function(e){
+        e.preventDefault();
+        var formData = $(this).serializeArray();
+        var permission_id = $('#form-permission [name="permission_id"]').val();
+        var url = '';
+        if (permission_id) {
+            // تعديل
+            url = 'index.php?route=user/permission/editPermissionAjax&user_token={{ user_token }}';
+        } else {
+            // إضافة
+            url = 'index.php?route=user/permission/addPermissionAjax&user_token={{ user_token }}';
+        }
+
+        $.ajax({
+            url:url,
+            type:'post',
+            data:formData,
+            dataType:'json',
+            success:function(json){
+                if(json.error) {
+                    $('#perm-error').text(json.error).show();
+                } else {
+                    $('#modal-permission').modal('hide');
+                    location.reload();
+                }
+            }
+        });
+    });
+});
+</script>

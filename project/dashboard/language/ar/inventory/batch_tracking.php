@@ -1,0 +1,131 @@
+<?php
+// العنوان
+$_['heading_title']                 = 'تتبع التشغيلات/الدفعات';
+$_['heading_expiry_report']         = 'تقرير المنتجات قريبة انتهاء الصلاحية';
+$_['heading_batch_history']         = 'تاريخ حركة الدفعة/التشغيلة';
+
+// النص
+$_['text_success']                  = 'تم تعديل الدفعة/التشغيلة بنجاح!';
+$_['text_list']                     = 'قائمة الدفعات/التشغيلات';
+$_['text_add']                      = 'إضافة دفعة/تشغيلة';
+$_['text_edit']                     = 'تعديل دفعة/تشغيلة';
+$_['text_form']                     = 'نموذج الدفعة/التشغيلة';
+$_['text_history']                  = 'تاريخ الحركة';
+$_['text_no_results']               = 'لا توجد نتائج!';
+$_['text_confirm_delete']           = 'هل أنت متأكد من حذف هذه الدفعة/التشغيلة؟';
+$_['text_select']                   = '--- اختر ---';
+$_['text_status_active']            = 'نشط';
+$_['text_status_quarantine']        = 'حجر';
+$_['text_status_consumed']          = 'مستهلك';
+$_['text_status_expired']           = 'منتهي الصلاحية';
+$_['text_status_damaged']           = 'تالف';
+$_['text_status_returned']          = 'مرتجع';
+$_['text_status_reserved']          = 'محجوز';
+$_['text_expiry_status']            = 'حالة الصلاحية';
+$_['text_valid']                    = 'صالح';
+$_['text_warning']                  = 'تحذير';
+$_['text_expired']                  = 'منتهي الصلاحية';
+$_['text_days_remaining']           = 'الأيام المتبقية';
+$_['text_days_expired']             = 'منتهي منذ %s يوم';
+$_['text_days_to_expiry']           = 'متبقي %s يوم';
+$_['text_expiry_report']            = 'تقرير المنتجات قريبة انتهاء الصلاحية';
+$_['text_export_to_excel']          = 'تصدير إلى Excel';
+$_['text_export_to_pdf']            = 'تصدير إلى PDF';
+$_['text_pagination']               = 'عرض %d إلى %d من %d (%d صفحات)';
+$_['text_action_created']           = 'إنشاء';
+$_['text_action_increased']         = 'زيادة';
+$_['text_action_decreased']         = 'نقص';
+$_['text_action_status_changed']    = 'تغيير الحالة';
+$_['text_action_transferred']       = 'تحويل';
+$_['text_action_sold']              = 'بيع';
+$_['text_action_returned']          = 'إرجاع';
+$_['text_action_adjusted']          = 'تعديل';
+$_['text_action_expired']           = 'انتهاء الصلاحية';
+$_['text_action_damaged']           = 'تلف';
+$_['text_action_reserved']          = 'حجز';
+$_['text_action_released']          = 'إلغاء الحجز';
+$_['text_batch_details']            = 'تفاصيل الدفعة/التشغيلة';
+$_['text_batch_history']            = 'تاريخ الدفعة/التشغيلة';
+$_['text_expiry_warning_settings']  = 'إعدادات تحذير انتهاء الصلاحية';
+$_['text_expiry_warning_days']      = 'أيام التحذير قبل انتهاء الصلاحية';
+$_['text_expiry_warning_description'] = 'عدد الأيام قبل انتهاء الصلاحية التي سيتم فيها عرض تحذير';
+$_['text_expiry_notification']      = 'إشعارات انتهاء الصلاحية';
+$_['text_expiry_notification_description'] = 'إرسال إشعارات للمستخدمين عند اقتراب انتهاء صلاحية المنتجات';
+$_['text_expiry_notification_days'] = 'أيام الإشعار قبل انتهاء الصلاحية';
+$_['text_expiry_notification_users'] = 'المستخدمون المستلمون للإشعارات';
+$_['text_expiry_notification_email'] = 'إرسال إشعارات بالبريد الإلكتروني';
+$_['text_expiry_notification_system'] = 'إرسال إشعارات داخل النظام';
+$_['text_fifo_fefo_settings']       = 'إعدادات FIFO/FEFO';
+$_['text_inventory_picking_method'] = 'طريقة سحب المخزون';
+$_['text_fifo']                     = 'الوارد أولاً يصرف أولاً (FIFO)';
+$_['text_fefo']                     = 'الأقرب للانتهاء يصرف أولاً (FEFO)';
+$_['text_fifo_fefo_description']    = 'تحديد طريقة سحب المخزون عند إنشاء أوامر البيع والتحويلات';
+$_['text_batch_tracking_settings']  = 'إعدادات تتبع الدفعات/التشغيلات';
+$_['text_enable_batch_tracking']    = 'تفعيل تتبع الدفعات/التشغيلات';
+$_['text_batch_tracking_description'] = 'تفعيل تتبع الدفعات/التشغيلات للمنتجات';
+$_['text_batch_number_required']    = 'رقم الدفعة/التشغيلة مطلوب';
+$_['text_batch_number_required_description'] = 'جعل رقم الدفعة/التشغيلة إلزامي عند استلام المنتجات';
+$_['text_expiry_date_required']     = 'تاريخ انتهاء الصلاحية مطلوب';
+$_['text_expiry_date_required_description'] = 'جعل تاريخ انتهاء الصلاحية إلزامي عند استلام المنتجات';
+$_['text_manufacturing_date_required'] = 'تاريخ التصنيع مطلوب';
+$_['text_manufacturing_date_required_description'] = 'جعل تاريخ التصنيع إلزامي عند استلام المنتجات';
+
+// الأعمدة
+$_['column_product']                = 'المنتج';
+$_['column_batch_number']           = 'رقم الدفعة/التشغيلة';
+$_['column_branch']                 = 'الفرع';
+$_['column_quantity']               = 'الكمية';
+$_['column_unit']                   = 'الوحدة';
+$_['column_manufacturing_date']     = 'تاريخ التصنيع';
+$_['column_expiry_date']            = 'تاريخ انتهاء الصلاحية';
+$_['column_days_remaining']         = 'الأيام المتبقية';
+$_['column_expiry_status']          = 'حالة الصلاحية';
+$_['column_status']                 = 'الحالة';
+$_['column_notes']                  = 'ملاحظات';
+$_['column_action']                 = 'تحرير';
+$_['column_date']                   = 'التاريخ';
+$_['column_user']                   = 'المستخدم';
+$_['column_action_type']            = 'نوع الإجراء';
+$_['column_action_quantity']        = 'الكمية';
+$_['column_action_notes']           = 'ملاحظات';
+
+// المدخلات
+$_['entry_product']                 = 'المنتج';
+$_['entry_batch_number']            = 'رقم الدفعة/التشغيلة';
+$_['entry_branch']                  = 'الفرع';
+$_['entry_unit']                    = 'الوحدة';
+$_['entry_quantity']                = 'الكمية';
+$_['entry_manufacturing_date']      = 'تاريخ التصنيع';
+$_['entry_expiry_date']             = 'تاريخ انتهاء الصلاحية';
+$_['entry_status']                  = 'الحالة';
+$_['entry_notes']                   = 'ملاحظات';
+$_['entry_expiry_from']             = 'انتهاء الصلاحية من';
+$_['entry_expiry_to']               = 'انتهاء الصلاحية إلى';
+$_['entry_days']                    = 'عدد الأيام';
+$_['entry_expiry_warning_days']     = 'أيام التحذير قبل انتهاء الصلاحية';
+
+// الأزرار
+$_['button_filter']                 = 'تصفية';
+$_['button_export']                 = 'تصدير';
+$_['button_history']                = 'تاريخ الحركة';
+$_['button_expiry_report']          = 'تقرير المنتجات قريبة انتهاء الصلاحية';
+
+// رسائل الخطأ
+$_['error_permission']              = 'تحذير: ليس لديك صلاحية لتعديل تتبع الدفعات/التشغيلات!';
+$_['error_product']                 = 'المنتج مطلوب!';
+$_['error_batch_number']            = 'رقم الدفعة/التشغيلة مطلوب!';
+$_['error_branch']                  = 'الفرع مطلوب!';
+$_['error_unit']                    = 'الوحدة مطلوبة!';
+$_['error_quantity']                = 'الكمية مطلوبة!';
+$_['error_expiry_date']             = 'تاريخ انتهاء الصلاحية مطلوب!';
+$_['error_manufacturing_date']      = 'تاريخ التصنيع مطلوب!';
+$_['error_status']                  = 'الحالة مطلوبة!';
+$_['error_batch_exists']            = 'رقم الدفعة/التشغيلة موجود بالفعل لهذا المنتج في هذا الفرع!';
+$_['error_expiry_date_past']        = 'تاريخ انتهاء الصلاحية لا يمكن أن يكون في الماضي!';
+$_['error_manufacturing_date_future'] = 'تاريخ التصنيع لا يمكن أن يكون في المستقبل!';
+$_['error_manufacturing_after_expiry'] = 'تاريخ التصنيع لا يمكن أن يكون بعد تاريخ انتهاء الصلاحية!';
+$_['error_batch_id']                = 'معرف الدفعة/التشغيلة مطلوب!';
+$_['error_missing_parameters']      = 'المعلمات المطلوبة مفقودة!';
+$_['error_batch_in_use']            = 'لا يمكن حذف هذه الدفعة/التشغيلة لأنها مستخدمة في عمليات أخرى!';
+$_['error_quantity_greater_than_available'] = 'الكمية المدخلة أكبر من الكمية المتاحة!';
+$_['error_days']                    = 'يرجى إدخال عدد أيام صحيح!';

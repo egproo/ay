@@ -1,0 +1,545 @@
+<?php
+// في ملف اللغة
+// Bundle Messages
+$_['text_view_details'] = 'View details';
+$_['text_unit'] = 'Unit';
+$_['text_available_units'] = 'Available units';
+$_['text_bundle'] = 'Bundle';
+$_['text_quantity_discounts'] = 'Quantity discounts';
+$_['text_select_unit'] = 'Select unit'; // if you need it
+$_['button_cart'] = 'Add to cart';
+$_['button_add_wailist'] = 'Wait for notification'; // or 'Add to waitlist'
+$_['text_minimum'] = 'Minimum';
+$_['text_out_of_stock'] = 'Currently out of stock';
+$_['text_loading'] = 'Loading...';
+$_['text_allproducts'] = 'All Products';
+$_['button_checkout'] = 'Checkout';
+
+$_['text_product_options'] = 'Product Options';
+$_['text_bundle_must_have_value'] = 'Bundle must contain at least one product with value';
+$_['text_select_at_least_one_product'] = 'Please select at least one product';
+$_['text_error_ajax_request'] = 'An error occurred while processing the order';
+$_['text_loading'] = 'Loading...';
+$_['text_success'] = 'Success!';
+$_['text_error'] = 'Error!';
+$_['text_tax_included'] = 'Tax included';
+$_['text_tax_amount'] = 'Tax amount';
+$_['text_you_save'] = 'Savings';
+$_['text_off'] = 'Discount';
+$_['text_buy'] = 'Buy';
+$_['text_get_free'] = 'Get Free';
+$_['text_save'] = 'Save';
+$_['text_when_buying'] = 'When Buying';
+$_['text_or_more'] = 'Or More';
+$_['text_free'] = 'Free';
+$_['text_next_discount_at'] = 'Next Discount At';
+$_['text_max_discount_reached'] = 'You have reached the maximum discount available';
+$_['text_current_quantity'] = 'Current Quantity';
+$_['text_add_bundle'] = 'Add Bundle';
+$_['text_bundle_success'] = 'Bundle added successfully';
+$_['text_bundle_error'] = 'An error occurred while adding the bundle';
+$_['text_required_options'] = 'Please select the required options';
+$_['text_select_options'] = 'Select options';
+
+$_['text_regular_price'] = 'Regular price';
+$_['text_special_price'] = 'Special price';
+$_['text_in_stock'] = 'Available';
+$_['text_out_of_stock'] = 'Out of stock';
+$_['text_free_shipping'] = 'Free shipping';
+$_['text_available_units'] = 'Available units';
+$_['text_quantity_discount_available'] = 'Quantity discount available';
+
+// Stock status
+$_['text_in_stock'] = 'In stock';
+$_['text_out_of_stock'] = 'Out of stock';
+$_['text_units_available'] = 'Available unit';
+$_['text_available'] = 'Available';
+$_['text_minimum_quantity'] = 'Minimum order:';
+
+$_['text_invalid_quantity'] = 'The quantity entered is invalid.';
+$_['text_max_discount_reached'] = 'You have reached your maximum discount.';
+$_['text_quantity_discounts'] = 'Quantity discounts';
+$_['text_next_discount_buy_x_get_y'] = 'Buy %d more items to get %d items free!';
+$_['text_cross_sell_products'] = 'Related products';
+$_['text_upsell_products'] = 'Suggested products';
+$_['text_no_options_available'] = 'There are no options available for this product.';
+$_['text_error_loading_options'] = 'An error occurred while loading the options.';
+$_['text_option_required'] = 'This option is required.';
+$_['text_select_options_first'] = 'Please select the options for the product first.';
+$_['text_select_at_least_one_product'] = 'Please select at least one product from the bundle.';
+$_['text_bundle_must_have_value'] = 'The bundle must contain products with value.';
+$_['text_invalid_data'] = 'Invalid data.';
+$_['text_invalid_quantity'] = 'The entered quantity is invalid.';
+$_['text_max_discount_reached'] = 'You have reached your maximum discount.';
+$_['text_cross_sell_products'] = 'Related Products';
+$_['text_upsell_products'] = 'Suggested Products';
+
+// Bundle related texts
+$_['text_buy_together'] = 'Buy together to save more';
+$_['text_saving'] = 'Savings';
+$_['text_free'] = 'Free';
+$_['text_free_product_included'] = 'Includes a free product';
+$_['text_percentage_discount'] = 'Percentage discount';
+$_['text_fixed_discount'] = 'Fixed value discount';
+$_['text_bundle_total_1'] = 'Only:';
+$_['text_bundle_total_2'] = 'Instead of:';
+$_['text_bundle_total_3'] = 'You will save:';
+$_['text_savings'] = 'Savings';
+$_['text_no_bundles'] = 'There are no bundles available for this product.';
+$_['text_remaining'] = 'Remaining';
+$_['text_error_loading_options'] = 'An error occurred while loading options.';
+$_['text_select_all_required_options'] = 'Please select all required options.';
+$_['text_loading_options'] = 'Loading options...';
+$_['text_buy_together'] = 'Featured bundles';
+$_['text_minimum'] = 'Minimum quantity required.';
+$_['text_invalid_quantity'] = 'Invalid quantity';
+$_['text_loading'] = 'Loading...';
+$_['text_error'] = 'An error occurred!';
+$_['button_add_bundle'] = 'Add the bundle to your cart';
+$_['text_you_save'] = 'And enjoy its value:';
+$_['button_save'] = 'Save';
+$_['button_close'] = 'Close';
+$_['text_bundle'] = 'Bundle';
+
+
+// General variables
+$_['text_quick_view']          = 'Quick View';
+$_['text_view_details']        = 'View Details';
+$_['text_loading']             = 'Loading...';
+$_['text_customize_bundle']    = 'Customize Bundle';
+$_['text_select_options']      = 'Select Options';
+$_['text_free']                = 'Free';
+
+// Unit and quantity variables
+$_['text_available_units']     = 'Available Units';
+$_['entry_unit']               = 'Unit';
+$_['entry_qty']                = 'Quantity';
+$_['text_minimum']             = 'Minimum quantity is %s';
+$_['text_invalid_quantity']    = 'Invalid quantity';
+
+// Bundle variables
+$_['text_bundle']              = 'Bundle';
+$_['text_buy_together']        = 'Buy together with this product';
+$_['text_bundle_total_1']      = 'Final Price:';
+$_['text_bundle_total_2']      = 'Instead of:';
+$_['text_bundle_total_3']      = 'You Save:';
+
+// Recommendation variables
+$_['text_recommendations']     = 'Recommended Products';
+$_['text_upsell']              = 'You may also like';
+$_['text_cross_sell']          = 'Goes well with this product';
+
+// Price and discount variables
+$_['text_price_range']         = 'Price Range';
+$_['text_quantity_discounts']  = 'Quantity Discounts';
+$_['text_you_save']            = 'You Save';
+$_['text_tax_included']        = 'Tax Included';
+$_['text_discount']            = 'Discount';
+$_['text_current_quantity']    = 'Current Quantity';
+$_['text_next_discount_at']    = 'Next Discount at';
+$_['text_add_more_free']       = 'Add %s more units to get %s units free';
+$_['text_add_more_discount']   = 'Add %s more units to get a discount of %s';
+
+// Buttons
+$_['button_cart']              = 'Add to Cart';
+$_['button_add_wailist']       = 'Notify When Available';
+$_['button_cancel']            = 'Cancel';
+$_['button_close']             = 'Close';
+$_['button_save']              = 'Save';
+$_['button_upload']            = 'Upload';
+$_['button_continue']          = 'Continue';
+
+// Error messages
+$_['error_price_calculation']  = 'An error occurred during price calculation';
+$_['error_required_data']      = 'Required data is missing';
+$_['error_missing_bundle_id']  = 'Bundle ID is missing';
+$_['error_invalid_bundle']     = 'Invalid bundle';
+$_['error_product']            = 'Product not found';
+$_['error_product_not_found']  = 'Product not found';
+$_['error_invalid_unit']       = 'Invalid unit';
+$_['error_upload_size']        = 'File size is too large';
+
+// Locale
+$_['code']                  = 'en';
+$_['direction']             = 'ltr';
+$_['date_format_short']     = 'd/m/Y';
+$_['date_format_long']      = 'l dS F Y';
+$_['time_format']           = 'h:i:s A';
+$_['datetime_format']       = 'd/m/Y H:i:s';
+$_['decimal_point']         = '.';
+$_['thousand_point']        = ',';
+
+$_['button_register']         = 'Register';
+$_['tax_p_note'] = 'Price includes VAT';
+$_['button_add_wailist']        = 'Notify Me';
+$_['text_bundle_success'] = 'The bundle was successfully added to the cart!';
+$_['error_bundle_stock'] = 'The bundle could not be added. The following products are not available in the requested quantity: %s';
+$_['error_bundle_add'] = 'An error occurred while adding the bundle to the cart.';
+$_['error_bundle_not_found'] = 'The requested bundle is not found.';
+$_['error_bundle_data'] = 'The bundle data is incorrect.';
+$_['text_buy_together'] = 'Buy Together';
+$_['text_available'] = 'Available';
+$_['text_free'] = 'Free';
+$_['text_discount'] = 'Discount';
+$_['text_total_price'] = 'Total Price';
+$_['text_offer_y']              = 'Special Offer .. Offers not end';
+
+$_['text_select_options'] = 'Select options';
+$_['text_no_options_available'] = 'There are no options available for this product.';
+$_['text_error_loading_options'] = 'An error occurred while loading the options.';
+$_['text_option_required'] = 'This option is required.';
+$_['text_select_options_first'] = 'Please select the options for the product first.';
+$_['text_select_at_least_one_product'] = 'Please select at least one product from the bundle.';
+$_['text_error_adding_bundle'] = 'An error occurred while adding the bundle. Please try again.';
+$_['text_success_bundle'] = 'The bundle has been successfully added to the cart!';
+$_['error_product_unavailable'] = 'The product %s is currently unavailable.';
+$_['error_option_required'] = 'The option %s is required.';
+$_['error_option_unavailable'] = 'The selected option is unavailable.';
+$_['error_invalid_data'] = 'Invalid data.';
+$_['error_product'] = 'The requested product does not exist.';
+
+// نصوص الخصومات والباقات
+$_['text_buy_together']        = 'Buy Together';
+$_['text_off']                 = 'Discount';
+$_['text_free_product']        = 'Free Product';
+$_['text_total_price']         = 'Total Price';
+$_['text_you_save']            = 'You Save';
+$_['text_free_items']          = '%s Free Items';
+$_['text_save_percent']        = 'Save %s%%';
+$_['text_save_amount']         = 'Save %s';
+$_['text_discount_note']       = 'Discounts are automatically applied to the selected quantities.';
+$_['button_add_bundle']        = 'Add Bundle to Cart';
+$_['button_close']             = 'Close';
+$_['button_save']              = 'Save';
+$_['text_select_items']        = 'Please select products to add to the cart.';
+$_['text_product_options']     = 'Product Options';
+$_['text_quantity_discounts']  = 'Quantity Discounts';
+$_['text_quantity']            = 'Quantity';
+$_['text_discount']            = 'Discount';
+$_['text_benefit']             = 'Benefit';
+$_['text_free']                = 'Free';
+$_['text_buy_x_get_y']         = 'Buy %s Get %s Free';
+$_['text_buy']                 = 'Buy';
+$_['text_get_free']            = 'Get Free';
+$_['text_buy_x_get_discount']  = 'Buy %s Get Discount';
+$_['text_no_options_available'] = 'No options available.';
+$_['text_error_loading_options'] = 'Error loading options.';
+$_['text_select_options_first'] = 'Please select options first.';
+$_['text_select_at_least_one_product'] = 'Please select at least one product.';
+$_['text_error_adding_bundle'] = 'Error adding bundle to cart.';
+$_['text_success_bundle']      = 'Bundle added to cart successfully!';
+
+$_['text_discount_applied'] = 'You saved %s on your purchase!';
+$_['text_product_not_found'] = 'Product not found.';
+$_['text_select_quantity'] = 'Select quantity';
+$_['text_total_price'] = 'Total price';
+$_['text_discount_message_buy_get'] = 'You will get %s extra items for free! You saved %s.';
+$_['text_discount_message_buy_discount'] = 'You saved %s on your purchase!';
+$_['text_bundle_must_have_value'] = 'The bundle must have value items.';
+$_['text_success_bundle'] = 'The bundle has been added to the cart successfully!';
+$_['error_no_items_selected'] = 'Please select at least one item.';
+$_['error_bundle_not_found'] = 'The bundle does not exist.';
+$_['text_error_adding_bundle'] = 'An error occurred while adding the bundle to the cart.';
+
+$_['text_buy'] = 'Buy';
+$_['text_get'] = 'Get';
+$_['text_free'] = 'Free';
+$_['text_save'] = 'Save';
+$_['text_off'] = 'Discount';
+$_['text_when_buying'] = 'When buying';
+$_['text_or_more'] = 'Or more';
+$_['text_apply_discount'] = 'Apply discount';
+$_['text_next_discount_buy_x_get_y'] = 'Buy %d more items to get %d free!';
+$_['text_next_discount_percentage'] = 'Buy %d more items to get %s%% discount!';
+$_['text_next_discount_fixed'] = 'Buy %d more items to get %s discount!';
+
+// Text
+$_['text_special']             = 'Offers';
+$_['text_allproducts']              = 'All Products';
+$_['text_brands']              = 'Shop by brand';
+$_['text_specials']              = 'Today Deals';
+$_['text_xsearch']              = 'Search';
+$_['buywithit']                = 'Buy it with :';
+$_['text_offertotal']              = 'Total';
+$_['text_setting']              = 'Setting';
+$_['text_mypoints']              = 'Points';
+$_['text_myorders']              = 'Orders';
+$_['text_mycredit']              = 'Credit';
+$_['text_textaffilate']              = 'Affilate';
+$_['text_myaddress']              = 'Address';
+$_['text_dashboard']              = 'Dashboard';
+$_['entry_country']              = 'Country';
+$_['text_wallet']              = 'Wallet';
+$_['text_xtransactions']              = 'Transactions';
+$_['text_change_password']              = 'Change Password';
+$_['text_change_account']              = 'Change account info';
+$_['text_security']              = 'Security';
+$_['text_xnewsletter']              = 'Newsletter';
+$_['text_open']              = 'Opened';
+$_['text_close']              = 'Closed';
+$_['text_addreply']              = 'Add Reply';
+$_['text_sadd_ticket']              = 'Ticket added successfully';
+$_['text_radd_ticket']              = 'Reply added successfully';
+$_['text_message']              = 'Message';
+$_['text_add_credit']              = 'Add Credit ';
+
+$_['text_available_units']  = 'Available Units';
+$_['text_unit']             = 'Unit';
+$_['text_select_unit']      = 'Select Unit';
+$_['text_product_options']  = 'Product Options';
+$_['button_add_wailist']    = 'Add to Waitlist';
+$_['button_cart']           = 'Add to Cart';
+
+
+$_['text_qcheckout_name'] = 'Name';
+$_['text_qcheckout_phone'] = 'Phone';
+$_['text_qcheckout_email_invoice'] = 'Send invoice by email';
+$_['text_qcheckout_email'] = 'Email';
+$_['text_qcheckout_rin_customer'] = 'Customer ID (Tax ID/National ID)';
+$_['text_qcheckout_customer_group'] = 'Customer Type';
+$_['text_qcheckout_individual'] = 'Individual';
+$_['text_qcheckout_company'] = 'Company';
+$_['text_qcheckout_zone'] = 'Zone';
+$_['text_qcheckout_city'] = 'City';
+$_['text_qcheckout_address_1'] = 'Street';
+$_['text_qcheckout_address_2'] = 'Building No.';
+$_['text_qcheckout_comment'] = 'Comment';
+$_['text_qcheckout_payment_method'] = 'Payment Method';
+$_['text_qcheckout_shipping_method'] = 'Shipping Method';
+$_['text_qcheckout_coupon'] = 'Coupon';
+$_['text_qcheckout_sub_total'] = 'Sub Total';
+$_['text_qcheckout_shipping'] = 'Shipping';
+$_['text_qcheckout_tax'] = 'Tax';
+$_['text_qcheckout_total'] = 'Total';
+$_['button_qcheckout_submit_order'] = 'Submit Order';
+$_['text_view_cart'] = 'View Cart';
+$_['error_qcheckout_name'] = 'Please enter name';
+$_['error_qcheckout_phone'] = 'Please enter phone';
+$_['error_qcheckout_email'] = 'Please enter email';
+$_['error_qcheckout_address_1'] = 'Please enter address';
+$_['error_qcheckout_city'] = 'Please enter city';
+$_['error_qcheckout_zone'] = 'Please select zone';
+$_['error_qcheckout_rin_customer'] = 'Please enter customer ID';
+
+
+// Text
+$_['text_home']             = '<i class="fa fa-home"></i>';
+$_['text_yes']              = 'Yes';
+$_['text_no']               = 'No';
+$_['text_none']             = ' --- None --- ';
+$_['text_select']           = ' --- Please Select --- ';
+$_['text_all_zones']        = 'All Zones';
+$_['text_pagination']       = 'Showing %d to %d of %d (%d Pages)';
+$_['text_loading']          = 'Loading...';
+$_['text_no_results']       = 'No results!';
+
+// Buttons
+$_['button_address_add']    = 'Add Address';
+$_['button_back']           = 'Back';
+$_['button_continue']       = 'Continue';
+$_['button_cart']           = 'Add to Cart';
+$_['button_cancel']         = 'Cancel';
+$_['button_compare']        = 'Compare this Product';
+$_['button_wishlist']       = 'Add to Wish List';
+$_['button_checkout']       = 'Checkout';
+$_['button_confirm']        = 'Confirm Order';
+$_['button_coupon']         = 'Apply Coupon';
+$_['button_delete']         = 'Delete';
+$_['button_download']       = 'Download';
+$_['button_edit']           = 'Edit';
+$_['button_filter']         = 'Refine Search';
+$_['button_new_address']    = 'New Address';
+$_['button_change_address'] = 'Change Address';
+$_['button_reviews']        = 'Reviews';
+$_['button_write']          = 'Write Review';
+$_['button_login']          = 'Login';
+$_['button_update']         = 'Update';
+$_['button_remove']         = 'Remove';
+$_['button_reorder']        = 'Reorder';
+$_['button_return']         = 'Return';
+$_['button_shopping']       = 'Continue Shopping';
+$_['button_search']         = 'Search';
+$_['button_shipping']       = 'Apply Shipping';
+$_['button_submit']         = 'Submit';
+$_['button_guest']          = 'Guest Checkout';
+$_['button_view']           = 'View';
+$_['button_voucher']        = 'Apply Gift Certificate';
+$_['button_upload']         = 'Upload File';
+$_['button_reward']         = 'Apply Points';
+$_['button_quote']          = 'Get Quotes';
+$_['button_list']           = 'List';
+$_['button_grid']           = 'Grid';
+$_['button_map']            = 'View Google Map';
+
+// Error
+$_['error_exception']       = 'Error Code(%s): %s in %s on line %s';
+$_['error_upload_1']        = 'Warning: The uploaded file exceeds the upload_max_filesize directive in php.ini!';
+$_['error_upload_2']        = 'Warning: The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form!';
+$_['error_upload_3']        = 'Warning: The uploaded file was only partially uploaded!';
+$_['error_upload_4']        = 'Warning: No file was uploaded!';
+$_['error_upload_6']        = 'Warning: Missing a temporary folder!';
+$_['error_upload_7']        = 'Warning: Failed to write file to disk!';
+$_['error_upload_8']        = 'Warning: File upload stopped by extension!';
+$_['error_upload_999']      = 'Warning: No error code available!';
+$_['error_curl']            = 'CURL: Error Code(%s): %s';
+// English
+$_['text_price']                 = 'Price:';
+$_['text_regular_price']         = 'Regular Price';
+$_['text_special_price']         = 'Special Price';
+$_['text_tax']                   = 'Inc Tax:';
+$_['text_discount_price']        = 'Discount Price:';
+$_['text_in_stock']              = 'In Stock';
+$_['text_out_of_stock']          = 'Out of Stock';
+$_['text_unit']                  = 'Unit';
+$_['text_quantity']              = 'Quantity';
+$_['text_minimum_quantity']      = 'Minimum order quantity: %s';
+$_['text_select_quantity']       = 'Select Quantity';
+$_['text_quantity_discounts']    = 'Quantity Discounts';
+$_['text_buy']                   = 'Buy';
+$_['text_get_free']             = 'Get';
+$_['text_free']                  = 'Free';
+$_['text_save']                  = 'Save';
+$_['text_off']                   = 'Off';
+$_['text_when_buying']           = 'When buying';
+$_['text_current_quantity']      = 'Current Quantity';
+$_['text_next_discount']         = 'Next Discount';
+$_['text_buy_together']          = 'Buy Together';
+$_['text_total_price']           = 'Total Price';
+$_['text_you_save']              = 'You Save';
+$_['text_select_options']        = 'Select Options';
+$_['text_options_required']      = 'Please select required options';
+$_['text_upsell']               = 'You May Also Like';
+$_['text_cross_sell']           = 'Related Products';
+$_['text_stock_notification']    = 'Notify When Available';
+$_['text_enter_email']          = 'Enter your email';
+$_['text_bundle_success']        = 'Bundle added to cart';
+$_['text_invalid_quantity']      = 'Invalid quantity';
+$_['text_max_quantity_error']    = 'Maximum quantity exceeded';
+$_['text_next_discount_message'] = 'Buy %s more items to get %s';
+
+// Buttons
+$_['button_cart']               = 'Add to Cart';
+$_['button_add_bundle']         = 'Add Bundle to Cart';
+$_['button_save']               = 'Save';
+$_['button_close']              = 'Close';
+$_['button_subscribe']          = 'Subscribe';
+$_['button_continue']           = 'Continue';
+
+/* When doing translations only include the matching language code */
+
+// Datepicker
+//$_['datepicker']            = 'af';
+//$_['datepicker']            = 'ar-dz';
+//$_['datepicker']            = 'ar-kw';
+//$_['datepicker']            = 'ar-ly';
+//$_['datepicker']            = 'ar-ma';
+//$_['datepicker']            = 'ar-sa';
+//$_['datepicker']            = 'ar-tn';
+//$_['datepicker']            = 'ar';
+//$_['datepicker']            = 'az';
+//$_['datepicker']            = 'be';
+//$_['datepicker']            = 'bg';
+//$_['datepicker']            = 'bn';
+//$_['datepicker']            = 'bo';
+//$_['datepicker']            = 'br';
+//$_['datepicker']            = 'bs';
+//$_['datepicker']            = 'ca';
+//$_['datepicker']            = 'cs';
+//$_['datepicker']            = 'cv';
+//$_['datepicker']            = 'cy';
+//$_['datepicker']            = 'da';
+//$_['datepicker']            = 'de-at';
+//$_['datepicker']            = 'de-ch';
+//$_['datepicker']            = 'de';
+//$_['datepicker']            = 'dv';
+//$_['datepicker']            = 'el';
+//$_['datepicker']            = 'en-au';
+//$_['datepicker']            = 'en-ca';
+$_['datepicker']            = 'en-gb';
+//$_['datepicker']            = 'en-ie';
+//$_['datepicker']            = 'en-nz';
+//$_['datepicker']            = 'eo';
+//$_['datepicker']            = 'es-do';
+//$_['datepicker']            = 'es';
+//$_['datepicker']            = 'et';
+//$_['datepicker']            = 'eu';
+//$_['datepicker']            = 'fa';
+//$_['datepicker']            = 'fi';
+//$_['datepicker']            = 'fo';
+//$_['datepicker']            = 'fr-ca';
+//$_['datepicker']            = 'fr-ch';
+//$_['datepicker']            = 'fr';
+//$_['datepicker']            = 'fy';
+//$_['datepicker']            = 'gd';
+//$_['datepicker']            = 'gl';
+//$_['datepicker']            = 'gom-latn';
+//$_['datepicker']            = 'he';
+//$_['datepicker']            = 'hi';
+//$_['datepicker']            = 'hr';
+//$_['datepicker']            = 'hu';
+//$_['datepicker']            = 'hy-am';
+//$_['datepicker']            = 'id';
+//$_['datepicker']            = 'is';
+//$_['datepicker']            = 'it';
+//$_['datepicker']            = 'ja';
+//$_['datepicker']            = 'jv';
+//$_['datepicker']            = 'ka';
+//$_['datepicker']            = 'kk';
+//$_['datepicker']            = 'km';
+//$_['datepicker']            = 'kn';
+//$_['datepicker']            = 'ko';
+//$_['datepicker']            = 'ky';
+//$_['datepicker']            = 'lb';
+//$_['datepicker']            = 'lo';
+//$_['datepicker']            = 'lt';
+//$_['datepicker']            = 'lv';
+//$_['datepicker']            = 'me';
+//$_['datepicker']            = 'mi';
+//$_['datepicker']            = 'mk';
+//$_['datepicker']            = 'ml';
+//$_['datepicker']            = 'mr';
+//$_['datepicker']            = 'ms-my';
+//$_['datepicker']            = 'ms';
+//$_['datepicker']            = 'my';
+//$_['datepicker']            = 'nb';
+//$_['datepicker']            = 'ne';
+//$_['datepicker']            = 'nl-be';
+//$_['datepicker']            = 'nl';
+//$_['datepicker']            = 'nn';
+//$_['datepicker']            = 'pa-in';
+//$_['datepicker']            = 'pl';
+//$_['datepicker']            = 'pt-br';
+//$_['datepicker']            = 'pt';
+//$_['datepicker']            = 'ro';
+//$_['datepicker']            = 'ru';
+//$_['datepicker']            = 'sd';
+//$_['datepicker']            = 'se';
+//$_['datepicker']            = 'si';
+//$_['datepicker']            = 'sk';
+//$_['datepicker']            = 'sl';
+//$_['datepicker']            = 'sq';
+//$_['datepicker']            = 'sr-cyrl';
+//$_['datepicker']            = 'sr';
+//$_['datepicker']            = 'ss';
+//$_['datepicker']            = 'sv';
+//$_['datepicker']            = 'sw';
+//$_['datepicker']            = 'ta';
+//$_['datepicker']            = 'te';
+//$_['datepicker']            = 'tet';
+//$_['datepicker']            = 'th';
+//$_['datepicker']            = 'tl-ph';
+//$_['datepicker']            = 'tlh';
+//$_['datepicker']            = 'tr';
+//$_['datepicker']            = 'tzl';
+//$_['datepicker']            = 'tzm-latn';
+//$_['datepicker']            = 'tzm';
+//$_['datepicker']            = 'uk';
+//$_['datepicker']            = 'ur';
+//$_['datepicker']            = 'uz-latn';
+//$_['datepicker']            = 'uz';
+//$_['datepicker']            = 'vi';
+//$_['datepicker']            = 'x-pseudo';
+//$_['datepicker']            = 'yo';
+//$_['datepicker']            = 'zh-cn';
+//$_['datepicker']            = 'zh-hk';
+//$_['datepicker']            = 'zh-tw';

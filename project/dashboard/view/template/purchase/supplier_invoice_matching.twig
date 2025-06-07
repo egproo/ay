@@ -1,0 +1,584 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        {% if matching_status != 'MATCH_FULL' %}
+          <button type="button" id="button-approve" data-bs-toggle="tooltip" title="{{ button_approve_exception }}" class="btn btn-warning"><i class="fas fa-check-circle"></i> {{ button_approve_exception }}</button>
+        {% endif %}
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_matching }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    
+    <div class="row">
+      <!-- Matching Status Summary -->
+      <div class="col-md-12">
+        <div class="card mb-3">
+          <div class="card-header">
+            <h5><i class="fas fa-clipboard-check"></i> {{ text_matching_status }}</h5>
+          </div>
+          <div class="card-body">
+            {% if matching_status == 'MATCH_FULL' %}
+              <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ text_match_full }}</div>
+            {% elseif matching_status == 'MATCH_PARTIAL' %}
+              <div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> {{ text_match_partial }}</div>
+            {% else %}
+              <div class="alert alert-danger"><i class="fas fa-times-circle"></i> {{ text_match_none }}</div>
+            {% endif %}
+            
+            {% if messages %}
+              <div class="mt-3">
+                <h6>{{ text_matching_issues }}:</h6>
+                <ul class="list-group">
+                  {% for message in messages %}
+                    <li class="list-group-item">{{ message }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <!-- Invoice Details -->
+      <div class="col-md-6">
+        <div class="card mb-3">
+          <div class="card-header">
+            <h5><i class="fas fa-file-invoice"></i> {{ text_invoice_details }}</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ text_invoice_number }}</strong></td>
+                <td>{{ invoice_info.invoice_number }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_supplier }}</strong></td>
+                <td>{{ invoice_info.supplier_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_date_added }}</strong></td>
+                <td>{{ invoice_info.date_added }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_due_date }}</strong></td>
+                <td>{{ invoice_info.due_date }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_total }}</strong></td>
+                <td>{{ invoice_info.total_formatted }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_status }}</strong></td>
+                <td>{{ invoice_info.status }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- PO Details -->
+      <div class="col-md-6">
+        <div class="card mb-3">
+          <div class="card-header">
+            <h5><i class="fas fa-shopping-cart"></i> {{ text_po_details }}</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered">
+              <tr>
+                <td><strong>{{ text_po_number }}</strong></td>
+                <td>{{ po_info.order_number }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_supplier }}</strong></td>
+                <td>{{ po_info.supplier_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_date_added }}</strong></td>
+                <td>{{ po_info.date_added }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_total }}</strong></td>
+                <td>{{ po_info.total_formatted }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_status }}</strong></td>
+                <td>{{ po_info.status }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Invoice-PO Variance -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5><i class="fas fa-balance-scale"></i> {{ text_document_variance }}</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>{{ column_po_total }}</th>
+                <th>{{ column_invoice_total }}</th>
+                <th>{{ column_variance_amount }}</th>
+                <th>{{ column_variance_percent }}</th>
+                <th>{{ column_status }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ invoice_po_variance.po_total_formatted }}</td>
+                <td>{{ invoice_po_variance.invoice_total_formatted }}</td>
+                <td>{{ invoice_po_variance.variance_amount_formatted }}</td>
+                <td>{{ invoice_po_variance.variance_percent }}%</td>
+                <td>
+                  {% if invoice_po_variance.status == 'MATCH' %}
+                    <span class="badge bg-success">{{ text_match }}</span>
+                  {% else %}
+                    <span class="badge bg-danger">{{ text_mismatch }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Matching Items -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5><i class="fas fa-list"></i> {{ text_matching_items }}</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_product }}</th>
+                <th>{{ column_po_quantity }}</th>
+                <th>{{ column_po_price }}</th>
+                <th>{{ column_po_total }}</th>
+                <th>{{ column_received_quantity }}</th>
+                <th>{{ column_invoice_quantity }}</th>
+                <th>{{ column_invoice_price }}</th>
+                <th>{{ column_invoice_total }}</th>
+                <th>{{ column_quantity_variance }}</th>
+                <th>{{ column_price_variance }}</th>
+                <th>{{ column_match_status }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in matching_items %}
+                <tr>
+                  <td>{{ item.product_name }}</td>
+                  <td>{{ item.po_quantity }}</td>
+                  <td>{{ item.po_price_formatted }}</td>
+                  <td>{{ item.po_total_formatted }}</td>
+                  <td>{{ item.received_quantity }}</td>
+                  <td>{{ item.invoice_quantity }}</td>
+                  <td>{{ item.invoice_price_formatted }}</td>
+                  <td>{{ item.invoice_total_formatted }}</td>
+                  <td>
+                    {% if item.quantity_variance > 0 %}
+                      <span class="text-danger">+{{ item.quantity_variance }}</span>
+                    {% elseif item.quantity_variance < 0 %}
+                      <span class="text-danger">{{ item.quantity_variance }}</span>
+                    {% else %}
+                      <span class="text-success">0</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.price_variance_percent != 0 %}
+                      <span class="text-danger">{{ item.price_variance_formatted }} ({{ item.price_variance_percent }}%)</span>
+                    {% else %}
+                      <span class="text-success">0</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.match_status == 'MATCH_FULL' %}
+                      <span class="badge bg-success">{{ text_match_full }}</span>
+                    {% elseif item.match_status == 'MATCH_PARTIAL' %}
+                      <span class="badge bg-warning">{{ text_match_partial }}</span>
+                    {% else %}
+                      <span class="badge bg-danger">{{ text_match_none }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Receipts -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h5><i class="fas fa-truck"></i> {{ text_receipts }}</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_receipt_number }}</th>
+                <th>{{ column_reference }}</th>
+                <th>{{ column_date_added }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_quality_status }}</th>
+                <th>{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if receipts %}
+                {% for receipt in receipts %}
+                  <tr>
+                    <td>{{ receipt.receipt_number }}</td>
+                    <td>{{ receipt.reference }}</td>
+                    <td>{{ receipt.date_added }}</td>
+                    <td>{{ receipt.status }}</td>
+                    <td>
+                      {% if receipt.quality_status == 'PENDING' %}
+                        <span class="badge bg-warning">{{ text_quality_pending }}</span>
+                      {% elseif receipt.quality_status == 'PASSED' %}
+                        <span class="badge bg-success">{{ text_quality_passed }}</span>
+                      {% elseif receipt.quality_status == 'FAILED' %}
+                        <span class="badge bg-danger">{{ text_quality_failed }}</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ text_quality_na }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <a href="{{ receipt.view_url }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center">{{ text_no_receipts }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$('#button-approve').on('click', function() {
+  if (confirm('{{ text_confirm_approve_exception }}')) {
+    $.ajax({
+      url: '{{ approve_url }}',
+      type: 'get',
+      dataType: 'json',
+      beforeSend: function() {
+        $('#button-approve').prop('disabled', true).addClass('loading');
+      },
+      complete: function() {
+        $('#button-approve').prop('disabled', false).removeClass('loading');
+      },
+      success: function(json) {
+        $('.alert-dismissible').remove();
+        
+        if (json.error) {
+          $('#content > .container-fluid').prepend('<div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> ' + json.error + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+        }
+        
+        if (json.success) {
+          $('#content > .container-fluid').prepend('<div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> ' + json.success + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+          
+          // Reload the page after 2 seconds
+          setTimeout(function() {
+            location.reload();
+          }, 2000);
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+});
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <a href="{{ back }}" class="btn btn-light"><i class="fas fa-reply"></i> {{ button_back }}</a>
+        {% if can_approve and matching_status != 'full' %}
+        <button type="button" id="button-approve-exception" class="btn btn-warning"><i class="fas fa-check-circle"></i> {{ button_approve_exception }}</button>
+        {% endif %}
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+      <div class="card-header"><i class="fas fa-info-circle"></i> {{ text_matching_details }}</div>
+      <div class="card-body">
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <h5>{{ text_invoice_details }}</h5>
+            <table class="table table-sm">
+              <tr>
+                <td style="width: 40%;"><strong>{{ column_invoice_number }}:</strong></td>
+                <td>{{ invoice_info.invoice_number }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_supplier }}:</strong></td>
+                <td>{{ invoice_info.supplier_name }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_date_added }}:</strong></td>
+                <td>{{ invoice_info.date_added }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_total }}:</strong></td>
+                <td>{{ invoice_info.total_formatted }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_status }}:</strong></td>
+                <td>{{ invoice_info.status }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h5>{{ text_po_details }}</h5>
+            <table class="table table-sm">
+              <tr>
+                <td style="width: 40%;"><strong>{{ column_po_number }}:</strong></td>
+                <td>{{ po_info.order_number }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_date_added }}:</strong></td>
+                <td>{{ po_info.date_added }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_total }}:</strong></td>
+                <td>{{ po_info.total_formatted }}</td>
+              </tr>
+              <tr>
+                <td><strong>{{ column_variance }}:</strong></td>
+                <td>
+                  {% if invoice_po_variance > 0 %}
+                    <span class="text-danger">+{{ invoice_po_variance }}</span>
+                  {% elseif invoice_po_variance < 0 %}
+                    <span class="text-danger">{{ invoice_po_variance }}</span>
+                  {% else %}
+                    <span class="text-success">0</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td><strong>{{ text_matching_status }}:</strong></td>
+                <td>
+                  {% if matching_status == 'full' %}
+                    <span class="badge bg-success">{{ text_match_full }}</span>
+                  {% elseif matching_status == 'partial' %}
+                    <span class="badge bg-warning">{{ text_match_partial }}</span>
+                  {% else %}
+                    <span class="badge bg-danger">{{ text_match_none }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        {% if messages|length > 0 %}
+        <div class="alert alert-warning">
+          <h5><i class="fas fa-exclamation-triangle"></i> {{ text_matching_issues }}</h5>
+          <ul>
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+        
+        <h5 class="mt-4">{{ text_matching_items }}</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_product }}</th>
+                <th class="text-end">{{ column_po_quantity }}</th>
+                <th class="text-end">{{ column_po_price }}</th>
+                <th class="text-end">{{ column_po_total }}</th>
+                <th class="text-end">{{ column_received_quantity }}</th>
+                <th class="text-end">{{ column_invoice_quantity }}</th>
+                <th class="text-end">{{ column_invoice_price }}</th>
+                <th class="text-end">{{ column_invoice_total }}</th>
+                <th class="text-end">{{ column_quantity_variance }}</th>
+                <th class="text-end">{{ column_price_variance }}</th>
+                <th>{{ column_match_status }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if matching_items %}
+                {% for item in matching_items %}
+                <tr>
+                  <td>{{ item.name }}</td>
+                  <td class="text-end">{{ item.po_quantity }}</td>
+                  <td class="text-end">{{ item.po_price_formatted }}</td>
+                  <td class="text-end">{{ item.po_total_formatted }}</td>
+                  <td class="text-end">{{ item.received_quantity }}</td>
+                  <td class="text-end">{{ item.invoice_quantity }}</td>
+                  <td class="text-end">{{ item.invoice_price_formatted }}</td>
+                  <td class="text-end">{{ item.invoice_total_formatted }}</td>
+                  <td class="text-end">
+                    {% if item.quantity_variance > 0 %}
+                      <span class="text-danger">+{{ item.quantity_variance }}</span>
+                    {% elseif item.quantity_variance < 0 %}
+                      <span class="text-danger">{{ item.quantity_variance }}</span>
+                    {% else %}
+                      <span class="text-success">0</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if item.price_variance != 0 %}
+                      <span class="text-danger">{{ item.price_variance_formatted }}</span>
+                    {% else %}
+                      <span class="text-success">0</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.match_status == 'full' %}
+                      <span class="badge bg-success">{{ text_match_full }}</span>
+                    {% elseif item.match_status == 'partial' %}
+                      <span class="badge bg-warning">{{ text_match_partial }}</span>
+                    {% else %}
+                      <span class="badge bg-danger">{{ text_match_none }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="11" class="text-center">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        
+        <h5 class="mt-4">{{ text_receipts }}</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_receipt_number }}</th>
+                <th>{{ column_date_added }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if receipts %}
+                {% for receipt in receipts %}
+                <tr>
+                  <td>{{ receipt.receipt_number }}</td>
+                  <td>{{ receipt.date_added }}</td>
+                  <td>
+                    {% if receipt.quality_status == 'approved' %}
+                      <span class="badge bg-success">{{ text_quality_approved }}</span>
+                    {% elseif receipt.quality_status == 'failed' %}
+                      <span class="badge bg-danger">{{ text_quality_failed }}</span>
+                    {% elseif receipt.quality_status == 'partial' %}
+                      <span class="badge bg-warning">{{ text_quality_partial }}</span>
+                    {% else %}
+                      <span class="badge bg-info">{{ text_quality_pending }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{{ receipt.view }}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i> {{ button_view }}</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="4" class="text-center">{{ text_no_results }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $('#button-approve-exception').on('click', function() {
+    if (confirm('{{ text_confirm_approve_exception }}')) {
+      $.ajax({
+        url: '{{ approve_url }}',
+        type: 'post',
+        dataType: 'json',
+        beforeSend: function() {
+          $('#button-approve-exception').prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i>');
+        },
+        complete: function() {
+          $('#button-approve-exception').prop('disabled', false).html('<i class="fas fa-check-circle"></i> {{ button_approve_exception }}');
+        },
+        success: function(json) {
+          if (json.error) {
+            alert(json.error);
+          }
+          
+          if (json.success) {
+            window.location.href = json.redirect;
+          }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+          alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+      });
+    }
+  });
+});
+</script>
+{{ footer }}

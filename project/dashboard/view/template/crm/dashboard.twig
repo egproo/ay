@@ -1,0 +1,958 @@
+{{ header }}{{ column_left }}
+
+{# لوحة التحكم التفاعلية - CRM Dashboard #}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_refresh }}" onclick="refreshDashboard();" class="btn btn-light">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_settings }}" onclick="$('#modal-settings').modal('show');" class="btn btn-secondary">
+          <i class="fas fa-cog"></i>
+        </button>
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_export }}" onclick="exportDashboard();" class="btn btn-success">
+          <i class="fas fa-download"></i>
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item">
+            <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {# مؤشرات الأداء الرئيسية #}
+    <div class="row mb-4">
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-gradient-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">{{ kpi.total_leads }}</h3>
+                <p class="mb-0">{{ text_total_leads }}</p>
+                <small class="opacity-75">
+                  <i class="fas fa-arrow-{{ kpi.leads_trend > 0 ? 'up text-success' : 'down text-danger' }}"></i>
+                  {{ kpi.leads_trend }}% {{ text_from_last_month }}
+                </small>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-users fa-3x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="{{ link_leads }}" class="text-white text-decoration-none">
+              {{ text_view_details }} <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-gradient-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">{{ kpi.conversion_rate }}%</h3>
+                <p class="mb-0">{{ text_conversion_rate }}</p>
+                <small class="opacity-75">
+                  <i class="fas fa-arrow-{{ kpi.conversion_trend > 0 ? 'up text-success' : 'down text-danger' }}"></i>
+                  {{ kpi.conversion_trend }}% {{ text_from_last_month }}
+                </small>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-exchange-alt fa-3x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="{{ link_conversions }}" class="text-white text-decoration-none">
+              {{ text_view_details }} <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-gradient-warning text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">{{ kpi.revenue }}</h3>
+                <p class="mb-0">{{ text_total_revenue }}</p>
+                <small class="opacity-75">
+                  <i class="fas fa-arrow-{{ kpi.revenue_trend > 0 ? 'up text-success' : 'down text-danger' }}"></i>
+                  {{ kpi.revenue_trend }}% {{ text_from_last_month }}
+                </small>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="{{ link_revenue }}" class="text-white text-decoration-none">
+              {{ text_view_details }} <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="card bg-gradient-info text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h3 class="mb-0">{{ kpi.active_campaigns }}</h3>
+                <p class="mb-0">{{ text_active_campaigns }}</p>
+                <small class="opacity-75">
+                  <i class="fas fa-arrow-{{ kpi.campaigns_trend > 0 ? 'up text-success' : 'down text-danger' }}"></i>
+                  {{ kpi.campaigns_trend }}% {{ text_from_last_month }}
+                </small>
+              </div>
+              <div class="align-self-center">
+                <i class="fas fa-bullhorn fa-3x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="{{ link_campaigns }}" class="text-white text-decoration-none">
+              {{ text_view_details }} <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# الرسوم البيانية الرئيسية #}
+    <div class="row mb-4">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-chart-line"></i>
+              {{ text_sales_performance }}
+            </h3>
+            <div class="card-tools">
+              <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="sales-period" id="sales-7d" value="7" autocomplete="off">
+                <label class="btn btn-outline-primary btn-sm" for="sales-7d">7{{ text_days }}</label>
+
+                <input type="radio" class="btn-check" name="sales-period" id="sales-30d" value="30" autocomplete="off" checked>
+                <label class="btn btn-outline-primary btn-sm" for="sales-30d">30{{ text_days }}</label>
+
+                <input type="radio" class="btn-check" name="sales-period" id="sales-90d" value="90" autocomplete="off">
+                <label class="btn btn-outline-primary btn-sm" for="sales-90d">90{{ text_days }}</label>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <canvas id="salesPerformanceChart" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-chart-pie"></i>
+              {{ text_lead_sources }}
+            </h3>
+          </div>
+          <div class="card-body">
+            <canvas id="leadSourcesChart" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# الرسوم البيانية الثانوية #}
+    <div class="row mb-4">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-funnel-dollar"></i>
+              {{ text_sales_funnel }}
+            </h3>
+          </div>
+          <div class="card-body">
+            <canvas id="salesFunnelChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-chart-bar"></i>
+              {{ text_campaign_performance }}
+            </h3>
+          </div>
+          <div class="card-body">
+            <canvas id="campaignPerformanceChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# الجداول والقوائم #}
+    <div class="row mb-4">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-star"></i>
+              {{ text_top_leads }}
+            </h3>
+            <div class="card-tools">
+              <a href="{{ link_leads }}" class="btn btn-sm btn-primary">{{ text_view_all }}</a>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-striped mb-0">
+                <thead>
+                  <tr>
+                    <th>{{ text_name }}</th>
+                    <th>{{ text_company }}</th>
+                    <th>{{ text_score }}</th>
+                    <th>{{ text_status }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for lead in top_leads %}
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="avatar-sm me-2">
+                            <div class="avatar-title rounded-circle bg-{{ lead.priority_color }}">
+                              {{ lead.customer_name|slice(0, 1)|upper }}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>{{ lead.customer_name }}</strong>
+                            <br><small class="text-muted">{{ lead.email }}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{{ lead.company }}</td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="progress me-2" style="width: 50px; height: 6px;">
+                            <div class="progress-bar bg-{{ lead.score_color }}" style="width: {{ lead.total_score }}%"></div>
+                          </div>
+                          <span class="fw-bold">{{ lead.total_score }}%</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge bg-{{ lead.status_color }}">{{ lead.status }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-tasks"></i>
+              {{ text_recent_activities }}
+            </h3>
+            <div class="card-tools">
+              <a href="{{ link_activities }}" class="btn btn-sm btn-primary">{{ text_view_all }}</a>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="timeline">
+              {% for activity in recent_activities %}
+                <div class="timeline-item">
+                  <div class="timeline-marker bg-{{ activity.type_color }}">
+                    <i class="fas fa-{{ activity.icon }}"></i>
+                  </div>
+                  <div class="timeline-content">
+                    <h6 class="timeline-title">{{ activity.title }}</h6>
+                    <p class="timeline-text">{{ activity.description }}</p>
+                    <small class="text-muted">
+                      <i class="fas fa-clock"></i> {{ activity.time_ago }}
+                      <span class="ms-2">
+                        <i class="fas fa-user"></i> {{ activity.user_name }}
+                      </span>
+                    </small>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# التنبيهات والإشعارات #}
+    <div class="row mb-4">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-bell"></i>
+              {{ text_alerts_notifications }}
+            </h3>
+            <div class="card-tools">
+              <button type="button" class="btn btn-sm btn-light" onclick="markAllAsRead();">
+                <i class="fas fa-check-double"></i> {{ text_mark_all_read }}
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            {% if alerts %}
+              <div class="row">
+                {% for alert in alerts %}
+                  <div class="col-lg-4 mb-3">
+                    <div class="alert alert-{{ alert.type }} alert-dismissible">
+                      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                      <h6><i class="fas fa-{{ alert.icon }}"></i> {{ alert.title }}</h6>
+                      <p class="mb-1">{{ alert.message }}</p>
+                      <small class="text-muted">{{ alert.time_ago }}</small>
+                      {% if alert.action_url %}
+                        <div class="mt-2">
+                          <a href="{{ alert.action_url }}" class="btn btn-sm btn-{{ alert.type }}">{{ alert.action_text }}</a>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="text-center text-muted py-4">
+                <i class="fas fa-bell-slash fa-3x mb-3"></i>
+                <p>{{ text_no_alerts }}</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# الأهداف والتقدم #}
+    <div class="row mb-4">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-target"></i>
+              {{ text_goals_progress }}
+            </h3>
+            <div class="card-tools">
+              <a href="{{ link_goals }}" class="btn btn-sm btn-primary">{{ text_manage_goals }}</a>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              {% for goal in goals %}
+                <div class="col-lg-3 col-md-6 mb-3">
+                  <div class="card border-{{ goal.status_color }}">
+                    <div class="card-body text-center">
+                      <h5 class="card-title">{{ goal.title }}</h5>
+                      <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-{{ goal.status_color }}" style="width: {{ goal.progress }}%"></div>
+                      </div>
+                      <p class="card-text">
+                        <strong>{{ goal.current_value }}</strong> / {{ goal.target_value }}
+                        <br><small class="text-muted">{{ goal.progress }}% {{ text_completed }}</small>
+                      </p>
+                      <small class="text-muted">
+                        <i class="fas fa-calendar"></i> {{ text_deadline }}: {{ goal.deadline }}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# مودال إعدادات لوحة التحكم #}
+<div class="modal fade" id="modal-settings" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">{{ text_dashboard_settings }}</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-settings">
+          <div class="row">
+            <div class="col-md-6">
+              <h5>{{ text_display_settings }}</h5>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input type="checkbox" name="show_kpi" id="show-kpi" class="form-check-input" checked>
+                  <label for="show-kpi" class="form-check-label">{{ text_show_kpi }}</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input type="checkbox" name="show_charts" id="show-charts" class="form-check-input" checked>
+                  <label for="show-charts" class="form-check-label">{{ text_show_charts }}</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input type="checkbox" name="show_activities" id="show-activities" class="form-check-input" checked>
+                  <label for="show-activities" class="form-check-label">{{ text_show_activities }}</label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-check">
+                  <input type="checkbox" name="show_alerts" id="show-alerts" class="form-check-input" checked>
+                  <label for="show-alerts" class="form-check-label">{{ text_show_alerts }}</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h5>{{ text_refresh_settings }}</h5>
+              <div class="mb-3">
+                <label for="auto-refresh" class="form-label">{{ text_auto_refresh }}</label>
+                <select name="auto_refresh" id="auto-refresh" class="form-select">
+                  <option value="0">{{ text_disabled }}</option>
+                  <option value="30">30 {{ text_seconds }}</option>
+                  <option value="60" selected>1 {{ text_minute }}</option>
+                  <option value="300">5 {{ text_minutes }}</option>
+                  <option value="600">10 {{ text_minutes }}</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="default-period" class="form-label">{{ text_default_period }}</label>
+                <select name="default_period" id="default-period" class="form-select">
+                  <option value="7">7 {{ text_days }}</option>
+                  <option value="30" selected>30 {{ text_days }}</option>
+                  <option value="90">90 {{ text_days }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="saveSettings();">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// متغيرات عامة
+var refreshInterval;
+var charts = {};
+
+// تهيئة لوحة التحكم
+$(document).ready(function() {
+    initializeCharts();
+    setupEventListeners();
+    loadSettings();
+    startAutoRefresh();
+
+    // تهيئة التلميحات
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// تهيئة الرسوم البيانية
+function initializeCharts() {
+    // رسم بياني لأداء المبيعات
+    var salesCtx = document.getElementById('salesPerformanceChart').getContext('2d');
+    charts.salesPerformance = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for data in sales_performance %}
+                    '{{ data.date }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: '{{ text_revenue }}',
+                data: [
+                    {% for data in sales_performance %}
+                        {{ data.revenue }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }, {
+                label: '{{ text_leads }}',
+                data: [
+                    {% for data in sales_performance %}
+                        {{ data.leads }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+
+    // رسم بياني لمصادر العملاء المحتملين
+    var leadSourcesCtx = document.getElementById('leadSourcesChart').getContext('2d');
+    charts.leadSources = new Chart(leadSourcesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for source in lead_sources %}
+                    '{{ source.name }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for source in lead_sources %}
+                        {{ source.count }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1', '#fd7e14', '#20c997'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // رسم بياني لقمع المبيعات
+    var salesFunnelCtx = document.getElementById('salesFunnelChart').getContext('2d');
+    charts.salesFunnel = new Chart(salesFunnelCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for stage in sales_funnel %}
+                    '{{ stage.name }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: '{{ text_count }}',
+                data: [
+                    {% for stage in sales_funnel %}
+                        {{ stage.count }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    '#007bff', '#17a2b8', '#ffc107', '#28a745', '#6f42c1'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // رسم بياني لأداء الحملات
+    var campaignCtx = document.getElementById('campaignPerformanceChart').getContext('2d');
+    charts.campaignPerformance = new Chart(campaignCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for campaign in campaign_performance %}
+                    '{{ campaign.name }}'{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: '{{ text_roi }}',
+                data: [
+                    {% for campaign in campaign_performance %}
+                        {{ campaign.roi }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(0, 123, 255, 0.8)',
+                borderColor: '#007bff',
+                borderWidth: 1
+            }, {
+                label: '{{ text_conversion_rate }}',
+                data: [
+                    {% for campaign in campaign_performance %}
+                        {{ campaign.conversion_rate }}{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                borderColor: '#28a745',
+                borderWidth: 1,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    max: 100,
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+}
+
+// إعداد مستمعي الأحداث
+function setupEventListeners() {
+    // تغيير فترة أداء المبيعات
+    $('input[name="sales-period"]').change(function() {
+        var period = $(this).val();
+        updateSalesChart(period);
+    });
+}
+
+// تحديث رسم بياني المبيعات
+function updateSalesChart(period) {
+    $.ajax({
+        url: 'index.php?route=crm/dashboard/getSalesData&user_token={{ user_token }}',
+        type: 'post',
+        data: {period: period},
+        dataType: 'json',
+        success: function(json) {
+            if (json['success']) {
+                var data = json['data'];
+                charts.salesPerformance.data.labels = data.labels;
+                charts.salesPerformance.data.datasets[0].data = data.revenue;
+                charts.salesPerformance.data.datasets[1].data = data.leads;
+                charts.salesPerformance.update();
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+// تحديث لوحة التحكم
+function refreshDashboard() {
+    $.ajax({
+        url: 'index.php?route=crm/dashboard/refresh&user_token={{ user_token }}',
+        type: 'post',
+        dataType: 'json',
+        beforeSend: function() {
+            $('.btn[onclick="refreshDashboard();"] i').addClass('fa-spin');
+        },
+        complete: function() {
+            $('.btn[onclick="refreshDashboard();"] i').removeClass('fa-spin');
+        },
+        success: function(json) {
+            if (json['success']) {
+                location.reload();
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+// تحميل الإعدادات
+function loadSettings() {
+    var settings = localStorage.getItem('dashboard_settings');
+    if (settings) {
+        settings = JSON.parse(settings);
+
+        $('#show-kpi').prop('checked', settings.show_kpi !== false);
+        $('#show-charts').prop('checked', settings.show_charts !== false);
+        $('#show-activities').prop('checked', settings.show_activities !== false);
+        $('#show-alerts').prop('checked', settings.show_alerts !== false);
+        $('#auto-refresh').val(settings.auto_refresh || 60);
+        $('#default-period').val(settings.default_period || 30);
+    }
+}
+
+// حفظ الإعدادات
+function saveSettings() {
+    var settings = {
+        show_kpi: $('#show-kpi').is(':checked'),
+        show_charts: $('#show-charts').is(':checked'),
+        show_activities: $('#show-activities').is(':checked'),
+        show_alerts: $('#show-alerts').is(':checked'),
+        auto_refresh: parseInt($('#auto-refresh').val()),
+        default_period: parseInt($('#default-period').val())
+    };
+
+    localStorage.setItem('dashboard_settings', JSON.stringify(settings));
+
+    $('#modal-settings').modal('hide');
+
+    // إعادة تشغيل التحديث التلقائي
+    startAutoRefresh();
+
+    // إظهار رسالة نجاح
+    showAlert('success', '{{ text_settings_saved }}');
+}
+
+// بدء التحديث التلقائي
+function startAutoRefresh() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+
+    var settings = JSON.parse(localStorage.getItem('dashboard_settings') || '{}');
+    var autoRefresh = settings.auto_refresh || 60;
+
+    if (autoRefresh > 0) {
+        refreshInterval = setInterval(function() {
+            refreshDashboard();
+        }, autoRefresh * 1000);
+    }
+}
+
+// تصدير لوحة التحكم
+function exportDashboard() {
+    var url = 'index.php?route=crm/dashboard/export&user_token={{ user_token }}';
+    window.open(url, '_blank');
+}
+
+// تحديد جميع التنبيهات كمقروءة
+function markAllAsRead() {
+    $.ajax({
+        url: 'index.php?route=crm/dashboard/markAlertsRead&user_token={{ user_token }}',
+        type: 'post',
+        dataType: 'json',
+        success: function(json) {
+            if (json['success']) {
+                $('.alert').fadeOut();
+                showAlert('success', '{{ text_alerts_marked_read }}');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+// إظهار تنبيه
+function showAlert(type, message) {
+    var alertHtml = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+        '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + message +
+        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+        '</div>';
+
+    $('#content .container-fluid').prepend(alertHtml);
+
+    // إخفاء التنبيه تلقائياً بعد 5 ثوان
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+
+// تحديث الوقت الفعلي
+function updateRealTime() {
+    $('.time-ago').each(function() {
+        var timestamp = $(this).data('timestamp');
+        if (timestamp) {
+            $(this).text(moment(timestamp).fromNow());
+        }
+    });
+}
+
+// تحديث الوقت كل دقيقة
+setInterval(updateRealTime, 60000);
+
+// تنظيف عند مغادرة الصفحة
+$(window).on('beforeunload', function() {
+    if (refreshInterval) {
+        clearInterval(refreshInterval);
+    }
+});
+</script>
+
+<style>
+/* أنماط مخصصة للوحة التحكم */
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(45deg, #28a745, #1e7e34);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(45deg, #ffc107, #e0a800);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(45deg, #17a2b8, #117a8b);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+
+.timeline-title {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.timeline-text {
+    margin-bottom: 10px;
+    color: #6c757d;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-title {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.opacity-50 {
+    opacity: 0.5;
+}
+
+.opacity-75 {
+    opacity: 0.75;
+}
+</style>
+
+{{ footer }}

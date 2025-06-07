@@ -1,0 +1,210 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-purchase-order').toggleClass('d-none');" class="btn btn-light d-md-none d-lg-none"><i class="fas fa-filter"></i></button>
+        <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary"><i class="fas fa-plus"></i></a>
+        <button type="submit" form="form-purchase-order" formaction="{{ delete }}" data-bs-toggle="tooltip" title="{{ button_delete }}" onclick="return confirm('{{ text_confirm_delete }}');" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+        <a href="{{ export }}" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-success"><i class="fas fa-file-excel"></i></a>
+        <a href="{{ reorder_report }}" data-bs-toggle="tooltip" title="{{ button_reorder_report }}" class="btn btn-info"><i class="fas fa-shopping-cart"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="row">
+      <div id="filter-purchase-order" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ button_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-po-number" class="form-label">{{ entry_po_number }}</label>
+              <input type="text" name="filter_po_number" value="{{ filter_po_number }}" placeholder="{{ entry_po_number }}" id="input-po-number" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-supplier" class="form-label">{{ entry_supplier }}</label>
+              <select name="filter_supplier" id="input-supplier" class="form-select">
+                <option value="">{{ text_all_status }}</option>
+                {% for supplier in suppliers %}
+                  <option value="{{ supplier.supplier_id }}" {% if supplier.supplier_id == filter_supplier %}selected{% endif %}>{{ supplier.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-branch" class="form-label">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-select">
+                <option value="">{{ text_all_status }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_branch %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-from" class="form-label">{{ entry_date_from }}</label>
+              <input type="date" name="filter_date_from" value="{{ filter_date_from }}" id="input-date-from" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-date-to" class="form-label">{{ entry_date_to }}</label>
+              <input type="date" name="filter_date_to" value="{{ filter_date_to }}" id="input-date-to" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-status" class="form-label">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-select">
+                {% for key, value in purchase_order_statuses %}
+                  <option value="{{ key }}" {% if key == filter_status %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-list"></i> {{ text_list }}</div>
+          <div class="card-body">
+            <form id="form-purchase-order" method="post">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', $(this).prop('checked'));" class="form-check-input"/></td>
+                      <td class="text-start"><a href="{{ sort_po_number }}" {% if sort == 'po.po_number' %}class="{{ order|lower }}"{% endif %}>{{ column_po_number }}</a></td>
+                      <td class="text-start"><a href="{{ sort_supplier }}" {% if sort == 's.name' %}class="{{ order|lower }}"{% endif %}>{{ column_supplier }}</a></td>
+                      <td class="text-start"><a href="{{ sort_branch }}" {% if sort == 'b.name' %}class="{{ order|lower }}"{% endif %}>{{ column_branch }}</a></td>
+                      <td class="text-start"><a href="{{ sort_order_date }}" {% if sort == 'po.order_date' %}class="{{ order|lower }}"{% endif %}>{{ column_order_date }}</a></td>
+                      <td class="text-end">{{ column_total_amount }}</td>
+                      <td class="text-center">{{ column_total_items }}</td>
+                      <td class="text-start"><a href="{{ sort_status }}" {% if sort == 'po.status' %}class="{{ order|lower }}"{% endif %}>{{ column_status }}</a></td>
+                      <td class="text-start"><a href="{{ sort_date_added }}" {% if sort == 'po.date_added' %}class="{{ order|lower }}"{% endif %}>{{ column_date_added }}</a></td>
+                      <td class="text-end">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if purchase_orders %}
+                      {% for purchase_order in purchase_orders %}
+                        <tr>
+                          <td class="text-center"><input type="checkbox" name="selected[]" value="{{ purchase_order.purchase_order_id }}" class="form-check-input"/></td>
+                          <td class="text-start">{{ purchase_order.po_number }}</td>
+                          <td class="text-start">{{ purchase_order.supplier_name }}</td>
+                          <td class="text-start">{{ purchase_order.branch_name }}</td>
+                          <td class="text-start">{{ purchase_order.order_date }}</td>
+                          <td class="text-end">{{ purchase_order.total_amount }}</td>
+                          <td class="text-center">{{ purchase_order.total_items }}</td>
+                          <td class="text-start">
+                            {% if purchase_order.status == 'draft' %}
+                              <span class="badge bg-secondary">{{ purchase_order.status_text }}</span>
+                            {% elseif purchase_order.status == 'pending' %}
+                              <span class="badge bg-warning text-dark">{{ purchase_order.status_text }}</span>
+                            {% elseif purchase_order.status == 'approved' %}
+                              <span class="badge bg-primary">{{ purchase_order.status_text }}</span>
+                            {% elseif purchase_order.status == 'ordered' %}
+                              <span class="badge bg-info">{{ purchase_order.status_text }}</span>
+                            {% elseif purchase_order.status == 'partial' %}
+                              <span class="badge bg-warning text-dark">{{ purchase_order.status_text }}</span>
+                            {% elseif purchase_order.status == 'received' %}
+                              <span class="badge bg-success">{{ purchase_order.status_text }}</span>
+                            {% elseif purchase_order.status == 'cancelled' %}
+                              <span class="badge bg-danger">{{ purchase_order.status_text }}</span>
+                            {% endif %}
+                          </td>
+                          <td class="text-start">{{ purchase_order.date_added }}</td>
+                          <td class="text-end">
+                            <div class="btn-group">
+                              <a href="{{ purchase_order.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fas fa-eye"></i></a>
+                              {% if purchase_order.status == 'draft' or purchase_order.status == 'pending' %}
+                                <a href="{{ purchase_order.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fas fa-pencil-alt"></i></a>
+                              {% endif %}
+                              <a href="{{ purchase_order.print }}" data-bs-toggle="tooltip" title="{{ button_print }}" class="btn btn-success" target="_blank"><i class="fas fa-print"></i></a>
+                              {% if purchase_order.status == 'pending' %}
+                                <a href="{{ purchase_order.approve }}" data-bs-toggle="tooltip" title="{{ button_approve }}" class="btn btn-primary" onclick="return confirm('{{ text_confirm_approve }}');"><i class="fas fa-check"></i></a>
+                              {% endif %}
+                              {% if purchase_order.status == 'approved' %}
+                                <a href="{{ purchase_order.order }}" data-bs-toggle="tooltip" title="{{ button_order }}" class="btn btn-info" onclick="return confirm('{{ text_confirm_order }}');"><i class="fas fa-shopping-cart"></i></a>
+                              {% endif %}
+                              {% if purchase_order.status == 'ordered' or purchase_order.status == 'partial' %}
+                                <a href="{{ purchase_order.receive }}" data-bs-toggle="tooltip" title="{{ button_receive }}" class="btn btn-warning"><i class="fas fa-truck"></i></a>
+                              {% endif %}
+                              {% if purchase_order.status == 'draft' or purchase_order.status == 'pending' or purchase_order.status == 'approved' %}
+                                <a href="{{ purchase_order.cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-danger" onclick="return confirm('{{ text_confirm_cancel }}');"><i class="fas fa-ban"></i></a>
+                              {% endif %}
+                            </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr>
+                        <td class="text-center" colspan="10">{{ text_no_results }}</td>
+                      </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </form>
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+	var url = 'index.php?route=inventory/purchase_order&user_token={{ user_token }}';
+
+	var filter_po_number = $('#input-po-number').val();
+	if (filter_po_number) {
+		url += '&filter_po_number=' + encodeURIComponent(filter_po_number);
+	}
+
+	var filter_supplier = $('#input-supplier').val();
+	if (filter_supplier) {
+		url += '&filter_supplier=' + encodeURIComponent(filter_supplier);
+	}
+
+	var filter_branch = $('#input-branch').val();
+	if (filter_branch) {
+		url += '&filter_branch=' + encodeURIComponent(filter_branch);
+	}
+
+	var filter_date_from = $('#input-date-from').val();
+	if (filter_date_from) {
+		url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+	}
+
+	var filter_date_to = $('#input-date-to').val();
+	if (filter_date_to) {
+		url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+	}
+
+	var filter_status = $('#input-status').val();
+	if (filter_status) {
+		url += '&filter_status=' + encodeURIComponent(filter_status);
+	}
+
+	location = url;
+});
+</script>
+{{ footer }}

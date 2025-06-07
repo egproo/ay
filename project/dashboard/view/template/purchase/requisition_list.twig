@@ -1,0 +1,701 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                {% if can_add %}
+                <button type="button" class="btn btn-primary" onclick="$('#modal-add-requisition').modal('show');">
+                    <i class="fas fa-plus"></i> {{ button_add_requisition }}
+                </button>
+                {% endif %}
+            </div>
+            <h1><i class="fas fa-clipboard-list"></i> {{ heading_title }}</h1>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endif %}
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white cursor-pointer" onclick="filterByStatus('')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-clipboard"></i> {{ text_total_requisitions }}</h5>
+                        <h3 id="total-requisitions">{{ stats.total|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white cursor-pointer" onclick="filterByStatus('pending')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-clock"></i> {{ text_pending_requisitions }}</h5>
+                        <h3 id="pending-requisitions">{{ stats.pending|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white cursor-pointer" onclick="filterByStatus('approved')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-check-circle"></i> {{ text_approved_requisitions }}</h5>
+                        <h3 id="approved-requisitions">{{ stats.approved|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white cursor-pointer" onclick="filterByStatus('rejected')">
+                    <div class="card-body">
+                        <h5><i class="fas fa-times-circle"></i> {{ text_rejected_requisitions }}</h5>
+                        <h3 id="rejected-requisitions">{{ stats.rejected|number_format }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4><i class="fas fa-filter"></i> {{ text_filters }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_req_number }}</label>
+                            <input type="text" class="form-control" id="filter-req-number">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_filter_status }}</label>
+                            <select class="form-control" id="filter-status">
+                                <option value="">{{ text_all_statuses }}</option>
+                                {% for status in status_options %}
+                                <option value="{{ status.value }}">{{ status.text }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_filter_date_start }}</label>
+                            <input type="date" class="form-control" id="filter-date-start">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>{{ text_filter_date_end }}</label>
+                            <input type="date" class="form-control" id="filter-date-end">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-primary" onclick="loadRequisitions();">
+                            <i class="fas fa-search"></i> {{ text_search }}
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetFilters();">
+                            <i class="fas fa-undo"></i> {{ text_reset }}
+                        </button>
+                        <button type="button" class="btn btn-success float-end" onclick="exportRequisitions();">
+                            <i class="fas fa-download"></i> {{ text_export }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <select class="form-control" id="bulk-action">
+                            <option value="">{{ text_select_action }}</option>
+                            {% if can_approve %}
+                            <option value="approve">{{ text_approve_selected }}</option>
+                            {% endif %}
+                            {% if can_reject %}
+                            <option value="reject">{{ text_reject_selected }}</option>
+                            {% endif %}
+                            {% if can_delete %}
+                            <option value="delete">{{ text_delete_selected }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary" onclick="executeBulkAction();">
+                            {{ button_execute }}
+                        </button>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button type="button" class="btn btn-info" onclick="loadRequisitions();">
+                            <i class="fas fa-sync"></i> {{ text_refresh_list }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requisitions List -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th width="1"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);"></th>
+                                <th>{{ column_requisition_id }}</th>
+                                <th>{{ column_req_number }}</th>
+                                <th>{{ column_branch }}</th>
+                                <th>{{ column_user_groups }}</th>
+                                <th>{{ column_status }}</th>
+                                <th>{{ column_date_added }}</th>
+                                <th>{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requisition-list">
+                            <!-- Filled dynamically via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 text-start" id="pagination"></div>
+                    <div class="col-sm-6 text-end" id="results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Requisition Modal -->
+<div id="modal-add-requisition" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ text_add_requisition }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="{{ text_close }}">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-add-requisition">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ text_branch }}</label>
+                            <select name="branch_id" class="form-control select2-branch" required>
+                                <option value="">{{ text_select }}</option>
+                                {% for branch in branches %}
+                                <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ text_user_group }}</label>
+                            <select name="user_group_id" class="form-control select2-user-group" required>
+                                <option value="">{{ text_select }}</option>
+                                {% for group in user_groups %}
+                                <option value="{{ group.user_group_id }}">{{ group.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ text_required_date }}</label>
+                            <input type="date" name="required_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ text_priority }}</label>
+                            <select name="priority" class="form-control select2-priority">
+                                <option value="low">{{ text_priority_low }}</option>
+                                <option value="medium" selected>{{ text_priority_medium }}</option>
+                                <option value="high">{{ text_priority_high }}</option>
+                                <option value="urgent">{{ text_priority_urgent }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">{{ text_notes }}</label>
+                            <textarea name="notes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered" id="req-items">
+                            <thead>
+                                <tr>
+                                    <th>{{ column_product }}</th>
+                                    <th>{{ column_quantity }}</th>
+                                    <th>{{ column_unit }}</th>
+                                    <th>{{ column_description }}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5">
+                                        <button type="button" class="btn btn-primary" id="button-add-item">
+                                            <i class="fas fa-plus"></i> {{ text_add_item }}
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ text_close }}</button>
+                <button type="button" class="btn btn-primary" onclick="$('#form-add-requisition').submit();">
+                    {{ button_save }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Requisition Modal -->
+<div id="modal-edit-requisition" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- View Quotations Modal -->
+<div id="modal-quotations" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- Add Quotation Modal -->
+<div id="modal-add-quotation" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+    <div id="loading-spinner"></div>
+</div>
+
+<!-- Hidden template for adding items -->
+<template id="template-add-item">
+    <tr>
+        <td>
+            <select name="item_product_id[]" class="form-control product-select" required>
+                <option value="">{{ text_select_product }}</option>
+            </select>
+            <div class="product-details mt-2"></div>
+            <div class="pending-requisitions mt-2"></div>
+        </td>
+        <td>
+            <input type="number" name="item_quantity[]" class="form-control" value="1" min="0.0001" step="0.0001" required>
+        </td>
+        <td>
+            <select name="item_unit_id[]" class="form-control unit-select" required>
+                <option value="">{{ text_select }}</option>
+            </select>
+        </td>
+        <td>
+            <input type="text" name="item_description[]" class="form-control">
+            <div class="suggested-quantity mt-2 text-muted small"></div>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger button-remove-item">
+                <i class="fas fa-minus-circle"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+
+<!-- Purchase Workflow Visualization -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4><i class="fas fa-project-diagram"></i> {{ text_workflow }}</h4>
+    </div>
+    <div class="card-body">
+        <div class="workflow-visualization">
+            <div class="workflow-step">
+                <div class="step-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="step-label">{{ text_create_requisition }}</div>
+                <div class="step-desc">{{ text_create_requisition_desc }}</div>
+            </div>
+            <div class="workflow-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="workflow-step">
+                <div class="step-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="step-label">{{ text_approval_process }}</div>
+                <div class="step-desc">{{ text_approval_process_desc }}</div>
+            </div>
+            <div class="workflow-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="workflow-step">
+                <div class="step-icon">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="step-label">{{ text_quotations }}</div>
+                <div class="step-desc">{{ text_quotations_desc }}</div>
+            </div>
+            <div class="workflow-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="workflow-step">
+                <div class="step-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="step-label">{{ text_purchase_order }}</div>
+                <div class="step-desc">{{ text_purchase_order_desc }}</div>
+            </div>
+            <div class="workflow-arrow">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="workflow-step">
+                <div class="step-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="step-label">{{ text_receive_goods }}</div>
+                <div class="step-desc">{{ text_receive_goods_desc }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Guide -->
+<div class="well help-section" id="help-section" style="display: none; margin-top: 30px;">
+    <h3><i class="fa fa-question-circle"></i> {{ text_help_guide }}</h3>
+
+    <div class="panel-group" id="help-accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#help-accordion" href="#help-1">
+                        <i class="fas fa-plus-circle"></i> {{ text_help_create_requisition }}
+                    </a>
+                </h4>
+            </div>
+            <div id="help-1" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {{ text_help_create_requisition_desc }}
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#help-accordion" href="#help-2">
+                        <i class="fas fa-plus-circle"></i> {{ text_help_manage_requisitions }}
+                    </a>
+                </h4>
+            </div>
+            <div id="help-2" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {{ text_help_manage_requisitions_desc }}
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#help-accordion" href="#help-3">
+                        <i class="fas fa-plus-circle"></i> {{ text_help_quotations }}
+                    </a>
+                </h4>
+            </div>
+            <div id="help-3" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {{ text_help_quotations_desc }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-default margin-top-15" onclick="$('#help-section').slideUp();">
+        {{ text_close_help }}
+    </button>
+</div>
+
+<div style="text-align: center; margin: 30px 0 15px;">
+    <button type="button" class="btn btn-info btn-lg" onclick="$('#help-section').slideToggle();">
+        <i class="fas fa-question-circle"></i> {{ text_show_help }}
+    </button>
+</div>
+
+{{ footer }}
+
+<script src="view/javascript/purchase/requisition_list.js"></script>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.cursor-pointer:hover {
+    transform: translateY(-5px);
+}
+</style>
+
+<script type="text/javascript">
+// Global variables
+var user_token = '{{ user_token }}';
+var currentPage = 1;
+var language = {
+    text_no_results: '{{ text_no_results }}',
+    text_confirm_approve: '{{ text_confirm_approve }}',
+    text_confirm_reject: '{{ text_confirm_reject }}',
+    text_confirm_delete: '{{ text_confirm_delete }}',
+    text_confirm_bulk_approve: '{{ text_confirm_bulk_approve }}',
+    text_confirm_bulk_reject: '{{ text_confirm_bulk_reject }}',
+    text_confirm_bulk_delete: '{{ text_confirm_bulk_delete }}',
+    text_prompt_reject_reason: '{{ text_prompt_reject_reason }}',
+    text_select_product: '{{ text_select_product }}',
+    text_select: '{{ text_select }}',
+    text_current_stock: '{{ text_current_stock }}',
+    text_average_cost: '{{ text_average_cost }}',
+    text_pending_requisitions: '{{ text_pending_requisitions }}',
+    text_req_number: '{{ text_req_number }}',
+    text_saving: '{{ text_saving }}',
+    error_no_selection: '{{ error_no_selection }}',
+    error_select_action: '{{ error_select_action }}',
+    button_save: '{{ button_save }}'
+};
+
+function filterByStatus(status) {
+    $('#filter-status').val(status);
+    loadRequisitions();
+}
+
+function loadRequisitions() {
+    var data = {
+        filter_req_number: $('#filter-req-number').val(),
+        filter_status: $('#filter-status').val(),
+        filter_date_start: $('#filter-date-start').val(),
+        filter_date_end: $('#filter-date-end').val(),
+        page: currentPage
+    };
+
+    $.ajax({
+        url: 'index.php?route=purchase/requisition/ajaxList&user_token=' + user_token,
+        type: 'get',
+        data: data,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#loading-overlay').show();
+        },
+        complete: function() {
+            $('#loading-overlay').hide();
+        },
+        success: function(json) {
+            // Update stats
+            $('#total-requisitions').html(json.stats.total);
+            $('#pending-requisitions').html(json.stats.pending);
+            $('#approved-requisitions').html(json.stats.approved);
+            $('#rejected-requisitions').html(json.stats.rejected);
+
+            // Update table
+            var html = '';
+            if (json.requisitions) {
+                for (var i = 0; i < json.requisitions.length; i++) {
+                    var req = json.requisitions[i];
+                    html += generateRequisitionRow(req);
+                }
+            }
+            $('#requisition-list').html(html);
+
+            // Update pagination
+            $('#pagination').html(json.pagination);
+            $('#results').html(json.total);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+
+function resetFilters() {
+    $('#filter-req-number').val('');
+    $('#filter-status').val('');
+    $('#filter-date-start').val('');
+    $('#filter-date-end').val('');
+    loadRequisitions();
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    loadRequisitions();
+});
+
+function initializeProductSelect($select) {
+    $select.select2({
+        placeholder: "{{ text_select_product }}",
+        allowClear: true,
+        ajax: {
+            url: 'index.php?route=purchase/requisition/select2Product&user_token=' + user_token,
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    q: params.term
+                };
+            },
+            processResults: function(data) {
+                return {
+                    results: data
+                };
+            },
+            cache: true
+        }
+    }).on('select2:select', function(e) {
+        var $row = $(this).closest('tr');
+        var $unitSelect = $row.find('.unit-select');
+        var $detailsDiv = $row.find('.product-details');
+        var $pendingDiv = $row.find('.pending-requisitions');
+        var $suggestedDiv = $row.find('.suggested-quantity');
+        var branchId = $('#form-add-requisition select[name="branch_id"]').val();
+
+        // Clear previous content
+        $unitSelect.empty();
+        $detailsDiv.empty();
+        $pendingDiv.empty();
+        $suggestedDiv.empty();
+
+        if (!branchId) {
+            $detailsDiv.html('<div class="alert alert-warning">{{ text_select_branch_first }}</div>');
+            $(this).val('').trigger('change');
+            return;
+        }
+
+        // Add units from product data
+        if (e.params.data.units) {
+            $.each(e.params.data.units, function(i, unit) {
+                $unitSelect.append(new Option(unit.text, unit.id));
+            });
+        }
+
+        // Load product details including stock levels
+        $.ajax({
+            url: 'index.php?route=purchase/requisition/ajaxGetProductDetails&user_token=' + user_token,
+            type: 'get',
+            data: {
+                product_id: e.params.data.id,
+                branch_id: branchId
+            },
+            success: function(details) {
+                if (details.units && details.units.length > 0) {
+                    var html = '<div class="card bg-light"><div class="card-body p-2">';
+                    html += '<h6 class="text-primary mb-2">{{ text_stock_info }}</h6>';
+                    html += '<table class="table table-sm mb-0">';
+                    html += '<thead><tr><th>{{ column_unit }}</th><th>{{ column_available }}</th><th>{{ column_avg_cost }}</th></tr></thead>';
+                    html += '<tbody>';
+
+                    $.each(details.units, function(i, unit) {
+                        html += '<tr>';
+                        html += '<td>' + unit.unit_name + '</td>';
+                        html += '<td>' + parseFloat(unit.quantity_available).toFixed(2) + '</td>';
+                        html += '<td>' + parseFloat(unit.average_cost).toFixed(4) + '</td>';
+                        html += '</tr>';
+                    });
+
+                    html += '</tbody></table></div></div>';
+                    $detailsDiv.html(html);
+                }
+            }
+        });
+
+        // Load pending requisitions for this product
+        $.ajax({
+            url: 'index.php?route=purchase/requisition/ajaxGetPendingRequisitions&user_token=' + user_token,
+            type: 'get',
+            data: {
+                product_id: e.params.data.id
+            },
+            success: function(data) {
+                if (data.pending_requisitions && data.pending_requisitions.length > 0) {
+                    var html = '<div class="card bg-warning-light"><div class="card-body p-2">';
+                    html += '<h6 class="text-warning mb-2">{{ text_pending_requisitions }}</h6>';
+                    html += '<table class="table table-sm mb-0">';
+                    html += '<thead><tr><th>{{ column_req_number }}</th><th>{{ column_branch }}</th><th>{{ column_quantity }}</th><th>{{ column_date }}</th></tr></thead>';
+                    html += '<tbody>';
+
+                    var totalPending = 0;
+                    $.each(data.pending_requisitions, function(i, req) {
+                        html += '<tr>';
+                        html += '<td>' + req.req_number + '</td>';
+                        html += '<td>' + req.branch_name + '</td>';
+                        html += '<td>' + parseFloat(req.quantity).toFixed(2) + '</td>';
+                        html += '<td>' + req.created_at.substring(0, 10) + '</td>';
+                        html += '</tr>';
+                        totalPending += parseFloat(req.quantity);
+                    });
+
+                    html += '</tbody></table>';
+                    html += '<div class="text-end text-muted small">{{ text_total_pending }}: ' + totalPending.toFixed(2) + '</div>';
+                    html += '</div></div>';
+                    $pendingDiv.html(html);
+
+                    // Show suggested quantity based on pending requisitions
+                    var suggestion = '{{ text_suggested_quantity }}: ' + totalPending.toFixed(2);
+                    $suggestedDiv.html(suggestion);
+                }
+            }
+        });
+    });
+}
+
+// Add new row handler
+$('#button-add-item').on('click', function() {
+    var template = document.querySelector('#template-add-item');
+    var clone = template.content.cloneNode(true);
+    $('#req-items tbody').append(clone);
+
+    // Initialize Select2 on the new row
+    var $newRow = $('#req-items tbody tr:last');
+    initializeProductSelect($newRow.find('.product-select'));
+});
+
+// Remove row handler
+$('#req-items').on('click', '.button-remove-item', function() {
+    $(this).closest('tr').remove();
+});
+
+// Initialize Select2 on branch change
+$('select[name="branch_id"]').on('change', function() {
+    $('#req-items tbody').empty();
+});
+
+// Initialize components when the modal is shown
+$('#modal-add-requisition').on('shown.bs.modal', function() {
+    // Initialize Select2 for branch and user group
+    $('.select2-branch, .select2-user-group').select2({
+        dropdownParent: $('#modal-add-requisition')
+    });
+});
+</script>

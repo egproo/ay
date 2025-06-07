@@ -1,0 +1,314 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-stock-level" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fas fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-pencil-alt"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form id="form-stock-level" action="{{ action }}" method="post">
+          <div class="row mb-3">
+            <label for="input-product" class="col-sm-2 col-form-label">{{ entry_product }}</label>
+            <div class="col-sm-10">
+              <select name="product_id" id="input-product" class="form-select" {% if stock_level_id %}disabled{% endif %}>
+                <option value="">{{ text_select }}</option>
+                {% if products %}
+                  {% for product in products %}
+                    <option value="{{ product.product_id }}" {% if product.product_id == product_id %}selected{% endif %}>{{ product.name }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+              {% if stock_level_id %}
+                <input type="hidden" name="product_id" value="{{ product_id }}"/>
+              {% endif %}
+              {% if error_product %}
+                <div class="invalid-feedback d-block">{{ error_product }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-branch" class="col-sm-2 col-form-label">{{ entry_branch }}</label>
+            <div class="col-sm-10">
+              <select name="branch_id" id="input-branch" class="form-select" {% if stock_level_id %}disabled{% endif %}>
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == branch_id %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+              {% if stock_level_id %}
+                <input type="hidden" name="branch_id" value="{{ branch_id }}"/>
+              {% endif %}
+              {% if error_branch %}
+                <div class="invalid-feedback d-block">{{ error_branch }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-unit" class="col-sm-2 col-form-label">{{ entry_unit }}</label>
+            <div class="col-sm-10">
+              <select name="unit_id" id="input-unit" class="form-select" {% if stock_level_id %}disabled{% endif %}>
+                <option value="">{{ text_select }}</option>
+                {% if units %}
+                  {% for unit in units %}
+                    <option value="{{ unit.unit_id }}" {% if unit.unit_id == unit_id %}selected{% endif %}>{{ unit.name }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+              {% if stock_level_id %}
+                <input type="hidden" name="unit_id" value="{{ unit_id }}"/>
+              {% endif %}
+              {% if error_unit %}
+                <div class="invalid-feedback d-block">{{ error_unit }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-sm-2 col-form-label">{{ entry_auto_calculate }}</label>
+            <div class="col-sm-10">
+              <div class="form-check form-switch form-switch-lg">
+                <input type="checkbox" name="auto_calculate" value="1" id="input-auto-calculate" class="form-check-input"/>
+                <label for="input-auto-calculate" class="form-check-label"></label>
+              </div>
+            </div>
+          </div>
+          <div id="auto-calculate-container" class="d-none">
+            <div class="row mb-3">
+              <label for="input-lead-time" class="col-sm-2 col-form-label">{{ entry_lead_time }}</label>
+              <div class="col-sm-10">
+                <input type="number" name="lead_time" value="{{ lead_time }}" placeholder="{{ entry_lead_time }}" id="input-lead-time" class="form-control" min="1"/>
+                <div class="form-text">{{ text_lead_time_description }}</div>
+                {% if error_lead_time %}
+                  <div class="invalid-feedback d-block">{{ error_lead_time }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label for="input-safety-stock" class="col-sm-2 col-form-label">{{ entry_safety_stock }}</label>
+              <div class="col-sm-10">
+                <input type="number" name="safety_stock" value="{{ safety_stock }}" placeholder="{{ entry_safety_stock }}" id="input-safety-stock" class="form-control" min="0" step="0.0001"/>
+                <div class="form-text">{{ text_safety_stock_description }}</div>
+                {% if error_safety_stock %}
+                  <div class="invalid-feedback d-block">{{ error_safety_stock }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label for="input-demand-period" class="col-sm-2 col-form-label">{{ entry_demand_period }}</label>
+              <div class="col-sm-10">
+                <input type="number" name="demand_period" value="{{ demand_period }}" placeholder="{{ entry_demand_period }}" id="input-demand-period" class="form-control" min="1"/>
+                <div class="form-text">{{ text_demand_period_description }}</div>
+                {% if error_demand_period %}
+                  <div class="invalid-feedback d-block">{{ error_demand_period }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-sm-10 offset-sm-2">
+                <button type="button" id="button-calculate" class="btn btn-primary"><i class="fas fa-calculator"></i> {{ button_calculate }}</button>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-minimum-stock" class="col-sm-2 col-form-label">{{ entry_minimum_stock }}</label>
+            <div class="col-sm-10">
+              <input type="number" name="minimum_stock" value="{{ minimum_stock }}" placeholder="{{ entry_minimum_stock }}" id="input-minimum-stock" class="form-control" min="0" step="0.0001"/>
+              <div class="form-text">{{ text_minimum_stock_info }}</div>
+              {% if error_minimum_stock %}
+                <div class="invalid-feedback d-block">{{ error_minimum_stock }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-reorder-point" class="col-sm-2 col-form-label">{{ entry_reorder_point }}</label>
+            <div class="col-sm-10">
+              <input type="number" name="reorder_point" value="{{ reorder_point }}" placeholder="{{ entry_reorder_point }}" id="input-reorder-point" class="form-control" min="0" step="0.0001"/>
+              <div class="form-text">{{ text_reorder_point_info }}</div>
+              {% if error_reorder_point %}
+                <div class="invalid-feedback d-block">{{ error_reorder_point }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-maximum-stock" class="col-sm-2 col-form-label">{{ entry_maximum_stock }}</label>
+            <div class="col-sm-10">
+              <input type="number" name="maximum_stock" value="{{ maximum_stock }}" placeholder="{{ entry_maximum_stock }}" id="input-maximum-stock" class="form-control" min="0" step="0.0001"/>
+              <div class="form-text">{{ text_maximum_stock_info }}</div>
+              {% if error_maximum_stock %}
+                <div class="invalid-feedback d-block">{{ error_maximum_stock }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-status" class="col-sm-2 col-form-label">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-select">
+                <option value="1" {% if status %}selected{% endif %}>{{ text_enabled }}</option>
+                <option value="0" {% if not status %}selected{% endif %}>{{ text_disabled }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-notes" class="col-sm-2 col-form-label">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="5" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+            </div>
+          </div>
+          {% if current_stock is defined %}
+            <div class="row mb-3">
+              <label class="col-sm-2 col-form-label">{{ text_current_stock }}</label>
+              <div class="col-sm-10">
+                <div class="form-control-plaintext">
+                  <strong>{{ current_stock }} {{ unit_name }}</strong>
+                  {% if stock_status == 'low' %}
+                    <span class="badge bg-danger">{{ text_low }}</span>
+                  {% elseif stock_status == 'high' %}
+                    <span class="badge bg-warning text-dark">{{ text_high }}</span>
+                  {% else %}
+                    <span class="badge bg-success">{{ text_normal }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+// تحميل وحدات المنتج عند اختيار المنتج
+$('#input-product').on('change', function() {
+    var product_id = $(this).val();
+    
+    if (!product_id) {
+        $('#input-unit').html('<option value="">{{ text_select }}</option>');
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?route=inventory/stock_level/getProductUnits&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            product_id: product_id
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#input-unit').prop('disabled', true);
+            $('#input-unit').html('<option value="">{{ text_loading }}</option>');
+        },
+        complete: function() {
+            $('#input-unit').prop('disabled', false);
+        },
+        success: function(json) {
+            var html = '<option value="">{{ text_select }}</option>';
+            
+            if (json['units']) {
+                for (var i = 0; i < json['units'].length; i++) {
+                    html += '<option value="' + json['units'][i]['unit_id'] + '">' + json['units'][i]['name'] + '</option>';
+                }
+            }
+            
+            $('#input-unit').html(html);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// التحقق من صحة القيم المدخلة
+$('#input-minimum-stock, #input-reorder-point, #input-maximum-stock').on('change', function() {
+    var minimum_stock = parseFloat($('#input-minimum-stock').val()) || 0;
+    var reorder_point = parseFloat($('#input-reorder-point').val()) || 0;
+    var maximum_stock = parseFloat($('#input-maximum-stock').val()) || 0;
+    
+    if (minimum_stock > reorder_point) {
+        alert('{{ error_minimum_greater_reorder }}');
+        $(this).val('');
+    }
+    
+    if (reorder_point > maximum_stock) {
+        alert('{{ error_reorder_greater_maximum }}');
+        $(this).val('');
+    }
+});
+
+// إظهار/إخفاء قسم الحساب التلقائي
+$('#input-auto-calculate').on('change', function() {
+    if ($(this).is(':checked')) {
+        $('#auto-calculate-container').removeClass('d-none');
+    } else {
+        $('#auto-calculate-container').addClass('d-none');
+    }
+});
+
+// حساب مستويات المخزون تلقائيًا
+$('#button-calculate').on('click', function() {
+    var product_id = $('#input-product').val();
+    var branch_id = $('#input-branch').val();
+    var unit_id = $('#input-unit').val();
+    var lead_time = $('#input-lead-time').val();
+    var safety_stock = $('#input-safety-stock').val();
+    var demand_period = $('#input-demand-period').val();
+    
+    if (!product_id || !branch_id || !unit_id || !lead_time || !safety_stock || !demand_period) {
+        alert('{{ error_missing_parameters }}');
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?route=inventory/stock_level/calculateLevels&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            product_id: product_id,
+            branch_id: branch_id,
+            unit_id: unit_id,
+            lead_time: lead_time,
+            safety_stock: safety_stock,
+            demand_period: demand_period
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-calculate').prop('disabled', true);
+            $('#button-calculate').html('<i class="fas fa-spinner fa-spin"></i> {{ button_calculate }}');
+        },
+        complete: function() {
+            $('#button-calculate').prop('disabled', false);
+            $('#button-calculate').html('<i class="fas fa-calculator"></i> {{ button_calculate }}');
+        },
+        success: function(json) {
+            if (json['success']) {
+                $('#input-minimum-stock').val(json['minimum_stock']);
+                $('#input-reorder-point').val(json['reorder_point']);
+                $('#input-maximum-stock').val(json['maximum_stock']);
+            }
+            
+            if (json['error']) {
+                alert(json['error']);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+</script>
+{{ footer }}

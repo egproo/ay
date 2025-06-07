@@ -1,0 +1,260 @@
+{# Placeholder for Purchase Return Add/Edit Form #}
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title">{{ text_form_title }}</h4> {# Passed from controller #}
+</div>
+<div class="modal-body">
+  <form id="purchase-return-form" class="form-horizontal">
+    <input type="hidden" name="return_id" value="{{ return_id|default(0) }}">
+    
+    {# TODO: Add form fields based on the purchase_return table schema #}
+    {# Example fields: #}
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="supplier_id">{{ entry_supplier }}</label>
+      <div class="col-sm-9">
+        <select name="supplier_id" id="supplier_id" class="form-control select2-supplier" required>
+           <option value="">{{ text_select_supplier }}</option>
+           {% for supplier in suppliers %}
+           <option value="{{ supplier.supplier_id }}" {% if supplier.supplier_id == supplier_id %}selected{% endif %}>{{ supplier.name }}</option>
+           {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-3 control-label" for="po_id">{{ entry_purchase_order }}</label>
+      <div class="col-sm-9">
+        <select name="po_id" id="po_id" class="form-control select2-po">
+           <option value="">{{ text_select_po }}</option>
+           {# Options loaded via AJAX based on supplier #}
+           {% if po_id %}
+           <option value="{{ po_id }}" selected>{{ po_number }}</option> {# Pass po_number if editing #}
+           {% endif %}
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="col-sm-3 control-label" for="goods_receipt_id">{{ entry_goods_receipt }}</label>
+      <div class="col-sm-9">
+        <select name="goods_receipt_id" id="goods_receipt_id" class="form-control select2-grn">
+           <option value="">{{ text_select_grn }}</option>
+           {# Options loaded via AJAX based on PO or Supplier #}
+           {% if goods_receipt_id %}
+           <option value="{{ goods_receipt_id }}" selected>{{ receipt_number }}</option> {# Pass receipt_number if editing #}
+           {% endif %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="return_date">{{ entry_return_date }}</label>
+      <div class="col-sm-9">
+         <div class="input-group date">
+            <input type="text" name="return_date" id="return_date" value="{{ return_date|default('') }}" placeholder="{{ entry_return_date }}" data-date-format="YYYY-MM-DD" class="form-control" required>
+            <span class="input-group-btn">
+            <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+            </span>
+         </div>
+      </div>
+    </div>
+    
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="return_reason_id">{{ entry_return_reason }}</label>
+      <div class="col-sm-9">
+        <select name="return_reason_id" id="return_reason_id" class="form-control" required>
+           <option value="">{{ text_select }}</option>
+           {% for reason in return_reasons %}
+           <option value="{{ reason.return_reason_id }}" {% if reason.return_reason_id == return_reason_id %}selected{% endif %}>{{ reason.name }}</option>
+           {% endfor %}
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="return_action_id">{{ entry_return_action }}</label>
+      <div class="col-sm-9">
+        <select name="return_action_id" id="return_action_id" class="form-control" required>
+           <option value="">{{ text_select }}</option>
+           {% for action in return_actions %}
+           <option value="{{ action.return_action_id }}" {% if action.return_action_id == return_action_id %}selected{% endif %}>{{ action.name }}</option>
+           {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-3 control-label" for="comment">{{ entry_comment }}</label>
+      <div class="col-sm-9">
+        <textarea name="comment" id="comment" class="form-control" rows="3">{{ comment|default('') }}</textarea>
+      </div>
+    </div>
+
+    {# Table for return items #}
+    <h4>{{ text_items_to_return }}</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>{{ column_product }}</th>
+            <th>{{ column_received_qty }}</th> {# Qty received on GRN/PO #}
+            <th>{{ column_return_qty }}</th>
+            <th>{{ column_unit_price }}</th> {# Price at time of receipt/PO #}
+            <th>{{ column_total }}</th>
+            {# Add column for action/reason per item if needed #}
+          </tr>
+        </thead>
+        <tbody id="return-items">
+          {# Items will be loaded via AJAX based on GRN/PO #}
+          {% if items %}
+            {% for item in items %}
+            {# Populate existing items if editing #}
+            <tr>
+              <td><input type="hidden" name="item[product_id][]" value="{{ item.product_id }}">{{ item.product_name }}</td>
+              <td class="text-center">{{ item.received_quantity }}</td> {# Display received qty #}
+              <td><input type="number" name="item[quantity][]" value="{{ item.quantity }}" max="{{ item.received_quantity }}" min="0" step="0.01" class="form-control item-qty"></td>
+              <td><input type="hidden" name="item[unit_price][]" value="{{ item.unit_price }}">{{ item.unit_price_formatted }}</td>
+              <td class="item-total text-right">{{ item.total_formatted }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+             <tr><td colspan="5" class="text-center">{{ text_select_grn_or_po }}</td></tr>
+          {% endif %}
+        </tbody>
+        {# No Add Item button - returns are based on received items #}
+        <tfoot>
+          {# Add rows for subtotal, restocking fee?, total credit #}
+        </tfoot>
+      </table>
+    </div>
+
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+  <button type="button" class="btn btn-primary" id="save-return-btn">{{ button_save }}</button>
+</div>
+
+<script>
+// Placeholder for form-specific JavaScript
+$(document).ready(function() {
+    // Initialize Select2, Datepickers
+    $('.select2-supplier').select2({ dropdownParent: $('#modal-return-form .modal-content') });
+    $('.select2-po').select2({ 
+        dropdownParent: $('#modal-return-form .modal-content'),
+        placeholder: '{{ text_select_po }}',
+        allowClear: true,
+        ajax: {
+            url: 'index.php?route=purchase/order/ajaxSearchPO&user_token={{ user_token }}', 
+            dataType: 'json', delay: 250,
+            data: function (params) { return { q: params.term, supplier_id: $('#supplier_id').val() }; },
+            processResults: function (data) { return { results: data }; }
+        }
+    }).on('select2:select', function(e) {
+        var poId = $(this).val();
+        $('#goods_receipt_id').val(null).trigger('change'); // Clear GRN selection
+        loadReturnableItems({ po_id: poId });
+    });
+    
+    $('.select2-grn').select2({ 
+        dropdownParent: $('#modal-return-form .modal-content'),
+        placeholder: '{{ text_select_grn }}',
+        allowClear: true,
+        ajax: {
+            url: 'index.php?route=purchase/goods_receipt/ajaxSearchGRN&user_token={{ user_token }}', // Need this controller method
+            dataType: 'json', delay: 250,
+            data: function (params) { 
+                return { 
+                    q: params.term, 
+                    supplier_id: $('#supplier_id').val(),
+                    po_id: $('#po_id').val() 
+                }; 
+            },
+            processResults: function (data) { return { results: data }; }
+        }
+    }).on('select2:select', function(e) {
+        var grnId = $(this).val();
+        $('#po_id').val(null).trigger('change'); // Clear PO selection
+        loadReturnableItems({ goods_receipt_id: grnId });
+    });
+
+    $('.date input').datetimepicker({
+        pickTime: false,
+        format: 'YYYY-MM-DD'
+    });
+
+    // Recalculate totals on quantity change
+    $('#return-items').on('input', '.item-qty', function() {
+        calculateReturnTotals();
+    });
+
+    // Save Button
+    $('#save-return-btn').on('click', function() {
+        // TODO: Add validation and AJAX save logic
+        alert('Save functionality not implemented yet.');
+        // $.ajax({ ... call controller's ajaxSave ... });
+    });
+
+    // Function to load returnable items based on PO or GRN
+    function loadReturnableItems(filterData) {
+        $.ajax({
+            url: 'index.php?route=purchase/return/ajaxGetReturnableItems&user_token={{ user_token }}', // Need this controller method
+            type: 'GET',
+            data: filterData,
+            dataType: 'json',
+            beforeSend: function() {
+                // showLoading();
+                $('#return-items').html('<tr><td colspan="5" class="text-center">{{ text_loading }}</td></tr>');
+            },
+            success: function(json) {
+                var html = '';
+                if (json.items && json.items.length > 0) {
+                    json.items.forEach(function(item) {
+                         html += '<tr>';
+                         html += '<td><input type="hidden" name="item[product_id][]" value="' + item.product_id + '"><input type="hidden" name="item[unit_id][]" value="' + item.unit_id + '"><input type="hidden" name="item[grn_item_id][]" value="' + (item.grn_item_id || 0) + '">' + item.product_name + ' (' + item.unit_name + ')</td>';
+                         html += '<td class="text-center received-qty">' + item.receivable_quantity + '</td>'; // Display receivable qty
+                         html += '<td><input type="number" name="item[quantity][]" value="0" max="' + item.receivable_quantity + '" min="0" step="0.01" class="form-control item-qty"></td>';
+                         html += '<td><input type="hidden" name="item[unit_price][]" value="' + item.unit_price + '">' + item.unit_price_formatted + '</td>'; // Use price from source
+                         html += '<td class="item-total text-right">0.00</td>'; 
+                         html += '</tr>';
+                    });
+                } else {
+                    html = '<tr><td colspan="5" class="text-center">{{ text_no_returnable_items }}</td></tr>'; // Add this lang string
+                }
+                $('#return-items').html(html);
+                calculateReturnTotals();
+            },
+            error: function() {
+                 $('#return-items').html('<tr><td colspan="5" class="text-center">{{ error_ajax }}</td></tr>');
+            },
+            complete: function() {
+                // hideLoading();
+            }
+        });
+    }
+
+    // Function to calculate return totals
+    function calculateReturnTotals() {
+        var subtotal = 0;
+        $('#return-items tr').each(function() {
+            var $row = $(this);
+            var qty = parseFloat($row.find('.item-qty').val()) || 0;
+            var price = parseFloat($row.find('input[name="item[unit_price][]"]').val()) || 0;
+            var lineTotal = qty * price;
+            $row.find('.item-total').text(lineTotal.toFixed(2));
+            subtotal += lineTotal;
+        });
+        // TODO: Update subtotal/total display in the footer
+        // $('#return-subtotal').text(subtotal.toFixed(2));
+        // $('#return-total').text(subtotal.toFixed(2)); // Add tax/fees later if needed
+    }
+
+    // Initial load if editing
+    var initialReturnId = $('input[name="return_id"]').val();
+    if (initialReturnId && initialReturnId != '0') {
+        // If editing, items are already loaded by the controller's form() method.
+        // Just calculate totals initially.
+        calculateReturnTotals();
+    }
+});
+</script>

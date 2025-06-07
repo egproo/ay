@@ -1,0 +1,38 @@
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>{{ column_date_added }}</th>
+                <th>{{ column_user }}</th>
+                <th>{{ column_action }}</th>
+                <th>{{ column_description }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if histories %}
+                {% for history in histories %}
+                    <tr>
+                        <td>{{ history.created_at }}</td>
+                        <td>{{ history.user_name }}</td>
+                        <td>
+                            <span class="label 
+                                {% if history.action == 'created' %}label-primary{% endif %}
+                                {% if history.action == 'edited' %}label-info{% endif %}
+                                {% if history.action == 'approved' %}label-success{% endif %}
+                                {% if history.action == 'rejected' %}label-danger{% endif %}
+                                {% if history.action == 'deleted' %}label-default{% endif %}
+                            ">
+                                {{ history.action }}
+                            </span>
+                        </td>
+                        <td>{{ history.description }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">{{ text_history_empty }}</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>

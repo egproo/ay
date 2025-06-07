@@ -1,0 +1,390 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        {% if adjustment_info.status == 'draft' %}
+        <a href="{{ edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary">
+          <i class="fa fa-pencil"></i>
+        </a>
+        {% endif %}
+        <button type="button" data-toggle="tooltip" title="{{ button_print }}" class="btn btn-default" onclick="window.print();">
+          <i class="fa fa-print"></i>
+        </button>
+        <a href="{{ back }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    <!-- معلومات التسوية -->
+    <div class="row">
+      <div class="col-md-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-info-circle"></i> معلومات التسوية
+              <span class="label label-{{ adjustment_info.status == 'draft' ? 'default' : (adjustment_info.status == 'pending_approval' ? 'warning' : (adjustment_info.status == 'approved' ? 'info' : (adjustment_info.status == 'posted' ? 'success' : 'danger'))) }} pull-right">
+                {% if adjustment_info.status == 'draft' %}مسودة
+                {% elseif adjustment_info.status == 'pending_approval' %}في انتظار الموافقة
+                {% elseif adjustment_info.status == 'approved' %}معتمد
+                {% elseif adjustment_info.status == 'posted' %}مرحل
+                {% elseif adjustment_info.status == 'rejected' %}مرفوض
+                {% else %}ملغي{% endif %}
+              </span>
+            </h3>
+          </div>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-6">
+                <table class="table table-condensed">
+                  <tr>
+                    <td><strong>رقم التسوية:</strong></td>
+                    <td>{{ adjustment_info.adjustment_number }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>اسم التسوية:</strong></td>
+                    <td>{{ adjustment_info.adjustment_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>نوع التسوية:</strong></td>
+                    <td>
+                      {% if adjustment_info.adjustment_type == 'manual' %}تسوية يدوية
+                      {% elseif adjustment_info.adjustment_type == 'counting' %}تسوية من الجرد
+                      {% elseif adjustment_info.adjustment_type == 'damage' %}تسوية تلف
+                      {% elseif adjustment_info.adjustment_type == 'loss' %}تسوية فقدان
+                      {% elseif adjustment_info.adjustment_type == 'found' %}تسوية عثور
+                      {% elseif adjustment_info.adjustment_type == 'expiry' %}تسوية انتهاء صلاحية
+                      {% else %}تسوية نظام{% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>الفرع/المستودع:</strong></td>
+                    <td>{{ adjustment_info.branch_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>السبب:</strong></td>
+                    <td>{{ adjustment_info.reason_name ? adjustment_info.reason_name : 'بدون سبب' }}</td>
+                  </tr>
+                </table>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-condensed">
+                  <tr>
+                    <td><strong>تاريخ التسوية:</strong></td>
+                    <td>{{ adjustment_info.adjustment_date }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>المستخدم:</strong></td>
+                    <td>{{ adjustment_info.user_name }}</td>
+                  </tr>
+                  {% if adjustment_info.approved_by_name %}
+                  <tr>
+                    <td><strong>معتمد بواسطة:</strong></td>
+                    <td>{{ adjustment_info.approved_by_name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>تاريخ الاعتماد:</strong></td>
+                    <td>{{ adjustment_info.approval_date }}</td>
+                  </tr>
+                  {% endif %}
+                  {% if adjustment_info.reference_type %}
+                  <tr>
+                    <td><strong>نوع المرجع:</strong></td>
+                    <td>{{ adjustment_info.reference_type }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>رقم المرجع:</strong></td>
+                    <td>{{ adjustment_info.reference_number }}</td>
+                  </tr>
+                  {% endif %}
+                </table>
+              </div>
+            </div>
+            
+            {% if adjustment_info.notes %}
+            <div class="row">
+              <div class="col-md-12">
+                <div class="well">
+                  <strong>ملاحظات:</strong><br>
+                  {{ adjustment_info.notes }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- ملخص سريع -->
+      <div class="col-md-4">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-calculator"></i> ملخص التسوية</h3>
+          </div>
+          <div class="panel-body">
+            {% set total_items = 0 %}
+            {% set total_increase = 0 %}
+            {% set total_decrease = 0 %}
+            {% set total_value = 0 %}
+            
+            {% for item in adjustment_items %}
+              {% set total_items = total_items + 1 %}
+              {% set item_value = item.quantity * item.unit_cost %}
+              {% set total_value = total_value + item_value|abs %}
+              {% if item.quantity > 0 %}
+                {% set total_increase = total_increase + item_value %}
+              {% else %}
+                {% set total_decrease = total_decrease + item_value|abs %}
+              {% endif %}
+            {% endfor %}
+            
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 class="text-primary">{{ total_items }}</h4>
+                  <small>إجمالي العناصر</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 class="text-info">{{ total_value|number_format(2) }}</h4>
+                  <small>إجمالي القيمة</small>
+                </div>
+              </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 class="text-success">+{{ total_increase|number_format(2) }}</h4>
+                  <small>قيمة الزيادة</small>
+                </div>
+              </div>
+              <div class="col-xs-6">
+                <div class="text-center">
+                  <h4 class="text-danger">-{{ total_decrease|number_format(2) }}</h4>
+                  <small>قيمة النقص</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- عناصر التسوية -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> عناصر التسوية</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>المنتج</th>
+                <th class="text-center">الكمية</th>
+                <th class="text-right">تكلفة الوحدة</th>
+                <th class="text-right">إجمالي التكلفة</th>
+                <th class="text-center">رقم الدفعة</th>
+                <th class="text-center">تاريخ انتهاء الصلاحية</th>
+                <th>السبب</th>
+                <th>ملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if adjustment_items %}
+              {% for item in adjustment_items %}
+              <tr class="{{ item.quantity > 0 ? 'success' : 'danger' }}">
+                <td>
+                  <strong>{{ item.product_name }}</strong>
+                  {% if item.model %}
+                  <br><small class="text-muted">{{ item.model }}</small>
+                  {% endif %}
+                  {% if item.sku %}
+                  <br><small class="text-muted">{{ item.sku }}</small>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-{{ item.quantity > 0 ? 'success' : 'danger' }}">
+                    {{ item.quantity > 0 ? '+' : '' }}{{ item.quantity }}
+                  </span>
+                  {% if item.unit_symbol %}
+                  <br><small class="text-muted">{{ item.unit_symbol }}</small>
+                  {% endif %}
+                </td>
+                <td class="text-right">{{ item.unit_cost|number_format(2) }}</td>
+                <td class="text-right">
+                  <strong class="text-{{ item.quantity > 0 ? 'success' : 'danger' }}">
+                    {{ (item.quantity * item.unit_cost)|number_format(2) }}
+                  </strong>
+                </td>
+                <td class="text-center">{{ item.lot_number ? item.lot_number : '-' }}</td>
+                <td class="text-center">{{ item.expiry_date ? item.expiry_date : '-' }}</td>
+                <td>{{ item.reason ? item.reason : '-' }}</td>
+                <td>{{ item.notes ? item.notes : '-' }}</td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="8">لا توجد عناصر</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- تاريخ الموافقات -->
+    {% if approval_history %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-history"></i> تاريخ الموافقات</h3>
+      </div>
+      <div class="panel-body">
+        <div class="timeline">
+          {% for history in approval_history %}
+          <div class="timeline-item">
+            <div class="timeline-marker timeline-marker-{{ history.status == 'approved' ? 'success' : (history.status == 'rejected' ? 'danger' : 'info') }}">
+              <i class="fa fa-{{ history.status == 'approved' ? 'check' : (history.status == 'rejected' ? 'times' : 'clock-o') }}"></i>
+            </div>
+            <div class="timeline-content">
+              <h4 class="timeline-title">{{ history.status_text }}</h4>
+              <p class="timeline-description">
+                <strong>المستخدم:</strong> {{ history.user_name }}<br>
+                <strong>التاريخ:</strong> {{ history.date_added }}<br>
+                {% if history.notes %}
+                <strong>ملاحظات:</strong> {{ history.notes }}
+                {% endif %}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+@media print {
+    .page-header, .breadcrumb, .btn, .timeline {
+        display: none !important;
+    }
+    
+    .panel {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline:before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ddd;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+}
+
+.timeline-marker-success {
+    background-color: #5cb85c;
+}
+
+.timeline-marker-danger {
+    background-color: #d9534f;
+}
+
+.timeline-marker-info {
+    background-color: #5bc0de;
+}
+
+.timeline-content {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 3px solid #ddd;
+}
+
+.timeline-title {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.timeline-description {
+    margin: 0;
+    color: #666;
+}
+
+.badge-success {
+    background-color: #5cb85c;
+}
+
+.badge-danger {
+    background-color: #d9534f;
+}
+
+tr.success {
+    background-color: #f0f9ff !important;
+}
+
+tr.danger {
+    background-color: #fff5f5 !important;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // تحسين عرض الجدول للطباعة
+    window.addEventListener('beforeprint', function() {
+        $('.table-responsive').removeClass('table-responsive');
+    });
+    
+    window.addEventListener('afterprint', function() {
+        $('.table').parent().addClass('table-responsive');
+    });
+});
+</script>
+
+{{ footer }}

@@ -1,0 +1,456 @@
+<!-- في quotation_view.twig -->
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">{{ text_workflow_status }}</h3>
+  </div>
+  <div class="panel-body">
+    <div class="workflow-status-container">
+      <div class="status-indicators">
+        <div class="status-indicator">
+          <div class="status-indicator-step {% if quotation.status == 'draft' or quotation.status == 'pending' or quotation.status == 'approved' or quotation.status == 'rejected' or quotation.status == 'converted' %}active{% endif %}">
+            <i class="fa fa-pencil"></i>
+          </div>
+          <span class="status-indicator-text">{{ text_status_draft }}</span>
+        </div>
+        
+        <div class="status-indicator">
+          <div class="status-indicator-step {% if quotation.status == 'pending' or quotation.status == 'approved' or quotation.status == 'rejected' or quotation.status == 'converted' %}active{% endif %}">
+            <i class="fa fa-clock-o"></i>
+          </div>
+          <span class="status-indicator-text">{{ text_status_pending }}</span>
+        </div>
+        
+        <div class="status-indicator">
+          <div class="status-indicator-step {% if quotation.status == 'approved' or quotation.status == 'converted' %}active{% endif %}">
+            <i class="fa fa-check"></i>
+          </div>
+          <span class="status-indicator-text">{{ text_status_approved }}</span>
+        </div>
+        
+        <div class="status-indicator">
+          <div class="status-indicator-step {% if quotation.status == 'converted' %}active{% endif %}">
+            <i class="fa fa-exchange"></i>
+          </div>
+          <span class="status-indicator-text">{{ text_status_converted }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="{{ button_close }}">
+    <span aria-hidden="true">&times;</span>
+  </button>
+ 
+  <h4 class="modal-title">{{ text_quotation_view }} - {{ quotation.quotation_number }}</h4>
+</div>
+
+<div class="modal-body">
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#tab-view-general" data-toggle="tab">{{ tab_general }}</a></li>
+    <li><a href="#tab-view-items" data-toggle="tab">{{ tab_items }}</a></li>
+    <li><a href="#tab-view-documents" data-toggle="tab">{{ tab_documents }}</a></li>
+    <li><a href="#tab-view-history" data-toggle="tab">{{ text_history }}</a></li>
+  </ul>
+  
+  <div class="tab-content">
+    <!-- General Tab -->
+    <div class="tab-pane active" id="tab-view-general">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{ text_quotation_details }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_quotation_number }}</label>
+                <div>{{ quotation.quotation_number }}</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_requisition }}</label>
+                <div>{{ quotation.requisition_number }}</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_supplier }}</label>
+                <div>{{ quotation.supplier_name }}</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_currency }}</label>
+                <div>{{ quotation.currency_code }}</div>
+              </div>
+            </div>
+            
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_validity_date }}</label>
+                <div>{{ quotation.validity_date }}</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_status }}</label>
+                <div><span class="label label-{{ quotation.status_class }}">{{ quotation.status_text }}</span></div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_created_by }}</label>
+                <div>{{ quotation.created_by_name }}</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_date_added }}</label>
+                <div>{{ quotation.created_at }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_payment_terms }}</label>
+                <div>{{ quotation.payment_terms }}</div>
+              </div>
+            </div>
+            
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_delivery_terms }}</label>
+                <div>{{ quotation.delivery_terms }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="control-label">{{ text_notes }}</label>
+            <div>{{ quotation.notes }}</div>
+          </div>
+          
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_tax_included }}</label>
+                <div>{{ quotation.tax_included }}</div>
+              </div>
+            </div>
+            
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_tax_rate }}</label>
+                <div>{{ quotation.tax_rate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{ text_totals }}</h3>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_subtotal }}</label>
+                <div>{{ quotation.subtotal }}</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_discount }}</label>
+                <div>{{ quotation.discount_amount }}</div>
+              </div>
+            </div>
+            
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label class="control-label">{{ text_tax }}</label>
+                <div>{{ quotation.tax_amount }}</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="control-label">{{ text_total }}</label>
+                <div><strong>{{ quotation.total_amount }}</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Items Tab -->
+    <div class="tab-pane" id="tab-view-items">
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>{{ column_product }}</th>
+              <th>{{ column_quantity }}</th>
+              <th>{{ column_unit }}</th>
+              <th>{{ column_unit_price }}</th>
+              <th>{{ column_discount }}</th>
+              <th>{{ column_tax }}</th>
+              <th>{{ column_total }}</th>
+              <th>{{ column_description }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if items %}
+              {% for item in items %}
+                <tr>
+                  <td>{{ item.product_name }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ item.unit_name }}</td>
+                  <td>{{ item.unit_price_formatted }}</td>
+                  <td>{{ item.discount_amount_formatted }}</td>
+                  <td>{{ item.tax_amount_formatted }}</td>
+                  <td>{{ item.line_total_formatted }}</td>
+                  <td>{{ item.description }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="8" class="text-center">{{ text_no_items }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Documents Tab -->
+<!-- عرض المرفقات المحسّن في quotation_view.twig -->
+<div class="tab-pane" id="tab-view-documents">
+  {% if can_upload %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{ text_upload_documents }}</h3>
+    </div>
+    <div class="panel-body">
+      <form id="document-upload-form" enctype="multipart/form-data">
+        <input type="hidden" name="quotation_id" id="document-quotation-id" value="{{ quotation.quotation_id }}">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label for="document-type">{{ entry_document_type }}</label>
+              <select name="document_type" id="document-type" class="form-control">
+                <option value="quotation">{{ text_original_quotation }}</option>
+                <option value="technical">{{ text_technical_specs }}</option>
+                <option value="compliance">{{ text_compliance_docs }}</option>
+                <option value="pricing">{{ text_pricing_details }}</option>
+                <option value="other">{{ text_other_docs }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="document-file">{{ entry_file }}</label>
+              <div class="input-group">
+                <input type="text" name="file_display" id="document-file-name" class="form-control" readonly placeholder="{{ text_no_file_selected }}">
+                <span class="input-group-btn">
+                  <button type="button" id="upload-document-btn" class="btn btn-primary">
+                    <i class="fa fa-folder-open"></i> {{ text_browse }}
+                  </button>
+                </span>
+              </div>
+              <input type="file" name="file" id="document-file" style="display: none;">
+            </div>
+          </div>
+          
+          <div class="col-md-2">
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <button type="submit" class="btn btn-success form-control">
+                <i class="fa fa-upload"></i> {{ button_upload }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+  
+  <!-- عرض المستندات بطريقة منظمة ومرئية -->
+  <div class="documents-preview-container">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_documents }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row" id="documents-preview">
+          {% if documents %}
+            {% for document in documents %}
+              {% set fileExt = document.document_name|split('.')|last|lower %}
+              {% set isImage = fileExt in ['jpg', 'jpeg', 'png', 'gif', 'bmp'] %}
+              {% set isPdf = fileExt == 'pdf' %}
+              {% set isDoc = fileExt in ['doc', 'docx'] %}
+              {% set isExcel = fileExt in ['xls', 'xlsx'] %}
+              
+              <div class="col-md-3 col-sm-4 col-xs-6">
+                <div class="document-preview-item">
+                  {% if isImage %}
+                    <div class="document-image-preview">
+                      <img src="index.php?route=purchase/quotation/previewDocument&user_token={{ user_token }}&document_id={{ document.document_id }}&thumb=1" alt="{{ document.document_name }}">
+                    </div>
+                  {% else %}
+                    <div class="document-icon">
+                      {% if isPdf %}
+                        <i class="fa fa-file-pdf-o text-danger"></i>
+                      {% elseif isDoc %}
+                        <i class="fa fa-file-word-o text-primary"></i>
+                      {% elseif isExcel %}
+                        <i class="fa fa-file-excel-o text-success"></i>
+                      {% else %}
+                        <i class="fa fa-file-o"></i>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                  
+                  <div class="document-info">
+                    <div class="document-filename" title="{{ document.document_name }}">
+                      {{ document.document_name|length > 20 ? document.document_name|slice(0, 17) ~ '...' : document.document_name }}
+                    </div>
+                    <div class="document-type">{{ document.document_type }}</div>
+                  </div>
+                  
+                  <div class="document-actions">
+                    {% if isImage or isPdf %}
+                      <button type="button" class="btn btn-xs btn-default" onclick="QuotationManager.previewDocument({{ document.document_id }}, '{{ document.document_name }}');" data-toggle="tooltip" title="{{ text_preview }}">
+                        <i class="fa fa-eye"></i>
+                      </button>
+                    {% endif %}
+                    
+                    <a href="index.php?route=purchase/quotation/downloadDocument&user_token={{ user_token }}&document_id={{ document.document_id }}" class="btn btn-xs btn-info" data-toggle="tooltip" title="{{ button_download }}">
+                      <i class="fa fa-download"></i>
+                    </a>
+                    
+                    {% if can_delete %}
+                      <button type="button" class="btn btn-xs btn-danger" onclick="QuotationManager.deleteDocument({{ document.document_id }});" data-toggle="tooltip" title="{{ button_delete }}">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="col-md-12 text-center">
+              <p class="text-muted">{{ text_no_documents }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- جدول تفصيلي للمرفقات -->
+  <div class="documents-table-container">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">{{ text_documents_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_document_name }}</th>
+                <th>{{ column_document_type }}</th>
+                <th>{{ column_uploaded_by }}</th>
+                <th>{{ column_upload_date }}</th>
+                <th class="text-right">{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody id="documents-list-table">
+              {% if documents %}
+                {% for document in documents %}
+                  <tr>
+                    <td>{{ document.document_name }}</td>
+                    <td>{{ document.document_type }}</td>
+                    <td>{{ document.uploaded_by_name }}</td>
+                    <td>{{ document.upload_date }}</td>
+                    <td class="text-right">
+                      {% set fileExt = document.document_name|split('.')|last|lower %}
+                      {% set isPreviewable = fileExt in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'pdf'] %}
+                      
+                      {% if isPreviewable %}
+                        <button type="button" class="btn btn-default btn-sm" onclick="QuotationManager.previewDocument({{ document.document_id }}, '{{ document.document_name }}');">
+                          <i class="fa fa-eye"></i>
+                        </button>
+                      {% endif %}
+                      
+                      <a href="index.php?route=purchase/quotation/downloadDocument&user_token={{ user_token }}&document_id={{ document.document_id }}" class="btn btn-info btn-sm">
+                        <i class="fa fa-download"></i>
+                      </a>
+                      
+                      {% if can_delete %}
+                        <button type="button" class="btn btn-danger btn-sm" onclick="QuotationManager.deleteDocument({{ document.document_id }});">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" class="text-center">{{ text_no_documents }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+  
+</div>
+
+<div class="modal-footer">
+  <div class="pull-left">
+    {% if can_print %}
+    <button type="button" class="btn btn-default" onclick="QuotationManager.printQuotation({{ quotation.quotation_id }});">
+      <i class="fa fa-print"></i> {{ button_print }}
+    </button>
+    {% endif %}
+    
+{% if can_convert and quotation.status == 'approved' %}
+    <button type="button" class="btn btn-primary" onclick="QuotationManager.convertQuotation({{ quotation.quotation_id }});">
+      <i class="fa fa-exchange"></i> {{ button_convert }}
+    </button>
+    {% endif %}
+  </div>
+  
+  <div class="pull-right">
+{% if can_edit and (quotation.status == 'draft' or quotation.status == 'pending') %}
+<button type="button" id="edit-quotation-btn" class="btn btn-primary" data-quotation-id="{{ quotation.quotation_id }}">
+  <i class="fa fa-pencil"></i> {{ button_edit }}
+</button>
+{% endif %}
+    
+    {% if can_approve and quotation.status == 'pending' %}
+    <button type="button" class="btn btn-success" onclick="QuotationManager.approveQuotation({{ quotation.quotation_id }});">
+      <i class="fa fa-check"></i> {{ button_approve }}
+    </button>
+    {% endif %}
+    
+    {% if can_reject and quotation.status == 'pending' %}
+    <button type="button" class="btn btn-warning" onclick="QuotationManager.rejectQuotation({{ quotation.quotation_id }});">
+      <i class="fa fa-times"></i> {{ button_reject }}
+    </button>
+    {% endif %}
+    
+    {% if can_delete and (quotation.status == 'draft' or quotation.status == 'pending' or quotation.status == 'rejected') %}
+    <button type="button" class="btn btn-danger" onclick="QuotationManager.deleteQuotation({{ quotation.quotation_id }});">
+      <i class="fa fa-trash"></i> {{ button_delete }}
+    </button>
+    {% endif %}
+    
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+  </div>
+</div>

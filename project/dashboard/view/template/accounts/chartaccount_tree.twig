@@ -1,0 +1,662 @@
+{{ header }}{{ column_left }}
+
+<!-- CSS مخصص للعرض الشجري -->
+<style>
+.tree-container {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tree-toolbar {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+}
+
+.jstree-default .jstree-node {
+    margin: 2px 0;
+}
+
+.jstree-default .jstree-anchor {
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.jstree-default .jstree-anchor:hover {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.jstree-default .jstree-clicked {
+    background: #2196f3 !important;
+    color: white !important;
+}
+
+.account-info {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.account-details {
+    display: none;
+}
+
+.account-code-display {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #e74c3c;
+    font-size: 1.1em;
+}
+
+.account-balance-display {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.balance-positive {
+    color: #27ae60;
+}
+
+.balance-negative {
+    color: #e74c3c;
+}
+
+.tree-actions {
+    position: sticky;
+    top: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: none;
+}
+
+.context-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+}
+
+.context-menu li {
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.context-menu li:hover {
+    background-color: #f5f5f5;
+}
+
+.tree-search {
+    margin-bottom: 15px;
+}
+
+.tree-legend {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.legend-item {
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 5px;
+}
+
+.legend-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 5px;
+    border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+    .tree-container {
+        padding: 10px;
+    }
+    
+    .tree-toolbar {
+        padding: 10px;
+    }
+    
+    .account-info {
+        padding: 15px;
+    }
+}
+</style>
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <div class="btn-group">
+                    <a href="{{ add }}" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+                        <i class="fa fa-plus"></i> {{ button_add }}
+                    </a>
+                    <a href="{{ list_view }}" data-bs-toggle="tooltip" title="{{ text_list_view }}" class="btn btn-secondary">
+                        <i class="fa fa-list"></i> {{ text_list_view }}
+                    </a>
+                    <button type="button" class="btn btn-info" onclick="expandAll()">
+                        <i class="fa fa-expand"></i> {{ text_expand_all }}
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="collapseAll()">
+                        <i class="fa fa-compress"></i> {{ text_collapse_all }}
+                    </button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fa fa-download"></i> {{ text_export }}
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{{ export }}&format=excel">
+                                <i class="fa fa-file-excel-o"></i> Excel
+                            </a>
+                            <a class="dropdown-item" href="{{ export }}&format=pdf">
+                                <i class="fa fa-file-pdf-o"></i> PDF
+                            </a>
+                            <a class="dropdown-item" href="{{ print }}" target="_blank">
+                                <i class="fa fa-print"></i> {{ text_print }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h1>{{ heading_title }} - {{ text_tree_view }}</h1>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item">
+                    <a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible">
+            <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success alert-dismissible">
+            <i class="fa fa-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- العمود الأيسر - الشجرة -->
+            <div class="col-lg-8">
+                <!-- شريط أدوات الشجرة -->
+                <div class="tree-toolbar">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="input-group tree-search">
+                                <input type="text" class="form-control" placeholder="{{ text_search_tree }}" id="tree-search">
+                                <button class="btn btn-outline-secondary" type="button" onclick="searchTree()">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary" onclick="showOnlyAssets()">
+                                    {{ text_assets }}
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" onclick="showOnlyLiabilities()">
+                                    {{ text_liabilities }}
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="showOnlyRevenue()">
+                                    {{ text_revenue }}
+                                </button>
+                                <button type="button" class="btn btn-outline-warning" onclick="showOnlyExpenses()">
+                                    {{ text_expenses }}
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="showAll()">
+                                    {{ text_show_all }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- دليل الألوان -->
+                <div class="tree-legend">
+                    <h6><i class="fa fa-info-circle"></i> {{ text_legend }}</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="legend-item">
+                                <span class="legend-icon" style="background-color: #3498db;"></span>
+                                {{ text_assets }}
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon" style="background-color: #e74c3c;"></span>
+                                {{ text_liabilities }}
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon" style="background-color: #9b59b6;"></span>
+                                {{ text_equity }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="legend-item">
+                                <span class="legend-icon" style="background-color: #27ae60;"></span>
+                                {{ text_revenue }}
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-icon" style="background-color: #f39c12;"></span>
+                                {{ text_expenses }}
+                            </div>
+                            <div class="legend-item">
+                                <i class="fa fa-folder text-warning"></i>
+                                {{ text_parent_account }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- حاوي الشجرة -->
+                <div class="tree-container">
+                    <div id="accounts-tree"></div>
+                </div>
+            </div>
+
+            <!-- العمود الأيمن - تفاصيل الحساب -->
+            <div class="col-lg-4">
+                <div class="tree-actions">
+                    <h5><i class="fa fa-cogs"></i> {{ text_actions }}</h5>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" onclick="addAccount()" disabled id="add-child-btn">
+                            <i class="fa fa-plus"></i> {{ text_add_child_account }}
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="editAccount()" disabled id="edit-account-btn">
+                            <i class="fa fa-edit"></i> {{ text_edit_account }}
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="viewStatement()" disabled id="view-statement-btn">
+                            <i class="fa fa-file-text"></i> {{ text_view_statement }}
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="updateBalance()" disabled id="update-balance-btn">
+                            <i class="fa fa-refresh"></i> {{ text_update_balance }}
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="deleteAccount()" disabled id="delete-account-btn">
+                            <i class="fa fa-trash"></i> {{ text_delete_account }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- تفاصيل الحساب المحدد -->
+                <div class="account-info">
+                    <h5><i class="fa fa-info-circle"></i> {{ text_account_details }}</h5>
+                    <div id="account-details" class="account-details">
+                        <p>{{ text_select_account }}</p>
+                    </div>
+                    <div id="selected-account-info" style="display: none;">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>{{ text_account_code }}:</strong></td>
+                                <td><span id="selected-code" class="account-code-display"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>{{ text_account_name }}:</strong></td>
+                                <td><span id="selected-name"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>{{ text_account_type }}:</strong></td>
+                                <td><span id="selected-type"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>{{ text_current_balance }}:</strong></td>
+                                <td><span id="selected-balance" class="account-balance-display"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>{{ text_status }}:</strong></td>
+                                <td><span id="selected-status"></span></td>
+                            </tr>
+                        </table>
+                        
+                        <div class="mt-3">
+                            <h6>{{ text_quick_stats }}</h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <small class="text-muted">{{ text_child_accounts }}</small>
+                                        <div class="h5 mb-0" id="child-count">0</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <small class="text-muted">{{ text_transactions }}</small>
+                                        <div class="h5 mb-0" id="transaction-count">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- قائمة السياق -->
+<div class="context-menu" id="context-menu">
+    <ul>
+        <li onclick="contextAddChild()"><i class="fa fa-plus"></i> {{ text_add_child }}</li>
+        <li onclick="contextEdit()"><i class="fa fa-edit"></i> {{ text_edit }}</li>
+        <li onclick="contextStatement()"><i class="fa fa-file-text"></i> {{ text_statement }}</li>
+        <li class="divider"></li>
+        <li onclick="contextDelete()"><i class="fa fa-trash"></i> {{ text_delete }}</li>
+    </ul>
+</div>
+
+<script>
+var selectedAccountId = null;
+var accountsTree = null;
+
+$(document).ready(function() {
+    // تهيئة الشجرة
+    initializeTree();
+    
+    // إخفاء قائمة السياق عند النقر خارجها
+    $(document).click(function() {
+        $('#context-menu').hide();
+    });
+});
+
+function initializeTree() {
+    $('#accounts-tree').jstree({
+        'core': {
+            'data': {
+                'url': '{{ tree_data_url }}',
+                'data': function(node) {
+                    return { 'id': node.id };
+                }
+            },
+            'check_callback': true,
+            'themes': {
+                'responsive': true,
+                'variant': 'large'
+            }
+        },
+        'plugins': ['search', 'contextmenu', 'dnd', 'state'],
+        'search': {
+            'case_insensitive': true,
+            'show_only_matches': true
+        },
+        'contextmenu': {
+            'items': function(node) {
+                return {
+                    'add': {
+                        'label': '{{ text_add_child }}',
+                        'action': function() { addChildAccount(node.id); }
+                    },
+                    'edit': {
+                        'label': '{{ text_edit }}',
+                        'action': function() { editSelectedAccount(node.id); }
+                    },
+                    'statement': {
+                        'label': '{{ text_statement }}',
+                        'action': function() { viewAccountStatement(node.id); }
+                    },
+                    'delete': {
+                        'label': '{{ text_delete }}',
+                        'action': function() { deleteSelectedAccount(node.id); }
+                    }
+                };
+            }
+        }
+    });
+
+    // أحداث الشجرة
+    $('#accounts-tree').on('select_node.jstree', function(e, data) {
+        selectedAccountId = data.node.id;
+        showAccountDetails(data.node);
+        enableActionButtons();
+    });
+
+    $('#accounts-tree').on('deselect_node.jstree', function(e, data) {
+        selectedAccountId = null;
+        hideAccountDetails();
+        disableActionButtons();
+    });
+}
+
+function showAccountDetails(node) {
+    var accountData = node.data;
+    
+    $('#selected-code').text(accountData.account_code);
+    $('#selected-name').text(node.text.split(' - ')[1]);
+    $('#selected-type').text(getAccountTypeText(accountData.account_type));
+    
+    var balance = parseFloat(accountData.current_balance);
+    $('#selected-balance').text(formatCurrency(balance))
+        .removeClass('balance-positive balance-negative')
+        .addClass(balance >= 0 ? 'balance-positive' : 'balance-negative');
+    
+    $('#selected-status').html(accountData.is_active ? 
+        '<span class="badge bg-success">{{ text_active }}</span>' : 
+        '<span class="badge bg-danger">{{ text_inactive }}</span>');
+    
+    // إحصائيات سريعة
+    loadAccountStats(selectedAccountId);
+    
+    $('#account-details').hide();
+    $('#selected-account-info').show();
+}
+
+function hideAccountDetails() {
+    $('#selected-account-info').hide();
+    $('#account-details').show();
+}
+
+function enableActionButtons() {
+    $('#add-child-btn, #edit-account-btn, #view-statement-btn, #update-balance-btn, #delete-account-btn').prop('disabled', false);
+}
+
+function disableActionButtons() {
+    $('#add-child-btn, #edit-account-btn, #view-statement-btn, #update-balance-btn, #delete-account-btn').prop('disabled', true);
+}
+
+function searchTree() {
+    var searchText = $('#tree-search').val();
+    $('#accounts-tree').jstree('search', searchText);
+}
+
+function clearSearch() {
+    $('#tree-search').val('');
+    $('#accounts-tree').jstree('clear_search');
+}
+
+function expandAll() {
+    $('#accounts-tree').jstree('open_all');
+}
+
+function collapseAll() {
+    $('#accounts-tree').jstree('close_all');
+}
+
+function showOnlyAssets() {
+    filterByAccountType('asset');
+}
+
+function showOnlyLiabilities() {
+    filterByAccountType('liability');
+}
+
+function showOnlyRevenue() {
+    filterByAccountType('revenue');
+}
+
+function showOnlyExpenses() {
+    filterByAccountType('expense');
+}
+
+function showAll() {
+    $('#accounts-tree').jstree('show_all');
+}
+
+function filterByAccountType(type) {
+    $('#accounts-tree').jstree('hide_all');
+    $('#accounts-tree').find('li').each(function() {
+        var node = $('#accounts-tree').jstree('get_node', this.id);
+        if (node.data && node.data.account_type === type) {
+            $('#accounts-tree').jstree('show_node', node.id);
+            // إظهار الحسابات الأب أيضاً
+            var parent = $('#accounts-tree').jstree('get_parent', node.id);
+            while (parent && parent !== '#') {
+                $('#accounts-tree').jstree('show_node', parent);
+                parent = $('#accounts-tree').jstree('get_parent', parent);
+            }
+        }
+    });
+}
+
+function addAccount() {
+    if (selectedAccountId) {
+        addChildAccount(selectedAccountId);
+    } else {
+        window.location.href = '{{ add }}';
+    }
+}
+
+function addChildAccount(parentId) {
+    window.location.href = '{{ add }}&parent_id=' + parentId;
+}
+
+function editAccount() {
+    if (selectedAccountId) {
+        editSelectedAccount(selectedAccountId);
+    }
+}
+
+function editSelectedAccount(accountId) {
+    window.location.href = '{{ edit }}'.replace('account_id=', 'account_id=' + accountId);
+}
+
+function viewStatement() {
+    if (selectedAccountId) {
+        viewAccountStatement(selectedAccountId);
+    }
+}
+
+function viewAccountStatement(accountId) {
+    window.open('{{ statement }}'.replace('account_id=', 'account_id=' + accountId), '_blank');
+}
+
+function updateBalance() {
+    if (selectedAccountId) {
+        $.ajax({
+            url: '{{ update_balance }}',
+            type: 'POST',
+            data: { account_id: selectedAccountId },
+            success: function(response) {
+                if (response.success) {
+                    // تحديث الرصيد في الشجرة
+                    var node = $('#accounts-tree').jstree('get_node', selectedAccountId);
+                    node.data.current_balance = response.new_balance;
+                    showAccountDetails(node);
+                    
+                    showAlert('success', '{{ text_balance_updated }}');
+                } else {
+                    showAlert('danger', response.error);
+                }
+            }
+        });
+    }
+}
+
+function deleteAccount() {
+    if (selectedAccountId) {
+        deleteSelectedAccount(selectedAccountId);
+    }
+}
+
+function deleteSelectedAccount(accountId) {
+    if (confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+            url: '{{ delete }}',
+            type: 'POST',
+            data: { selected: [accountId] },
+            success: function(response) {
+                $('#accounts-tree').jstree('delete_node', accountId);
+                hideAccountDetails();
+                disableActionButtons();
+                showAlert('success', '{{ text_account_deleted }}');
+            }
+        });
+    }
+}
+
+function loadAccountStats(accountId) {
+    $.ajax({
+        url: '{{ account_stats }}',
+        type: 'GET',
+        data: { account_id: accountId },
+        success: function(data) {
+            $('#child-count').text(data.child_count || 0);
+            $('#transaction-count').text(data.transaction_count || 0);
+        }
+    });
+}
+
+function getAccountTypeText(type) {
+    var types = {
+        'asset': '{{ text_assets }}',
+        'liability': '{{ text_liabilities }}',
+        'equity': '{{ text_equity }}',
+        'revenue': '{{ text_revenue }}',
+        'expense': '{{ text_expenses }}'
+    };
+    return types[type] || type;
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('ar-EG', {
+        style: 'currency',
+        currency: 'EGP'
+    }).format(amount);
+}
+
+function showAlert(type, message) {
+    var alertHtml = '<div class="alert alert-' + type + ' alert-dismissible">' +
+                   '<i class="fa fa-' + (type === 'success' ? 'check' : 'exclamation') + '-circle"></i> ' + message +
+                   '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                   '</div>';
+    
+    $('.container-fluid').prepend(alertHtml);
+    
+    setTimeout(function() {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+</script>
+
+{{ footer }}

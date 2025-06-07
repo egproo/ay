@@ -1,0 +1,322 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title"><i class="fa fa-balance-scale"></i> {{ text_matching_title }}</h4>
+</div>
+<div class="modal-body">
+  <form id="matching-form" class="form">
+    <input type="hidden" name="po_id" value="{{ order.po_id }}">
+    
+    <!-- معلومات أمر الشراء -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_order_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label">{{ text_po_number }}</label>
+              <p class="form-control-static"><strong>{{ order.po_number }}</strong></p>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label">{{ text_supplier }}</label>
+              <p class="form-control-static">{{ order.supplier_name }}</p>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label">{{ text_order_date }}</label>
+              <p class="form-control-static">{{ order.order_date }}</p>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label">{{ text_matching_status }}</label>
+              <p class="form-control-static">
+                <span class="label label-{{ order.matching_status_class }}">{{ order.matching_status_text }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- إيصالات الاستلام -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-truck"></i> {{ text_receipts }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_receipt_number }}</th>
+                <th>{{ column_receipt_date }}</th>
+                <th>{{ column_branch }}</th>
+                <th class="text-center">{{ column_status }}</th>
+                <th>{{ column_invoice_number }}</th>
+                <th class="text-right">{{ column_invoice_amount }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if receipts %}
+                {% for receipt in receipts %}
+                <tr>
+                  <td>{{ receipt.receipt_number }}</td>
+                  <td>{{ receipt.receipt_date }}</td>
+                  <td>{{ receipt.branch_name }}</td>
+                  <td class="text-center"><span class="label label-{{ receipt.status_class }}">{{ receipt.status_text }}</span></td>
+                  <td>{{ receipt.invoice_number }}</td>
+                  <td class="text-right">{{ receipt.invoice_amount_formatted }}</td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-center">{{ text_no_receipts }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- المطابقة -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-check-circle"></i> {{ text_matching_comparison }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="alert alert-info">
+          <i class="fa fa-info-circle"></i> {{ text_matching_explanation }}
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th rowspan="2">{{ column_product }}</th>
+                <th colspan="2" class="text-center bg-primary">{{ text_purchase_order }}</th>
+                <th colspan="2" class="text-center bg-success">{{ text_receipts }}</th>
+                <th colspan="2" class="text-center bg-warning">{{ text_invoices }}</th>
+                <th colspan="2" class="text-center bg-danger">{{ text_variance }}</th>
+                <th rowspan="2" class="text-center">{{ text_variance_notes }}</th>
+              </tr>
+              <tr>
+                <th class="text-center bg-primary">{{ column_po_quantity }}</th>
+                <th class="text-right bg-primary">{{ column_po_price }}</th>
+                <th class="text-center bg-success">{{ column_received_quantity }}</th>
+                <th class="text-center bg-success">{{ column_received_date }}</th>
+                <th class="text-center bg-warning">{{ column_invoice_quantity }}</th>
+                <th class="text-right bg-warning">{{ column_invoice_price }}</th>
+                <th class="text-center bg-danger">{{ column_variance }}</th>
+                <th class="text-right bg-danger">{{ column_variance_amount }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if matching_items %}
+                {% for item in matching_items %}
+                <tr class="matching-row {% if item.has_variance %}mismatch{% endif %}" data-item-id="{{ item.po_item_id }}">
+                  <td>{{ item.product_name }}</td>
+                  <td class="text-center">{{ item.quantity_ordered }}</td>
+                  <td class="text-right">{{ item.unit_price_ordered_formatted }}</td>
+                  <td class="text-center">{{ item.quantity_received }}</td>
+                  <td class="text-center">{{ item.last_received_date }}</td>
+                  <td class="text-center">{{ item.quantity_invoiced }}</td>
+                  <td class="text-right">{{ item.unit_price_invoiced_formatted }}</td>
+                  <td class="text-center">
+                    {% if item.quantity_variance != 0 %}
+                      <span class="{% if item.quantity_variance > 0 %}variance-positive{% else %}variance-negative{% endif %}">
+                        {{ item.quantity_variance }}
+                      </span>
+                    {% else %}
+                      0
+                    {% endif %}
+                  </td>
+                  <td class="text-right">
+                    {% if item.price_variance != 0 %}
+                      <span class="{% if item.price_variance > 0 %}variance-positive{% else %}variance-negative{% endif %}">
+                        {{ item.price_variance_formatted }}
+                      </span>
+                    {% else %}
+                      0.00
+                    {% endif %}
+                  </td>
+                  <td>
+                    <input type="hidden" name="matching[{{ item.po_item_id }}][po_item_id]" value="{{ item.po_item_id }}">
+                    <input type="hidden" name="matching[{{ item.po_item_id }}][status]" value="{% if item.has_variance %}mismatch{% else %}matched{% endif %}">
+                    <input type="hidden" name="matching[{{ item.po_item_id }}][quantity_variance]" value="{{ item.quantity_variance }}">
+                    <input type="hidden" name="matching[{{ item.po_item_id }}][price_variance]" value="{{ item.price_variance }}">
+                    
+                    {% if item.has_variance %}
+                      <textarea class="form-control variance-notes" name="matching[{{ item.po_item_id }}][variance_notes]" rows="2" placeholder="{{ text_enter_variance_notes }}" required>{{ item.variance_notes }}</textarea>
+                    {% else %}
+                      <input type="hidden" name="matching[{{ item.po_item_id }}][variance_notes]" value="">
+                      <span class="text-success"><i class="fa fa-check"></i> {{ text_matched }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="10" class="text-center">{{ text_no_items_to_match }}</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="form-group">
+          <label for="matching-notes" class="control-label">{{ text_matching_notes }}</label>
+          <textarea name="notes" id="matching-notes" class="form-control" rows="3"></textarea>
+        </div>
+        
+        {% if matching_items %}
+        <div class="text-right">
+          <button type="button" id="match-all-items" class="btn btn-info">
+            <i class="fa fa-magic"></i> {{ text_auto_match_all }}
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <div class="pull-left">
+    <div class="btn-group">
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fa fa-download"></i> {{ text_export_matching }} <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a href="javascript:void(0);" onclick="exportMatching('excel');">{{ button_export_excel }}</a></li>
+        <li><a href="javascript:void(0);" onclick="exportMatching('pdf');">{{ button_export_pdf }}</a></li>
+      </ul>
+    </div>
+  </div>
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+  <button type="button" class="btn btn-primary" onclick="$('#matching-form').submit();">
+    <i class="fa fa-save"></i> {{ button_save_matching }}
+  </button>
+</div>
+
+<script type="text/javascript">
+// --- Start Moved JavaScript ---
+
+/**
+ * تهيئة نموذج المطابقة
+ */
+function initializeMatchingForm() {
+    // إعداد أحداث إدخال ملاحظات التباين
+    $('.variance-notes').off('input.matchingForm').on('input.matchingForm', function() {
+      var $row = $(this).closest('tr');
+      // Update hidden input if needed, though textarea value is submitted directly
+      // $row.find('input[name="matching[' + $row.data('item-id') + '][variance_notes]"]').val($(this).val());
+    });
+    
+    // التوافق مع جميع العناصر تلقائيًا
+    $('#match-all-items').off('click.matchingForm').on('click.matchingForm', function() {
+      $('.variance-notes').each(function() {
+        if ($(this).val() === '') {
+          $(this).val('{{ text_auto_matched }}');
+          // Update hidden input if needed
+          // var $row = $(this).closest('tr');
+          // $row.find('input[name="matching[' + $row.data('item-id') + '][variance_notes]"]').val('{{ text_auto_matched }}');
+        }
+      });
+      
+      toastr.success('{{ text_all_items_matched }}');
+    });
+    
+    // إرسال نموذج المطابقة
+    $('#matching-form').off('submit.matchingForm').on('submit.matchingForm', function(e) {
+      e.preventDefault();
+      saveMatching($(this)); // Direct call
+    });
+}
+  
+/**
+ * حفظ المطابقة الثلاثية
+ * @param {object} $form - عنصر jQuery للنموذج
+ */
+function saveMatching($form) {
+  showLoading(); // Use global showLoading
+  
+  $.ajax({
+    url: 'index.php?route=purchase/order/ajaxMatch&user_token={{ user_token }}',
+    type: 'POST',
+    data: $form.serialize(),
+    dataType: 'json',
+    success: function(json) {
+      if (json.error) {
+        toastr.error(json.error);
+      } else if (json.success) {
+        toastr.success(json.success);
+        
+        $('#modal-matching').modal('hide');
+        
+        if (json.redirect) {
+          // Redirect to PO view page after saving matching
+          window.location.href = json.redirect; 
+        } else {
+          // Fallback: Reload the main PO list if redirect fails
+          if (typeof OrderManager !== 'undefined' && typeof OrderManager.loadOrders === 'function') {
+             OrderManager.loadOrders();
+          } else if (typeof loadOrders === 'function') {
+             loadOrders();
+          }
+        }
+      }
+      hideLoading(); // Use global hideLoading
+    },
+    error: function(xhr, status, error) {
+      toastr.error('{{ error_ajax }}');
+      hideLoading(); // Use global hideLoading
+    }
+  });
+}
+  
+/**
+ * تصدير بيانات المطابقة
+ * @param {string} type - نوع التصدير ('excel' أو 'pdf')
+ */
+function exportMatching(type) { // Removed po_id parameter, get it from form
+    var po_id = $('#matching-form input[name="po_id"]').val();
+    
+    if (!po_id) {
+        toastr.error('{{ error_no_po_id }}');
+        return;
+    }
+    
+    var url = 'index.php?route=purchase/order/exportMatching&user_token={{ user_token }}' + '&po_id=' + po_id + '&type=' + type;
+    window.open(url, '_blank');
+}
+
+// Helper functions (assuming they are defined globally or within OrderManager)
+function showLoading() {
+    // Implement or ensure global showLoading exists
+    if(typeof $.fn.busyLoad === 'function') {
+        $('body').busyLoad('show');
+    } else {
+         $('#loading-overlay').fadeIn(200); // Fallback
+    }
+}
+function hideLoading() {
+    // Implement or ensure global hideLoading exists
+     if(typeof $.fn.busyLoad === 'function') {
+        $('body').busyLoad('hide');
+    } else {
+        $('#loading-overlay').fadeOut(200); // Fallback
+    }
+}
+
+// Initialize form components when the modal is shown
+$('#modal-matching').on('shown.bs.modal', function () {
+    initializeMatchingForm();
+});
+
+// --- End Moved JavaScript ---
+</script>

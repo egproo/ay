@@ -1,0 +1,340 @@
+{{ header }}{{ column_left }}
+{#
+/**
+ * AYM ERP System: Advanced Feature Permissions Form View
+ *
+ * نموذج إدارة الصلاحيات المتقدمة - مطور بجودة عالمية
+ *
+ * الميزات المتقدمة:
+ * - نموذج شامل لإنشاء وتعديل الصلاحيات
+ * - تحديد نوع الصلاحية ومفتاحها
+ * - ربط الصلاحيات بمجموعات المستخدمين
+ * - واجهة مستخدم احترافية
+ * - تكامل مع Bootstrap 3.3
+ *
+ * @package    AYM ERP
+ * @author     AYM Development Team
+ * @copyright  2024 AYM ERP Systems
+ * @license    Commercial License
+ * @version    1.0.0
+ * @since      2024-01-15
+ */
+#}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-permission" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary">
+          <i class="fa fa-save"></i> {{ button_save }}
+        </button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default">
+          <i class="fa fa-reply"></i> {{ button_cancel }}
+        </a>
+      </div>
+      <h1><i class="fa fa-shield"></i> {{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {# رسائل التنبيه #}
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <i class="fa fa-pencil"></i> {{ text_form }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-permission" class="form-horizontal">
+          
+          {# معلومات أساسية #}
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" required />
+              {% if error_name %}
+              <div class="text-danger">{{ error_name }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_name }}</div>
+            </div>
+          </div>
+
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-key">{{ entry_key }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="key" value="{{ key }}" placeholder="{{ entry_key }}" id="input-key" class="form-control" required />
+              {% if error_key %}
+              <div class="text-danger">{{ error_key }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_key }}</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-description">{{ entry_description }}</label>
+            <div class="col-sm-10">
+              <textarea name="description" rows="3" placeholder="{{ entry_description }}" id="input-description" class="form-control">{{ description }}</textarea>
+              <div class="help-block">{{ help_description }}</div>
+            </div>
+          </div>
+
+          {# نوع الصلاحية #}
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-type">{{ entry_type }}</label>
+            <div class="col-sm-10">
+              <select name="type" id="input-type" class="form-control">
+                <option value="access" {% if type == 'access' %}selected{% endif %}>{{ text_type_access }}</option>
+                <option value="modify" {% if type == 'modify' %}selected{% endif %}>{{ text_type_modify }}</option>
+                <option value="system" {% if type == 'system' %}selected{% endif %}>{{ text_type_system }}</option>
+                <option value="other" {% if type == 'other' %}selected{% endif %}>{{ text_type_other }}</option>
+              </select>
+              <div class="help-block">{{ help_type }}</div>
+            </div>
+          </div>
+
+          {# الحالة #}
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-control">
+                <option value="1" {% if status %}selected{% endif %}>{{ text_enabled }}</option>
+                <option value="0" {% if not status %}selected{% endif %}>{{ text_disabled }}</option>
+              </select>
+              <div class="help-block">{{ help_status }}</div>
+            </div>
+          </div>
+
+          {# مجموعات المستخدمين #}
+          <div class="form-group">
+            <label class="col-sm-2 control-label">{{ entry_user_groups }}</label>
+            <div class="col-sm-10">
+              <div class="well well-sm" style="height: 150px; overflow: auto;">
+                {% for user_group in user_groups %}
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="user_group_ids[]" value="{{ user_group.user_group_id }}" 
+                           {% if user_group.user_group_id in selected_user_groups %}checked{% endif %} />
+                    {{ user_group.name }}
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="help-block">{{ help_user_groups }}</div>
+            </div>
+          </div>
+
+          {# إعدادات متقدمة #}
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" href="#advanced-settings">
+                  <i class="fa fa-cogs"></i> {{ text_advanced_settings }}
+                  <i class="fa fa-chevron-down pull-right"></i>
+                </a>
+              </h4>
+            </div>
+            <div id="advanced-settings" class="panel-collapse collapse">
+              <div class="panel-body">
+                
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-priority">{{ entry_priority }}</label>
+                  <div class="col-sm-10">
+                    <input type="number" name="priority" value="{{ priority|default(0) }}" placeholder="{{ entry_priority }}" id="input-priority" class="form-control" min="0" max="100" />
+                    <div class="help-block">{{ help_priority }}</div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-module">{{ entry_module }}</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="module" value="{{ module }}" placeholder="{{ entry_module }}" id="input-module" class="form-control" />
+                    <div class="help-block">{{ help_module }}</div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_dependencies }}</label>
+                  <div class="col-sm-10">
+                    <textarea name="dependencies" rows="3" placeholder="{{ entry_dependencies }}" class="form-control">{{ dependencies }}</textarea>
+                    <div class="help-block">{{ help_dependencies }}</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    {# معلومات مساعدة #}
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-info-circle"></i> {{ text_permission_types }}
+            </h3>
+          </div>
+          <div class="panel-body">
+            <dl>
+              <dt><span class="label label-info">{{ text_type_access }}</span></dt>
+              <dd>{{ text_access_description }}</dd>
+              
+              <dt><span class="label label-warning">{{ text_type_modify }}</span></dt>
+              <dd>{{ text_modify_description }}</dd>
+              
+              <dt><span class="label label-danger">{{ text_type_system }}</span></dt>
+              <dd>{{ text_system_description }}</dd>
+              
+              <dt><span class="label label-default">{{ text_type_other }}</span></dt>
+              <dd>{{ text_custom_description }}</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-lightbulb-o"></i> {{ text_tips }}
+            </h3>
+          </div>
+          <div class="panel-body">
+            <ul>
+              <li>{{ text_tip_1 }}</li>
+              <li>{{ text_tip_2 }}</li>
+              <li>{{ text_tip_3 }}</li>
+              <li>{{ text_tip_4 }}</li>
+              <li>{{ text_tip_5 }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تفعيل التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // تحديث مفتاح الصلاحية تلقائياً من الاسم
+    $('#input-name').on('input', function() {
+        var name = $(this).val();
+        var key = name.toLowerCase()
+                     .replace(/[^a-z0-9\s]/g, '')
+                     .replace(/\s+/g, '_')
+                     .replace(/_{2,}/g, '_')
+                     .replace(/^_|_$/g, '');
+        
+        if ($('#input-key').val() === '' || $('#input-key').data('auto-generated')) {
+            $('#input-key').val(key).data('auto-generated', true);
+        }
+    });
+    
+    // منع التحديث التلقائي إذا تم تعديل المفتاح يدوياً
+    $('#input-key').on('input', function() {
+        $(this).data('auto-generated', false);
+    });
+    
+    // تحديد/إلغاء تحديد جميع مجموعات المستخدمين
+    $('.panel-body').prepend('<div class="checkbox"><label><input type="checkbox" id="select-all-groups"> ' + '{{ text_select_all }}' + '</label></div>');
+    
+    $('#select-all-groups').on('change', function() {
+        $('input[name="user_group_ids[]"]').prop('checked', this.checked);
+    });
+    
+    // تحديث حالة "تحديد الكل" عند تغيير المجموعات
+    $('input[name="user_group_ids[]"]').on('change', function() {
+        var total = $('input[name="user_group_ids[]"]').length;
+        var checked = $('input[name="user_group_ids[]"]:checked').length;
+        
+        $('#select-all-groups').prop('indeterminate', checked > 0 && checked < total);
+        $('#select-all-groups').prop('checked', checked === total);
+    });
+    
+    // تحديث حالة "تحديد الكل" عند التحميل
+    $('input[name="user_group_ids[]"]').trigger('change');
+    
+    // تحقق من صحة النموذج
+    $('#form-permission').on('submit', function(e) {
+        var name = $('#input-name').val().trim();
+        var key = $('#input-key').val().trim();
+        
+        if (name === '') {
+            alert('{{ error_name_required }}');
+            $('#input-name').focus();
+            e.preventDefault();
+            return false;
+        }
+        
+        if (key === '') {
+            alert('{{ error_key_required }}');
+            $('#input-key').focus();
+            e.preventDefault();
+            return false;
+        }
+        
+        // تحقق من صحة مفتاح الصلاحية
+        if (!/^[a-z0-9_]+$/.test(key)) {
+            alert('{{ error_key_format }}');
+            $('#input-key').focus();
+            e.preventDefault();
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+
+<style>
+.label {
+    margin-right: 5px;
+}
+
+.help-block {
+    margin-top: 5px;
+    color: #737373;
+    font-size: 12px;
+}
+
+.panel-collapse .panel-body {
+    border-top: 1px solid #ddd;
+}
+
+.checkbox {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.well {
+    background-color: #f5f5f5;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.form-group.required .control-label:before {
+    content: "* ";
+    color: #e74c3c;
+}
+</style>
+
+{{ footer }}

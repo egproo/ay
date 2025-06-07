@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+}
+table {
+    width: 50%;
+    border-collapse: collapse;
+    font-size:14px;
+    margin-bottom:20px;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:right;
+}
+th {
+    background:#eee;
+    text-align:center;
+}
+.section-title {
+    font-weight: bold;
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:16px;
+    text-align:left;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_tax_return }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<tr>
+    <th>{{ text_accounting_profit }}</th>
+    <td>{{ accounting_profit }}</td>
+</tr>
+<tr>
+    <th>{{ text_non_deductible }}</th>
+    <td>{{ non_deductible }}</td>
+</tr>
+<tr>
+    <th>{{ text_exempt_income }}</th>
+    <td>{{ exempt_income }}</td>
+</tr>
+<tr>
+    <th>{{ text_taxable_profit }}</th>
+    <td>{{ taxable_profit }}</td>
+</tr>
+<tr>
+    <th>{{ text_tax_rate }} (%)</th>
+    <td>{{ tax_rate }}</td>
+</tr>
+<tr>
+    <th>{{ text_tax_due }}</th>
+    <td>{{ tax_due }}</td>
+</tr>
+</table>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

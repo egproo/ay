@@ -1,0 +1,250 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-batch" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fas fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-pencil-alt"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form id="form-batch" action="{{ action }}" method="post">
+          <div class="row mb-3">
+            <label for="input-product" class="col-sm-2 col-form-label">{{ entry_product }}</label>
+            <div class="col-sm-10">
+              <select name="product_id" id="input-product" class="form-select" {% if batch_id %}disabled{% endif %}>
+                <option value="">{{ text_select }}</option>
+                {% if products %}
+                  {% for product in products %}
+                    <option value="{{ product.product_id }}" {% if product.product_id == product_id %}selected{% endif %}>{{ product.name }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+              {% if batch_id %}
+                <input type="hidden" name="product_id" value="{{ product_id }}"/>
+              {% endif %}
+              {% if error_product %}
+                <div class="invalid-feedback d-block">{{ error_product }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-batch-number" class="col-sm-2 col-form-label">{{ entry_batch_number }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="batch_number" value="{{ batch_number }}" placeholder="{{ entry_batch_number }}" id="input-batch-number" class="form-control" {% if batch_id %}readonly{% endif %}/>
+              {% if error_batch_number %}
+                <div class="invalid-feedback d-block">{{ error_batch_number }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-branch" class="col-sm-2 col-form-label">{{ entry_branch }}</label>
+            <div class="col-sm-10">
+              <select name="branch_id" id="input-branch" class="form-select" {% if batch_id %}disabled{% endif %}>
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == branch_id %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+              {% if batch_id %}
+                <input type="hidden" name="branch_id" value="{{ branch_id }}"/>
+              {% endif %}
+              {% if error_branch %}
+                <div class="invalid-feedback d-block">{{ error_branch }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-unit" class="col-sm-2 col-form-label">{{ entry_unit }}</label>
+            <div class="col-sm-10">
+              <select name="unit_id" id="input-unit" class="form-select" {% if batch_id %}disabled{% endif %}>
+                <option value="">{{ text_select }}</option>
+                {% if units %}
+                  {% for unit in units %}
+                    <option value="{{ unit.unit_id }}" {% if unit.unit_id == unit_id %}selected{% endif %}>{{ unit.name }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+              {% if batch_id %}
+                <input type="hidden" name="unit_id" value="{{ unit_id }}"/>
+              {% endif %}
+              {% if error_unit %}
+                <div class="invalid-feedback d-block">{{ error_unit }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-quantity" class="col-sm-2 col-form-label">{{ entry_quantity }}</label>
+            <div class="col-sm-10">
+              <input type="number" name="quantity" value="{{ quantity }}" placeholder="{{ entry_quantity }}" id="input-quantity" class="form-control" step="0.0001" min="0"/>
+              {% if error_quantity %}
+                <div class="invalid-feedback d-block">{{ error_quantity }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-manufacturing-date" class="col-sm-2 col-form-label">{{ entry_manufacturing_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="manufacturing_date" value="{{ manufacturing_date }}" id="input-manufacturing-date" class="form-control"/>
+              {% if error_manufacturing_date %}
+                <div class="invalid-feedback d-block">{{ error_manufacturing_date }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-expiry-date" class="col-sm-2 col-form-label">{{ entry_expiry_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="expiry_date" value="{{ expiry_date }}" id="input-expiry-date" class="form-control"/>
+              {% if error_expiry_date %}
+                <div class="invalid-feedback d-block">{{ error_expiry_date }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-status" class="col-sm-2 col-form-label">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-select">
+                <option value="active" {% if status == 'active' %}selected{% endif %}>{{ text_status_active }}</option>
+                <option value="quarantine" {% if status == 'quarantine' %}selected{% endif %}>{{ text_status_quarantine }}</option>
+                <option value="consumed" {% if status == 'consumed' %}selected{% endif %}>{{ text_status_consumed }}</option>
+                <option value="expired" {% if status == 'expired' %}selected{% endif %}>{{ text_status_expired }}</option>
+                <option value="damaged" {% if status == 'damaged' %}selected{% endif %}>{{ text_status_damaged }}</option>
+                <option value="returned" {% if status == 'returned' %}selected{% endif %}>{{ text_status_returned }}</option>
+                <option value="reserved" {% if status == 'reserved' %}selected{% endif %}>{{ text_status_reserved }}</option>
+              </select>
+              {% if error_status %}
+                <div class="invalid-feedback d-block">{{ error_status }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-notes" class="col-sm-2 col-form-label">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="5" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+            </div>
+          </div>
+          {% if batch_id %}
+            <div class="row mb-3">
+              <label class="col-sm-2 col-form-label">{{ text_expiry_status }}</label>
+              <div class="col-sm-10">
+                {% if expiry_status == 'expired' %}
+                  <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> {{ text_expired }}
+                    {% if days_remaining < 0 %}
+                      <br>{{ text_days_expired|format(days_remaining|abs) }}
+                    {% endif %}
+                  </div>
+                {% elseif expiry_status == 'warning' %}
+                  <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> {{ text_warning }}
+                    {% if days_remaining > 0 %}
+                      <br>{{ text_days_to_expiry|format(days_remaining) }}
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> {{ text_valid }}
+                    {% if days_remaining > 0 %}
+                      <br>{{ text_days_to_expiry|format(days_remaining) }}
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+// Cargar unidades cuando se selecciona un producto
+$('#input-product').on('change', function() {
+    var product_id = $(this).val();
+    
+    if (!product_id) {
+        $('#input-unit').html('<option value="">{{ text_select }}</option>');
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?route=inventory/batch_tracking/getProductUnits&user_token={{ user_token }}',
+        type: 'post',
+        data: {
+            product_id: product_id
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#input-unit').prop('disabled', true);
+            $('#input-unit').html('<option value="">{{ text_loading }}</option>');
+        },
+        complete: function() {
+            $('#input-unit').prop('disabled', false);
+        },
+        success: function(json) {
+            var html = '<option value="">{{ text_select }}</option>';
+            
+            if (json['units']) {
+                for (var i = 0; i < json['units'].length; i++) {
+                    html += '<option value="' + json['units'][i]['unit_id'] + '">' + json['units'][i]['name'] + '</option>';
+                }
+            }
+            
+            $('#input-unit').html(html);
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// Validar fechas
+$('#input-manufacturing-date, #input-expiry-date').on('change', function() {
+    var manufacturing_date = $('#input-manufacturing-date').val();
+    var expiry_date = $('#input-expiry-date').val();
+    
+    if (manufacturing_date && expiry_date) {
+        if (new Date(manufacturing_date) > new Date(expiry_date)) {
+            alert('{{ error_manufacturing_after_expiry }}');
+            $(this).val('');
+        }
+    }
+    
+    if ($(this).attr('id') == 'input-manufacturing-date' && manufacturing_date) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (new Date(manufacturing_date) > today) {
+            alert('{{ error_manufacturing_date_future }}');
+            $(this).val('');
+        }
+    }
+    
+    if ($(this).attr('id') == 'input-expiry-date' && expiry_date) {
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (new Date(expiry_date) < today) {
+            alert('{{ error_expiry_date_past }}');
+            // No limpiamos el campo porque podría ser un lote antiguo con fecha de caducidad pasada
+        }
+    }
+});
+</script>
+{{ footer }}

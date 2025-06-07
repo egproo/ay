@@ -1,0 +1,84 @@
+<div class="container">
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#latest_orders">{{ text_latest_orders }}</a></li>
+        <li><a data-toggle="tab" href="#missing_orders">{{ text_missing_orders }}</a></li>
+        <li><a data-toggle="tab" href="#abandoned_carts">{{ text_abandoned_carts }}</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="latest_orders" class="tab-pane fade in active">
+            {% for order in latest_orders %}
+                <p>{{ order.order_id }} - {{ order.customer_name }} - {{ order.total }} - {{ order.status }} - {{ order.date_added }}</p>
+            {% endfor %}
+        </div>
+        <div id="missing_orders" class="tab-pane fade">
+            {% for order in missing_orders %}
+                <p>{{ order.order_id }} - {{ order.customer_name }} - {{ order.total }} - {{ order.status }} - {{ order.date_added }}</p>
+            {% endfor %}
+        </div>
+        <div id="abandoned_carts" class="tab-pane fade">
+            {% for cart in abandoned_carts %}
+                <p>{{ cart.cart_id }} - {{ cart.customer_name }} - {{ cart.product_name }} - {{ cart.price }} - {{ cart.quantity }} - {{ cart.date_added }}</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const userToken = '{{ user_token }}'; // أضف هذا إلى ملف الـ Twig الخاص بـ HTML
+
+    function reloadData() {
+        location.reload();
+    }
+
+    async function updateData() {
+        const response = await fetch('index.php?route=extension/dashboard/codaym/update&user_token=' + userToken);
+        if (!response.ok) {
+            console.error('Failed to fetch update data.');
+            return;
+        }
+        const data = await response.json();
+        console.log('Data updated', data);
+
+        // Update DOM elements based on the updated data
+        updateLatestOrders(data.latest_orders);
+        updateMissingOrders(data.missing_orders);
+        updateAbandonedCarts(data.abandoned_carts);
+    }
+
+    function updateLatestOrders(latestOrders) {
+        const latestOrdersElement = document.getElementById('latest_orders');
+        latestOrdersElement.innerHTML = '';
+        latestOrders.forEach(order => {
+            latestOrdersElement.innerHTML += `<p>${order.order_id} - ${order.customer_name} - ${order.total} - ${order.status} - ${order.date_added}</p>`;
+        });
+    }
+
+    function updateMissingOrders(missingOrders) {
+        const missingOrdersElement = document.getElementById('missing_orders');
+        missingOrdersElement.innerHTML = '';
+        missingOrders.forEach(order => {
+            missingOrdersElement.innerHTML += `<p>${order.order_id} - ${order.customer_name} - ${order.total} - ${order.status} - ${order.date_added}</p>`;
+        });
+    }
+
+    function updateAbandonedCarts(abandonedCarts) {
+        const abandonedCartsElement = document.getElementById('abandoned_carts');
+        abandonedCartsElement.innerHTML = '';
+        abandonedCarts.forEach(cart => {
+            abandonedCartsElement.innerHTML += `<p>${cart.cart_id} - ${cart.customer_name} - ${cart.product_name} - ${cart.price} - ${cart.quantity} - ${cart.date_added}</p>`;
+        });
+    }
+
+    // Update data every 2 minutes
+    setInterval(updateData, 120000);
+
+    // Reload page after 10 minutes of inactivity
+    var timeout = setTimeout(reloadData, 600000);
+    document.onmousemove = document.onkeypress = function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(reloadData, 600000);
+    };
+});
+</script>

@@ -1,0 +1,260 @@
+{# Placeholder for Vendor Payment Add/Edit Form #}
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title">{{ text_form_title }}</h4> {# Passed from controller #}
+</div>
+<div class="modal-body">
+  <form id="vendor-payment-form" class="form-horizontal">
+    <input type="hidden" name="payment_id" value="{{ payment_id|default(0) }}">
+    
+    {# TODO: Add form fields based on the vendor_payment table schema #}
+    {# Example fields: #}
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="supplier_id">{{ entry_supplier }}</label>
+      <div class="col-sm-9">
+        <select name="supplier_id" id="supplier_id" class="form-control select2-supplier" required>
+           <option value="">{{ text_select_supplier }}</option>
+           {% for supplier in suppliers %}
+           <option value="{{ supplier.supplier_id }}" {% if supplier.supplier_id == supplier_id %}selected{% endif %}>{{ supplier.name }}</option>
+           {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="payment_date">{{ entry_payment_date }}</label>
+      <div class="col-sm-9">
+         <div class="input-group date">
+            <input type="text" name="payment_date" id="payment_date" value="{{ payment_date|default('') }}" placeholder="{{ entry_payment_date }}" data-date-format="YYYY-MM-DD" class="form-control" required>
+            <span class="input-group-btn">
+            <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+            </span>
+         </div>
+      </div>
+    </div>
+    
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="payment_method_id">{{ entry_payment_method }}</label>
+      <div class="col-sm-9">
+        <select name="payment_method_id" id="payment_method_id" class="form-control" required>
+           <option value="">{{ text_select }}</option>
+           {% for method in payment_methods %}
+           <option value="{{ method.payment_method_id }}" {% if method.payment_method_id == payment_method_id %}selected{% endif %}>{{ method.name }}</option>
+           {% endfor %}
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="amount">{{ entry_amount }}</label>
+      <div class="col-sm-9">
+        <input type="number" name="amount" id="amount" value="{{ amount|default('') }}" class="form-control" required min="0.01" step="0.01">
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="col-sm-3 control-label" for="currency_id">{{ entry_currency }}</label>
+      <div class="col-sm-9">
+        <select name="currency_id" id="currency_id" class="form-control">
+           {% for currency in currencies %}
+           <option value="{{ currency.currency_id }}" {% if currency.currency_id == currency_id %}selected{% endif %}>{{ currency.title }}</option>
+           {% endfor %}
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="col-sm-3 control-label" for="reference">{{ entry_reference }}</label>
+      <div class="col-sm-9">
+        <input type="text" name="reference" id="reference" value="{{ reference|default('') }}" class="form-control" placeholder="{{ text_reference_placeholder }}">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-3 control-label" for="notes">{{ entry_notes }}</label>
+      <div class="col-sm-9">
+        <textarea name="notes" id="notes" class="form-control" rows="3">{{ notes|default('') }}</textarea>
+      </div>
+    </div>
+
+    {# Section to apply payment to invoices #}
+    <h4>{{ text_apply_to_invoices }}</h4>
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th class="text-center"><input type="checkbox" id="select-all-invoices"></th>
+            <th>{{ column_invoice_number }}</th>
+            <th>{{ column_invoice_date }}</th>
+            <th class="text-right">{{ column_invoice_total }}</th>
+            <th class="text-right">{{ column_amount_due }}</th>
+            <th class="text-right">{{ column_payment_amount }}</th>
+          </tr>
+        </thead>
+        <tbody id="unpaid-invoices">
+          {# Invoices loaded via AJAX based on supplier #}
+          <tr><td colspan="6" class="text-center">{{ text_select_supplier_first }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+     <div class="text-right">
+        <strong>{{ text_total_applied }}:</strong> <span id="total-applied-amount">0.00</span>
+        <br>
+        <strong>{{ text_unapplied_amount }}:</strong> <span id="unapplied-amount">0.00</span>
+    </div>
+
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+  <button type="button" class="btn btn-primary" id="save-payment-btn">{{ button_save }}</button> {# Add button_post if needed #}
+</div>
+
+<script>
+$(document).ready(function() {
+    var currencyFormat = {{ currency_format|json_encode()|raw }}; // Pass currency format from controller
+
+    // Initialize Select2, Datepickers
+    $('.select2-supplier').select2({ dropdownParent: $('#modal-payment-form .modal-content') })
+        .on('select2:select', function(e) {
+            var supplierId = $(this).val();
+            if (supplierId) {
+                loadUnpaidInvoices(supplierId);
+            } else {
+                 $('#unpaid-invoices').html('<tr><td colspan="6" class="text-center">{{ text_select_supplier_first }}</td></tr>');
+                 calculateAppliedAmount();
+            }
+        });
+
+    $('.date input').datetimepicker({
+        pickTime: false,
+        format: 'YYYY-MM-DD'
+    });
+    
+    $('#currency_id').on('change', function() {
+        // TODO: Potentially update exchange rate if currency changes
+    });
+
+    // Load unpaid invoices if editing or supplier pre-selected
+    var initialSupplierId = $('#supplier_id').val();
+    if (initialSupplierId) {
+        loadUnpaidInvoices(initialSupplierId);
+    }
+
+    // Select/Deselect all invoices
+    $('#select-all-invoices').on('change', function() {
+        $('#unpaid-invoices input[type="checkbox"]').prop('checked', this.checked).trigger('change');
+    });
+
+    // Handle payment amount input changes
+    $('#unpaid-invoices').on('input', '.payment-amount-input', function() {
+        var $input = $(this);
+        var amountDue = parseFloat($input.data('amount-due')) || 0;
+        var enteredAmount = parseFloat($input.val()) || 0;
+
+        if (enteredAmount < 0) {
+            $input.val(0);
+            enteredAmount = 0;
+        }
+        if (enteredAmount > amountDue) {
+            $input.val(amountDue.toFixed(currencyFormat.decimal_place));
+            toastr.warning('{{ error_payment_exceeds_due }}'); // Add lang string
+        }
+        calculateAppliedAmount();
+    });
+    
+    // Handle checkbox changes to auto-fill payment amount
+     $('#unpaid-invoices').on('change', 'input[type="checkbox"]', function() {
+        var $checkbox = $(this);
+        var $row = $checkbox.closest('tr');
+        var $paymentInput = $row.find('.payment-amount-input');
+        var amountDue = parseFloat($paymentInput.data('amount-due')) || 0;
+
+        if ($checkbox.is(':checked')) {
+            $paymentInput.val(amountDue.toFixed(currencyFormat.decimal_place)).prop('readonly', false);
+        } else {
+            $paymentInput.val('0.00').prop('readonly', true);
+        }
+        calculateAppliedAmount();
+    });
+
+    // Handle main payment amount change
+    $('#amount').on('input', calculateAppliedAmount);
+
+    // Save Button
+    $('#save-payment-btn').on('click', function() {
+        // TODO: Add validation (total applied <= payment amount) and AJAX save logic
+        alert('Save functionality not implemented yet.');
+        // $.ajax({ ... call controller's ajaxSave ... });
+    });
+
+    // Function to load unpaid invoices
+    function loadUnpaidInvoices(supplierId) {
+        $.ajax({
+            url: 'index.php?route=purchase/vendor_payment/ajaxGetUnpaidInvoices&user_token={{ user_token }}', // Need this controller method
+            type: 'GET',
+            data: { supplier_id: supplierId },
+            dataType: 'json',
+            beforeSend: function() {
+                // showLoading();
+                $('#unpaid-invoices').html('<tr><td colspan="6" class="text-center">{{ text_loading }}</td></tr>');
+            },
+            success: function(json) {
+                var html = '';
+                if (json.invoices && json.invoices.length > 0) {
+                    json.invoices.forEach(function(invoice) {
+                         html += '<tr>';
+                         html += '<td class="text-center"><input type="checkbox" name="invoice[' + invoice.invoice_id + '][selected]" value="' + invoice.invoice_id + '"></td>';
+                         html += '<td>' + invoice.invoice_number + '</td>';
+                         html += '<td>' + invoice.invoice_date + '</td>';
+                         html += '<td class="text-right">' + formatCurrency(invoice.total_amount) + '</td>';
+                         html += '<td class="text-right amount-due">' + formatCurrency(invoice.amount_due) + '</td>';
+                         html += '<td><input type="number" name="invoice[' + invoice.invoice_id + '][amount]" value="0.00" min="0" max="' + invoice.amount_due + '" step="0.01" class="form-control payment-amount-input" data-amount-due="' + invoice.amount_due + '" readonly></td>';
+                         html += '</tr>';
+                    });
+                } else {
+                    html = '<tr><td colspan="6" class="text-center">{{ text_no_unpaid_invoices }}</td></tr>'; // Add lang string
+                }
+                $('#unpaid-invoices').html(html);
+                calculateAppliedAmount(); // Recalculate after loading
+            },
+            error: function() {
+                 $('#unpaid-invoices').html('<tr><td colspan="6" class="text-center">{{ error_ajax }}</td></tr>');
+            },
+            complete: function() {
+                // hideLoading();
+            }
+        });
+    }
+
+    // Function to calculate applied/unapplied amounts
+    function calculateAppliedAmount() {
+        var totalPaymentAmount = parseFloat($('#amount').val()) || 0;
+        var totalApplied = 0;
+        
+        $('.payment-amount-input').each(function() {
+            totalApplied += parseFloat($(this).val()) || 0;
+        });
+
+        var unappliedAmount = totalPaymentAmount - totalApplied;
+
+        $('#total-applied-amount').text(formatCurrency(totalApplied));
+        $('#unapplied-amount').text(formatCurrency(unappliedAmount));
+
+        // Optional: Add visual warning if total applied exceeds payment amount
+        if (totalApplied > totalPaymentAmount) {
+             $('#unapplied-amount').addClass('text-danger').removeClass('text-success');
+        } else {
+             $('#unapplied-amount').removeClass('text-danger').addClass('text-success');
+        }
+    }
+    
+    // Helper function to format currency (basic)
+    function formatCurrency(amount) {
+        amount = parseFloat(amount) || 0;
+        // Basic formatting, ideally use OpenCart's currency class logic if possible via JS variable
+        return currencyFormat.symbol_left + amount.toFixed(currencyFormat.decimal_place) + currencyFormat.symbol_right;
+    }
+
+});
+</script>

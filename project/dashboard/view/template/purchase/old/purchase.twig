@@ -1,0 +1,3208 @@
+{{ header }}{{ column_left }}
+<div id="content">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+}
+
+.attachment-item, .preview-item {
+    display: inline-block;
+    margin-right: 10px;
+    border: 1px dashed #ddd;
+    padding: 5px;
+}
+
+</style>  
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_add_requisition }}" class="btn btn-primary" onclick="showAddModal('requisition')"><i class="fa fa-plus"></i> {{ button_add_requisition }}</button>
+        <button type="button" data-toggle="tooltip" title="{{ button_add_quotation }}" class="btn btn-info" onclick="showAddModal('quotation')"><i class="fa fa-file-text-o"></i> {{ button_add_quotation }}</button>
+        <button type="button" data-toggle="tooltip" title="{{ button_add_po }}" class="btn btn-success" onclick="showAddModal('po')"><i class="fa fa-shopping-cart"></i> {{ button_add_po }}</button>
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#tab-dashboard" data-toggle="tab">{{ tab_dashboard }}</a></li>
+          <li><a href="#tab-purchase-requisition" data-toggle="tab">{{ tab_purchase_requisition }}</a></li>
+          <li><a href="#tab-quotation" data-toggle="tab">{{ tab_quotation }}</a></li>
+          <li><a href="#tab-purchase-order" data-toggle="tab">{{ tab_purchase_order }}</a></li>
+          <li><a href="#tab-goods-receipt" data-toggle="tab">{{ tab_goods_receipt }}</a></li>
+          <li><a href="#tab-supplier-invoice" data-toggle="tab">{{ tab_supplier_invoice }}</a></li>
+          <li><a href="#tab-vendor-payment" data-toggle="tab">{{ tab_vendor_payment }}</a></li>
+        </ul>
+        <div class="tab-content">
+    <div class="tab-pane active" id="tab-dashboard">
+      <!-- Filters Section -->
+      <div class="row">
+        <div class="col-md-4">
+          <label for="filter-branch">{{ text_filter_branch }}</label>
+          <select id="filter-branch" class="form-control">
+            <option value="">{{ text_all_branches }}</option>
+            {% for branch in branches %}
+            <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="filter-period">{{ text_filter_period }}</label>
+          <select id="filter-period" class="form-control">
+            <option value="today">{{ text_today }}</option>
+            <option value="week">{{ text_this_week }}</option>
+            <option value="month">{{ text_this_month }}</option>
+            <option value="quarter">{{ text_this_quarter }}</option>
+            <option value="year">{{ text_this_year }}</option>
+            <option value="all">{{ text_all_years }}</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label>&nbsp;</label>
+          <button id="btn-filter" class="btn btn-primary btn-block">{{ button_filter }}</button>
+        </div>
+      </div>
+      <hr>
+      
+      <!-- Summary Section -->
+      <div class="row">
+        <div class="col-md-3 col-sm-6">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ text_total_requisitions }}</h3>
+            </div>
+            <div class="panel-body">
+              <h3 id="total-requisitions">{{ total_requisitions }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ text_total_quotations }}</h3>
+            </div>
+            <div class="panel-body">
+              <h3 id="total-quotations">{{ total_quotations }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <div class="panel panel-success">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ text_total_pos }}</h3>
+            </div>
+            <div class="panel-body">
+              <h3 id="total-pos">{{ total_pos }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+          <div class="panel panel-warning">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ text_pending_approvals }}</h3>
+            </div>
+            <div class="panel-body">
+              <h3 id="pending-approvals">{{ pending_approvals }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Charts Section -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ text_purchase_overview }}</h3>
+            </div>
+            <div class="panel-body">
+              <canvas id="purchaseOverviewChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">{{ text_top_suppliers }}</h3>
+            </div>
+            <div class="panel-body">
+              <canvas id="topSuppliersChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Tab Purchase Requisition -->
+    <div class="tab-pane" id="tab-purchase-requisition">
+      <div class="well">
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-requisition-number">{{ entry_requisition_number }}</label>
+              <input type="text" name="filter_requisition_number" value="{{ filter_requisition_number }}" placeholder="{{ entry_requisition_number }}" id="input-requisition-number" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-branch">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-control">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_branch %} selected {% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-department">{{ entry_department }}</label>
+              <select name="filter_department" id="input-department" class="form-control">
+                <option value="">{{ text_select }}</option>
+                {% for department in departments %}
+                <option value="{{ department.department_id }}" {% if department.department_id == filter_department %} selected {% endif %}>{{ department.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-status">{{ entry_status }}</label>
+              <select name="filter_status" id="input-status" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for status in requisition_statuses %}
+                <option value="{{ status.status_id }}" {% if status.status_id == filter_status %} selected {% endif %}>{{ status.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-date-start">{{ entry_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-date-end">{{ entry_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+                <label class="control-label" for="input-user">{{ entry_user }}</label>
+                <select name="filter_user" id="input-user" class="form-control">
+                  <option value="">{{ text_select }}</option>
+                  {% for user in users %}
+                  <option value="{{ user.user_id }}" {% if user.user_id == filter_user %} selected {% endif %}>{{ user.name }}</option>
+                  {% endfor %}
+                </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+                <button type="button" id="button-filter-requisition" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-requisition">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$(\'input[name*=\\\'selected\\\']\').prop(\'checked\', this.checked);" /></td>
+                <td class="text-left">{% if sort == 'pr.requisition_number' %}<a href="{{ sort_requisition_number }}" class="{{ order|lower }}">{{ column_requisition_number }}</a>{% else %}<a href="{{ sort_requisition_number }}">{{ column_requisition_number }}</a>{% endif %}</td>
+                <td class="text-left">{% if sort == 'department' %}<a href="{{ sort_department }}" class="{{ order|lower }}">{{ column_department }}</a>{% else %}<a href="{{ sort_department }}">{{ column_department }}</a>{% endif %}</td>
+                <td class="text-right">{% if sort == 'pr.total_amount' %}<a href="{{ sort_total_amount }}" class="{{ order|lower }}">{{ column_total_amount }}</a>{% else %}<a href="{{ sort_total_amount }}">{{ column_total_amount }}</a>{% endif %}</td>
+                <td class="text-left">{% if sort == 'pr.status' %}<a href="{{ sort_status }}" class="{{ order|lower }}">{{ column_status }}</a>{% else %}<a href="{{ sort_status }}">{{ column_status }}</a>{% endif %}</td>
+                <td class="text-left">{% if sort == 'pr.date_added' %}<a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>{% else %}<a href="{{ sort_date_added }}">{{ column_date_added }}</a>{% endif %}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody id="requisition-list">
+              {% if purchase_requisitions %}
+              {% for requisition in purchase_requisitions %}
+              <tr>
+                <td class="text-center">{% if requisition.requisition_id in selected %}<input type="checkbox" name="selected[]" value="{{ requisition.requisition_id }}" checked="checked" />{% else %}<input type="checkbox" name="selected[]" value="{{ requisition.requisition_id }}" />{% endif %}</td>
+                <td class="text-left">{{ requisition.requisition_number }}</td>
+                <td class="text-left">{{ requisition.department }}</td>
+                <td class="text-right">{{ requisition.total_amount }}</td>
+                <td class="text-left">{{ requisition.status }}</td>
+                <td class="text-left">{{ requisition.date_added }}</td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="javascript:void(0);" onclick="viewRequisition({{ requisition.requisition_id }});"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                      {% if requisition.edit %}<li><a href="javascript:void(0);" onclick="editRequisition({{ requisition.requisition_id }});"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>{% endif %}
+                      {% if requisition.delete %}<li><a href="javascript:void(0);" onclick="confirmDelete({{ requisition.requisition_id }});"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>{% endif %}
+                      {% if requisition.can_approve %}<li><a href="javascript:void(0);" onclick="approveRequisition({{ requisition.requisition_id }});"><i class="fa fa-check"></i> {{ button_approve }}</a></li>{% endif %}
+                      {% if requisition.can_reject %}<li><a href="javascript:void(0);" onclick="rejectRequisition({{ requisition.requisition_id }});"><i class="fa fa-times"></i> {{ button_reject }}</a></li>{% endif %}
+                      {% if requisition.can_create_quotation %}<li><a href="javascript:void(0);" onclick="createQuotation({{ requisition.requisition_id }});"><i class="fa fa-file-text-o"></i> {{ button_create_quotation }}</a></li>{% endif %}
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+      <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination }}</div>
+        <div class="col-sm-6 text-right">{{ results }}</div>
+      </div>
+    </div>
+    
+    
+    <!-- Modal for viewing requisition details -->
+    <div id="modal-view-requisition" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_view_requisition }}</h4>
+          </div>
+          <div class="modal-body">
+            <!-- Content will be loaded here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for editing requisition -->
+    <div id="modal-edit-requisition" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_edit_requisition }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-requisition">
+              <!-- Form fields will be added here -->
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="saveRequisition();">{{ button_save }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for approving requisition -->
+    <div id="modal-approve-requisition" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_approve_requisition }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-approve-requisition">
+              <input type="hidden" name="requisition_id" value="" />
+              <div class="form-group">
+                <label for="approve-comment">{{ entry_comment }}</label>
+                <textarea name="comment" id="approve-comment" class="form-control" rows="3"></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-success" onclick="confirmApproveRequisition();">{{ button_approve }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for rejecting requisition -->
+    <div id="modal-reject-requisition" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_reject_requisition }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-reject-requisition">
+              <input type="hidden" name="requisition_id" value="" />
+              <div class="form-group">
+                <label for="reject-reason">{{ entry_reject_reason }}</label>
+                <textarea name="reason" id="reject-reason" class="form-control" rows="3" required></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-danger" onclick="confirmRejectRequisition();">{{ button_reject }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for creating Quotation -->
+    <div id="modal-create-quotation" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_create_quotation }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-create-quotation">
+              <input type="hidden" name="requisition_id" value="" />
+              <div class="form-group">
+                <label for="quotation-vendors">{{ entry_vendors }}</label>
+                <select name="vendors[]" id="quotation-vendors" class="form-control" multiple required>
+                  {% for vendor in vendors %}
+                  <option value="{{ vendor.vendor_id }}">{{ vendor.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="quotation-due-date">{{ entry_due_date }}</label>
+                <input type="date" name="due_date" id="quotation-due-date" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="quotation-notes">{{ entry_notes }}</label>
+                <textarea name="notes" id="quotation-notes" class="form-control" rows="3"></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="confirmCreateQuotation ();">{{ button_create }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+
+    <!-- Tab Quotation Offers -->
+    <div class="tab-pane" id="tab-quotation">
+      <div class="well">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-quotation-number">{{ entry_quotation_number }}</label>
+              <input type="text" name="filter_quotation_number" value="{{ filter_quotation_number }}" placeholder="{{ entry_quotation_number }}" id="input-quotation-number" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-vendor">{{ entry_vendor }}</label>
+              <input type="text" name="filter_vendor" value="{{ filter_vendor }}" placeholder="{{ entry_vendor }}" id="input-vendor" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-quotation-status">{{ entry_status }}</label>
+              <select name="filter_quotation_status" id="input-quotation-status" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for status in quotation_statuses %}
+                {% if status.status_id == filter_quotation_status %}
+                <option value="{{ status.status_id }}" selected="selected">{{ status.name }}</option>
+                {% else %}
+                <option value="{{ status.status_id }}">{{ status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-date-start">{{ entry_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_start" value="{{ filter_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-date-end">{{ entry_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_end" value="{{ filter_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+           <div class="col-sm-2">
+            <div class="form-group">
+        <button type="button" id="button-filter-quotation-offers" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>	  
+        </div>
+      </div>
+      <form action="{{ compare_quotation_offers }}" method="post" enctype="multipart/form-data" id="form-quotation-offers">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$(\'input[name*=\\\'selected\\\']\').prop(\'checked\', this.checked);" /></td>
+                <td class="text-left">{% if sort == 'quotation.quotation_number' %}
+                  <a href="{{ sort_quotation_number }}" class="{{ order|lower }}">{{ column_quotation_number }}</a>
+                  {% else %}
+                  <a href="{{ sort_quotation_number }}">{{ column_quotation_number }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'v.name' %}
+                  <a href="{{ sort_vendor }}" class="{{ order|lower }}">{{ column_vendor }}</a>
+                  {% else %}
+                  <a href="{{ sort_vendor }}">{{ column_vendor }}</a>
+                  {% endif %}</td>
+                <td class="text-right">{% if sort == 'quotation.total_amount' %}
+                  <a href="{{ sort_total_amount }}" class="{{ order|lower }}">{{ column_total_amount }}</a>
+                  {% else %}
+                  <a href="{{ sort_total_amount }}">{{ column_total_amount }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'quotation.status' %}
+                  <a href="{{ sort_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                  {% else %}
+                  <a href="{{ sort_status }}">{{ column_status }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'quotation.date_added' %}
+                  <a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>
+                  {% else %}
+                  <a href="{{ sort_date_added }}">{{ column_date_added }}</a>
+                  {% endif %}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody id="quotation-offers-list">
+              {% if quotation_offers %}
+              {% for offer in quotation_offers %}
+              <tr>
+                <td class="text-center">{% if offer.quotation_id in selected %}
+                  <input type="checkbox" name="selected[]" value="{{ offer.quotation_id }}" checked="checked" />
+                  {% else %}
+                  <input type="checkbox" name="selected[]" value="{{ offer.quotation_id }}" />
+                  {% endif %}</td>
+                <td class="text-left">{{ offer.quotation_number }}</td>
+                <td class="text-left">{{ offer.vendor }}</td>
+                <td class="text-right">{{ offer.total_amount }}</td>
+                <td class="text-left">{{ offer.status }}</td>
+                <td class="text-left">{{ offer.date_added }}</td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="javascript:void(0);" onclick="viewQuotationOffer({{ offer.quotation_id }});"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                      {% if offer.edit %}
+                      <li><a href="javascript:void(0);" onclick="editQuotationOffer({{ offer.quotation_id }});"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                      {% endif %}
+                      {% if offer.delete %}
+                      <li><a href="javascript:void(0);" onclick="confirmDeleteQuotationOffer({{ offer.quotation_id }});"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>
+                      {% endif %}
+                      {% if offer.can_create_po %}
+                      <li><a href="javascript:void(0);" onclick="createPO({{ offer.quotation_id }});"><i class="fa fa-shopping-cart"></i> {{ button_create_po }}</a></li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+      <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination }}</div>
+        <div class="col-sm-6 text-right">{{ results }}</div>
+      </div>
+    </div>
+    
+    <!-- Modal for viewing Quotation Offer details -->
+    <div id="modal-view-quotation-offer" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_view_quotation_offer }}</h4>
+          </div>
+          <div class="modal-body">
+            <!-- Content will be loaded here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal for editing Quotation Offer -->
+    <div id="modal-edit-quotation-offer" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_edit_quotation_offer }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-quotation-offer">
+              <!-- Form fields will be added here -->
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="addQuotationOffer();">{{ button_save }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Purchase Order Tab -->
+    <div class="tab-pane" id="tab-purchase-order">
+      <div class="well">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-po-number">{{ entry_po_number }}</label>
+              <input type="text" name="filter_po_number" value="{{ filter_po_number }}" placeholder="{{ entry_po_number }}" id="input-po-number" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-po-status">{{ entry_status }}</label>
+              <select name="filter_po_status" id="input-po-status" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for status in po_statuses %}
+                {% if status.status_id == filter_po_status %}
+                <option value="{{ status.status_id }}" selected="selected">{{ status.name }}</option>
+                {% else %}
+                <option value="{{ status.status_id }}">{{ status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-po-vendor">{{ entry_vendor }}</label>
+              <input type="text" name="filter_po_vendor" value="{{ filter_po_vendor }}" placeholder="{{ entry_vendor }}" id="input-po-vendor" class="form-control" />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-po-date-start">{{ entry_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_po_date_start" value="{{ filter_po_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-po-date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-po-date-end">{{ entry_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_po_date_end" value="{{ filter_po_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-po-date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+           <div class="col-sm-2">
+            <div class="form-group">
+        <button type="button" id="button-filter-po" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>	  
+        </div>
+      </div>
+      <form action="{{ delete_po }}" method="post" enctype="multipart/form-data" id="form-po">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$(\'input[name*=\\\'selected_po\\\']\').prop(\'checked\', this.checked);" /></td>
+                <td class="text-left">{% if sort == 'po.po_number' %}
+                  <a href="{{ sort_po_number }}" class="{{ order|lower }}">{{ column_po_number }}</a>
+                  {% else %}
+                  <a href="{{ sort_po_number }}">{{ column_po_number }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'po.status' %}
+                  <a href="{{ sort_po_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                  {% else %}
+                  <a href="{{ sort_po_status }}">{{ column_status }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'v.name' %}
+                  <a href="{{ sort_vendor }}" class="{{ order|lower }}">{{ column_vendor }}</a>
+                  {% else %}
+                  <a href="{{ sort_vendor }}">{{ column_vendor }}</a>
+                  {% endif %}</td>
+                <td class="text-right">{% if sort == 'po.total' %}
+                  <a href="{{ sort_total }}" class="{{ order|lower }}">{{ column_total }}</a>
+                  {% else %}
+                  <a href="{{ sort_total }}">{{ column_total }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'po.date_added' %}
+                  <a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>
+                  {% else %}
+                  <a href="{{ sort_date_added }}">{{ column_date_added }}</a>
+                  {% endif %}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if purchase_orders %}
+              {% for po in purchase_orders %}
+              <tr>
+                <td class="text-center">{% if po.purchase_order_id in selected_po %}
+                  <input type="checkbox" name="selected_po[]" value="{{ po.purchase_order_id }}" checked="checked" />
+                  {% else %}
+                  <input type="checkbox" name="selected_po[]" value="{{ po.purchase_order_id }}" />
+                  {% endif %}</td>
+                <td class="text-left">{{ po.po_number }}</td>
+                <td class="text-left">{{ po.status }}</td>
+                <td class="text-left">{{ po.vendor }}</td>
+                <td class="text-right">{{ po.total }}</td>
+                <td class="text-left">{{ po.date_added }}</td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="javascript:void(0);" onclick="viewPO({{ po.purchase_order_id }});"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                      {% if po.edit %}
+                      <li><a href="javascript:void(0);" onclick="editPO({{ po.purchase_order_id }});"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                      {% endif %}
+                      {% if po.delete %}
+                      <li><a href="javascript:void(0);" onclick="confirmDeletePurchaseOrder({{ po.purchase_order_id }});"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>
+                      {% endif %}
+                      {% if po.can_receive %}
+                      <li><a href="javascript:void(0);" onclick="getGoodsReceipt({{ po.purchase_order_id }});"><i class="fa fa-truck"></i> {{ button_receive }}</a></li>
+                      {% endif %}
+                      {% if po.can_invoice %}
+                      <li><a href="javascript:void(0);" onclick="createInvoice({{ po.purchase_order_id }});"><i class="fa fa-file-text-o"></i> {{ button_create_invoice }}</a></li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+      <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination_po }}</div>
+        <div class="col-sm-6 text-right">{{ results_po }}</div>
+      </div>
+    </div>
+    
+    <!-- Modal for viewing Purchase Order details -->
+    <div id="modal-view-po" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_view_po }}</h4>
+          </div>
+          <div class="modal-body">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#tab-po-details" data-toggle="tab">{{ tab_details }}</a></li>
+              <li><a href="#tab-po-items" data-toggle="tab">{{ tab_items }}</a></li>
+              <li><a href="#tab-po-history" data-toggle="tab">{{ tab_history }}</a></li>
+            </ul>
+            <div class="tab-content">
+              <div class="tab-pane active" id="tab-po-details">
+                <!-- PO details will be loaded here -->
+              </div>
+              <div class="tab-pane" id="tab-po-items">
+                <!-- PO items will be loaded here -->
+              </div>
+              <div class="tab-pane" id="tab-po-history">
+                <!-- PO history will be loaded here -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal for editing Purchase Order -->
+    <div id="modal-edit-po" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_edit_po }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-po" class="form-horizontal">
+              <input type="hidden" name="purchase_order_id" value="" />
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-po-vendor">{{ entry_vendor }}</label>
+                <div class="col-sm-10">
+                  <select name="vendor_id" id="input-po-vendor" class="form-control">
+                    {% for vendor in vendors %}
+                    <option value="{{ vendor.vendor_id }}">{{ vendor.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-po-status">{{ entry_status }}</label>
+                <div class="col-sm-10">
+                  <select name="status_id" id="input-po-status" class="form-control">
+                    {% for status in po_statuses %}
+                    <option value="{{ status.status_id }}">{{ status.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-po-date">{{ entry_date }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="date_added" value="" placeholder="{{ entry_date }}" id="input-po-date" class="form-control date" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-po-expected-date">{{ entry_expected_date }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="expected_date" value="" placeholder="{{ entry_expected_date }}" id="input-po-expected-date" class="form-control date" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-po-type">{{ entry_po_type }}</label>
+                <div class="col-sm-10">
+                  <select name="po_type" id="input-po-type" class="form-control">
+                    <option value="standard">{{ text_standard_po }}</option>
+                    <option value="open">{{ text_open_po }}</option>
+                    <option value="contract">{{ text_contract_po }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group" id="contract-dates" style="display: none;">
+                <label class="col-sm-2 control-label" for="input-contract-start">{{ entry_contract_start }}</label>
+                <div class="col-sm-4">
+                  <input type="text" name="contract_start" value="" placeholder="{{ entry_contract_start }}" id="input-contract-start" class="form-control date" />
+                </div>
+                <label class="col-sm-2 control-label" for="input-contract-end">{{ entry_contract_end }}</label>
+                <div class="col-sm-4">
+                  <input type="text" name="contract_end" value="" placeholder="{{ entry_contract_end }}" id="input-contract-end" class="form-control date" />
+                </div>
+              </div>
+              <hr />
+              <h3>{{ text_items }}</h3>
+              <table id="po-items" class="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-left">{{ column_product }}</td>
+                    <td class="text-right">{{ column_quantity }}</td>
+                    <td class="text-left">{{ column_unit }}</td>
+                    <td class="text-right">{{ column_price }}</td>
+                    <td class="text-right">{{ column_total }}</td>
+                    <td></td>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="5"></td>
+                    <td class="text-left"><button type="button" onclick="addPOItem();" data-toggle="tooltip" title="{{ button_add_item }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="addPurchaseOrder();">{{ button_save }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for receiving Purchase Order -->
+    <div id="modal-receive-po" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_receive_po }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-receive-po">
+              <input type="hidden" name="purchase_order_id" value="" />
+              <table id="po-receive-items" class="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-left">{{ column_product }}</td>
+                    <td class="text-right">{{ column_ordered }}</td>
+                    <td class="text-right">{{ column_received }}</td>
+                    <td class="text-right">{{ column_quantity_to_receive }}</td>
+                    <td class="text-left">{{ column_batch_number }}</td>
+                    <td class="text-left">{{ column_expiry_date }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+              <div class="form-group">
+                <label for="input-quality-check">{{ entry_quality_check }}</label>
+                <select name="quality_check" id="input-quality-check" class="form-control">
+                  <option value="1">{{ text_yes }}</option>
+                  <option value="0">{{ text_no }}</option>
+                </select>
+              </div>
+              <div id="quality-check-form" style="display: none;">
+                <!-- Quality check form will be dynamically loaded here -->
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="confirmGetGoodsReceipt();">{{ button_receive }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for creating invoice from Purchase Order -->
+    <div id="modal-create-invoice" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_create_invoice }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-create-invoice">
+              <input type="hidden" name="purchase_order_id" value="" />
+              <div class="form-group">
+                <label for="input-invoice-date">{{ entry_invoice_date }}</label>
+                <input type="text" name="invoice_date" value="" placeholder="{{ entry_invoice_date }}" id="input-invoice-date" class="form-control date" />
+              </div>
+              <div class="form-group">
+                <label for="input-invoice-number">{{ entry_invoice_number }}</label>
+                <input type="text" name="invoice_number" value="" placeholder="{{ entry_invoice_number }}" id="input-invoice-number" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label for="input-invoice-type">{{ entry_invoice_type }}</label>
+                <select name="invoice_type" id="input-invoice-type" class="form-control">
+                  <option value="full">{{ text_full_invoice }}</option>
+                  <option value="partial">{{ text_partial_invoice }}</option>
+                </select>
+              </div>
+              <table id="invoice-items" class="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-left">{{ column_product }}</td>
+                    <td class="text-right">{{ column_quantity }}</td>
+                    <td class="text-right">{{ column_price }}</td>
+                    <td class="text-right">{{ column_total }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="createInvoice();">{{ button_create }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Goods Receipt Tab -->
+    <div class="tab-pane" id="tab-goods-receipt">
+      <div class="well">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-gr-number">{{ entry_gr_number }}</label>
+              <input type="text" name="filter_gr_number" value="{{ filter_gr_number }}" placeholder="{{ entry_gr_number }}" id="input-gr-number" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-gr-status">{{ entry_status }}</label>
+              <select name="filter_gr_status" id="input-gr-status" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for status in gr_statuses %}
+                {% if status.status_id == filter_gr_status %}
+                <option value="{{ status.status_id }}" selected="selected">{{ status.name }}</option>
+                {% else %}
+                <option value="{{ status.status_id }}">{{ status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-gr-po-number">{{ entry_po_number }}</label>
+              <input type="text" name="filter_gr_po_number" value="{{ filter_gr_po_number }}" placeholder="{{ entry_po_number }}" id="input-gr-po-number" class="form-control" />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-gr-date-start">{{ entry_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_gr_date_start" value="{{ filter_gr_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-gr-date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-gr-date-end">{{ entry_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_gr_date_end" value="{{ filter_gr_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-gr-date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+           <div class="col-sm-2">
+            <div class="form-group">
+        <button type="button" id="button-filter-gr" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>	  
+        </div>
+      </div>
+      <form action="{{ delete_gr }}" method="post" enctype="multipart/form-data" id="form-gr">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$(\'input[name*=\\\'selected_gr\\\']\').prop(\'checked\', this.checked);" /></td>
+                <td class="text-left">{% if sort == 'gr.gr_number' %}
+                  <a href="{{ sort_gr_number }}" class="{{ order|lower }}">{{ column_gr_number }}</a>
+                  {% else %}
+                  <a href="{{ sort_gr_number }}">{{ column_gr_number }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'gr.po_number' %}
+                  <a href="{{ sort_po_number }}" class="{{ order|lower }}">{{ column_po_number }}</a>
+                  {% else %}
+                  <a href="{{ sort_po_number }}">{{ column_po_number }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'gr.status' %}
+                  <a href="{{ sort_gr_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                  {% else %}
+                  <a href="{{ sort_gr_status }}">{{ column_status }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'gr.date_added' %}
+                  <a href="{{ sort_gr_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>
+                  {% else %}
+                  <a href="{{ sort_gr_date_added }}">{{ column_date_added }}</a>
+                  {% endif %}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if goods_receipts %}
+              {% for gr in goods_receipts %}
+              <tr>
+                <td class="text-center">{% if gr.goods_receipt_id in selected_gr %}
+                  <input type="checkbox" name="selected_gr[]" value="{{ gr.goods_receipt_id }}" checked="checked" />
+                  {% else %}
+                  <input type="checkbox" name="selected_gr[]" value="{{ gr.goods_receipt_id }}" />
+                  {% endif %}</td>
+                <td class="text-left">{{ gr.gr_number }}</td>
+                <td class="text-left">{{ gr.po_number }}</td>
+                <td class="text-left">{{ gr.status }}</td>
+                <td class="text-left">{{ gr.date_added }}</td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="javascript:void(0);" onclick="viewGR({{ gr.goods_receipt_id }});"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                      {% if gr.edit %}
+                      <li><a href="javascript:void(0);" onclick="editGR({{ gr.goods_receipt_id }});"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                      {% endif %}
+                      {% if gr.delete %}
+                      <li><a href="javascript:void(0);" onclick="confirmdeleteGoodsReceipt({{ gr.goods_receipt_id }});"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="6">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+      <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination_gr }}</div>
+        <div class="col-sm-6 text-right">{{ results_gr }}</div>
+      </div>
+    </div>
+    
+    <!-- Modal for viewing Goods Receipt details -->
+    <div id="modal-view-gr" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_view_gr }}</h4>
+          </div>
+          <div class="modal-body">
+            <!-- GR details will be loaded here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for editing Goods Receipt -->
+    <div id="modal-edit-gr" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_edit_gr }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-gr" class="form-horizontal">
+              <input type="hidden" name="goods_receipt_id" value="" />
+              <!-- Add form fields for editing GR -->
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="saveGR();">{{ button_save }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Supplier Invoice Tab -->
+    <div class="tab-pane" id="tab-supplier-invoice">
+      <div class="well">
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-invoice-number">{{ entry_invoice_number }}</label>
+              <input type="text" name="filter_invoice_number" value="{{ filter_invoice_number }}" placeholder="{{ entry_invoice_number }}" id="input-invoice-number" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-invoice-status">{{ entry_status }}</label>
+              <select name="filter_invoice_status" id="input-invoice-status" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for status in invoice_statuses %}
+                {% if status.status_id == filter_invoice_status %}
+                <option value="{{ status.status_id }}" selected="selected">{{ status.name }}</option>
+                {% else %}
+                <option value="{{ status.status_id }}">{{ status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <label class="control-label" for="input-invoice-vendor">{{ entry_vendor }}</label>
+              <input type="text" name="filter_invoice_vendor" value="{{ filter_invoice_vendor }}" placeholder="{{ entry_vendor }}" id="input-invoice-vendor" class="form-control" />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-invoice-date-start">{{ entry_date_start }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_invoice_date_start" value="{{ filter_invoice_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-invoice-date-start" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-5">
+            <div class="form-group">
+              <label class="control-label" for="input-invoice-date-end">{{ entry_date_end }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_invoice_date_end" value="{{ filter_invoice_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-invoice-date-end" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+           <div class="col-sm-2">
+            <div class="form-group">
+        <button type="button" id="button-filter-invoice" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>	  
+        </div>
+      </div>
+      <form action="{{ delete_invoice }}" method="post" enctype="multipart/form-data" id="form-invoice">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$(\'input[name*=\\\'selected_invoice\\\']\').prop(\'checked\', this.checked);" /></td>
+                <td class="text-left">{% if sort == 'si.invoice_number' %}
+                  <a href="{{ sort_invoice_number }}" class="{{ order|lower }}">{{ column_invoice_number }}</a>
+                  {% else %}
+                  <a href="{{ sort_invoice_number }}">{{ column_invoice_number }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'v.name' %}
+                  <a href="{{ sort_vendor }}" class="{{ order|lower }}">{{ column_vendor }}</a>
+                  {% else %}
+                  <a href="{{ sort_vendor }}">{{ column_vendor }}</a>
+                  {% endif %}</td>
+                <td class="text-right">{% if sort == 'si.total' %}
+                  <a href="{{ sort_total }}" class="{{ order|lower }}">{{ column_total }}</a>
+                  {% else %}
+                  <a href="{{ sort_total }}">{{ column_total }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'si.status' %}
+                  <a href="{{ sort_invoice_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                  {% else %}
+                  <a href="{{ sort_invoice_status }}">{{ column_status }}</a>
+                  {% endif %}</td>
+                <td class="text-left">{% if sort == 'si.date_added' %}
+                  <a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>
+                  {% else %}
+                  <a href="{{ sort_date_added }}">{{ column_date_added }}</a>
+                  {% endif %}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody id="invoice-list">
+              {% if supplier_invoices %}
+              {% for invoice in supplier_invoices %}
+              <tr>
+                <td class="text-center">{% if invoice.supplier_invoice_id in selected_invoice %}
+                  <input type="checkbox" name="selected_invoice[]" value="{{ invoice.supplier_invoice_id }}" checked="checked" />
+                  {% else %}
+                  <input type="checkbox" name="selected_invoice[]" value="{{ invoice.supplier_invoice_id }}" />
+                  {% endif %}</td>
+                <td class="text-left">{{ invoice.invoice_number }}</td>
+                <td class="text-left">{{ invoice.vendor }}</td>
+                <td class="text-right">{{ invoice.total }}</td>
+                <td class="text-left">{{ invoice.status }}</td>
+                <td class="text-left">{{ invoice.date_added }}</td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="javascript:void(0);" onclick="viewSupplierInvoice({{ invoice.supplier_invoice_id }});"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                      {% if invoice.edit %}
+                      <li><a href="javascript:void(0);" onclick="editSupplierInvoice({{ invoice.supplier_invoice_id }});"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                      {% endif %}
+                      {% if invoice.delete %}
+                      <li><a href="javascript:void(0);" onclick="confirmDeleteSupplierInvoice({{ invoice.supplier_invoice_id }});"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+      <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination_invoice }}</div>
+        <div class="col-sm-6 text-right">{{ results_invoice }}</div>
+      </div>
+    </div>
+    
+    
+    <!-- Modal for viewing Supplier Invoice details -->
+    <div id="modal-view-invoice" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ text_view_invoice }}</h4>
+            </div>
+            <div class="modal-body">
+                <!-- Invoice details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+            </div>
+        </div>
+    </div>
+    </div>
+    
+    <!-- Modal for editing Supplier Invoice -->
+    <div id="modal-edit-invoice" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ text_edit_invoice }}</h4>
+            </div>
+            <div class="modal-body">
+                <form id="form-edit-invoice" class="form-horizontal">
+                    <input type="hidden" name="invoice_id" value="" />
+                    <!-- Add form fields for editing invoice -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+                <button type="button" class="btn btn-primary" onclick="saveInvoice();">{{ button_save }}</button>
+            </div>
+        </div>
+    </div>
+    </div>
+    
+    <!-- Vendor Payment Tab -->
+    <div class="tab-pane" id="tab-vendor-payment">
+    <div class="well">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label class="control-label" for="input-payment-number">{{ entry_payment_number }}</label>
+                    <input type="text" name="filter_payment_number" value="{{ filter_payment_number }}" placeholder="{{ entry_payment_number }}" id="input-payment-number" class="form-control" />
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label class="control-label" for="input-payment-status">{{ entry_status }}</label>
+                    <select name="filter_payment_status" id="input-payment-status" class="form-control">
+                        <option value="">{{ text_all }}</option>
+                        {% for status in payment_statuses %}
+                        {% if status.status_id == filter_payment_status %}
+                        <option value="{{ status.status_id }}" selected="selected">{{ status.name }}</option>
+                        {% else %}
+                        <option value="{{ status.status_id }}">{{ status.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label class="control-label" for="input-payment-vendor">{{ entry_vendor }}</label>
+                    <input type="text" name="filter_payment_vendor" value="{{ filter_payment_vendor }}" placeholder="{{ entry_vendor }}" id="input-payment-vendor" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5">
+                <div class="form-group">
+                    <label class="control-label" for="input-payment-date-start">{{ entry_date_start }}</label>
+                    <div class="input-group date">
+                        <input type="text" name="filter_payment_date_start" value="{{ filter_payment_date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-payment-date-start" class="form-control" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5">
+                <div class="form-group">
+                    <label class="control-label" for="input-payment-date-end">{{ entry_date_end }}</label>
+                    <div class="input-group date">
+                        <input type="text" name="filter_payment_date_end" value="{{ filter_payment_date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-payment-date-end" class="form-control" />
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <button type="button" id="button-filter-payment" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action="{{ delete_payment }}" method="post" enctype="multipart/form-data" id="form-payment">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$(\'input[name*=\\\'selected_payment\\\']\').prop(\'checked\', this.checked);" /></td>
+                    <td class="text-left">{% if sort == 'vp.payment_number' %}
+                        <a href="{{ sort_payment_number }}" class="{{ order|lower }}">{{ column_payment_number }}</a>
+                        {% else %}
+                        <a href="{{ sort_payment_number }}">{{ column_payment_number }}</a>
+                        {% endif %}</td>
+                    <td class="text-left">{% if sort == 'v.name' %}
+                        <a href="{{ sort_vendor }}" class="{{ order|lower }}">{{ column_vendor }}</a>
+                        {% else %}
+                        <a href="{{ sort_vendor }}">{{ column_vendor }}</a>
+                        {% endif %}</td>
+                    <td class="text-right">{% if sort == 'vp.total' %}
+                        <a href="{{ sort_total }}" class="{{ order|lower }}">{{ column_total }}</a>
+                        {% else %}
+                        <a href="{{ sort_total }}">{{ column_total }}</a>
+                        {% endif %}</td>
+                    <td class="text-left">{% if sort == 'vp.status' %}
+                        <a href="{{ sort_payment_status }}" class="{{ order|lower }}">{{ column_status }}</a>
+                        {% else %}
+                        <a href="{{ sort_payment_status }}">{{ column_status }}</a>
+                        {% endif %}</td>
+                    <td class="text-left">{% if sort == 'vp.date_added' %}
+                        <a href="{{ sort_date_added }}" class="{{ order|lower }}">{{ column_date_added }}</a>
+                        {% else %}
+                        <a href="{{ sort_date_added }}">{{ column_date_added }}</a>
+                        {% endif %}</td>
+                    <td class="text-right">{{ column_action }}</td>
+                </tr>
+            </thead>
+            <tbody id="payment-list">
+                {% if vendor_payments %}
+                {% for payment in vendor_payments %}
+                <tr>
+                    <td class="text-center">{% if payment.vendor_payment_id in selected_payment %}
+                        <input type="checkbox" name="selected_payment[]" value="{{ payment.vendor_payment_id }}" checked="checked" />
+                        {% else %}
+                        <input type="checkbox" name="selected_payment[]" value="{{ payment.vendor_payment_id }}" />
+                        {% endif %}</td>
+                    <td class="text-left">{{ payment.payment_number }}</td>
+                    <td class="text-left">{{ payment.vendor }}</td>
+                    <td class="text-right">{{ payment.total }}</td>
+                    <td class="text-left">{{ payment.status }}</td>
+                    <td class="text-left">{{ payment.date_added }}</td>
+                    <td class="text-right">
+                        <div class="btn-group">
+                            <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <li><a href="javascript:void(0);" onclick="viewPayment({{ payment.vendor_payment_id }});"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                                {% if payment.edit %}
+                                <li><a href="javascript:void(0);" onclick="editPayment({{ payment.vendor_payment_id }});"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                                {% endif %}
+                                {% if payment.delete %}
+                                <li><a href="javascript:void(0);" onclick="confirmdeleteVendorPayment({{ payment.vendor_payment_id }});"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    </form>
+    <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination_payment }}</div>
+        <div class="col-sm-6 text-right">{{ results_payment }}</div>
+    </div>
+    </div>
+    
+    <!-- Modal for viewing Vendor Payment details -->
+    <div id="modal-view-payment" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_view_payment }}</h4>
+          </div>
+          <div class="modal-body">
+            <!-- Payment details will be loaded here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for editing Vendor Payment -->
+    <div id="modal-edit-payment" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_edit_payment }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-payment" class="form-horizontal">
+              <input type="hidden" name="payment_id" value="" />
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-payment-vendor">{{ entry_vendor }}</label>
+                <div class="col-sm-10">
+                  <select name="vendor_id" id="input-payment-vendor" class="form-control">
+                    {% for vendor in vendors %}
+                    <option value="{{ vendor.vendor_id }}">{{ vendor.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-payment-amount">{{ entry_amount }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="amount" value="" placeholder="{{ entry_amount }}" id="input-payment-amount" class="form-control" step="0.01" min="0" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-payment-method">{{ entry_payment_method }}</label>
+                <div class="col-sm-10">
+                  <select name="payment_method" id="input-payment-method" class="form-control">
+                    <option value="bank_transfer">{{ text_bank_transfer }}</option>
+                    <option value="check">{{ text_check }}</option>
+                    <option value="cash">{{ text_cash }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-payment-date">{{ entry_payment_date }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="payment_date" value="" placeholder="{{ entry_payment_date }}" id="input-payment-date" class="form-control date" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-payment-reference">{{ entry_reference }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="reference" value="" placeholder="{{ entry_reference }}" id="input-payment-reference" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-payment-note">{{ entry_note }}</label>
+                <div class="col-sm-10">
+                  <textarea name="note" rows="3" placeholder="{{ entry_note }}" id="input-payment-note" class="form-control"></textarea>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-primary" onclick="savePayment();">{{ button_save }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal for approving Vendor Payment -->
+    <div id="modal-approve-payment" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ text_approve_payment }}</h4>
+          </div>
+          <div class="modal-body">
+            <form id="form-approve-payment">
+              <input type="hidden" name="payment_id" value="" />
+              <div class="form-group">
+                <label for="approve-comment">{{ entry_comment }}</label>
+                <textarea name="comment" id="approve-comment" class="form-control" rows="3"></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+            <button type="button" class="btn btn-success" onclick="confirmApprovePayment();">{{ button_approve }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+</div>
+
+
+</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة عناصر التاريخ
+    $('.date').datetimepicker({
+        pickTime: false
+    });
+
+    // تهيئة عناصر Select2
+    $('.select2').select2();
+
+    // وظائف عامة
+    function handleAjaxError(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+    }
+
+    function showLoading(target) {
+        $(target).html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+    }
+
+    // لوحة التحكم
+$(document).ready(function() {
+  $('#btn-filter').click(function() {
+    var branchId = $('#filter-branch').val();
+    var period = $('#filter-period').val();
+
+    $.ajax({
+      url: 'index.php?route=purchase/dashboard/filter',
+      type: 'GET',
+      data: {
+        filter_branch_id: branchId,
+        filter_period: period
+      },
+      dataType: 'json',
+      success: function(data) {
+        if (data) {
+          $('#total-requisitions').text(data.total_requisitions);
+          $('#total-quotations').text(data.total_quotations);
+          $('#total-pos').text(data.total_pos);
+          $('#pending-approvals').text(data.pending_approvals);
+          
+          // Update charts
+          updatePurchaseOverviewChart(data.purchaseOverview);
+          updateTopSuppliersChart(data.topSuppliers);
+        }
+      }
+    });
+  });
+
+  function updatePurchaseOverviewChart(data) {
+    var ctx = document.getElementById('purchaseOverviewChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  function updateTopSuppliersChart(data) {
+    var ctx = document.getElementById('topSuppliersChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: data,
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+});
+
+
+    // طلبات الشراء
+    window.showAddModal = function(type) {
+        switch(type) {
+            case 'requisition':
+                editRequisition();
+                break;
+            case 'quotation':
+                editQuotation();
+                break;
+            case 'po':
+                editPO();
+                break;
+            default:
+                console.error('نوع غير معروف للإضافة:', type);
+        }
+    }
+
+    $('#button-filter-requisition').on('click', filterRequisitions);
+
+    window.viewRequisition = function(requisition_id) {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/getPurchaseRequisition&user_token={{ user_token }}&requisition_id=' + requisition_id,
+            dataType: 'json',
+            beforeSend: function() {
+                showLoading('#modal-view-requisition .modal-body');
+                $('#modal-view-requisition').modal('show');
+            },
+            success: function(json) {
+                var html = '<table class="table table-bordered">';
+                html += '<tr><td>{{ entry_requisition_number }}:</td><td>' + json['requisition_number'] + '</td></tr>';
+                html += '<tr><td>{{ entry_department }}:</td><td>' + json['department'] + '</td></tr>';
+                html += '<tr><td>{{ entry_status }}:</td><td>' + json['status'] + '</td></tr>';
+                html += '<tr><td>{{ entry_date_added }}:</td><td>' + json['date_added'] + '</td></tr>';
+                html += '<tr><td>{{ entry_total_amount }}:</td><td>' + json['total_amount'] + '</td></tr>';
+                html += '</table>';
+
+                html += '<h3>{{ text_items }}</h3>';
+                html += '<table class="table table-bordered">';
+                html += '<thead><tr><td>{{ column_product }}</td><td>{{ column_quantity }}</td><td>{{ column_unit }}</td><td>{{ column_price }}</td><td>{{ column_total }}</td></tr></thead>';
+                html += '<tbody>';
+
+                for (var i = 0; i < json['items'].length; i++) {
+                    html += '<tr>';
+                    html += '<td>' + json['items'][i]['product'] + '</td>';
+                    html += '<td>' + json['items'][i]['quantity'] + '</td>';
+                    html += '<td>' + json['items'][i]['unit'] + '</td>';
+                    html += '<td>' + json['items'][i]['price'] + '</td>';
+                    html += '<td>' + json['items'][i]['total'] + '</td>';
+                    html += '</tr>';
+                }
+
+                html += '</tbody></table>';
+
+                $('#modal-view-requisition .modal-body').html(html);
+            },
+            error: handleAjaxError
+        });
+    }
+
+    window.editRequisition = function(requisition_id) {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/getRequisitionForm&user_token={{ user_token }}&requisition_id=' + (requisition_id || ''),
+            dataType: 'json',
+            beforeSend: function() {
+                $('#modal-edit-requisition .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+                $('#modal-edit-requisition').modal('show');
+            },
+            success: function(json) {
+                var html = '<input type="hidden" name="requisition_id" value="' + json['requisition_id'] + '" />';
+                html += '<div class="form-group">';
+                html += '  <label class="control-label" for="input-department">{{ entry_department }}</label>';
+                html += '  <select name="department_id" id="input-department" class="form-control">';
+                $.each(json['departments'], function(index, department) {
+                    html += '<option value="' + department['department_id'] + '"' + (department['department_id'] == json['department_id'] ? ' selected="selected"' : '') + '>' + department['name'] + '</option>';
+                });
+                html += '  </select>';
+                html += '</div>';
+
+                html += '<div class="form-group">';
+                html += '  <label class="control-label" for="input-status">{{ entry_status }}</label>';
+                html += '  <select name="status_id" id="input-status" class="form-control">';
+                $.each(json['statuses'], function(index, status) {
+                    html += '<option value="' + status['status_id'] + '"' + (status['status_id'] == json['status_id'] ? ' selected="selected"' : '') + '>' + status['name'] + '</option>';
+                });
+                html += '  </select>';
+                html += '</div>';
+
+                html += '<div class="form-group">';
+                html += '  <label class="control-label" for="input-description">{{ entry_description }}</label>';
+                html += '  <textarea name="description" id="input-description" class="form-control">' + json['description'] + '</textarea>';
+                html += '</div>';
+
+                html += '<table id="requisition-items" class="table table-striped table-bordered table-hover">';
+                html += '  <thead>';
+                html += '    <tr>';
+                html += '      <td class="text-left">{{ column_product }}</td>';
+                html += '      <td class="text-right">{{ column_quantity }}</td>';
+                html += '      <td class="text-left">{{ column_unit }}</td>';
+                html += '      <td class="text-left"></td>';
+                html += '    </tr>';
+                html += '  </thead>';
+                html += '  <tbody>';
+
+                var item_row = 0;
+
+                $.each(json['items'], function(index, item) {
+                    html += '  <tr id="item-row' + item_row + '">';
+                    html += '    <td class="text-left"><input type="text" name="item[' + item_row + '][product]" value="' + item['product'] + '" class="form-control" /><input type="hidden" name="item[' + item_row + '][product_id]" value="' + item['product_id'] + '" /></td>';
+                    html += '    <td class="text-right"><input type="number" name="item[' + item_row + '][quantity]" value="' + item['quantity'] + '" class="form-control" /></td>';
+                    html += '    <td class="text-left"><select name="item[' + item_row + '][unit_id]" class="form-control">';
+                    $.each(item['units'], function(index, unit) {
+                        html += '      <option value="' + unit['unit_id'] + '"' + (unit['unit_id'] == item['unit_id'] ? ' selected="selected"' : '') + '>' + unit['name'] + '</option>';
+                    });
+                    html += '    </select></td>';
+                    html += '    <td class="text-left"><button type="button" onclick="$(\'#item-row' + item_row + '\').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';
+                    html += '  </tr>';
+                    item_row++;
+                });
+
+                html += '  </tbody>';
+                html += '  <tfoot>';
+                html += '    <tr>';
+                html += '      <td colspan="3"></td>';
+                html += '      <td class="text-left"><button type="button" onclick="addRequisitionItem();" data-toggle="tooltip" title="{{ button_add_item }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>';
+                html += '    </tr>';
+                html += '  </tfoot>';
+                html += '</table>';
+
+                $('#form-edit-requisition').html(html);
+
+                // تهيئة الإكمال التلقائي لمنتجات الطلب
+                initRequisitionProductAutocomplete();
+            },
+            error: handleAjaxError
+        });
+    }
+
+    window.saveRequisition = function() {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/saveRequisition&user_token={{ user_token }}',
+            type: 'post',
+            data: $('#form-edit-requisition').serialize(),
+            dataType: 'json',
+            beforeSend: function() {
+                $('#modal-edit-requisition .modal-footer .btn-primary').button('loading');
+            },
+            complete: function() {
+                $('#modal-edit-requisition .modal-footer .btn-primary').button('reset');
+            },
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    $('#modal-edit-requisition').modal('hide');
+                    filterRequisitions();
+                }
+            },
+            error: handleAjaxError
+        });
+    }
+
+    window.addRequisitionItem = function() {
+        var html = '<tr id="item-row' + item_row + '">';
+        html += '  <td class="text-left"><input type="text" name="item[' + item_row + '][product]" value="" class="form-control" /><input type="hidden" name="item[' + item_row + '][product_id]" value="" /></td>';
+        html += '  <td class="text-right"><input type="number" name="item[' + item_row + '][quantity]" value="1" class="form-control" /></td>';
+        html += '  <td class="text-left"><select name="item[' + item_row + '][unit_id]" class="form-control"></select></td>';
+        html += '  <td class="text-left"><button type="button" onclick="$(\'#item-row' + item_row + '\').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';
+        html += '</tr>';
+
+        $('#requisition-items tbody').append(html);
+
+        // تهيئة الإكمال التلقائي للمنتج الجديد
+        initRequisitionProductAutocomplete('#item-row' + item_row + ' input[name$="[product]"]');
+
+        item_row++;
+    }
+
+    function initRequisitionProductAutocomplete(selector) {
+        $(selector || 'input[name$="[product]"]').autocomplete({
+            'source': function(request, response) {
+                $.ajax({
+                    url: 'index.php?route=catalog/product/autocomplete&user_token={{ user_token }}&filter_name=' +  encodeURIComponent(request),
+                    dataType: 'json',
+                    success: function(json) {
+                        response($.map(json, function(item) {
+                            return {
+                                label: item['name'],
+                                value: item['product_id'],
+                                model: item['model'],
+                                price: item['price'],
+                                units: item['units']
+                            }
+                        }));
+                    }
+                });
+            },
+            'select': function(item) {
+                $(this).val(item['label']);
+                $(this).parent().find('input[name$="[product_id]"]').val(item['value']);
+                $(this).parent().parent().find('input[name$="[price]"]').val(item['price']);
+
+                var unit_select = $(this).parent().parent().find('select[name$="[unit_id]"]');
+                unit_select.empty();
+                $.each(item['units'], function(index, unit) {
+                    unit_select.append($('<option></option>').attr('value', unit['unit_id']).text(unit['name']));
+                });
+            }
+        });
+    }
+
+    function filterRequisitions(page) {
+        page = page || 1;
+        var url = 'index.php?route=purchase/purchase/getRequisitions&user_token={{ user_token }}';
+
+        var filter_requisition_number = $('input[name=\'filter_requisition_number\']').val();
+        if (filter_requisition_number) {
+            url += '&filter_requisition_number=' + encodeURIComponent(filter_requisition_number);
+        }
+
+        var filter_department = $('select[name=\'filter_department\']').val();
+        if (filter_department) {
+            url += '&filter_department=' + encodeURIComponent(filter_department);
+        }
+
+        var filter_status = $('select[name=\'filter_status\']').val();
+        if (filter_status) {
+            url += '&filter_status=' + encodeURIComponent(filter_status);
+        }
+
+        var filter_date_start = $('input[name=\'filter_date_start\']').val();
+        if (filter_date_start) {
+            url += '&filter_date_start=' + encodeURIComponent(filter_date_start);
+        }
+
+        var filter_date_end = $('input[name=\'filter_date_end\']').val();
+        if (filter_date_end) {
+            url += '&filter_date_end=' + encodeURIComponent(filter_date_end);
+        }
+url += '&page=' + page;
+
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-filter-requisition').button('loading');
+        },
+        complete: function() {
+            $('#button-filter-requisition').button('reset');
+        },
+        success: function(json) {
+            if (json['requisitions']) {
+                var html = '';
+                $.each(json['requisitions'], function(index, requisition) {
+                    html += '<tr>';
+                    html += '  <td class="text-center"><input type="checkbox" name="selected[]" value="' + requisition.requisition_id + '" /></td>';
+                    html += '  <td class="text-left">' + requisition.requisition_number + '</td>';
+                    html += '  <td class="text-left">' + requisition.department + '</td>';
+                    html += '  <td class="text-right">' + requisition.total_amount + '</td>';
+                    html += '  <td class="text-left">' + requisition.status + '</td>';
+                    html += '  <td class="text-left">' + requisition.date_added + '</td>';
+                    html += '  <td class="text-right"><div class="btn-group">';
+                    html += '    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>';
+                    html += '    <ul class="dropdown-menu dropdown-menu-right">';
+                    html += '      <li><a href="javascript:void(0);" onclick="viewRequisition(' + requisition.requisition_id + ');"><i class="fa fa-eye"></i> {{ button_view }}</a></li>';
+                    if (requisition.edit) {
+                        html += '      <li><a href="javascript:void(0);" onclick="editRequisition(' + requisition.requisition_id + ');"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>';
+                    }
+                    if (requisition.delete) {
+                        html += '      <li><a href="javascript:void(0);" onclick="confirmDelete(' + requisition.requisition_id + ');"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>';
+                    }
+                    if (requisition.can_approve) {
+                        html += '      <li><a href="javascript:void(0);" onclick="approveRequisition(' + requisition.requisition_id + ');"><i class="fa fa-check"></i> {{ button_approve }}</a></li>';
+                    }
+                    if (requisition.can_reject) {
+                        html += '      <li><a href="javascript:void(0);" onclick="rejectRequisition(' + requisition.requisition_id + ');"><i class="fa fa-times"></i> {{ button_reject }}</a></li>';
+                    }
+                    if (requisition.can_create_quotation) {
+                        html += '      <li><a href="javascript:void(0);" onclick="createQuotation(' + requisition.requisition_id + ');"><i class="fa fa-file-text-o"></i> {{ button_create_quotation }}</a></li>';
+                    }
+                    html += '    </ul>';
+                    html += '  </div></td>';
+                    html += '</tr>';
+                });
+
+                $('#requisition-list').html(html);
+
+                if (json['pagination']) {
+                    $('.pagination').html(json['pagination']);
+                }
+
+                if (json['results']) {
+                    $('.results').html(json['results']);
+                }
+            } else {
+                $('#requisition-list').html('<tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>');
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.approveRequisition = function(requisition_id) {
+    $('#form-approve-requisition input[name="requisition_id"]').val(requisition_id);
+    $('#modal-approve-requisition').modal('show');
+}
+
+window.confirmApproveRequisition = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/approveRequisition&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-approve-requisition').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-approve-requisition .btn-success').button('loading');
+        },
+        complete: function() {
+            $('#modal-approve-requisition .btn-success').button('reset');
+        },
+        success: function(json) {
+            if (json['error']) {
+                alert(json['error']);
+            }
+            if (json['success']) {
+                $('#modal-approve-requisition').modal('hide');
+                filterRequisitions();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.rejectRequisition = function(requisition_id) {
+    $('#form-reject-requisition input[name="requisition_id"]').val(requisition_id);
+    $('#modal-reject-requisition').modal('show');
+}
+
+window.confirmRejectRequisition = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/rejectRequisition&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-reject-requisition').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-reject-requisition .btn-danger').button('loading');
+        },
+        complete: function() {
+            $('#modal-reject-requisition .btn-danger').button('reset');
+        },
+        success: function(json) {
+            if (json['error']) {
+                alert(json['error']);
+            }
+            if (json['success']) {
+                $('#modal-reject-requisition').modal('hide');
+                filterRequisitions();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.createQuotation = function(requisition_id) {
+    $('#form-create-quotation input[name="requisition_id"]').val(requisition_id);
+    $('#modal-create-quotation').modal('show');
+}
+
+window.confirmCreateQuotation = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/createQuotation&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-create-quotation').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-create-quotation .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-create-quotation .btn-primary').button('reset');
+        },
+        success: function(json) {
+            if (json['error']) {
+                alert(json['error']);
+            }
+            if (json['success']) {
+                $('#modal-create-quotation').modal('hide');
+                filterRequisitions();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.confirmDelete = function(requisition_id) {
+    if (confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/deletePurchaseRequisition&user_token={{ user_token }}&requisition_id=' + requisition_id,
+            dataType: 'json',
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+
+                if (json['success']) {
+                    filterRequisitions();
+                }
+            },
+            error: handleAjaxError
+        });
+    }
+}
+
+// Quotation functions
+$('#button-filter-quotation').on('click', filterQuotations);
+
+window.viewQuotation = function(quotation_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getQuotation&user_token={{ user_token }}&quotation_id=' + quotation_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-view-quotation .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            $('#modal-view-quotation').modal('show');
+        },
+        success: function(json) {
+            var html = '';
+            
+            // Quotation details
+            html = '<table class="table table-bordered">';
+            html += '  <tr><td>{{ entry_quotation_number }}</td><td>' + json['quotation_number'] + '</td></tr>';
+            html += '  <tr><td>{{ entry_vendor }}</td><td>' + json['vendor'] + '</td></tr>';
+            html += '  <tr><td>{{ entry_status }}</td><td>' + json['status'] + '</td></tr>';
+            html += '  <tr><td>{{ entry_date_added }}</td><td>' + json['date_added'] + '</td></tr>';
+            html += '  <tr><td>{{ entry_due_date }}</td><td>' + json['due_date'] + '</td></tr>';
+            html += '</table>';
+            
+            $('#tab-quotation-details').html(html);
+            
+            // Quotation items
+            html = '<table class="table table-bordered table-hover">';
+            html += '  <thead>';
+            html += '    <tr>';
+            html += '      <td>{{ column_product }}</td>';
+            html += '      <td>{{ column_quantity }}</td>';
+            html += '      <td>{{ column_unit }}</td>';
+            html += '    </tr>';
+            html += '  </thead>';
+            html += '  <tbody>';
+            
+            for (var i = 0; i < json['items'].length; i++) {
+                html += '    <tr>';
+                html += '      <td>' + json['items'][i]['product'] + '</td>';
+                html += '      <td>' + json['items'][i]['quantity'] + '</td>';
+                html += '      <td>' + json['items'][i]['unit'] + '</td>';
+                html += '    </tr>';
+            }
+            
+            html += '  </tbody>';
+            html += '</table>';
+            
+            $('#tab-quotation-items').html(html);
+            
+            // Quotation history
+            html = '<table class="table table-bordered table-hover">';
+            html += '  <thead>';
+            html += '    <tr>';
+            html += '      <td>{{ column_date_added }}</td>';
+            html += '      <td>{{ column_user }}</td>';
+            html += '      <td>{{ column_action }}</td>';
+            html += '    </tr>';
+            html += '  </thead>';
+            html += '  <tbody>';
+            
+            for (var i = 0; i < json['history'].length; i++) {
+                html += '    <tr>';
+                html += '      <td>' + json['history'][i]['date_added'] + '</td>';
+                html += '      <td>' + json['history'][i]['user'] + '</td>';
+                html += '      <td>' + json['history'][i]['action'] + '</td>';
+                html += '    </tr>';
+            }
+            
+            html += '  </tbody>';
+            html += '</table>';
+            
+            $('#tab-quotation-history').html(html);
+        },
+        error: handleAjaxError
+    });
+}
+
+window.editQuotation = function(quotation_id) {
+    $('#modal-edit-quotation').modal('show');
+    
+    if (quotation_id) {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/getQuotationForm&user_token={{ user_token }}&quotation_id=' + quotation_id,
+            dataType: 'json',
+            success: function(json) {
+                $('input[name="quotation_id"]').val(json.quotation_id);
+                $('select[name="vendor_id"]').val(json.vendor_id);
+                $('select[name="status_id"]').val(json.status_id);
+                $('input[name="due_date"]').val(json.due_date);
+                $('textarea[name="notes"]').val(json.notes);
+                
+                $('#quotation-items tbody').html('');
+                for (var i = 0; i < json.items.length; i++) {
+                    addQuotationItem(json.items[i]);
+                }
+            },
+            error: handleAjaxError
+        });
+    } else {
+        // Reset form for new Quotation
+        $('#form-quotation')[0].reset();
+        $('input[name="quotation_id"]').val('');
+        $('#quotation-items tbody').html('');
+    }
+}
+
+window.addQuotationItem = function(item) {
+    var html = '<tr id="quotation-item-row' + quotation_item_row + '">';
+    html += '  <td><input type="text" name="quotation_item[' + quotation_item_row + '][product]" value="' + (item ? item.product : '') + '" class="form-control" /></td>';
+    html += '  <td><input type="number" name="quotation_item[' + quotation_item_row + '][quantity]" value="' + (item ? item.quantity : '1') + '" class="form-control" /></td>';
+    html += '  <td><input type="text" name="quotation_item[' + quotation_item_row + '][unit]" value="' + (item ? item.unit : '') + '" class="form-control" /></td>';
+    html += '  <td class="text-left"><button type="button" onclick="$(\'#quotation-item-row' + quotation_item_row + '\').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';
+    html += '</tr>';
+    
+    $('#quotation-items tbody').append(html);
+    
+    quotation_item_row++;
+}
+
+window.saveQuotation = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/saveQuotation&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-quotation').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-edit-quotation .modal-footer .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-edit-quotation .modal-footer .btn-primary').button('reset');
+        },
+        success: function(json) {
+            if (json['error']) {
+                alert(json['error']);
+            }
+            
+            if (json['success']) {
+                $('#modal-edit-quotation').modal('hide');
+                filterQuotations();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.sendQuotation = function(quotation_id) {
+    $('#modal-send-quotation input[name="quotation_id"]').val(quotation_id);
+    $('#modal-send-quotation').modal('show');
+}
+
+window.confirmSendQuotation = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/sendQuotation&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-send-quotation').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-send-quotation .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-send-quotation .btn-primary').button('reset');
+        },
+        success: function(json) {
+        if (json['error']) {
+            alert(json['error']);
+        }
+        if (json['success']) {
+        $('#modal-send-quotation').modal('hide');
+            filterQuotations();
+        }
+        },
+        error: handleAjaxError
+        });
+}   
+
+window.closeQuotation = function(quotation_id) {
+    $('#modal-close-quotation input[name="quotation_id"]').val(quotation_id);
+    $('#modal-close-quotation').modal('show');
+}
+
+window.confirmCloseQuotation = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/closeQuotation&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-close-quotation').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-close-quotation .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-close-quotation .btn-primary').button('reset');
+        },
+        success: function(json) {
+            if (json['error']) {
+                alert(json['error']);
+            }
+            if (json['success']) {
+                $('#modal-close-quotation').modal('hide');
+                filterQuotations();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+function filterQuotations(page) {
+    page = page || 1;
+    var url = 'index.php?route=purchase/purchase/getQuotations&user_token={{ user_token }}';
+    
+    var filter_quotation_number = $('input[name=\'filter_quotation_number\']').val();
+    if (filter_quotation_number) {
+        url += '&filter_quotation_number=' + encodeURIComponent(filter_quotation_number);
+    }
+
+    var filter_quotation_status = $('select[name=\'filter_quotation_status\']').val();
+    if (filter_quotation_status) {
+        url += '&filter_quotation_status=' + encodeURIComponent(filter_quotation_status);
+    }
+
+    var filter_quotation_vendor = $('input[name=\'filter_quotation_vendor\']').val();
+    if (filter_quotation_vendor) {
+        url += '&filter_quotation_vendor=' + encodeURIComponent(filter_quotation_vendor);
+    }
+
+    var filter_quotation_date_start = $('input[name=\'filter_quotation_date_start\']').val();
+    if (filter_quotation_date_start) {
+        url += '&filter_quotation_date_start=' + encodeURIComponent(filter_quotation_date_start);
+    }
+
+    var filter_quotation_date_end = $('input[name=\'filter_quotation_date_end\']').val();
+    if (filter_quotation_date_end) {
+        url += '&filter_quotation_date_end=' + encodeURIComponent(filter_quotation_date_end);
+    }
+
+    url += '&page=' + page;
+
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-filter-quotation').button('loading');
+        },
+        complete: function() {
+            $('#button-filter-quotation').button('reset');
+        },
+        success: function(json) {
+            if (json['quotation_offers']) {
+                var html = '';
+                $.each(json['quotation_offers'], function(index, offer) {
+                    html += '<tr>';
+                    html += '  <td class="text-center"><input type="checkbox" name="selected[]" value="' + offer.quotation_id + '" /></td>';
+                    html += '  <td class="text-left">' + offer.quotation_number + '</td>';
+                    html += '  <td class="text-left">' + offer.vendor + '</td>';
+                    html += '  <td class="text-right">' + offer.total_amount + '</td>';
+                    html += '  <td class="text-left">' + offer.status + '</td>';
+                    html += '  <td class="text-left">' + offer.date_added + '</td>';
+                    html += '  <td class="text-right"><div class="btn-group">';
+                    html += '    <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>';
+                    html += '    <ul class="dropdown-menu dropdown-menu-right">';
+                    html += '      <li><a href="javascript:void(0);" onclick="viewQuotation(' + offer.quotation_id + ');"><i class="fa fa-eye"></i> {{ button_view }}</a></li>';
+                    if (offer.edit) {
+                        html += '      <li><a href="javascript:void(0);" onclick="editQuotation(' + offer.quotation_id + ');"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>';
+                    }
+                    if (offer.delete) {
+                        html += '      <li><a href="javascript:void(0);" onclick="confirmDeleteQuotation(' + offer.quotation_id + ');"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>';
+                    }
+                    if (offer.can_create_po) {
+                        html += '      <li><a href="javascript:void(0);" onclick="createPO(' + offer.quotation_id + ');"><i class="fa fa-shopping-cart"></i> {{ button_create_po }}</a></li>';
+                    }
+                    html += '    </ul>';
+                    html += '  </div></td>';
+                    html += '</tr>';
+                });
+                
+                $('#quotation-offers-list').html(html);
+                
+                if (json['pagination']) {
+                    $('.pagination').html(json['pagination']);
+                }
+                
+                if (json['results']) {
+                    $('.results').html(json['results']);
+                }
+            } else {
+                $('#quotation-offers-list').html('<tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>');
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.confirmDeleteQuotation = function(quotation_id) {
+    if (confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/deleteQuotation&user_token={{ user_token }}&quotation_id=' + quotation_id,
+            dataType: 'json',
+            success: function(json) {
+                if (json['error']) {
+                    alert(json['error']);
+                }
+                
+                if (json['success']) {
+                    filterQuotations();
+                }
+            },
+            error: handleAjaxError
+        });
+    }
+}
+
+// Purchase Order functions
+$('#button-filter-po').on('click', filterPOs);
+
+window.viewPO = function(purchase_order_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getPurchaseOrder&user_token={{ user_token }}&purchase_order_id=' + purchase_order_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-view-po .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            $('#modal-view-po').modal('show');
+        },
+        success: function(json) {
+            var html = '<table class="table table-bordered">';
+            html += '<tr><td>{{ entry_po_number }}</td><td>' + json['po_number'] + '</td></tr>';
+            html += '<tr><td>{{ entry_vendor }}</td><td>' + json['vendor'] + '</td></tr>';
+            html += '<tr><td>{{ entry_status }}</td><td>' + json['status'] + '</td></tr>';
+            html += '<tr><td>{{ entry_date_added }}</td><td>' + json['date_added'] + '</td></tr>';
+            html += '<tr><td>{{ entry_expected_date }}</td><td>' + json['expected_date'] + '</td></tr>';
+            html += '<tr><td>{{ entry_total }}</td><td>' + json['total'] + '</td></tr>';
+            html += '</table>';
+
+            html += '<h3>{{ text_items }}</h3>';
+            html += '<table class="table table-bordered table-hover">';
+            html += '<thead><tr><td>{{ column_product }}</td><td>{{ column_quantity }}</td><td>{{ column_unit }}</td><td>{{ column_price }}</td><td>{{ column_total }}</td></tr></thead>';
+            html += '<tbody>';
+            
+            for (var i = 0; i < json['items'].length; i++) {
+                html += '<tr>';
+                html += '<td>' + json['items'][i]['product'] + '</td>';
+                html += '<td>' + json['items'][i]['quantity'] + '</td>';
+                html += '<td>' + json['items'][i]['unit'] + '</td>';
+                html += '<td>' + json['items'][i]['price'] + '</td>';
+                html += '<td>' + json['items'][i]['total'] + '</td>';
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table>';
+
+            $('#tab-po-details').html(html);
+            
+            // Load PO history
+            $.ajax({
+                url: 'index.php?route=purchase/purchase/getPOHistory&user_token={{ user_token }}&purchase_order_id=' + purchase_order_id,
+                dataType: 'json',
+                success: function(json) {
+                    var html = '<table class="table table-bordered table-hover">';
+                    html += '<thead><tr><td>{{ column_date_added }}</td><td>{{ column_user }}</td><td>{{ column_action }}</td></tr></thead>';
+                    html += '<tbody>';
+                    
+                    for (var i = 0; i < json.length; i++) {
+                        html += '<tr>';
+                        html += '<td>' + json[i]['date_added'] + '</td>';
+                        html += '<td>' + json[i]['user'] + '</td>';
+                        html += '<td>' + json[i]['action'] + '</td>';
+                        html += '</tr>';
+                    }
+                    
+                    html += '</tbody></table>';
+
+                    $('#tab-po-history').html(html);
+                },
+                error: handleAjaxError
+            });
+        },
+        error: handleAjaxError
+    });
+}
+
+window.editPO = function(purchase_order_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getPOForm&user_token={{ user_token }}&purchase_order_id=' + purchase_order_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-edit-po').modal('show');
+        },
+        success: function(json) {
+            $('input[name=\'purchase_order_id\']').val(json['purchase_order_id']);
+            $('#input-po-vendor').val(json['vendor_id']);
+            $('#input-po-status').val(json['status_id']);
+            $('input[name=\'date_added\']').val(json['date_added']);
+            $('input[name=\'expected_date\']').val(json['expected_date']);
+            $('#input-po-type').val(json['po_type']);
+            
+            if (json['po_type'] == 'contract') {
+                $('#contract-dates').show();
+                $('input[name=\'contract_start\']').val(json['contract_start']);
+                $('input[name=\'contract_end\']').val(json['contract_end']);
+            } else {
+                $('#contract-dates').hide();
+            }
+            
+            $('#po-items tbody').html('');
+            for (var i = 0; i < json['items'].length; i++) {
+                addPOItem(json['items'][i]);
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.addPOItem = function(item) {
+    var html = '<tr id="po-item-row' + po_item_row + '">';
+    html += '  <td><input type="text" name="po_item[' + po_item_row + '][product]" value="' + (item ? item['product'] : '') + '" class="form-control" /><input type="hidden" name="po_item[' + po_item_row + '][product_id]" value="' + (item ? item['product_id'] : '') + '" /></td>';
+    html += '  <td><input type="number" name="po_item[' + po_item_row + '][quantity]" value="' + (item ? item['quantity'] : '1') + '" class="form-control" /></td>';
+    html += '  <td><select name="po_item[' + po_item_row + '][unit_id]" class="form-control">';
+    $.each(json['units'], function(unit_id, unit_name) {
+        html += '    <option value="' + unit_id + '"' + (item && item['unit_id'] == unit_id ? ' selected' : '') + '>' + unit_name + '</option>';
+    });
+    html += '  </select></td>';
+    html += '  <td><input type="number" name="po_item[' + po_item_row + '][price]" value="' + (item ? item['price'] : '0') + '" class="form-control" /></td>';
+    html += '  <td class="text-right">' + (item ? item['total'] : '0') + '</td>';
+    html += '  <td class="text-left"><button type="button" onclick="$(\'#po-item-row' + po_item_row + '\').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>';
+    html += '</tr>';
+    
+    $('#po-items tbody').append(html);
+    
+    po_item_row++;
+}
+
+window.savePO = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/savePO&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-po').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-edit-po .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-edit-po .btn-primary').button('reset');
+        },
+        success: function(json) {
+            if (json['success']) {
+                $('#modal-edit-po').modal('hide');
+                filterPOs();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.getGoodsReceipt = function(purchase_order_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getReceiveItems&user_token={{ user_token }}&purchase_order_id=' + purchase_order_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-receive-po .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            $('#modal-receive-po').modal('show');
+        },
+        success: function(json) {
+            $('#modal-receive-po input[name="purchase_order_id"]').val(purchase_order_id);
+            
+            var html = '';
+            for (var i = 0; i < json.items.length; i++) {
+                html += '<tr>';
+                html += '  <td>' + json.items[i].product + '</td>';
+                html += '  <td class="text-right">' + json.items[i].quantity + '</td>';
+                html += '  <td class="text-right">' + json.items[i].received + '</td>';
+                html += '  <td><input type="number" name="receive_item[' + json.items[i].item_id + ']" value="' + (json.items[i].quantity - json.items[i].received) + '" min="0" max="' + (json.items[i].quantity - json.items[i].received) + '" class="form-control" /></td>';
+                html += '  <td><input type="text" name="batch_number[' + json.items[i].item_id + ']" value="" class="form-control" /></td>';
+                html += '  <td><input type="text" name="expiry_date[' + json.items[i].item_id + ']" value="" class="form-control date" /></td>';
+                html += '</tr>';
+            }        
+$('#po-receive-items tbody').html(html);
+            
+            // Re-initialize date pickers
+            $('.date').datetimepicker({
+                pickTime: false
+            });
+        },
+        error: handleAjaxError
+    });
+}
+
+window.confirmGetGoodsReceipt = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getGoodsReceipt&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-receive-po').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-receive-po .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-receive-po .btn-primary').button('reset');
+        },
+        success: function(json) {
+            if (json['success']) {
+                $('#modal-receive-po').modal('hide');
+                filterPOs();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.confirmDeletePurchaseOrder = function(purchase_order_id) {
+    if (confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/deletePurchaseOrder&user_token={{ user_token }}&purchase_order_id=' + purchase_order_id,
+            dataType: 'json',
+            success: function(json) {
+                if (json['success']) {
+                    filterPOs();
+                }
+            },
+            error: handleAjaxError
+        });
+    }
+}
+
+function filterPOs(page) {
+    page = page || 1;
+    var url = 'index.php?route=purchase/purchase/getPOS&user_token={{ user_token }}';
+    
+    var filter_po_number = $('input[name=\'filter_po_number\']').val();
+    if (filter_po_number) {
+        url += '&filter_po_number=' + encodeURIComponent(filter_po_number);
+    }
+    
+    var filter_po_status = $('#input-po-status').val();
+    if (filter_po_status) {
+        url += '&filter_po_status=' + encodeURIComponent(filter_po_status);
+    }
+    
+    var filter_po_vendor = $('input[name=\'filter_po_vendor\']').val();
+    if (filter_po_vendor) {
+        url += '&filter_po_vendor=' + encodeURIComponent(filter_po_vendor);
+    }
+    
+    var filter_po_date_start = $('input[name=\'filter_po_date_start\']').val();
+    if (filter_po_date_start) {
+        url += '&filter_po_date_start=' + encodeURIComponent(filter_po_date_start);
+    }
+    
+    var filter_po_date_end = $('input[name=\'filter_po_date_end\']').val();
+    if (filter_po_date_end) {
+        url += '&filter_po_date_end=' + encodeURIComponent(filter_po_date_end);
+    }
+    
+    url += '&page=' + page;
+
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-filter-po').button('loading');
+        },
+        complete: function() {
+            $('#button-filter-po').button('reset');
+        },
+        success: function(json) {
+            var html = '';
+            if (json['purchase_orders']) {
+                $.each(json['purchase_orders'], function(index, po) {
+                    html += '<tr>';
+                    html += '  <td class="text-center"><input type="checkbox" name="selected[]" value="' + po.purchase_order_id + '" /></td>';
+                    html += '  <td class="text-left">' + po.po_number + '</td>';
+                    html += '  <td class="text-left">' + po.status + '</td>';
+                    html += '  <td class="text-left">' + po.vendor + '</td>';
+                    html += '  <td class="text-right">' + po.total + '</td>';
+                    html += '  <td class="text-left">' + po.date_added + '</td>';
+                    html += '  <td class="text-right">';
+                    html += '    <div class="btn-group">';
+                    html += '      <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>';
+                    html += '      <ul class="dropdown-menu dropdown-menu-right">';
+                    html += '        <li><a href="javascript:void(0);" onclick="viewPO(' + po.purchase_order_id + ');"><i class="fa fa-eye"></i> {{ button_view }}</a></li>';
+                    if (po.edit) {
+                        html += '        <li><a href="javascript:void(0);" onclick="editPO(' + po.purchase_order_id + ');"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>';
+                    }
+                    if (po.delete) {
+                        html += '        <li><a href="javascript:void(0);" onclick="confirmDeletePurchaseOrder(' + po.purchase_order_id + ');"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>';
+                    }
+                    if (po.can_receive) {
+                        html += '        <li><a href="javascript:void(0);" onclick="getGoodsReceipt(' + po.purchase_order_id + ');"><i class="fa fa-truck"></i> {{ button_receive }}</a></li>';
+                    }
+                    if (po.can_invoice) {
+                        html += '        <li><a href="javascript:void(0);" onclick="createInvoice(' + po.purchase_order_id + ');"><i class="fa fa-file-text-o"></i> {{ button_create_invoice }}</a></li>';
+                    }
+                    html += '      </ul>';
+                    html += '    </div>';
+                    html += '  </td>';
+                    html += '</tr>';
+                });
+            } else {
+                html = '<tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>';
+            }
+            $('#purchase-orders tbody').html(html);
+
+            if (json['pagination']) {
+                $('.pagination').html(json['pagination']);
+            }
+            
+            if (json['results']) {
+                $('.results').html(json['results']);
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+// Goods Receipt functions
+$('#button-filter-gr').on('click', filterGRs);
+
+window.viewGR = function(goods_receipt_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getGRDetails&user_token={{ user_token }}&goods_receipt_id=' + goods_receipt_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-view-gr .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            $('#modal-view-gr').modal('show');
+        },
+        success: function(json) {
+            var html = '<table class="table table-bordered">';
+            html += '<tr><td>{{ entry_gr_number }}</td><td>' + json['gr_number'] + '</td></tr>';
+            html += '<tr><td>{{ entry_po_number }}</td><td>' + json['po_number'] + '</td></tr>';
+            html += '<tr><td>{{ entry_status }}</td><td>' + json['status'] + '</td></tr>';
+            html += '<tr><td>{{ entry_date_added }}</td><td>' + json['date_added'] + '</td></tr>';
+            html += '</table>';
+
+            html += '<h3>{{ text_items }}</h3>';
+            html += '<table class="table table-bordered table-hover">';
+            html += '<thead><tr><td>{{ column_product }}</td><td>{{ column_quantity }}</td><td>{{ column_unit }}</td><td>{{ column_batch_number }}</td><td>{{ column_expiry_date }}</td></tr></thead>';
+            html += '<tbody>';
+            
+            for (var i = 0; i < json['items'].length; i++) {
+                html += '<tr>';
+                html += '<td>' + json['items'][i]['product'] + '</td>';
+                html += '<td>' + json['items'][i]['quantity'] + '</td>';
+                html += '<td>' + json['items'][i]['unit'] + '</td>';
+                html += '<td>' + json['items'][i]['batch_number'] + '</td>';
+                html += '<td>' + json['items'][i]['expiry_date'] + '</td>';
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table>';
+
+            $('#modal-view-gr .modal-body').html(html);
+        },
+        error: handleAjaxError
+    });
+}
+
+window.editGR = function(goods_receipt_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getGRForm&user_token={{ user_token }}&goods_receipt_id=' + goods_receipt_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-edit-gr').modal('show');
+        },
+        success: function(json) {
+            $('input[name=\'goods_receipt_id\']').val(json['goods_receipt_id']);
+            $('#input-gr-po').val(json['purchase_order_id']);
+            $('#input-gr-status').val(json['status']);
+            $('input[name=\'date_added\']').val(json['date_added']);
+            
+            $('#gr-items tbody').html('');
+            for (var i = 0; i < json['items'].length; i++) {
+                addGRItem(json['items'][i]);
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.addGRItem = function(item) {
+    var html = '<tr id="gr-item-row' + gr_item_row + '">';
+    html += '  <td><input type="text" name="gr_item[' + gr_item_row + '][product]" value="' + (item ? item['product'] : '') + '" class="form-control" readonly /><input type="hidden" name="gr_item[' + gr_item_row + '][product_id]" value="' + (item ? item['product_id'] : '') + '" /></td>';
+    html += '  <td><input type="number" name="gr_item[' + gr_item_row + '][quantity]" value="' + (item ? item['quantity'] : '0') + '" class="form-control" /></td>';
+    html += '  <td><input type="text" name="gr_item[' + gr_item_row + '][unit]" value="' + (item ? item['unit'] : '') + '" class="form-control" readonly /></td>';
+    html += '  <td><input type="text" name="gr_item[' + gr_item_row + '][batch_number]" value="' + (item ? item['batch_number'] : '') + '" class="form-control" /></td>';
+    html += '  <td><input type="text" name="gr_item[' + gr_item_row + '][expiry_date]" value="' + (item ? item['expiry_date'] : '') + '" class="form-control date" /></td>';
+    html += '</tr>';
+    
+    $('#gr-items tbody').append(html);
+    
+    // Re-initialize date pickers
+    $('.date').datetimepicker({
+        pickTime: false
+    });
+    
+    gr_item_row++;
+}
+
+window.saveGR = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/saveGR&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-gr').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-edit-gr .btn-primary').button('loading');
+        },
+        complete: function() {
+            $('#modal-edit-gr .btn-primary').button('reset');
+        },
+        success: function(json) {
+            if (json['success']) {
+                $('#modal-edit-gr').modal('hide');
+                filterGRs();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+window.confirmdeleteGoodsReceipt = function(goods_receipt_id) {
+    if (confirm('{{ text_confirm_delete }}')) {
+        $.ajax({
+            url: 'index.php?route=purchase/purchase/deleteGoodsReceipt&user_token={{ user_token }}&goods_receipt_id=' + goods_receipt_id,
+            dataType: 'json',
+            success: function(json) {
+                if (json['success']) {
+                    filterGRs();
+                }
+            },
+            error: handleAjaxError
+        });
+    }
+}
+
+function filterGRs(page) {
+    page = page || 1;
+    var url = 'index.php?route=purchase/purchase/getGoodsReceipts&user_token={{ user_token }}';
+    
+    var filter_gr_number = $('input[name=\'filter_gr_number\']').val();
+    if (filter_gr_number) {
+        url += '&filter_gr_number=' + encodeURIComponent(filter_gr_number);
+    }
+    
+    var filter_gr_status = $('#input-gr-status').val();
+    if (filter_gr_status) {
+        url += '&filter_gr_status=' + encodeURIComponent(filter_gr_status);
+    }
+    
+    var filter_gr_po_number = $('input[name=\'filter_gr_po_number\']').val();
+    if (filter_gr_po_number) {
+        url += '&filter_gr_po_number=' + encodeURIComponent(filter_gr_po_number);
+    }
+    
+    var filter_gr_date_start = $('input[name=\'filter_gr_date_start\']').val();
+    if (filter_gr_date_start) {
+        url += '&filter_gr_date_start=' + encodeURIComponent(filter_gr_date_start);
+    }
+    
+    var filter_gr_date_end = $('input[name=\'filter_gr_date_end\']').val();
+    if (filter_gr_date_end) {
+        url += '&filter_gr_date_end=' + encodeURIComponent(filter_gr_date_end);
+    }
+    
+    url += '&page=' + page;
+
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        beforeSend: function() {
+$('#button-filter-gr').button('loading');
+},
+complete: function() {
+$('#button-filter-gr').button('reset');
+},
+success: function(json) {
+var html = '';
+if (json['goods_receipts']) {
+$.each(json['goods_receipts'], function(index, gr) {
+html += '<tr>';
+html += '  <td class="text-center"><input type="checkbox" name="selected_gr[]" value="' + gr.goods_receipt_id + '" /></td>';
+html += '  <td class="text-left">' + gr.gr_number + '</td>';
+html += '  <td class="text-left">' + gr.po_number + '</td>';
+html += '  <td class="text-left">' + gr.status + '</td>';
+html += '  <td class="text-left">' + gr.date_added + '</td>';
+html += '  <td class="text-right">';
+html += '    <div class="btn-group">';
+html += '      <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>';
+html += '      <ul class="dropdown-menu dropdown-menu-right">';
+html += '        <li><a href="javascript:void(0);" onclick="viewGR(' + gr.goods_receipt_id + ');"><i class="fa fa-eye"></i> {{ button_view }}</a></li>';
+if (gr.edit) {
+html += '        <li><a href="javascript:void(0);" onclick="editGR(' + gr.goods_receipt_id + ');"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>';
+}
+if (gr.delete) {
+html += '        <li><a href="javascript:void(0);" onclick="confirmdeleteGoodsReceipt(' + gr.goods_receipt_id + ');"><i class="fa fa-trash-o"></i> {{ button_delete }}</a></li>';
+}
+html += '      </ul>';
+html += '    </div>';
+html += '  </td>';
+html += '</tr>';
+});
+} else {
+html = '<tr><td class="text-center" colspan="6">{{ text_no_results }}</td></tr>';
+}
+$('#goods-receipts tbody').html(html);
+if (json['pagination']) {
+                $('.pagination').html(json['pagination']);
+            }
+            
+            if (json['results']) {
+                $('.results').html(json['results']);
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+// Supplier Invoice functions
+$('#button-filter-invoice').on('click', filterInvoices);
+
+window.viewInvoice = function(invoice_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getInvoiceDetails&user_token={{ user_token }}&invoice_id=' + invoice_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-view-invoice .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            $('#modal-view-invoice').modal('show');
+        },
+        success: function(json) {
+            var html = '<table class="table table-bordered">';
+            html += '<tr><td>{{ entry_invoice_number }}</td><td>' + json['invoice_number'] + '</td></tr>';
+            html += '<tr><td>{{ entry_vendor }}</td><td>' + json['vendor'] + '</td></tr>';
+            html += '<tr><td>{{ entry_total }}</td><td>' + json['total'] + '</td></tr>';
+            html += '<tr><td>{{ entry_status }}</td><td>' + json['status'] + '</td></tr>';
+            html += '<tr><td>{{ entry_date_added }}</td><td>' + json['date_added'] + '</td></tr>';
+            html += '</table>';
+
+            html += '<h3>{{ text_items }}</h3>';
+            html += '<table class="table table-bordered">';
+            html += '<thead><tr><td>{{ column_product }}</td><td>{{ column_quantity }}</td><td>{{ column_price }}</td><td>{{ column_total }}</td></tr></thead>';
+            html += '<tbody>';
+            
+            for (var i = 0; i < json['items'].length; i++) {
+                html += '<tr>';
+                html += '<td>' + json['items'][i]['product'] + '</td>';
+                html += '<td>' + json['items'][i]['quantity'] + '</td>';
+                html += '<td>' + json['items'][i]['price'] + '</td>';
+                html += '<td>' + json['items'][i]['total'] + '</td>';
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table>';
+
+            $('#modal-view-invoice .modal-body').html(html);
+        },
+        error: handleAjaxError
+    });
+}
+
+window.approveInvoice = function(invoice_id) {
+    $('#modal-approve-invoice input[name="invoice_id"]').val(invoice_id);
+    $('#modal-approve-invoice').modal('show');
+}
+
+window.confirmApproveInvoice = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/approveInvoice&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-approve-invoice').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-approve-invoice .btn-success').button('loading');
+        },
+        complete: function() {
+            $('#modal-approve-invoice .btn-success').button('reset');
+        },
+        success: function(json) {
+            if (json['success']) {
+                $('#modal-approve-invoice').modal('hide');
+                filterInvoices();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+function filterInvoices(page) {
+    page = page || 1;
+    var url = 'index.php?route=purchase/purchase/getSupplierInvoices&user_token={{ user_token }}';
+    
+    var filter_invoice_number = $('input[name=\'filter_invoice_number\']').val();
+    if (filter_invoice_number) {
+        url += '&filter_invoice_number=' + encodeURIComponent(filter_invoice_number);
+    }
+
+    var filter_invoice_status = $('select[name=\'filter_invoice_status\']').val();
+    if (filter_invoice_status) {
+        url += '&filter_invoice_status=' + encodeURIComponent(filter_invoice_status);
+    }
+
+    var filter_invoice_vendor = $('input[name=\'filter_invoice_vendor\']').val();
+    if (filter_invoice_vendor) {
+        url += '&filter_invoice_vendor=' + encodeURIComponent(filter_invoice_vendor);
+    }
+
+    var filter_invoice_date_start = $('input[name=\'filter_invoice_date_start\']').val();
+    if (filter_invoice_date_start) {
+        url += '&filter_invoice_date_start=' + encodeURIComponent(filter_invoice_date_start);
+    }
+
+    var filter_invoice_date_end = $('input[name=\'filter_invoice_date_end\']').val();
+    if (filter_invoice_date_end) {
+        url += '&filter_invoice_date_end=' + encodeURIComponent(filter_invoice_date_end);
+    }
+
+    url += '&page=' + page;
+
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-filter-invoice').button('loading');
+        },
+        complete: function() {
+            $('#button-filter-invoice').button('reset');
+        },
+        success: function(json) {
+            var html = '';
+            if (json['supplier_invoices']) {
+                $.each(json['supplier_invoices'], function(index, invoice) {
+                    html += '<tr>';
+                    html += '  <td class="text-center"><input type="checkbox" name="selected_invoice[]" value="' + invoice.invoice_id + '" /></td>';
+                    html += '  <td class="text-left">' + invoice.invoice_number + '</td>';
+                    html += '  <td class="text-left">' + invoice.vendor + '</td>';
+                    html += '  <td class="text-right">' + invoice.total + '</td>';
+                    html += '  <td class="text-left">' + invoice.status + '</td>';
+                    html += '  <td class="text-left">' + invoice.date_added + '</td>';
+                    html += '  <td class="text-right">';
+                    html += '    <div class="btn-group">';
+                    html += '      <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>';
+                    html += '      <ul class="dropdown-menu dropdown-menu-right">';
+                    html += '        <li><a href="javascript:void(0);" onclick="viewInvoice(' + invoice.invoice_id + ');"><i class="fa fa-eye"></i> {{ button_view }}</a></li>';
+                    if (invoice.can_approve) {
+                        html += '        <li><a href="javascript:void(0);" onclick="approveInvoice(' + invoice.invoice_id + ');"><i class="fa fa-check"></i> {{ button_approve }}</a></li>';
+                    }
+                    html += '      </ul>';
+                    html += '    </div>';
+                    html += '  </td>';
+                    html += '</tr>';
+                });
+            } else {
+                html = '<tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>';
+            }
+            $('#supplier-invoices tbody').html(html);
+
+            if (json['pagination']) {
+                $('.pagination').html(json['pagination']);
+            }
+            
+            if (json['results']) {
+                $('.results').html(json['results']);
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+// Vendor Payment functions
+$('#button-filter-payment').on('click', filterPayments);
+
+window.viewPayment = function(payment_id) {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/getPaymentDetails&user_token={{ user_token }}&payment_id=' + payment_id,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-view-payment .modal-body').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+            $('#modal-view-payment').modal('show');
+        },
+        success: function(json) {
+            var html = '<table class="table table-bordered">';
+            html += '<tr><td>{{ entry_payment_number }}</td><td>' + json['payment_number'] + '</td></tr>';
+            html += '<tr><td>{{ entry_vendor }}</td><td>' + json['vendor'] + '</td></tr>';
+            html += '<tr><td>{{ entry_amount }}</td><td>' + json['amount'] + '</td></tr>';
+            html += '<tr><td>{{ entry_status }}</td><td>' + json['status'] + '</td></tr>';
+            html += '<tr><td>{{ entry_date_added }}</td><td>' + json['date_added'] + '</td></tr>';
+            html += '</table>';
+
+            html += '<h3>{{ text_invoices }}</h3>';
+            html += '<table class="table table-bordered">';
+            html += '<thead><tr><td>{{ column_invoice_number }}</td><td>{{ column_amount }}</td></tr></thead>';
+            html += '<tbody>';
+            
+            for (var i = 0; i < json['invoices'].length; i++) {
+                html += '<tr>';
+                html += '<td>' + json['invoices'][i]['invoice_number'] + '</td>';
+                html += '<td>' + json['invoices'][i]['amount'] + '</td>';
+                html += '</tr>';
+            }
+            
+            html += '</tbody></table>';
+
+            $('#modal-view-payment .modal-body').html(html);
+        },
+        error: handleAjaxError
+    });
+}
+
+window.approvePayment = function(payment_id) {
+    $('#modal-approve-payment input[name="payment_id"]').val(payment_id);
+    $('#modal-approve-payment').modal('show');
+}
+
+window.confirmApprovePayment = function() {
+    $.ajax({
+        url: 'index.php?route=purchase/purchase/approvePayment&user_token={{ user_token }}',
+        type: 'post',
+        data: $('#form-approve-payment').serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $('#modal-approve-payment .btn-success').button('loading');
+        },
+        complete: function() {
+            $('#modal-approve-payment .btn-success').button('reset');
+        },
+        success: function(json) {
+            if (json['success']) {
+                $('#modal-approve-payment').modal('hide');
+                filterPayments();
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+function filterPayments(page) {
+    page = page || 1;
+    var url = 'index.php?route=purchase/purchase/getPayments&user_token={{ user_token }}';
+    
+    var filter_payment_number = $('input[name=\'filter_payment_number\']').val();
+    if (filter_payment_number) {
+        url += '&filter_payment_number=' + encodeURIComponent(filter_payment_number);
+    }
+
+    var filter_payment_status = $('select[name=\'filter_payment_status\']').val();
+    if (filter_payment_status) {
+        url += '&filter_payment_status=' + encodeURIComponent(filter_payment_status);
+    }
+
+    var filter_payment_vendor = $('input[name=\'filter_payment_vendor\']').val();
+    if (filter_payment_vendor) {
+        url += '&filter_payment_vendor=' + encodeURIComponent(filter_payment_vendor);
+    }
+
+    var filter_payment_date_start = $('input[name=\'filter_payment_date_start\']').val();
+    if (filter_payment_date_start) {
+        url += '&filter_payment_date_start=' + encodeURIComponent(filter_payment_date_start);
+    }
+
+    var filter_payment_date_end = $('input[name=\'filter_payment_date_end\']').val();
+    if (filter_payment_date_end) {
+        url += '&filter_payment_date_end=' + encodeURIComponent(filter_payment_date_end);
+    }
+
+    url += '&page=' + page;
+
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-filter-payment').button('loading');
+        },
+        complete: function() {
+            $('#button-filter-payment').button('reset');
+        },
+        success: function(json) {
+            var html = '';
+            if (json['vendor_payments']) {
+                $.each(json['vendor_payments'], function(index, payment) {
+                    html += '<tr>';
+                    html += '  <td class="text-center"><input type="checkbox" name="selected_payment[]" value="' + payment.payment_id + '" /></td>';
+                    html += '  <td class="text-left">' + payment.payment_number + '</td>';
+                    html += '  <td class="text-left">' + payment.vendor + '</td>';
+                    html += '  <td class="text-right' + payment.amount + '</td>';
+html += '  <td class="text-left">' + payment.status + '</td>';
+html += '  <td class="text-left">' + payment.date_added + '</td>';
+html += '  <td class="text-right">';
+html += '    <div class="btn-group">';
+html += '      <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle"><i class="fa fa-cog"></i> <span class="caret"></span></button>';
+html += '      <ul class="dropdown-menu dropdown-menu-right">';
+html += '        <li><a href="javascript:void(0);" onclick="viewPayment(' + payment.payment_id + ');"><i class="fa fa-eye"></i> {{ button_view }}</a></li>';
+if (payment.can_approve) {
+html += '        <li><a href="javascript:void(0);" onclick="approvePayment(' + payment.payment_id + ');"><i class="fa fa-check"></i> {{ button_approve }}</a></li>';
+}
+html += '      </ul>';
+html += '    </div>';
+html += '  </td>';
+html += '</tr>';
+});
+} else {
+html = '<tr><td class="text-center" colspan="7">{{ text_no_results }}</td></tr>';
+}
+$('#vendor-payments tbody').html(html);
+if (json['pagination']) {
+                $('.pagination').html(json['pagination']);
+            }
+            
+            if (json['results']) {
+                $('.results').html(json['results']);
+            }
+        },
+        error: handleAjaxError
+    });
+}
+
+
+filterRequisitions();
+filterQuotations();
+filterPOs();
+filterGRs();
+filterInvoices();
+filterPayments();
+
+
+});
+</script>
+{{ footer }}

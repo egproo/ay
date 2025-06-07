@@ -1,0 +1,678 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-create-alert" data-toggle="tooltip" title="{{ button_create_alert }}" class="btn btn-success">
+          <i class="fa fa-plus"></i> {{ button_create_alert }}
+        </button>
+        <button type="button" id="button-mark-all-read" data-toggle="tooltip" title="{{ button_mark_all_as_read }}" class="btn btn-info">
+          <i class="fa fa-check"></i> {{ button_mark_all_as_read }}
+        </button>
+        <button type="button" id="button-refresh" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-primary">
+          <i class="fa fa-refresh"></i> {{ button_refresh }}
+        </button>
+        <a href="{{ settings_url }}" data-toggle="tooltip" title="{{ button_settings }}" class="btn btn-default">
+          <i class="fa fa-cog"></i> {{ button_settings }}
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <!-- Alerts Summary Cards -->
+    <div class="row" id="alerts-summary">
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-primary">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ alerts_summary.total_alerts|default(0) }}</h3>
+            <p class="summary-label">{{ text_total_alerts }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-warning">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ alerts_summary.unread_alerts|default(0) }}</h3>
+            <p class="summary-label">{{ text_unread_alerts }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-success">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ alerts_summary.read_alerts|default(0) }}</h3>
+            <p class="summary-label">{{ text_read_alerts }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-danger">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ alerts_summary.critical_alerts|default(0) }}</h3>
+            <p class="summary-label">{{ text_critical_alerts }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-warning">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ alerts_summary.high_alerts|default(0) }}</h3>
+            <p class="summary-label">{{ text_high_alerts }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-default">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ alerts_summary.dismissed_alerts|default(0) }}</h3>
+            <p class="summary-label">{{ text_dismissed_alerts }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- System Alerts (Real-time) -->
+    {% if system_alerts %}
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-exclamation-triangle"></i> {{ text_system_alerts }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          {% for alert in system_alerts %}
+          <div class="col-md-6 col-lg-4">
+            <div class="alert alert-{{ alert.color }} alert-dismissible">
+              <i class="fa {{ alert.icon }}"></i>
+              <strong>{{ alert.title }}</strong><br>
+              {{ alert.message }}
+              {% if alert.count is defined %}
+              <span class="badge">{{ alert.count }}</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- Filters -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ button_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-2">
+            <div class="form-group">
+              <label>{{ text_filter_type }}</label>
+              <select name="filter_type" id="filter-type" class="form-control">
+                <option value="">{{ text_all_types }}</option>
+                <option value="low_stock" {% if filter_type == 'low_stock' %}selected{% endif %}>{{ text_alert_type_low_stock }}</option>
+                <option value="overdue_payment" {% if filter_type == 'overdue_payment' %}selected{% endif %}>{{ text_alert_type_overdue_payment }}</option>
+                <option value="pending_order" {% if filter_type == 'pending_order' %}selected{% endif %}>{{ text_alert_type_pending_order }}</option>
+                <option value="goal_deadline" {% if filter_type == 'goal_deadline' %}selected{% endif %}>{{ text_alert_type_goal_deadline }}</option>
+                <option value="system_performance" {% if filter_type == 'system_performance' %}selected{% endif %}>{{ text_alert_type_system_performance }}</option>
+                <option value="custom" {% if filter_type == 'custom' %}selected{% endif %}>{{ text_alert_type_custom }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-md-2">
+            <div class="form-group">
+              <label>{{ text_filter_priority }}</label>
+              <select name="filter_priority" id="filter-priority" class="form-control">
+                <option value="">{{ text_all_priorities }}</option>
+                <option value="low" {% if filter_priority == 'low' %}selected{% endif %}>{{ text_priority_low }}</option>
+                <option value="medium" {% if filter_priority == 'medium' %}selected{% endif %}>{{ text_priority_medium }}</option>
+                <option value="high" {% if filter_priority == 'high' %}selected{% endif %}>{{ text_priority_high }}</option>
+                <option value="critical" {% if filter_priority == 'critical' %}selected{% endif %}>{{ text_priority_critical }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-md-2">
+            <div class="form-group">
+              <label>{{ text_filter_status }}</label>
+              <select name="filter_status" id="filter-status" class="form-control">
+                <option value="">{{ text_all_statuses }}</option>
+                <option value="unread" {% if filter_status == 'unread' %}selected{% endif %}>{{ text_status_unread }}</option>
+                <option value="read" {% if filter_status == 'read' %}selected{% endif %}>{{ text_status_read }}</option>
+                <option value="dismissed" {% if filter_status == 'dismissed' %}selected{% endif %}>{{ text_status_dismissed }}</option>
+                <option value="active" {% if filter_status == 'active' %}selected{% endif %}>{{ text_status_active }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-md-2">
+            <div class="form-group">
+              <label>{{ entry_date_from }}</label>
+              <input type="date" name="filter_date_from" id="filter-date-from" value="{{ filter_date_from }}" class="form-control">
+            </div>
+          </div>
+          
+          <div class="col-md-2">
+            <div class="form-group">
+              <label>{{ entry_date_to }}</label>
+              <input type="date" name="filter_date_to" id="filter-date-to" value="{{ filter_date_to }}" class="form-control">
+            </div>
+          </div>
+          
+          <div class="col-md-2">
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <div>
+                <button type="button" id="button-filter" class="btn btn-primary btn-block">{{ button_filter }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Alerts List -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="alerts-container">
+          {% for alert in alerts %}
+          <div class="alert-item {% if not alert.is_read %}unread{% endif %}" data-alert-id="{{ alert.alert_id }}">
+            <div class="alert-header">
+              <div class="alert-icon">
+                <i class="fa {{ alert.icon }} text-{{ alert.color }}"></i>
+              </div>
+              <div class="alert-meta">
+                <span class="alert-type">
+                  {% if alert.alert_type == 'low_stock' %}{{ text_alert_type_low_stock }}
+                  {% elseif alert.alert_type == 'overdue_payment' %}{{ text_alert_type_overdue_payment }}
+                  {% elseif alert.alert_type == 'pending_order' %}{{ text_alert_type_pending_order }}
+                  {% elseif alert.alert_type == 'goal_deadline' %}{{ text_alert_type_goal_deadline }}
+                  {% elseif alert.alert_type == 'system_performance' %}{{ text_alert_type_system_performance }}
+                  {% elseif alert.alert_type == 'custom' %}{{ text_alert_type_custom }}
+                  {% else %}{{ alert.alert_type }}
+                  {% endif %}
+                </span>
+                <span class="alert-priority priority-{{ alert.priority }}">
+                  {% if alert.priority == 'low' %}{{ text_priority_low }}
+                  {% elseif alert.priority == 'medium' %}{{ text_priority_medium }}
+                  {% elseif alert.priority == 'high' %}{{ text_priority_high }}
+                  {% elseif alert.priority == 'critical' %}{{ text_priority_critical }}
+                  {% endif %}
+                </span>
+                <span class="alert-time">{{ alert.time_ago }}</span>
+                {% if alert.is_new %}
+                <span class="badge badge-new">جديد</span>
+                {% endif %}
+              </div>
+              <div class="alert-actions">
+                {% if not alert.is_read %}
+                <button type="button" class="btn btn-xs btn-info" onclick="markAsRead({{ alert.alert_id }})" title="{{ button_mark_as_read }}">
+                  <i class="fa fa-check"></i>
+                </button>
+                {% endif %}
+                {% if not alert.is_dismissed %}
+                <button type="button" class="btn btn-xs btn-warning" onclick="dismissAlert({{ alert.alert_id }})" title="{{ button_dismiss }}">
+                  <i class="fa fa-times"></i>
+                </button>
+                {% endif %}
+              </div>
+            </div>
+            <div class="alert-content">
+              <h4 class="alert-title">{{ alert.title }}</h4>
+              <p class="alert-message">{{ alert.message }}</p>
+              {% if alert.created_firstname %}
+              <small class="text-muted">{{ column_created_by }}: {{ alert.created_firstname }} {{ alert.created_lastname }}</small>
+              {% endif %}
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center">
+            <i class="fa fa-bell-slash fa-3x text-muted"></i>
+            <p class="text-muted">{{ text_no_results }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="display: none;">
+      <div class="loading-content">
+        <i class="fa fa-spinner fa-spin fa-3x"></i>
+        <p>{{ text_loading }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Alert Modal -->
+<div class="modal fade" id="modal-create-alert" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ text_create_alert_modal }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-create-alert">
+          <div class="form-group">
+            <label for="alert-type">{{ entry_alert_type }}</label>
+            <select class="form-control" id="alert-type" name="alert_type" required>
+              <option value="custom">{{ text_alert_type_custom }}</option>
+              <option value="info">{{ text_alert_type_info }}</option>
+              <option value="warning">{{ text_alert_type_warning }}</option>
+              <option value="error">{{ text_alert_type_error }}</option>
+              <option value="success">{{ text_alert_type_success }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="alert-title">{{ entry_title }}</label>
+            <input type="text" class="form-control" id="alert-title" name="title" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="alert-message">{{ entry_message }}</label>
+            <textarea class="form-control" id="alert-message" name="message" rows="3" required></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="alert-priority">{{ entry_priority }}</label>
+            <select class="form-control" id="alert-priority" name="priority" required>
+              <option value="low">{{ text_priority_low }}</option>
+              <option value="medium" selected>{{ text_priority_medium }}</option>
+              <option value="high">{{ text_priority_high }}</option>
+              <option value="critical">{{ text_priority_critical }}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="alert-expires">{{ entry_expires_at }}</label>
+            <input type="datetime-local" class="form-control" id="alert-expires" name="expires_at">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="createAlert()">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.summary-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.summary-label {
+  font-size: 12px;
+  margin: 5px 0 0 0;
+  text-transform: uppercase;
+}
+
+.alert-item {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  padding: 15px;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+.alert-item.unread {
+  border-left: 4px solid #337ab7;
+  background: #f9f9f9;
+}
+
+.alert-item:hover {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.alert-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.alert-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.alert-meta {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alert-type {
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.alert-priority {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.priority-low { background: #5bc0de; }
+.priority-medium { background: #f0ad4e; }
+.priority-high { background: #d9534f; }
+.priority-critical { background: #d9534f; animation: blink 1s infinite; }
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.5; }
+}
+
+.alert-time {
+  color: #999;
+  font-size: 12px;
+}
+
+.badge-new {
+  background: #5cb85c;
+  color: white;
+  font-size: 10px;
+}
+
+.alert-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.alert-title {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.alert-message {
+  margin: 0 0 10px 0;
+  color: #666;
+}
+
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-content p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .alert-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .alert-meta {
+    margin: 5px 0;
+    flex-wrap: wrap;
+  }
+  
+  .alert-actions {
+    align-self: flex-end;
+  }
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Auto-refresh alerts every 60 seconds
+    setInterval(function() {
+        refreshAlerts();
+    }, 60000);
+    
+    // Filter functionality
+    $('#button-filter').on('click', function() {
+        applyFilters();
+    });
+    
+    // Auto-apply filters on change
+    $('#filter-type, #filter-priority, #filter-status, #filter-date-from, #filter-date-to').on('change', function() {
+        applyFilters();
+    });
+    
+    // Refresh button
+    $('#button-refresh').on('click', function() {
+        refreshAlerts();
+    });
+    
+    // Create alert button
+    $('#button-create-alert').on('click', function() {
+        $('#modal-create-alert').modal('show');
+    });
+    
+    // Mark all as read button
+    $('#button-mark-all-read').on('click', function() {
+        if (confirm('{{ text_confirm_mark_all_read }}')) {
+            markAllAsRead();
+        }
+    });
+});
+
+function applyFilters() {
+    var url = 'index.php?route=dashboard/alerts&user_token={{ user_token }}';
+    
+    var type = $('#filter-type').val();
+    var priority = $('#filter-priority').val();
+    var status = $('#filter-status').val();
+    var dateFrom = $('#filter-date-from').val();
+    var dateTo = $('#filter-date-to').val();
+    
+    if (type) url += '&filter_type=' + encodeURIComponent(type);
+    if (priority) url += '&filter_priority=' + encodeURIComponent(priority);
+    if (status) url += '&filter_status=' + encodeURIComponent(status);
+    if (dateFrom) url += '&filter_date_from=' + encodeURIComponent(dateFrom);
+    if (dateTo) url += '&filter_date_to=' + encodeURIComponent(dateTo);
+    
+    window.location = url;
+}
+
+function refreshAlerts() {
+    $('#loading-overlay').show();
+    
+    $.ajax({
+        url: 'index.php?route=dashboard/alerts/getAlertsData&user_token={{ user_token }}&ajax=1',
+        type: 'GET',
+        data: {
+            filter_type: $('#filter-type').val(),
+            filter_priority: $('#filter-priority').val(),
+            filter_status: $('#filter-status').val(),
+            filter_date_from: $('#filter-date-from').val(),
+            filter_date_to: $('#filter-date-to').val()
+        },
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                // Update summary cards
+                updateSummaryCards(json.summary);
+                
+                // Reload page to update alerts list
+                location.reload();
+            }
+            
+            $('#loading-overlay').hide();
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.error('Alerts refresh failed:', thrownError);
+            $('#loading-overlay').hide();
+        }
+    });
+}
+
+function updateSummaryCards(summary) {
+    $('#alerts-summary .summary-value').each(function(index) {
+        var value = 0;
+        switch(index) {
+            case 0: value = summary.total_alerts; break;
+            case 1: value = summary.unread_alerts; break;
+            case 2: value = summary.read_alerts; break;
+            case 3: value = summary.critical_alerts; break;
+            case 4: value = summary.high_alerts; break;
+            case 5: value = summary.dismissed_alerts; break;
+        }
+        $(this).text(value);
+    });
+}
+
+function markAsRead(alertId) {
+    $.ajax({
+        url: 'index.php?route=dashboard/alerts/markAsRead&user_token={{ user_token }}',
+        type: 'POST',
+        data: { alert_id: alertId },
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                $('[data-alert-id="' + alertId + '"]').removeClass('unread');
+                $('[data-alert-id="' + alertId + '"] .alert-actions .btn-info').remove();
+                
+                // Show success message
+                showMessage(json.success, 'success');
+            } else if (json.error) {
+                showMessage(json.error, 'error');
+            }
+        }
+    });
+}
+
+function markAllAsRead() {
+    $.ajax({
+        url: 'index.php?route=dashboard/alerts/markAllAsRead&user_token={{ user_token }}',
+        type: 'POST',
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                $('.alert-item').removeClass('unread');
+                $('.alert-actions .btn-info').remove();
+                
+                // Show success message
+                showMessage(json.success, 'success');
+                
+                // Refresh page after 1 second
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            } else if (json.error) {
+                showMessage(json.error, 'error');
+            }
+        }
+    });
+}
+
+function dismissAlert(alertId) {
+    if (confirm('{{ text_confirm_dismiss }}')) {
+        $.ajax({
+            url: 'index.php?route=dashboard/alerts/dismiss&user_token={{ user_token }}',
+            type: 'POST',
+            data: { alert_id: alertId },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    $('[data-alert-id="' + alertId + '"]').fadeOut();
+                    
+                    // Show success message
+                    showMessage(json.success, 'success');
+                } else if (json.error) {
+                    showMessage(json.error, 'error');
+                }
+            }
+        });
+    }
+}
+
+function createAlert() {
+    var formData = $('#form-create-alert').serialize();
+    
+    $.ajax({
+        url: 'index.php?route=dashboard/alerts/create&user_token={{ user_token }}',
+        type: 'POST',
+        data: formData,
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                $('#modal-create-alert').modal('hide');
+                $('#form-create-alert')[0].reset();
+                
+                // Show success message
+                showMessage(json.success, 'success');
+                
+                // Refresh the page
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            } else if (json.error) {
+                showMessage(json.error, 'error');
+            }
+        }
+    });
+}
+
+function showMessage(message, type) {
+    var alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible">' +
+        '<i class="fa ' + icon + '"></i> ' + message +
+        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+        '</div>';
+    
+    $(alertHtml).prependTo('#content .container-fluid').delay(3000).fadeOut();
+}
+</script>
+
+{{ footer }}

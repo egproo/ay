@@ -1,0 +1,607 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-complete-order" data-toggle="tooltip" title="{{ button_complete_order }}" class="btn btn-success"><i class="fa fa-check"></i> {{ button_complete_order }}</button>
+        <button type="button" id="button-clear-cart" data-toggle="tooltip" title="{{ button_clear_cart }}" class="btn btn-warning"><i class="fa fa-trash"></i> {{ button_clear_cart }}</button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- قسم البحث والباركود -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-barcode"></i> {{ text_scan_barcode }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label">{{ text_scan_barcode }}</label>
+              <div class="input-group">
+                <input type="text" id="input-barcode" class="form-control" placeholder="{{ text_barcode_placeholder }}" autofocus>
+                <span class="input-group-btn">
+                  <button type="button" id="button-scan" class="btn btn-primary"><i class="fa fa-search"></i></button>
+                </span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="control-label">{{ text_pricing_type }}</label>
+              <select id="input-pricing-type" class="form-control">
+                {% for key, value in pricing_types %}
+                <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="control-label">{{ text_search_products }}</label>
+              <div class="input-group">
+                <input type="text" id="input-product-search" class="form-control" placeholder="{{ text_product_search }}">
+                <span class="input-group-btn">
+                  <button type="button" id="button-product-search" class="btn btn-info"><i class="fa fa-search"></i></button>
+                </span>
+              </div>
+            </div>
+            
+            <!-- نتائج البحث -->
+            <div id="product-search-results" class="hidden">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td>{{ text_product_name }}</td>
+                      <td>{{ text_unit_price }}</td>
+                      <td>{{ text_available_stock }}</td>
+                      <td>{{ text_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody id="product-results-body">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- معلومات العميل -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-user"></i> {{ text_customer_info }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label">{{ text_customer_search }}</label>
+              <div class="input-group">
+                <input type="text" id="input-customer-search" class="form-control" placeholder="{{ text_customer_search }}">
+                <input type="hidden" id="input-customer-id" value="0">
+                <span class="input-group-btn">
+                  <button type="button" id="button-customer-search" class="btn btn-info"><i class="fa fa-search"></i></button>
+                </span>
+              </div>
+            </div>
+            
+            <div id="customer-info" class="hidden">
+              <div class="well well-sm">
+                <strong id="customer-name"></strong><br>
+                <span id="customer-phone"></span><br>
+                <span id="customer-email"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- معلومات الدفع والشحن -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-credit-card"></i> {{ text_payment_info }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="control-label">{{ text_payment_method }}</label>
+              <select id="input-payment-method" class="form-control">
+                {% for payment_method in payment_methods %}
+                <option value="{{ payment_method.code }}">{{ payment_method.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="control-label">{{ text_shipping_method }}</label>
+              <select id="input-shipping-method" class="form-control">
+                {% for shipping_method in shipping_methods %}
+                <option value="{{ shipping_method.code }}">{{ shipping_method.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="control-label">{{ text_notes }}</label>
+              <textarea id="input-notes" class="form-control" rows="3" placeholder="{{ text_special_instructions }}"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- قسم سلة الطلب -->
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-shopping-cart"></i> {{ text_order_cart }} <span id="cart-count" class="badge">0</span></h3>
+          </div>
+          <div class="panel-body">
+            <div id="order-cart-content">
+              <div class="text-center text-muted">
+                <i class="fa fa-shopping-cart fa-3x"></i>
+                <p>{{ text_empty_cart }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ملخص الطلب -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-calculator"></i> {{ text_order_summary }}</h3>
+          </div>
+          <div class="panel-body">
+            <div id="order-totals">
+              <table class="table">
+                <tr>
+                  <td class="text-right"><strong>{{ text_subtotal }}:</strong></td>
+                  <td class="text-right" id="subtotal-amount">0.00</td>
+                </tr>
+                <tr>
+                  <td class="text-right"><strong>{{ text_tax }}:</strong></td>
+                  <td class="text-right" id="tax-amount">0.00</td>
+                </tr>
+                <tr class="info">
+                  <td class="text-right"><strong>{{ text_total }}:</strong></td>
+                  <td class="text-right" id="total-amount"><strong>0.00</strong></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal للخيارات -->
+<div class="modal fade" id="modal-product-options" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">{{ text_select_options }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-product-options">
+          <input type="hidden" id="option-product-id" value="">
+          <div id="product-options-content">
+          </div>
+          <div class="form-group">
+            <label class="control-label">{{ text_quantity }}</label>
+            <input type="number" id="option-quantity" class="form-control" value="1" min="1">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" id="button-add-with-options" class="btn btn-primary">{{ button_add_product }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="hidden">
+  <div class="loading-content">
+    <i class="fa fa-spinner fa-spin fa-3x"></i>
+    <p>{{ text_processing }}</p>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // متغيرات عامة
+    var orderCart = [];
+    var currentCustomer = null;
+    
+    // تفعيل التلميحات
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // التركيز على حقل الباركود
+    $('#input-barcode').focus();
+    
+    // مسح الباركود
+    $('#input-barcode').on('keypress', function(e) {
+        if (e.which == 13) { // Enter key
+            scanBarcode();
+        }
+    });
+    
+    $('#button-scan').on('click', function() {
+        scanBarcode();
+    });
+    
+    function scanBarcode() {
+        var barcode = $('#input-barcode').val().trim();
+        var pricingType = $('#input-pricing-type').val();
+        var customerId = $('#input-customer-id').val();
+        
+        if (!barcode) {
+            alert('{{ error_barcode_required }}');
+            return;
+        }
+        
+        showLoading();
+        
+        $.ajax({
+            url: 'index.php?route=sale/order_processing/scanBarcode&user_token={{ user_token }}',
+            type: 'post',
+            data: {
+                barcode: barcode,
+                pricing_type: pricingType,
+                customer_id: customerId
+            },
+            dataType: 'json',
+            success: function(json) {
+                hideLoading();
+                
+                if (json['error']) {
+                    alert(json['error']);
+                } else if (json['requires_options']) {
+                    showProductOptions(json);
+                } else if (json['success']) {
+                    $('#input-barcode').val('').focus();
+                    updateOrderCart(json['order_data']);
+                    showSuccess(json['message']);
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoading();
+                alert('حدث خطأ: ' + thrownError);
+            }
+        });
+    }
+    
+    // البحث عن المنتجات
+    $('#button-product-search').on('click', function() {
+        searchProducts();
+    });
+    
+    $('#input-product-search').on('keypress', function(e) {
+        if (e.which == 13) {
+            searchProducts();
+        }
+    });
+    
+    function searchProducts() {
+        var query = $('#input-product-search').val().trim();
+        var pricingType = $('#input-pricing-type').val();
+        
+        if (!query) {
+            return;
+        }
+        
+        $.ajax({
+            url: 'index.php?route=sale/order_processing/searchProducts&user_token={{ user_token }}',
+            type: 'get',
+            data: {
+                query: query,
+                pricing_type: pricingType
+            },
+            dataType: 'json',
+            success: function(json) {
+                displaySearchResults(json);
+            }
+        });
+    }
+    
+    function displaySearchResults(products) {
+        var html = '';
+        
+        if (products.length > 0) {
+            $.each(products, function(index, product) {
+                html += '<tr>';
+                html += '<td>' + product.name + '</td>';
+                html += '<td>' + product.price + '</td>';
+                html += '<td>' + product.stock + '</td>';
+                html += '<td><button type="button" class="btn btn-sm btn-primary" onclick="addProductToCart(' + product.product_id + ')"><i class="fa fa-plus"></i></button></td>';
+                html += '</tr>';
+            });
+            
+            $('#product-results-body').html(html);
+            $('#product-search-results').removeClass('hidden');
+        } else {
+            $('#product-search-results').addClass('hidden');
+        }
+    }
+    
+    // إضافة منتج للسلة
+    window.addProductToCart = function(productId) {
+        // تنفيذ إضافة المنتج
+        console.log('Adding product:', productId);
+    };
+    
+    // عرض خيارات المنتج
+    function showProductOptions(productData) {
+        $('#option-product-id').val(productData.product_id);
+        
+        var html = '';
+        if (productData.options) {
+            $.each(productData.options, function(index, option) {
+                html += '<div class="form-group">';
+                html += '<label class="control-label">' + option.name + '</label>';
+                html += '<select name="option[' + option.option_id + ']" class="form-control">';
+                $.each(option.option_value, function(i, value) {
+                    html += '<option value="' + value.option_value_id + '">' + value.name + '</option>';
+                });
+                html += '</select>';
+                html += '</div>';
+            });
+        }
+        
+        if (productData.units) {
+            html += '<div class="form-group">';
+            html += '<label class="control-label">{{ text_unit }}</label>';
+            html += '<select name="unit_id" class="form-control">';
+            $.each(productData.units, function(index, unit) {
+                var selected = unit.unit_id == productData.default_unit_id ? 'selected' : '';
+                html += '<option value="' + unit.unit_id + '" ' + selected + '>' + unit.name + '</option>';
+            });
+            html += '</select>';
+            html += '</div>';
+        }
+        
+        $('#product-options-content').html(html);
+        $('#modal-product-options').modal('show');
+    }
+    
+    // إضافة منتج مع خيارات
+    $('#button-add-with-options').on('click', function() {
+        var formData = $('#form-product-options').serialize();
+        formData += '&product_id=' + $('#option-product-id').val();
+        formData += '&quantity=' + $('#option-quantity').val();
+        formData += '&pricing_type=' + $('#input-pricing-type').val();
+        formData += '&customer_id=' + $('#input-customer-id').val();
+        
+        showLoading();
+        
+        $.ajax({
+            url: 'index.php?route=sale/order_processing/addProductWithOptions&user_token={{ user_token }}',
+            type: 'post',
+            data: formData,
+            dataType: 'json',
+            success: function(json) {
+                hideLoading();
+                
+                if (json['error']) {
+                    alert(json['error']);
+                } else if (json['success']) {
+                    $('#modal-product-options').modal('hide');
+                    $('#input-barcode').val('').focus();
+                    updateOrderCart(json['order_data']);
+                    showSuccess(json['message']);
+                }
+            }
+        });
+    });
+    
+    // تحديث سلة الطلب
+    function updateOrderCart(orderData) {
+        if (!orderData || !orderData.products) {
+            return;
+        }
+        
+        var html = '';
+        
+        if (orderData.products.length > 0) {
+            html += '<div class="table-responsive">';
+            html += '<table class="table table-bordered">';
+            html += '<thead><tr><th>{{ text_product_name }}</th><th>{{ text_quantity }}</th><th>{{ text_unit_price }}</th><th>{{ text_total_price }}</th><th>{{ text_action }}</th></tr></thead>';
+            html += '<tbody>';
+            
+            $.each(orderData.products, function(index, product) {
+                html += '<tr>';
+                html += '<td>' + product.name;
+                if (product.option_text) {
+                    html += '<br><small class="text-muted">' + product.option_text + '</small>';
+                }
+                html += '</td>';
+                html += '<td><input type="number" class="form-control input-sm" value="' + product.quantity + '" min="1" onchange="updateQuantity(\'' + product.cart_key + '\', this.value)"></td>';
+                html += '<td>' + product.price + '</td>';
+                html += '<td>' + product.total + '</td>';
+                html += '<td><button type="button" class="btn btn-sm btn-danger" onclick="removeProduct(\'' + product.cart_key + '\')"><i class="fa fa-trash"></i></button></td>';
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+        } else {
+            html = '<div class="text-center text-muted"><i class="fa fa-shopping-cart fa-3x"></i><p>{{ text_empty_cart }}</p></div>';
+        }
+        
+        $('#order-cart-content').html(html);
+        $('#cart-count').text(orderData.product_count || 0);
+        
+        // تحديث الإجماليات
+        if (orderData.totals) {
+            $('#subtotal-amount').text(orderData.subtotal || '0.00');
+            $('#tax-amount').text(orderData.tax_total || '0.00');
+            $('#total-amount').text(orderData.total || '0.00');
+        }
+    }
+    
+    // تحديث الكمية
+    window.updateQuantity = function(cartKey, quantity) {
+        $.ajax({
+            url: 'index.php?route=sale/order_processing/updateQuantity&user_token={{ user_token }}',
+            type: 'post',
+            data: {
+                cart_key: cartKey,
+                quantity: quantity
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json['success']) {
+                    updateOrderCart(json['order_data']);
+                } else if (json['error']) {
+                    alert(json['error']);
+                }
+            }
+        });
+    };
+    
+    // إزالة منتج
+    window.removeProduct = function(cartKey) {
+        if (confirm('{{ text_confirm_remove }}')) {
+            $.ajax({
+                url: 'index.php?route=sale/order_processing/removeProduct&user_token={{ user_token }}',
+                type: 'post',
+                data: {
+                    cart_key: cartKey
+                },
+                dataType: 'json',
+                success: function(json) {
+                    if (json['success']) {
+                        updateOrderCart(json['order_data']);
+                        showSuccess(json['message']);
+                    } else if (json['error']) {
+                        alert(json['error']);
+                    }
+                }
+            });
+        }
+    };
+    
+    // مسح السلة
+    $('#button-clear-cart').on('click', function() {
+        if (confirm('{{ text_confirm_clear }}')) {
+            // تنفيذ مسح السلة
+        }
+    });
+    
+    // إنهاء الطلب
+    $('#button-complete-order').on('click', function() {
+        var customerId = $('#input-customer-id').val();
+        var paymentMethod = $('#input-payment-method').val();
+        var shippingMethod = $('#input-shipping-method').val();
+        var notes = $('#input-notes').val();
+        
+        if (!customerId || customerId == '0') {
+            alert('{{ error_customer_required }}');
+            return;
+        }
+        
+        if (confirm('{{ text_confirm_complete }}')) {
+            showLoading();
+            
+            $.ajax({
+                url: 'index.php?route=sale/order_processing/completeOrder&user_token={{ user_token }}',
+                type: 'post',
+                data: {
+                    customer_id: customerId,
+                    payment_method: paymentMethod,
+                    shipping_method: shippingMethod,
+                    notes: notes
+                },
+                dataType: 'json',
+                success: function(json) {
+                    hideLoading();
+                    
+                    if (json['error']) {
+                        alert(json['error']);
+                    } else if (json['success']) {
+                        alert(json['message']);
+                        if (json['redirect']) {
+                            window.location = json['redirect'];
+                        } else {
+                            location.reload();
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // وظائف مساعدة
+    function showLoading() {
+        $('#loading-overlay').removeClass('hidden');
+    }
+    
+    function hideLoading() {
+        $('#loading-overlay').addClass('hidden');
+    }
+    
+    function showSuccess(message) {
+        // يمكن تحسينها بإشعار أفضل
+        console.log('Success:', message);
+    }
+    
+    // تحميل بيانات السلة الحالية
+    loadCurrentCart();
+    
+    function loadCurrentCart() {
+        $.ajax({
+            url: 'index.php?route=sale/order_processing/getOrderCart&user_token={{ user_token }}',
+            type: 'get',
+            dataType: 'json',
+            success: function(json) {
+                if (json['order_data']) {
+                    updateOrderCart(json['order_data']);
+                }
+            }
+        });
+    }
+});
+</script>
+
+<style>
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+}
+
+#loading-overlay .loading-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.panel-hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.badge {
+    background-color: #d9534f;
+}
+
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
+</style>
+
+{{ footer }}

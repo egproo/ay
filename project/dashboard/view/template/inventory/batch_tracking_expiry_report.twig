@@ -1,0 +1,137 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_filter }}" onclick="$('#filter-expiry').toggleClass('d-none');" class="btn btn-light d-md-none d-lg-none"><i class="fas fa-filter"></i></button>
+        <a href="{{ export }}" data-bs-toggle="tooltip" title="{{ button_export }}" class="btn btn-success"><i class="fas fa-file-excel"></i></a>
+      </div>
+      <h1>{{ heading_expiry_report }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="row">
+      <div id="filter-expiry" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ button_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-product" class="form-label">{{ entry_product }}</label>
+              <input type="text" name="filter_product" value="{{ filter_product }}" placeholder="{{ entry_product }}" id="input-product" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-branch" class="form-label">{{ entry_branch }}</label>
+              <select name="filter_branch" id="input-branch" class="form-select">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == filter_branch %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="input-days" class="form-label">{{ entry_days }}</label>
+              <input type="number" name="filter_days" value="{{ filter_days }}" placeholder="{{ entry_days }}" id="input-days" class="form-control" min="1"/>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-primary"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-exclamation-triangle"></i> {{ heading_expiry_report }}</div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td class="text-start">{{ column_product }}</td>
+                    <td class="text-start">{{ column_batch_number }}</td>
+                    <td class="text-start">{{ column_branch }}</td>
+                    <td class="text-end">{{ column_quantity }}</td>
+                    <td class="text-start">{{ column_expiry_date }}</td>
+                    <td class="text-center">{{ column_days_remaining }}</td>
+                    <td class="text-end">{{ column_action }}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if products %}
+                    {% for product in products %}
+                      <tr>
+                        <td class="text-start">{{ product.product_name }}</td>
+                        <td class="text-start">{{ product.batch_number }}</td>
+                        <td class="text-start">{{ product.branch_name }}</td>
+                        <td class="text-end">{{ product.quantity }} {{ product.unit_name }}</td>
+                        <td class="text-start">{{ product.expiry_date }}</td>
+                        <td class="text-center">
+                          {% if product.days_remaining <= 0 %}
+                            <span class="badge bg-danger">{{ text_expired }}</span>
+                          {% elseif product.days_remaining <= 7 %}
+                            <span class="badge bg-danger">{{ product.days_remaining }} {{ text_days_remaining }}</span>
+                          {% elseif product.days_remaining <= 30 %}
+                            <span class="badge bg-warning text-dark">{{ product.days_remaining }} {{ text_days_remaining }}</span>
+                          {% else %}
+                            <span class="badge bg-info">{{ product.days_remaining }} {{ text_days_remaining }}</span>
+                          {% endif %}
+                        </td>
+                        <td class="text-end">
+                          <div class="btn-group">
+                            <a href="{{ product.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fas fa-pencil-alt"></i></a>
+                            <a href="{{ product.history }}" data-bs-toggle="tooltip" title="{{ button_history }}" class="btn btn-info"><i class="fas fa-history"></i></a>
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr>
+                      <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                    </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+	var url = 'index.php?route=inventory/batch_tracking/expiryReport&user_token={{ user_token }}';
+
+	var filter_product = $('#input-product').val();
+	if (filter_product) {
+		url += '&filter_product=' + encodeURIComponent(filter_product);
+	}
+
+	var filter_branch = $('#input-branch').val();
+	if (filter_branch) {
+		url += '&filter_branch=' + encodeURIComponent(filter_branch);
+	}
+
+	var filter_days = $('#input-days').val();
+	if (filter_days) {
+		url += '&filter_days=' + encodeURIComponent(filter_days);
+	}
+
+	location = url;
+});
+</script>
+{{ footer }}

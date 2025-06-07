@@ -1,0 +1,1515 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="btn-save-workflow" class="btn btn-primary" data-toggle="tooltip" title="{{ button_save }}">
+          <i class="fa fa-save"></i> {{ button_save }}
+        </button>
+        <button type="button" id="btn-test-workflow" class="btn btn-success" data-toggle="tooltip" title="اختبار سير العمل">
+          <i class="fa fa-play"></i> اختبار
+        </button>
+        <button type="button" id="btn-export-workflow" class="btn btn-info" data-toggle="tooltip" title="تصدير">
+          <i class="fa fa-download"></i> تصدير
+        </button>
+        <a href="{{ cancel_url }}" class="btn btn-default" data-toggle="tooltip" title="{{ button_cancel }}">
+          <i class="fa fa-reply"></i> {{ button_cancel }}
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- شريط الأدوات الجانبي -->
+      <div class="col-md-2" id="workflow-sidebar">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-puzzle-piece"></i> مكتبة العقد
+            </h3>
+          </div>
+          <div class="panel-body">
+            <!-- تبويبات مكتبة العقد -->
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#triggers-tab" role="tab" data-toggle="tab">
+                  <i class="fa fa-play"></i><br>محفزات
+                </a>
+              </li>
+              <li role="presentation">
+                <a href="#actions-tab" role="tab" data-toggle="tab">
+                  <i class="fa fa-cogs"></i><br>إجراءات
+                </a>
+              </li>
+              <li role="presentation">
+                <a href="#conditions-tab" role="tab" data-toggle="tab">
+                  <i class="fa fa-question"></i><br>شروط
+                </a>
+              </li>
+            </ul>
+
+            <!-- محتوى التبويبات -->
+            <div class="tab-content" style="margin-top: 15px;">
+              <!-- محفزات -->
+              <div role="tabpanel" class="tab-pane active" id="triggers-tab">
+                <div class="node-library-section">
+                  {% for trigger in node_library.triggers %}
+                  <div class="node-item"
+                       data-node-type="{{ trigger.type }}"
+                       data-node-category="trigger"
+                       data-node-config="{{ trigger.config_schema|json_encode }}"
+                       draggable="true">
+                    <div class="node-icon" style="background-color: {{ trigger.color }};">
+                      <i class="{{ trigger.icon }}"></i>
+                    </div>
+                    <div class="node-info">
+                      <div class="node-name">{{ trigger.name }}</div>
+                      <div class="node-description">{{ trigger.description }}</div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- إجراءات -->
+              <div role="tabpanel" class="tab-pane" id="actions-tab">
+                <div class="node-library-section">
+                  {% for action in node_library.actions %}
+                  <div class="node-item"
+                       data-node-type="{{ action.type }}"
+                       data-node-category="action"
+                       data-node-config="{{ action.config_schema|json_encode }}"
+                       draggable="true">
+                    <div class="node-icon" style="background-color: {{ action.color }};">
+                      <i class="{{ action.icon }}"></i>
+                    </div>
+                    <div class="node-info">
+                      <div class="node-name">{{ action.name }}</div>
+                      <div class="node-description">{{ action.description }}</div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <!-- شروط -->
+              <div role="tabpanel" class="tab-pane" id="conditions-tab">
+                <div class="node-library-section">
+                  {% for condition in node_library.conditions %}
+                  <div class="node-item"
+                       data-node-type="{{ condition.type }}"
+                       data-node-category="condition"
+                       data-node-config="{{ condition.config_schema|json_encode }}"
+                       draggable="true">
+                    <div class="node-icon" style="background-color: {{ condition.color }};">
+                      <i class="{{ condition.icon }}"></i>
+                    </div>
+                    <div class="node-info">
+                      <div class="node-name">{{ condition.name }}</div>
+                      <div class="node-description">{{ condition.description }}</div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- قوالب سير العمل -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-templates"></i> قوالب جاهزة
+            </h3>
+          </div>
+          <div class="panel-body">
+            {% for template in workflow_templates %}
+            <div class="template-item" data-template-id="{{ template.id }}">
+              <div class="template-preview">
+                <img src="{{ template.preview_image }}" alt="{{ template.name }}" class="img-responsive">
+              </div>
+              <div class="template-info">
+                <div class="template-name">{{ template.name }}</div>
+                <div class="template-description">{{ template.description }}</div>
+                <button type="button" class="btn btn-sm btn-primary btn-load-template">
+                  <i class="fa fa-download"></i> استخدام
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- منطقة المحرر الرئيسية -->
+      <div class="col-md-8" id="workflow-editor-area">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-md-6">
+                <h3 class="panel-title">
+                  <i class="fa fa-sitemap"></i> محرر سير العمل المرئي
+                </h3>
+              </div>
+              <div class="col-md-6 text-right">
+                <!-- أدوات التحكم -->
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-sm btn-default" id="btn-zoom-in" title="تكبير">
+                    <i class="fa fa-search-plus"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-default" id="btn-zoom-out" title="تصغير">
+                    <i class="fa fa-search-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-default" id="btn-zoom-fit" title="ملائمة الشاشة">
+                    <i class="fa fa-expand"></i>
+                  </button>
+                </div>
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-sm btn-default" id="btn-undo" title="تراجع">
+                    <i class="fa fa-undo"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-default" id="btn-redo" title="إعادة">
+                    <i class="fa fa-redo"></i>
+                  </button>
+                </div>
+                <div class="btn-group" role="group">
+                  <button type="button" class="btn btn-sm btn-default" id="btn-grid-toggle" title="إظهار/إخفاء الشبكة">
+                    <i class="fa fa-th"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-default" id="btn-minimap-toggle" title="الخريطة المصغرة">
+                    <i class="fa fa-map"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel-body" style="padding: 0; position: relative; height: 600px; overflow: hidden;">
+            <!-- منطقة الرسم -->
+            <div id="workflow-canvas" style="width: 100%; height: 100%; position: relative; background: #f8f9fa;">
+              <!-- الشبكة -->
+              <div id="workflow-grid" class="workflow-grid"></div>
+
+              <!-- منطقة العقد والروابط -->
+              <div id="workflow-nodes-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+
+              <!-- منطقة الروابط -->
+              <svg id="workflow-connections" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                <defs>
+                  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+                  </marker>
+                </defs>
+              </svg>
+
+              <!-- الخريطة المصغرة -->
+              <div id="workflow-minimap" style="position: absolute; bottom: 10px; right: 10px; width: 200px; height: 150px; background: rgba(255,255,255,0.9); border: 1px solid #ddd; display: none;">
+                <div id="minimap-viewport" style="position: absolute; border: 2px solid #007bff; background: rgba(0,123,255,0.1);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- لوحة الخصائص -->
+      <div class="col-md-2" id="workflow-properties">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-cog"></i> خصائص العقدة
+            </h3>
+          </div>
+          <div class="panel-body" id="node-properties-content">
+            <div class="text-center text-muted" style="padding: 20px;">
+              <i class="fa fa-mouse-pointer fa-2x"></i>
+              <p>اختر عقدة لعرض خصائصها</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- معلومات سير العمل -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="fa fa-info-circle"></i> معلومات سير العمل
+            </h3>
+          </div>
+          <div class="panel-body">
+            <form id="workflow-info-form">
+              <div class="form-group">
+                <label for="workflow-name">اسم سير العمل</label>
+                <input type="text" class="form-control" id="workflow-name" name="name" value="{{ workflow.name }}" required>
+              </div>
+              <div class="form-group">
+                <label for="workflow-description">الوصف</label>
+                <textarea class="form-control" id="workflow-description" name="description" rows="3">{{ workflow.description }}</textarea>
+              </div>
+              <div class="form-group">
+                <label for="workflow-type">نوع سير العمل</label>
+                <select class="form-control" id="workflow-type" name="workflow_type">
+                  <option value="manual" {% if workflow.workflow_type == 'manual' %}selected{% endif %}>يدوي</option>
+                  <option value="automatic" {% if workflow.workflow_type == 'automatic' %}selected{% endif %}>تلقائي</option>
+                  <option value="scheduled" {% if workflow.workflow_type == 'scheduled' %}selected{% endif %}>مجدول</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="workflow-status">الحالة</label>
+                <select class="form-control" id="workflow-status" name="status">
+                  <option value="draft" {% if workflow.status == 'draft' %}selected{% endif %}>مسودة</option>
+                  <option value="active" {% if workflow.status == 'active' %}selected{% endif %}>نشط</option>
+                  <option value="inactive" {% if workflow.status == 'inactive' %}selected{% endif %}>غير نشط</option>
+                </select>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة اختبار سير العمل -->
+<div class="modal fade" id="modal-test-workflow" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">
+          <i class="fa fa-play"></i> اختبار سير العمل
+        </h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h5>بيانات الاختبار</h5>
+            <div class="form-group">
+              <label>بيانات المحفز (JSON)</label>
+              <textarea class="form-control" id="test-trigger-data" rows="10" placeholder='{"key": "value"}'></textarea>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h5>نتائج التنفيذ</h5>
+            <div id="test-results" style="max-height: 300px; overflow-y: auto;">
+              <div class="text-center text-muted">
+                <i class="fa fa-play-circle fa-2x"></i>
+                <p>اضغط "تشغيل الاختبار" لبدء التنفيذ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" id="btn-run-test">
+          <i class="fa fa-play"></i> تشغيل الاختبار
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة تحميل قالب -->
+<div class="modal fade" id="modal-load-template" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">
+          <i class="fa fa-download"></i> تحميل قالب سير العمل
+        </h4>
+      </div>
+      <div class="modal-body">
+        <p>هل تريد تحميل هذا القالب؟ سيتم استبدال سير العمل الحالي.</p>
+        <div id="template-preview-info"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-confirm-load-template">
+          <i class="fa fa-check"></i> تحميل القالب
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="hidden" id="workflow-id" value="{{ workflow.workflow_id }}">
+<input type="hidden" id="user-token" value="{{ user_token }}">
+<input type="hidden" id="save-url" value="{{ save_url }}">
+<input type="hidden" id="test-url" value="{{ test_url }}">
+
+<style>
+/* أنماط المحرر المرئي */
+.workflow-grid {
+  background-image:
+    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+  background-size: 20px 20px;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+}
+
+.node-library-section {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.node-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: grab;
+  background: white;
+  transition: all 0.2s;
+}
+
+.node-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+}
+
+.node-item:active {
+  cursor: grabbing;
+}
+
+.node-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.node-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.node-name {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.node-description {
+  font-size: 10px;
+  color: #666;
+  line-height: 1.2;
+}
+
+.workflow-node {
+  position: absolute;
+  min-width: 150px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: move;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+
+.workflow-node:hover {
+  border-color: #007bff;
+  box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+}
+
+.workflow-node.selected {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+}
+
+.workflow-node .node-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.workflow-node .node-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+}
+
+.workflow-node .node-title {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.workflow-node .node-content {
+  font-size: 12px;
+  color: #666;
+}
+
+.node-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #007bff;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: crosshair;
+}
+
+.node-handle.input {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.node-handle.output {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.template-item {
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.template-preview img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+}
+
+.template-info {
+  padding: 8px;
+}
+
+.template-name {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.template-description {
+  font-size: 10px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+/* أنماط الاتصالات */
+.workflow-connection {
+  stroke: #666;
+  stroke-width: 2;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+
+.workflow-connection.selected {
+  stroke: #007bff;
+  stroke-width: 3;
+}
+
+.workflow-connection:hover {
+  stroke: #007bff;
+  stroke-width: 3;
+  cursor: pointer;
+}
+
+/* أنماط متجاوبة */
+@media (max-width: 768px) {
+  #workflow-sidebar,
+  #workflow-properties {
+    display: none;
+  }
+
+  #workflow-editor-area {
+    width: 100%;
+  }
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // متغيرات المحرر
+    let workflowData = {
+        workflow_id: $('#workflow-id').val(),
+        name: $('#workflow-name').val(),
+        description: $('#workflow-description').val(),
+        workflow_type: $('#workflow-type').val(),
+        status: $('#workflow-status').val(),
+        nodes: [],
+        connections: []
+    };
+
+    let selectedNode = null;
+    let selectedConnection = null;
+    let draggedNode = null;
+    let isConnecting = false;
+    let connectionStart = null;
+    let currentZoom = 1;
+    let panOffset = { x: 0, y: 0 };
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+
+    // تهيئة المحرر
+    initializeEditor();
+
+    function initializeEditor() {
+        setupDragAndDrop();
+        setupCanvasEvents();
+        setupToolbarEvents();
+        setupFormEvents();
+        loadExistingWorkflow();
+
+        // تفعيل الحفظ التلقائي
+        setInterval(autoSave, 30000); // كل 30 ثانية
+    }
+
+    // إعداد السحب والإفلات
+    function setupDragAndDrop() {
+        // السحب من مكتبة العقد
+        $('.node-item').on('dragstart', function(e) {
+            const nodeType = $(this).data('node-type');
+            const nodeCategory = $(this).data('node-category');
+            const nodeConfig = $(this).data('node-config');
+
+            e.originalEvent.dataTransfer.setData('text/plain', JSON.stringify({
+                type: nodeType,
+                category: nodeCategory,
+                config: nodeConfig
+            }));
+        });
+
+        // الإفلات في منطقة الرسم
+        $('#workflow-canvas').on('dragover', function(e) {
+            e.preventDefault();
+        });
+
+        $('#workflow-canvas').on('drop', function(e) {
+            e.preventDefault();
+
+            const data = JSON.parse(e.originalEvent.dataTransfer.getData('text/plain'));
+            const rect = this.getBoundingClientRect();
+            const x = (e.clientX - rect.left - panOffset.x) / currentZoom;
+            const y = (e.clientY - rect.top - panOffset.y) / currentZoom;
+
+            createNode(data, { x: x, y: y });
+        });
+    }
+
+    // إنشاء عقدة جديدة
+    function createNode(nodeData, position) {
+        const nodeId = 'node_' + Date.now();
+        const node = {
+            id: nodeId,
+            type: nodeData.type,
+            category: nodeData.category,
+            name: getNodeDisplayName(nodeData.type),
+            position: position,
+            config: {},
+            inputs: getNodeInputs(nodeData.type),
+            outputs: getNodeOutputs(nodeData.type)
+        };
+
+        workflowData.nodes.push(node);
+        renderNode(node);
+        selectNode(nodeId);
+    }
+
+    // رسم العقدة
+    function renderNode(node) {
+        const nodeElement = $(`
+            <div class="workflow-node" id="${node.id}"
+                 style="left: ${node.position.x}px; top: ${node.position.y}px;"
+                 data-node-id="${node.id}">
+                <div class="node-header">
+                    <div class="node-icon" style="background-color: ${getNodeColor(node.type)};">
+                        <i class="${getNodeIcon(node.type)}"></i>
+                    </div>
+                    <div class="node-title">${node.name}</div>
+                </div>
+                <div class="node-content">
+                    ${getNodeDescription(node.type)}
+                </div>
+                ${node.inputs.map(input => `
+                    <div class="node-handle input" data-handle="${input.name}" title="${input.label}"></div>
+                `).join('')}
+                ${node.outputs.map(output => `
+                    <div class="node-handle output" data-handle="${output.name}" title="${output.label}"></div>
+                `).join('')}
+            </div>
+        `);
+
+        $('#workflow-nodes-container').append(nodeElement);
+
+        // إعداد أحداث العقدة
+        setupNodeEvents(nodeElement, node);
+    }
+
+    // إعداد أحداث العقدة
+    function setupNodeEvents(nodeElement, node) {
+        // النقر لتحديد العقدة
+        nodeElement.on('click', function(e) {
+            e.stopPropagation();
+            selectNode(node.id);
+        });
+
+        // السحب لتحريك العقدة
+        nodeElement.on('mousedown', function(e) {
+            if (e.target.classList.contains('node-handle')) return;
+
+            isDragging = true;
+            draggedNode = node.id;
+            dragStart = {
+                x: e.clientX - node.position.x * currentZoom,
+                y: e.clientY - node.position.y * currentZoom
+            };
+
+            $(document).on('mousemove.nodedrag', function(e) {
+                if (isDragging && draggedNode === node.id) {
+                    const newX = (e.clientX - dragStart.x) / currentZoom;
+                    const newY = (e.clientY - dragStart.y) / currentZoom;
+
+                    node.position.x = newX;
+                    node.position.y = newY;
+
+                    nodeElement.css({
+                        left: newX + 'px',
+                        top: newY + 'px'
+                    });
+
+                    updateConnections();
+                }
+            });
+
+            $(document).on('mouseup.nodedrag', function() {
+                isDragging = false;
+                draggedNode = null;
+                $(document).off('.nodedrag');
+            });
+        });
+
+        // أحداث نقاط الاتصال
+        nodeElement.find('.node-handle').on('mousedown', function(e) {
+            e.stopPropagation();
+            startConnection(node.id, $(this).data('handle'), $(this).hasClass('output'));
+        });
+    }
+
+    // بدء إنشاء اتصال
+    function startConnection(nodeId, handleName, isOutput) {
+        if (!isOutput) return; // يمكن البدء فقط من المخرجات
+
+        isConnecting = true;
+        connectionStart = { nodeId: nodeId, handle: handleName };
+
+        $(document).on('mousemove.connection', function(e) {
+            if (isConnecting) {
+                drawTemporaryConnection(e);
+            }
+        });
+
+        $(document).on('mouseup.connection', function(e) {
+            finishConnection(e);
+        });
+    }
+
+    // رسم اتصال مؤقت
+    function drawTemporaryConnection(e) {
+        const startNode = getNodeById(connectionStart.nodeId);
+        const startElement = $(`#${connectionStart.nodeId}`);
+        const startHandle = startElement.find(`.node-handle.output[data-handle="${connectionStart.handle}"]`);
+
+        const startPos = getHandlePosition(startHandle);
+        const endPos = {
+            x: e.clientX - $('#workflow-canvas').offset().left,
+            y: e.clientY - $('#workflow-canvas').offset().top
+        };
+
+        // رسم خط مؤقت
+        $('#temp-connection').remove();
+        const tempLine = $(`
+            <line id="temp-connection"
+                  x1="${startPos.x}" y1="${startPos.y}"
+                  x2="${endPos.x}" y2="${endPos.y}"
+                  class="workflow-connection"
+                  style="stroke-dasharray: 5,5;" />
+        `);
+        $('#workflow-connections').append(tempLine);
+    }
+
+    // إنهاء الاتصال
+    function finishConnection(e) {
+        $('#temp-connection').remove();
+
+        const targetElement = $(e.target);
+        if (targetElement.hasClass('node-handle') && targetElement.hasClass('input')) {
+            const targetNodeId = targetElement.closest('.workflow-node').data('node-id');
+            const targetHandle = targetElement.data('handle');
+
+            createConnection(connectionStart.nodeId, connectionStart.handle, targetNodeId, targetHandle);
+        }
+
+        isConnecting = false;
+        connectionStart = null;
+        $(document).off('.connection');
+    }
+
+    // إنشاء اتصال
+    function createConnection(sourceNodeId, sourceHandle, targetNodeId, targetHandle) {
+        // التحقق من عدم وجود اتصال مكرر
+        const existingConnection = workflowData.connections.find(conn =>
+            conn.source === sourceNodeId && conn.sourceHandle === sourceHandle &&
+            conn.target === targetNodeId && conn.targetHandle === targetHandle
+        );
+
+        if (existingConnection) return;
+
+        const connection = {
+            id: 'conn_' + Date.now(),
+            source: sourceNodeId,
+            sourceHandle: sourceHandle,
+            target: targetNodeId,
+            targetHandle: targetHandle
+        };
+
+        workflowData.connections.push(connection);
+        renderConnection(connection);
+    }
+
+    // رسم الاتصال
+    function renderConnection(connection) {
+        const sourceElement = $(`#${connection.source}`);
+        const targetElement = $(`#${connection.target}`);
+
+        const sourceHandle = sourceElement.find(`.node-handle.output[data-handle="${connection.sourceHandle}"]`);
+        const targetHandle = targetElement.find(`.node-handle.input[data-handle="${connection.targetHandle}"]`);
+
+        const startPos = getHandlePosition(sourceHandle);
+        const endPos = getHandlePosition(targetHandle);
+
+        const connectionElement = $(`
+            <path id="${connection.id}"
+                  class="workflow-connection"
+                  data-connection-id="${connection.id}"
+                  d="M ${startPos.x} ${startPos.y} C ${startPos.x + 50} ${startPos.y} ${endPos.x - 50} ${endPos.y} ${endPos.x} ${endPos.y}" />
+        `);
+
+        $('#workflow-connections').append(connectionElement);
+
+        // إعداد أحداث الاتصال
+        connectionElement.on('click', function(e) {
+            e.stopPropagation();
+            selectConnection(connection.id);
+        });
+    }
+
+    // تحديث الاتصالات عند تحريك العقد
+    function updateConnections() {
+        workflowData.connections.forEach(connection => {
+            const connectionElement = $(`#${connection.id}`);
+            if (connectionElement.length) {
+                const sourceElement = $(`#${connection.source}`);
+                const targetElement = $(`#${connection.target}`);
+
+                const sourceHandle = sourceElement.find(`.node-handle.output[data-handle="${connection.sourceHandle}"]`);
+                const targetHandle = targetElement.find(`.node-handle.input[data-handle="${connection.targetHandle}"]`);
+
+                const startPos = getHandlePosition(sourceHandle);
+                const endPos = getHandlePosition(targetHandle);
+
+                const path = `M ${startPos.x} ${startPos.y} C ${startPos.x + 50} ${startPos.y} ${endPos.x - 50} ${endPos.y} ${endPos.x} ${endPos.y}`;
+                connectionElement.attr('d', path);
+            }
+        });
+    }
+
+    // الحصول على موقع نقطة الاتصال
+    function getHandlePosition(handleElement) {
+        const canvasOffset = $('#workflow-canvas').offset();
+        const handleOffset = handleElement.offset();
+
+        return {
+            x: handleOffset.left - canvasOffset.left + handleElement.width() / 2,
+            y: handleOffset.top - canvasOffset.top + handleElement.height() / 2
+        };
+    }
+
+    // تحديد عقدة
+    function selectNode(nodeId) {
+        // إلغاء التحديد السابق
+        $('.workflow-node').removeClass('selected');
+        $('.workflow-connection').removeClass('selected');
+
+        // تحديد العقدة الجديدة
+        $(`#${nodeId}`).addClass('selected');
+        selectedNode = nodeId;
+        selectedConnection = null;
+
+        // عرض خصائص العقدة
+        showNodeProperties(nodeId);
+    }
+
+    // تحديد اتصال
+    function selectConnection(connectionId) {
+        // إلغاء التحديد السابق
+        $('.workflow-node').removeClass('selected');
+        $('.workflow-connection').removeClass('selected');
+
+        // تحديد الاتصال الجديد
+        $(`#${connectionId}`).addClass('selected');
+        selectedConnection = connectionId;
+        selectedNode = null;
+
+        // عرض خصائص الاتصال
+        showConnectionProperties(connectionId);
+    }
+
+    // عرض خصائص العقدة
+    function showNodeProperties(nodeId) {
+        const node = getNodeById(nodeId);
+        if (!node) return;
+
+        const propertiesHtml = generateNodePropertiesForm(node);
+        $('#node-properties-content').html(propertiesHtml);
+
+        // إعداد أحداث النموذج
+        $('#node-properties-content').find('input, select, textarea').on('change', function() {
+            updateNodeProperty(nodeId, $(this).attr('name'), $(this).val());
+        });
+    }
+
+    // توليد نموذج خصائص العقدة
+    function generateNodePropertiesForm(node) {
+        let html = `
+            <h5>${node.name}</h5>
+            <div class="form-group">
+                <label>اسم العقدة</label>
+                <input type="text" class="form-control" name="name" value="${node.name}">
+            </div>
+        `;
+
+        // إضافة حقول التكوين حسب نوع العقدة
+        const configSchema = getNodeConfigSchema(node.type);
+        if (configSchema) {
+            Object.keys(configSchema).forEach(key => {
+                const field = configSchema[key];
+                html += generateFormField(key, field, node.config[key] || field.default || '');
+            });
+        }
+
+        html += `
+            <div class="form-group">
+                <button type="button" class="btn btn-danger btn-sm btn-delete-node">
+                    <i class="fa fa-trash"></i> حذف العقدة
+                </button>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // توليد حقل النموذج
+    function generateFormField(name, field, value) {
+        let html = `<div class="form-group">
+            <label>${field.label || name}</label>`;
+
+        switch (field.type) {
+            case 'text':
+            case 'email':
+            case 'url':
+                html += `<input type="${field.type}" class="form-control" name="${name}" value="${value}" ${field.required ? 'required' : ''}>`;
+                break;
+            case 'number':
+                html += `<input type="number" class="form-control" name="${name}" value="${value}" ${field.required ? 'required' : ''}>`;
+                break;
+            case 'textarea':
+                html += `<textarea class="form-control" name="${name}" rows="3" ${field.required ? 'required' : ''}>${value}</textarea>`;
+                break;
+            case 'select':
+                html += `<select class="form-control" name="${name}" ${field.required ? 'required' : ''}>`;
+                if (field.options) {
+                    field.options.forEach(option => {
+                        html += `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`;
+                    });
+                }
+                html += `</select>`;
+                break;
+            case 'checkbox':
+                html += `<div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="${name}" ${value ? 'checked' : ''}> ${field.label || name}
+                    </label>
+                </div>`;
+                break;
+        }
+
+        if (field.description) {
+            html += `<small class="help-block">${field.description}</small>`;
+        }
+
+        html += `</div>`;
+        return html;
+    }
+
+    // دوال مساعدة
+    function getNodeById(nodeId) {
+        return workflowData.nodes.find(node => node.id === nodeId);
+    }
+
+    function getConnectionById(connectionId) {
+        return workflowData.connections.find(conn => conn.id === connectionId);
+    }
+
+    function getNodeDisplayName(nodeType) {
+        const nodeLibrary = {{ node_library|json_encode|raw }};
+        for (let category in nodeLibrary) {
+            const node = nodeLibrary[category].find(n => n.type === nodeType);
+            if (node) return node.name;
+        }
+        return nodeType;
+    }
+
+    function getNodeColor(nodeType) {
+        const nodeLibrary = {{ node_library|json_encode|raw }};
+        for (let category in nodeLibrary) {
+            const node = nodeLibrary[category].find(n => n.type === nodeType);
+            if (node) return node.color || '#007bff';
+        }
+        return '#007bff';
+    }
+
+    function getNodeIcon(nodeType) {
+        const nodeLibrary = {{ node_library|json_encode|raw }};
+        for (let category in nodeLibrary) {
+            const node = nodeLibrary[category].find(n => n.type === nodeType);
+            if (node) return node.icon || 'fa-cog';
+        }
+        return 'fa-cog';
+    }
+
+    function getNodeDescription(nodeType) {
+        const nodeLibrary = {{ node_library|json_encode|raw }};
+        for (let category in nodeLibrary) {
+            const node = nodeLibrary[category].find(n => n.type === nodeType);
+            if (node) return node.description || '';
+        }
+        return '';
+    }
+
+    function getNodeConfigSchema(nodeType) {
+        const nodeLibrary = {{ node_library|json_encode|raw }};
+        for (let category in nodeLibrary) {
+            const node = nodeLibrary[category].find(n => n.type === nodeType);
+            if (node) return node.config_schema || {};
+        }
+        return {};
+    }
+
+    function getNodeInputs(nodeType) {
+        // تحديد المدخلات حسب نوع العقدة
+        if (nodeType.includes('trigger')) {
+            return [];
+        }
+        return [{ name: 'input', label: 'مدخل' }];
+    }
+
+    function getNodeOutputs(nodeType) {
+        // تحديد المخرجات حسب نوع العقدة
+        if (nodeType === 'if_condition') {
+            return [
+                { name: 'true', label: 'صحيح' },
+                { name: 'false', label: 'خطأ' }
+            ];
+        }
+        return [{ name: 'output', label: 'مخرج' }];
+    }
+
+    // إعداد أحداث شريط الأدوات
+    function setupToolbarEvents() {
+        // حفظ سير العمل
+        $('#btn-save-workflow').on('click', function() {
+            saveWorkflow();
+        });
+
+        // اختبار سير العمل
+        $('#btn-test-workflow').on('click', function() {
+            $('#modal-test-workflow').modal('show');
+        });
+
+        // تشغيل الاختبار
+        $('#btn-run-test').on('click', function() {
+            runWorkflowTest();
+        });
+
+        // تصدير سير العمل
+        $('#btn-export-workflow').on('click', function() {
+            exportWorkflow();
+        });
+
+        // أدوات التكبير والتصغير
+        $('#btn-zoom-in').on('click', function() {
+            zoomIn();
+        });
+
+        $('#btn-zoom-out').on('click', function() {
+            zoomOut();
+        });
+
+        $('#btn-zoom-fit').on('click', function() {
+            fitToScreen();
+        });
+
+        // التراجع والإعادة
+        $('#btn-undo').on('click', function() {
+            undo();
+        });
+
+        $('#btn-redo').on('click', function() {
+            redo();
+        });
+
+        // إظهار/إخفاء الشبكة
+        $('#btn-grid-toggle').on('click', function() {
+            toggleGrid();
+        });
+
+        // إظهار/إخفاء الخريطة المصغرة
+        $('#btn-minimap-toggle').on('click', function() {
+            toggleMinimap();
+        });
+    }
+
+    // إعداد أحداث منطقة الرسم
+    function setupCanvasEvents() {
+        // النقر في منطقة فارغة لإلغاء التحديد
+        $('#workflow-canvas').on('click', function(e) {
+            if (e.target === this) {
+                clearSelection();
+            }
+        });
+
+        // حذف العقدة أو الاتصال المحدد
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (selectedNode) {
+                    deleteNode(selectedNode);
+                } else if (selectedConnection) {
+                    deleteConnection(selectedConnection);
+                }
+            }
+        });
+
+        // نسخ ولصق العقد
+        $(document).on('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'c' && selectedNode) {
+                    copyNode(selectedNode);
+                    e.preventDefault();
+                } else if (e.key === 'v') {
+                    pasteNode();
+                    e.preventDefault();
+                } else if (e.key === 's') {
+                    saveWorkflow();
+                    e.preventDefault();
+                }
+            }
+        });
+    }
+
+    // إعداد أحداث النماذج
+    function setupFormEvents() {
+        // تحديث معلومات سير العمل
+        $('#workflow-info-form').find('input, select, textarea').on('change', function() {
+            const field = $(this).attr('name');
+            const value = $(this).val();
+            workflowData[field] = value;
+        });
+
+        // حذف العقدة
+        $(document).on('click', '.btn-delete-node', function() {
+            if (selectedNode) {
+                deleteNode(selectedNode);
+            }
+        });
+
+        // تحميل قالب
+        $(document).on('click', '.btn-load-template', function() {
+            const templateId = $(this).closest('.template-item').data('template-id');
+            loadTemplate(templateId);
+        });
+
+        // تأكيد تحميل القالب
+        $('#btn-confirm-load-template').on('click', function() {
+            confirmLoadTemplate();
+        });
+    }
+
+    // حفظ سير العمل
+    function saveWorkflow() {
+        // تحديث بيانات سير العمل من النموذج
+        workflowData.name = $('#workflow-name').val();
+        workflowData.description = $('#workflow-description').val();
+        workflowData.workflow_type = $('#workflow-type').val();
+        workflowData.status = $('#workflow-status').val();
+
+        // إرسال البيانات للخادم
+        $.ajax({
+            url: $('#save-url').val(),
+            type: 'POST',
+            data: workflowData,
+            dataType: 'json',
+            beforeSend: function() {
+                $('#btn-save-workflow').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> جاري الحفظ...');
+            },
+            success: function(response) {
+                if (response.success) {
+                    showNotification('success', response.success);
+                    if (response.workflow_id) {
+                        workflowData.workflow_id = response.workflow_id;
+                        $('#workflow-id').val(response.workflow_id);
+                    }
+                } else if (response.error) {
+                    showNotification('error', response.error);
+                }
+            },
+            error: function() {
+                showNotification('error', 'حدث خطأ أثناء الحفظ');
+            },
+            complete: function() {
+                $('#btn-save-workflow').prop('disabled', false).html('<i class="fa fa-save"></i> حفظ');
+            }
+        });
+    }
+
+    // الحفظ التلقائي
+    function autoSave() {
+        if (workflowData.nodes.length > 0) {
+            saveWorkflow();
+        }
+    }
+
+    // تشغيل اختبار سير العمل
+    function runWorkflowTest() {
+        const testData = $('#test-trigger-data').val();
+        let parsedTestData = {};
+
+        try {
+            if (testData.trim()) {
+                parsedTestData = JSON.parse(testData);
+            }
+        } catch (e) {
+            showNotification('error', 'بيانات الاختبار غير صحيحة (JSON غير صالح)');
+            return;
+        }
+
+        $.ajax({
+            url: $('#test-url').val(),
+            type: 'POST',
+            data: {
+                workflow_id: workflowData.workflow_id,
+                test_data: parsedTestData
+            },
+            dataType: 'json',
+            beforeSend: function() {
+                $('#btn-run-test').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> جاري التشغيل...');
+                $('#test-results').html('<div class="text-center"><i class="fa fa-spinner fa-spin fa-2x"></i><p>جاري تنفيذ سير العمل...</p></div>');
+            },
+            success: function(response) {
+                if (response.success) {
+                    displayTestResults(response.result);
+                } else if (response.error) {
+                    $('#test-results').html(`<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> ${response.error}</div>`);
+                }
+            },
+            error: function() {
+                $('#test-results').html('<div class="alert alert-danger"><i class="fa fa-exclamation-triangle"></i> حدث خطأ أثناء التنفيذ</div>');
+            },
+            complete: function() {
+                $('#btn-run-test').prop('disabled', false).html('<i class="fa fa-play"></i> تشغيل الاختبار');
+            }
+        });
+    }
+
+    // عرض نتائج الاختبار
+    function displayTestResults(result) {
+        let html = `
+            <div class="alert alert-success">
+                <i class="fa fa-check"></i> تم تنفيذ سير العمل بنجاح
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">تفاصيل التنفيذ</div>
+                <div class="panel-body">
+                    <p><strong>معرف التنفيذ:</strong> ${result.execution_id}</p>
+                    <p><strong>الحالة:</strong> ${result.status}</p>
+                    <p><strong>وقت البداية:</strong> ${result.started_at}</p>
+                    <p><strong>وقت الانتهاء:</strong> ${result.completed_at || 'لم ينته بعد'}</p>
+                </div>
+            </div>
+        `;
+
+        if (result.node_executions && result.node_executions.length > 0) {
+            html += `
+                <div class="panel panel-default">
+                    <div class="panel-heading">تنفيذ العقد</div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>العقدة</th>
+                                        <th>الحالة</th>
+                                        <th>وقت التنفيذ</th>
+                                        <th>النتيجة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            `;
+
+            result.node_executions.forEach(execution => {
+                const statusClass = execution.status === 'completed' ? 'success' :
+                                  execution.status === 'failed' ? 'danger' : 'warning';
+                html += `
+                    <tr>
+                        <td>${execution.node_id}</td>
+                        <td><span class="label label-${statusClass}">${execution.status}</span></td>
+                        <td>${execution.executed_at}</td>
+                        <td><small>${JSON.stringify(execution.execution_result || {}, null, 2)}</small></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        $('#test-results').html(html);
+    }
+
+    // تصدير سير العمل
+    function exportWorkflow() {
+        const exportData = {
+            workflow: workflowData,
+            export_date: new Date().toISOString(),
+            version: '1.0'
+        };
+
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `workflow_${workflowData.name || 'untitled'}_${Date.now()}.json`;
+        link.click();
+    }
+
+    // حذف عقدة
+    function deleteNode(nodeId) {
+        // حذف العقدة من البيانات
+        workflowData.nodes = workflowData.nodes.filter(node => node.id !== nodeId);
+
+        // حذف الاتصالات المرتبطة بالعقدة
+        workflowData.connections = workflowData.connections.filter(conn =>
+            conn.source !== nodeId && conn.target !== nodeId
+        );
+
+        // حذف العقدة من الواجهة
+        $(`#${nodeId}`).remove();
+
+        // حذف الاتصالات من الواجهة
+        $('.workflow-connection').each(function() {
+            const connectionId = $(this).data('connection-id');
+            const connection = getConnectionById(connectionId);
+            if (!connection) {
+                $(this).remove();
+            }
+        });
+
+        // إلغاء التحديد
+        clearSelection();
+    }
+
+    // حذف اتصال
+    function deleteConnection(connectionId) {
+        // حذف الاتصال من البيانات
+        workflowData.connections = workflowData.connections.filter(conn => conn.id !== connectionId);
+
+        // حذف الاتصال من الواجهة
+        $(`#${connectionId}`).remove();
+
+        // إلغاء التحديد
+        clearSelection();
+    }
+
+    // إلغاء التحديد
+    function clearSelection() {
+        $('.workflow-node').removeClass('selected');
+        $('.workflow-connection').removeClass('selected');
+        selectedNode = null;
+        selectedConnection = null;
+
+        // عرض الرسالة الافتراضية
+        $('#node-properties-content').html(`
+            <div class="text-center text-muted" style="padding: 20px;">
+                <i class="fa fa-mouse-pointer fa-2x"></i>
+                <p>اختر عقدة لعرض خصائصها</p>
+            </div>
+        `);
+    }
+
+    // تحديث خاصية العقدة
+    function updateNodeProperty(nodeId, property, value) {
+        const node = getNodeById(nodeId);
+        if (node) {
+            if (property === 'name') {
+                node.name = value;
+                // تحديث العرض
+                $(`#${nodeId} .node-title`).text(value);
+            } else {
+                node.config[property] = value;
+            }
+        }
+    }
+
+    // تحميل سير عمل موجود
+    function loadExistingWorkflow() {
+        if (workflowData.workflow_id && workflowData.workflow_id !== '0') {
+            // تحميل العقد والاتصالات من الخادم
+            // هذا سيتم تطويره لاحقاً
+        }
+    }
+
+    // أدوات التكبير والتصغير
+    function zoomIn() {
+        currentZoom = Math.min(currentZoom * 1.2, 2);
+        applyZoom();
+    }
+
+    function zoomOut() {
+        currentZoom = Math.max(currentZoom / 1.2, 0.25);
+        applyZoom();
+    }
+
+    function fitToScreen() {
+        currentZoom = 1;
+        panOffset = { x: 0, y: 0 };
+        applyZoom();
+    }
+
+    function applyZoom() {
+        $('#workflow-nodes-container').css('transform', `scale(${currentZoom}) translate(${panOffset.x}px, ${panOffset.y}px)`);
+        $('#workflow-connections').css('transform', `scale(${currentZoom}) translate(${panOffset.x}px, ${panOffset.y}px)`);
+    }
+
+    // إظهار/إخفاء الشبكة
+    function toggleGrid() {
+        $('#workflow-grid').toggle();
+        $('#btn-grid-toggle').toggleClass('active');
+    }
+
+    // إظهار/إخفاء الخريطة المصغرة
+    function toggleMinimap() {
+        $('#workflow-minimap').toggle();
+        $('#btn-minimap-toggle').toggleClass('active');
+    }
+
+    // التراجع والإعادة (سيتم تطويرها لاحقاً)
+    function undo() {
+        // تطوير لاحق
+        showNotification('info', 'ميزة التراجع قيد التطوير');
+    }
+
+    function redo() {
+        // تطوير لاحق
+        showNotification('info', 'ميزة الإعادة قيد التطوير');
+    }
+
+    // نسخ ولصق العقد (سيتم تطويرها لاحقاً)
+    let copiedNode = null;
+
+    function copyNode(nodeId) {
+        const node = getNodeById(nodeId);
+        if (node) {
+            copiedNode = JSON.parse(JSON.stringify(node));
+            showNotification('info', 'تم نسخ العقدة');
+        }
+    }
+
+    function pasteNode() {
+        if (copiedNode) {
+            const newNode = JSON.parse(JSON.stringify(copiedNode));
+            newNode.id = 'node_' + Date.now();
+            newNode.position.x += 50;
+            newNode.position.y += 50;
+
+            workflowData.nodes.push(newNode);
+            renderNode(newNode);
+            selectNode(newNode.id);
+
+            showNotification('success', 'تم لصق العقدة');
+        }
+    }
+
+    // تحميل قالب
+    function loadTemplate(templateId) {
+        $('#template-preview-info').html(`<p>جاري تحميل معلومات القالب...</p>`);
+        $('#modal-load-template').modal('show');
+
+        // هنا سيتم تحميل بيانات القالب من الخادم
+        // مؤقتاً سنعرض رسالة
+        $('#template-preview-info').html(`<p>القالب: ${templateId}</p>`);
+    }
+
+    function confirmLoadTemplate() {
+        // تطوير لاحق - تحميل القالب الفعلي
+        $('#modal-load-template').modal('hide');
+        showNotification('info', 'ميزة القوالب قيد التطوير');
+    }
+
+    // عرض الإشعارات
+    function showNotification(type, message) {
+        const alertClass = type === 'success' ? 'alert-success' :
+                          type === 'error' ? 'alert-danger' :
+                          type === 'warning' ? 'alert-warning' : 'alert-info';
+
+        const notification = $(`
+            <div class="alert ${alertClass} alert-dismissible" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                ${message}
+            </div>
+        `);
+
+        $('body').append(notification);
+
+        // إزالة الإشعار تلقائياً بعد 5 ثوان
+        setTimeout(function() {
+            notification.fadeOut(function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+});
+</script>
+
+{{ footer }}

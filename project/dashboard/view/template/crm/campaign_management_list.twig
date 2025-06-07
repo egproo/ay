@@ -1,0 +1,657 @@
+{{ header }}{{ column_left }}
+<div class="container-fluid">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary" onclick="location = '{{ add }}';"><i class="fa fa-plus"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_templates }}" class="btn btn-info" onclick="location = '{{ templates }}';"><i class="fa fa-file-text"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-success" onclick="exportData();"><i class="fa fa-download"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_analytics_overview }}" class="btn btn-warning" onclick="location = '{{ analytics_overview }}';"><i class="fa fa-bar-chart"></i></button>
+        <button type="button" data-toggle="tooltip" title="{{ button_bulk_actions }}" class="btn btn-default" onclick="showBulkActions();"><i class="fa fa-cogs"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <!-- إحصائيات سريعة -->
+  <div class="row">
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-bullhorn fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ statistics.total_campaigns }}</div>
+              <div>{{ text_total_campaigns }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_total_campaigns }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-green">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-play fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ statistics.active_campaigns }}</div>
+              <div>{{ text_active_campaigns }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_active_campaigns }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-yellow">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-money fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge-money">{{ statistics.total_budget }} {{ text_currency }}</div>
+              <div>{{ text_total_budget }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_total_budget }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+      <div class="panel panel-red">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-xs-3">
+              <i class="fa fa-line-chart fa-5x"></i>
+            </div>
+            <div class="col-xs-9 text-right">
+              <div class="huge">{{ statistics.avg_roi }}%</div>
+              <div>{{ text_avg_roi }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-footer">
+          <span class="pull-left">{{ text_avg_roi }}</span>
+          <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+          <div class="clearfix"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الرسوم البيانية -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_budget_vs_spent }}</h3>
+        </div>
+        <div class="panel-body">
+          <canvas id="budgetChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title"><i class="fa fa-line-chart"></i> {{ text_roi_comparison }}</h3>
+        </div>
+        <div class="panel-body">
+          <canvas id="roiChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+    </div>
+    <div class="panel-body">
+      <!-- فلاتر البحث -->
+      <div class="well">
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-name">{{ entry_filter_name }}</label>
+              <input type="text" name="filter_name" value="{{ filter_name }}" placeholder="{{ entry_filter_name }}" id="input-name" class="form-control" />
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-type">{{ entry_filter_type }}</label>
+              <select name="filter_type" id="input-type" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for key, value in campaign_types %}
+                <option value="{{ key }}"{% if filter_type == key %} selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-status">{{ entry_filter_status }}</label>
+              <select name="filter_status" id="input-status" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for key, value in campaign_statuses %}
+                <option value="{{ key }}"{% if filter_status == key %} selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-performance">{{ entry_filter_performance }}</label>
+              <select name="filter_performance" id="input-performance" class="form-control">
+                <option value="">{{ text_all }}</option>
+                {% for key, value in performance_levels %}
+                <option value="{{ key }}"{% if filter_performance == key %} selected="selected"{% endif %}>{{ value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label class="control-label" for="input-date-from">{{ entry_filter_date_from }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_filter_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label class="control-label" for="input-date-to">{{ entry_filter_date_to }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_filter_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <button type="button" id="button-filter" class="btn btn-primary"><i class="fa fa-search"></i> {{ button_filter }}</button>
+          <button type="button" id="button-clear" class="btn btn-default"><i class="fa fa-refresh"></i> {{ button_clear }}</button>
+        </div>
+      </div>
+
+      <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-campaign">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                <td class="text-left">{% if sort == 'name' %}<a href="{{ sort_name }}" class="{{ order|lower }}">{{ column_name }}</a>{% else %}<a href="{{ sort_name }}">{{ column_name }}</a>{% endif %}</td>
+                <td class="text-center">{{ column_type }}</td>
+                <td class="text-center">{{ column_status }}</td>
+                <td class="text-right">{{ column_budget }}</td>
+                <td class="text-right">{{ column_spent }}</td>
+                <td class="text-center">{{ column_budget_utilization }}</td>
+                <td class="text-center">{{ column_leads_generated }}</td>
+                <td class="text-center">{{ column_conversions }}</td>
+                <td class="text-center">{{ column_conversion_rate }}</td>
+                <td class="text-right">{{ column_roi }}</td>
+                <td class="text-center">{{ column_performance_score }}</td>
+                <td class="text-center">{{ column_start_date }}</td>
+                <td class="text-right">{{ column_action }}</td>
+              </tr>
+            </thead>
+            <tbody>
+              {% if campaigns %}
+              {% for campaign in campaigns %}
+              <tr>
+                <td class="text-center">{% if campaign.selected %}<input type="checkbox" name="selected[]" value="{{ campaign.campaign_id }}" checked="checked" />{% else %}<input type="checkbox" name="selected[]" value="{{ campaign.campaign_id }}" />{% endif %}</td>
+                <td class="text-left">
+                  <strong>{{ campaign.name }}</strong><br>
+                  <small class="text-muted">{{ campaign.description|slice(0, 50) }}{% if campaign.description|length > 50 %}...{% endif %}</small>
+                </td>
+                <td class="text-center">
+                  <span class="label label-primary">{{ campaign.type_text }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="label label-{{ campaign.status_class }}">{{ campaign.status_text }}</span>
+                </td>
+                <td class="text-right">
+                  <strong>{{ campaign.budget }} {{ text_currency }}</strong>
+                </td>
+                <td class="text-right">
+                  {{ campaign.spent }} {{ text_currency }}<br>
+                  <small class="text-muted">{{ text_remaining }}: {{ campaign.remaining_budget }} {{ text_currency }}</small>
+                </td>
+                <td class="text-center">
+                  <div class="progress" style="margin-bottom: 0;">
+                    <div class="progress-bar {% if campaign.budget_utilization > 90 %}progress-bar-danger{% elseif campaign.budget_utilization > 70 %}progress-bar-warning{% else %}progress-bar-success{% endif %}" role="progressbar" style="width: {{ campaign.budget_utilization }}%">
+                      {{ campaign.budget_utilization }}%
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge">{{ campaign.leads_generated }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-success">{{ campaign.conversions }}</span>
+                </td>
+                <td class="text-center">
+                  {% if campaign.conversion_rate > 0 %}
+                    <span class="label label-{% if campaign.conversion_rate > 10 %}success{% elseif campaign.conversion_rate > 5 %}warning{% else %}danger{% endif %}">{{ campaign.conversion_rate }}%</span>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="text-right">
+                  {% if campaign.roi != 0 %}
+                    <span class="text-{% if campaign.roi > 0 %}success{% else %}danger{% endif %}">
+                      {{ campaign.roi > 0 ? '+' : '' }}{{ campaign.roi }}%
+                    </span>
+                  {% else %}
+                    <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <span class="label label-{{ campaign.performance_class }}">{{ campaign.performance_score }}</span>
+                </td>
+                <td class="text-center">
+                  {{ campaign.start_date }}<br>
+                  <small class="text-muted">{{ campaign.end_date }}</small>
+                </td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">
+                      {{ button_action }} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="{{ campaign.view }}"><i class="fa fa-eye"></i> {{ button_view }}</a></li>
+                      <li><a href="{{ campaign.edit }}"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                      <li><a href="{{ campaign.duplicate }}"><i class="fa fa-copy"></i> {{ button_duplicate }}</a></li>
+                      <li><a href="{{ campaign.analytics }}"><i class="fa fa-bar-chart"></i> {{ button_analytics }}</a></li>
+                      <li><a href="{{ campaign.leads }}"><i class="fa fa-users"></i> {{ button_leads }}</a></li>
+                      <li class="divider"></li>
+                      {% if campaign.status == 'draft' %}
+                      <li><a href="javascript:void(0);" onclick="launchCampaign({{ campaign.campaign_id }});"><i class="fa fa-play"></i> {{ button_launch }}</a></li>
+                      {% elseif campaign.status == 'active' %}
+                      <li><a href="javascript:void(0);" onclick="pauseCampaign({{ campaign.campaign_id }});"><i class="fa fa-pause"></i> {{ button_pause }}</a></li>
+                      {% elseif campaign.status == 'paused' %}
+                      <li><a href="javascript:void(0);" onclick="resumeCampaign({{ campaign.campaign_id }});"><i class="fa fa-play"></i> {{ button_resume }}</a></li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td class="text-center" colspan="14">{{ text_no_campaigns }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+      
+      <div class="row">
+        <div class="col-sm-6 text-left">{{ pagination }}</div>
+        <div class="col-sm-6 text-right">{{ results }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal الإجراءات المجمعة -->
+<div class="modal fade" id="modal-bulk-actions" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        <h4 class="modal-title">{{ button_bulk_actions }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>{{ entry_bulk_action }}</label>
+          <select class="form-control" id="bulk-action">
+            <option value="">{{ text_select }}</option>
+            <option value="pause">{{ button_pause }}</option>
+            <option value="resume">{{ button_resume }}</option>
+            <option value="archive">{{ button_archive }}</option>
+            <option value="delete">{{ button_delete }}</option>
+          </select>
+        </div>
+        <div class="alert alert-info">
+          <i class="fa fa-info-circle"></i> {{ text_bulk_action_warning }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="executeBulkAction();">{{ button_execute }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+// فلترة البيانات
+$('#button-filter').on('click', function() {
+  var url = 'index.php?route=crm/campaign_management&user_token={{ user_token }}';
+  
+  var filter_name = $('input[name=\'filter_name\']').val();
+  if (filter_name) {
+    url += '&filter_name=' + encodeURIComponent(filter_name);
+  }
+  
+  var filter_type = $('select[name=\'filter_type\']').val();
+  if (filter_type) {
+    url += '&filter_type=' + encodeURIComponent(filter_type);
+  }
+  
+  var filter_status = $('select[name=\'filter_status\']').val();
+  if (filter_status) {
+    url += '&filter_status=' + encodeURIComponent(filter_status);
+  }
+  
+  var filter_performance = $('select[name=\'filter_performance\']').val();
+  if (filter_performance) {
+    url += '&filter_performance=' + encodeURIComponent(filter_performance);
+  }
+  
+  var filter_date_from = $('input[name=\'filter_date_from\']').val();
+  if (filter_date_from) {
+    url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+  }
+  
+  var filter_date_to = $('input[name=\'filter_date_to\']').val();
+  if (filter_date_to) {
+    url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+  }
+  
+  location = url;
+});
+
+// مسح الفلاتر
+$('#button-clear').on('click', function() {
+  location = 'index.php?route=crm/campaign_management&user_token={{ user_token }}';
+});
+
+// إطلاق الحملة
+function launchCampaign(campaign_id) {
+  if (confirm('{{ text_confirm_launch }}')) {
+    updateCampaignStatus(campaign_id, 'active');
+  }
+}
+
+// إيقاف الحملة
+function pauseCampaign(campaign_id) {
+  if (confirm('{{ text_confirm_pause }}')) {
+    updateCampaignStatus(campaign_id, 'paused');
+  }
+}
+
+// استئناف الحملة
+function resumeCampaign(campaign_id) {
+  updateCampaignStatus(campaign_id, 'active');
+}
+
+// تحديث حالة الحملة
+function updateCampaignStatus(campaign_id, status) {
+  $.ajax({
+    url: 'index.php?route=crm/campaign_management/updateStatus&user_token={{ user_token }}',
+    type: 'post',
+    data: {
+      campaign_id: campaign_id,
+      status: status
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('.btn').prop('disabled', true);
+    },
+    complete: function() {
+      $('.btn').prop('disabled', false);
+    },
+    success: function(json) {
+      if (json['success']) {
+        location.reload();
+      }
+      
+      if (json['error']) {
+        alert(json['error']);
+      }
+    }
+  });
+}
+
+// عرض الإجراءات المجمعة
+function showBulkActions() {
+  var selected = $('input[name*=\'selected\']:checked');
+  
+  if (selected.length) {
+    $('#modal-bulk-actions').modal('show');
+  } else {
+    alert('{{ text_select_campaigns }}');
+  }
+}
+
+// تنفيذ الإجراء المجمع
+function executeBulkAction() {
+  var selected = [];
+  $('input[name*=\'selected\']:checked').each(function() {
+    selected.push($(this).val());
+  });
+  
+  var action = $('#bulk-action').val();
+  
+  if (!action) {
+    alert('{{ text_select_action }}');
+    return;
+  }
+  
+  $.ajax({
+    url: 'index.php?route=crm/campaign_management/bulkAction&user_token={{ user_token }}',
+    type: 'post',
+    data: {
+      selected: selected,
+      action: action
+    },
+    dataType: 'json',
+    beforeSend: function() {
+      $('#modal-bulk-actions').modal('hide');
+      $('.btn').prop('disabled', true);
+    },
+    complete: function() {
+      $('.btn').prop('disabled', false);
+    },
+    success: function(json) {
+      if (json['success']) {
+        location.reload();
+      }
+      
+      if (json['error']) {
+        alert(json['error']);
+      }
+    }
+  });
+}
+
+// تصدير البيانات
+function exportData() {
+  var url = 'index.php?route=crm/campaign_management/export&user_token={{ user_token }}';
+  window.open(url, '_blank');
+}
+
+// تفعيل التلميحات
+$('[data-toggle="tooltip"]').tooltip();
+
+// تفعيل منتقي التاريخ
+$('.input-group.date').datetimepicker({
+  pickTime: false
+});
+
+// الرسوم البيانية
+$(document).ready(function() {
+  // رسم بياني للميزانية مقابل المصروف
+  var ctx1 = document.getElementById('budgetChart').getContext('2d');
+  var budgetChart = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: {{ charts.budget_vs_spent.labels|json_encode|raw }},
+      datasets: [{
+        label: '{{ text_budget }}',
+        data: {{ charts.budget_vs_spent.budget|json_encode|raw }},
+        backgroundColor: '#007bff'
+      }, {
+        label: '{{ text_spent }}',
+        data: {{ charts.budget_vs_spent.spent|json_encode|raw }},
+        backgroundColor: '#28a745'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // رسم بياني لمقارنة العائد على الاستثمار
+  var ctx2 = document.getElementById('roiChart').getContext('2d');
+  var roiChart = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: {{ charts.roi_comparison.labels|json_encode|raw }},
+      datasets: [{
+        label: '{{ text_roi }}',
+        data: {{ charts.roi_comparison.data|json_encode|raw }},
+        borderColor: '#dc3545',
+        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+        borderWidth: 2,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return value + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+});
+
+// تحديث الإحصائيات كل دقيقة
+setInterval(function() {
+  $.ajax({
+    url: 'index.php?route=crm/campaign_management/getStatistics&user_token={{ user_token }}',
+    type: 'get',
+    dataType: 'json',
+    success: function(json) {
+      if (json['statistics']) {
+        // تحديث الإحصائيات في الصفحة
+        $('.huge').each(function(index) {
+          var stat_keys = ['total_campaigns', 'active_campaigns', 'avg_roi'];
+          if (json['statistics'][stat_keys[index]]) {
+            $(this).text(json['statistics'][stat_keys[index]] + (index === 2 ? '%' : ''));
+          }
+        });
+        
+        if (json['statistics']['total_budget']) {
+          $('.huge-money').text(json['statistics']['total_budget'] + ' {{ text_currency }}');
+        }
+      }
+    }
+  });
+}, 60000);
+</script>
+
+<style>
+.huge {
+  font-size: 40px;
+}
+
+.huge-money {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.panel-green {
+  border-color: #5cb85c;
+}
+
+.panel-green > .panel-heading {
+  border-color: #5cb85c;
+  color: white;
+  background-color: #5cb85c;
+}
+
+.panel-yellow {
+  border-color: #f0ad4e;
+}
+
+.panel-yellow > .panel-heading {
+  border-color: #f0ad4e;
+  color: white;
+  background-color: #f0ad4e;
+}
+
+.panel-red {
+  border-color: #d9534f;
+}
+
+.panel-red > .panel-heading {
+  border-color: #d9534f;
+  color: white;
+  background-color: #d9534f;
+}
+
+.progress {
+  height: 20px;
+}
+
+.badge-success {
+  background-color: #5cb85c;
+}
+
+.label {
+  font-size: 11px;
+}
+</style>
+
+{{ footer }}

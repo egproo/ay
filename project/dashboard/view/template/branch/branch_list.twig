@@ -1,0 +1,117 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <button type="button" data-toggle="tooltip" title="{{ button_add }}" onclick="location.href='{{ add }}';" class="btn btn-primary"><i class="fa fa-plus"></i></button>
+                <button type="button" data-toggle="tooltip" title="{{ button_delete }}" onclick="confirm('{{ text_confirm }}') ? $('#form-branch').submit() : false;" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
+            </div>
+            <ul class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}        
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+            </div>
+            <div class="panel-body">
+                <div class="well">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label" for="input-name">{{ entry_name }}</label>
+                                <input type="text" name="filter_name" value="{{ filter_name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label class="control-label" for="input-type">{{ entry_type }}</label>
+                                <select name="filter_type" id="input-type" class="form-control">
+                                    <option value="">{{ text_all }}</option>
+                                    <option value="store" {% if filter_type == 'store' %} selected="selected"{% endif %}>{{ text_store }}</option>
+                                    <option value="warehouse" {% if filter_type == 'warehouse' %} selected="selected"{% endif %}>{{ text_warehouse }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="button" id="button-filter" class="btn btn-primary pull-right"><i class="fa fa-filter"></i> {{ button_filter }}</button>
+                        </div>
+                    </div>
+                </div>
+                <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-branch">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <td class="text-center" style="width: 1px;"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                                    <td class="text-left">{{ column_name }}</td>
+                                    <td class="text-left">{{ column_type }}</td>
+                                    <td class="text-left">{{ column_telephone }}</td>
+                                    <td class="text-left">{{ column_email }}</td>
+                                    <td class="text-left">{{ column_address }}</td>
+                                    <td class="text-left">{{ column_eta_branch_id }}</td>
+                                    <td class="text-right">{{ column_action }}</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if branches %}
+                                {% for branch in branches %}
+                                <tr>
+                                    <td class="text-center">{% if branch.branch_id in selected %}<input type="checkbox" name="selected[]" value="{{ branch.branch_id }}" checked="checked" />{% else %}<input type="checkbox" name="selected[]" value="{{ branch.branch_id }}" />{% endif %}</td>
+                                    <td class="text-left">{{ branch.name }}</td>
+                                    <td class="text-left">{{ branch.type }}</td>
+                                    <td class="text-left">{{ branch.telephone }}</td>
+                                    <td class="text-left">{{ branch.email }}</td>
+                                    <td class="text-left">{{ branch.address }}</td>
+                                    <td class="text-left">{{ branch.eta_branch_id }}</td>
+                                    <td class="text-right">
+                                        <a href="{{ branch.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fa fa-pencil"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td class="text-center" colspan="8">{{ text_no_results }} <br> {{text_go_setting}} <a href="{{setting}}" target="">{{text_setting}}</a></td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+                <div class="row">
+                    <div class="col-sm-6 text-left">{{ pagination }}</div>
+                    <div class="col-sm-6 text-right">{{ results }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+    url = 'index.php?route=branch/branch&user_token={{ user_token }}';
+
+    var filter_name = $('input[name=\'filter_name\']').val();
+
+    if (filter_name) {
+        url += '&filter_name=' + encodeURIComponent(filter_name);
+    }
+
+    var filter_type = $('select[name=\'filter_type\']').val();
+
+    if (filter_type) {
+        url += '&filter_type=' + encodeURIComponent(filter_type);
+    }
+
+    location = url;
+});
+</script>
+{{ footer }}

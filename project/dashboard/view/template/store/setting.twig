@@ -1,0 +1,61 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+  </div>
+  <div class="container-fluid">
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}    
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="panel panel-default">
+
+      <div class="panel-body">
+          <div class="table-responsive">
+          {% for extension in extensions %}      
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr style="background-color:#eee">
+                  <td class="text-center">{{ extension.name }}</td>
+                  <td class="text-center" style="width:100px"><a class="btn btn-primary" href="{{extension.add}}">{{button_add}} <i class="fa fa-plus-circle"></i></a></td>
+                </tr> 
+                <tr>
+                  <td class="text-center">{{ column_name }}</td>
+                  <td style="width:100px" class="text-center">{{ column_action }}</td>
+                </tr>
+              </thead>
+              <tbody>
+                  
+                {% for module in extension.modules %}
+                <tr>
+                  <td class="text-center">{{ module.name }}</td>
+                  <td class="text-center" style="width:100px">
+                    <a href="{{ module.edit }}" class="btn btn-info" title="{{ button_edit }}"><i class="fa fa-pencil"></i></a> 
+                    <a href="{{ module.delete }}" class="btn btn-danger" title="{{ button_delete }}"><i class="fa fa-trash-o"></i></a>
+                    
+                  </td>
+                </tr>
+                {% endfor %}
+                
+                
+                
+              </tbody>
+            </table>
+            
+            {% endfor %}
+            
+          </div>          
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+
+{{ footer }} 

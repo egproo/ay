@@ -1,0 +1,2667 @@
+{{ header }}{{ column_left }}
+<div id="content">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script type="text/javascript" src="view/javascript/inventory_manager.js"></script>
+  <div class="page-header">
+    <div class="container-fluid">
+      <!-- Área de notificación para mensajes de éxito/error -->
+      <div id="notification-area"></div>
+
+      <div class="pull-right">
+        <button type="submit" form="form-product" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- منطقة الإشعارات -->
+    <div id="notification-area"></div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-product" class="form-horizontal">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+            <li><a href="#tab-data" data-toggle="tab">{{ tab_data }}</a></li>
+            <li><a href="#tab-image" data-toggle="tab">{{ tab_image }}</a></li>
+            <li><a href="#tab-units" data-toggle="tab">{{ tab_units }}</a></li>
+            <li><a href="#tab-inventory" data-toggle="tab">{{ tab_inventory }}</a></li>
+            <li><a href="#tab-pricing" data-toggle="tab">{{ tab_pricing }}</a></li>
+            <li><a href="#tab-barcode" data-toggle="tab">{{ entry_barcode }}</a></li>
+            <li><a href="#tab-option" data-toggle="tab">{{ tab_option }}</a></li>
+            <li><a href="#tab-bundle" data-toggle="tab">{{ tab_bundle }}</a></li>
+            <li><a href="#tab-recommendation" data-toggle="tab">{{ tab_recommendation }}</a></li>
+            <li><a href="#tab-movement" data-toggle="tab">{{ tab_movement }}</a></li>
+            <li><a href="#tab-orders" data-toggle="tab">{{ tab_orders }}</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- علامة تبويب المعلومات العامة -->
+            <div class="tab-pane active" id="tab-general">
+              <ul class="nav nav-tabs" id="language">
+                {% for language in languages %}
+                <li{% if loop.first %} class="active"{% endif %}><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}" /> {{ language.name }}</a></li>
+                {% endfor %}
+              </ul>
+              <div class="tab-content">
+                {% for language in languages %}
+                <div class="tab-pane{% if loop.first %} active{% endif %}" id="language{{ language.language_id }}">
+                  <div class="form-group required">
+                    <label class="col-sm-2 control-label" for="input-name{{ language.language_id }}">{{ entry_name }}</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="product_description[{{ language.language_id }}][name]" value="{{ product_description[language.language_id] ? product_description[language.language_id].name }}" placeholder="{{ entry_name }}" id="input-name{{ language.language_id }}" class="form-control" />
+                      {% if error_name[language.language_id] %}
+                      <div class="text-danger">{{ error_name[language.language_id] }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="input-description{{ language.language_id }}">{{ entry_description }}</label>
+                    <div class="col-sm-10">
+                      <textarea name="product_description[{{ language.language_id }}][description]" placeholder="{{ entry_description }}" id="input-description{{ language.language_id }}" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].description }}</textarea>
+                    </div>
+                  </div>
+                  <div class="form-group required">
+                    <label class="col-sm-2 control-label" for="input-meta-title{{ language.language_id }}">{{ entry_meta_title }}</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="product_description[{{ language.language_id }}][meta_title]" value="{{ product_description[language.language_id] ? product_description[language.language_id].meta_title }}" placeholder="{{ entry_meta_title }}" id="input-meta-title{{ language.language_id }}" class="form-control" />
+                      {% if error_meta_title[language.language_id] %}
+                      <div class="text-danger">{{ error_meta_title[language.language_id] }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="input-meta-description{{ language.language_id }}">{{ entry_meta_description }}</label>
+                    <div class="col-sm-10">
+                      <textarea name="product_description[{{ language.language_id }}][meta_description]" rows="5" placeholder="{{ entry_meta_description }}" id="input-meta-description{{ language.language_id }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].meta_description }}</textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="input-meta-keyword{{ language.language_id }}">{{ entry_meta_keyword }}</label>
+                    <div class="col-sm-10">
+                      <textarea name="product_description[{{ language.language_id }}][meta_keyword]" rows="5" placeholder="{{ entry_meta_keyword }}" id="input-meta-keyword{{ language.language_id }}" class="form-control">{{ product_description[language.language_id] ? product_description[language.language_id].meta_keyword }}</textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="input-permalink{{ language.language_id }}"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"/> {{ text_seo_permalink }}</label>
+                    <div class="col-sm-10">
+                      <input type="text" name="product_seo_url[0][{{ language.language_id }}]" value="{% if product_seo_url[0][language.language_id] %}{{ product_seo_url[0][language.language_id] }}{% endif %}" placeholder="{{ entry_keyword }}" class="form-control"/>
+                      {% if error_keyword[0][language.language_id] %}
+                      <div class="text-danger">{{ error_keyword[0][language.language_id] }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <!-- قسم المساعدة -->
+              <div class="help-section panel panel-info" style="margin-top: 20px;">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_general_info_help }}</h3>
+                </div>
+                <div class="panel-body">
+                  <p>{{ text_general_help_intro }}</p>
+                  <ul>
+                    <li><strong>{{ text_product_name }}:</strong> {{ text_product_name_help }}</li>
+                    <li><strong>{{ text_product_description }}:</strong> {{ text_product_description_help }}</li>
+                    <li><strong>{{ text_meta_data }}:</strong> {{ text_meta_data_help }}</li>
+                    <li><strong>{{ text_seo_url }}:</strong> {{ text_seo_url_help }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب البيانات -->
+            <div class="tab-pane" id="tab-data">
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-manufacturer">{{ entry_manufacturer }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="manufacturer" value="{{ manufacturer }}" placeholder="{{ entry_manufacturer }}" id="input-manufacturer" class="form-control"/>
+                  <input type="hidden" name="manufacturer_id" value="{{ manufacturer_id }}"/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-category">{{ entry_category }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="category" value="" placeholder="{{ entry_category }}" id="input-category" class="form-control"/>
+                  <div class="well well-sm" style="height: 150px; overflow: auto;" id="product-category">
+                    {% for product_category in product_categories %}
+                      <div id="product-category{{ product_category.category_id }}">
+                        <i class="fa fa-minus-circle"></i> {{ product_category.name }}
+                        <input type="hidden" name="product_category[]" value="{{ product_category.category_id }}"/>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-filter">{{ entry_filter }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="filter" value="" placeholder="{{ entry_filter }}" id="input-filter" class="form-control"/>
+                  <div class="well well-sm" style="height: 150px; overflow: auto;" id="product-filter">
+                    {% for product_filter in product_filters %}
+                      <div id="product-filter{{ product_filter.filter_id }}">
+                        <i class="fa fa-minus-circle"></i> {{ product_filter.name }}
+                        <input type="hidden" name="product_filter[]" value="{{ product_filter.filter_id }}"/>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-related">{{ entry_related }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="related" value="" placeholder="{{ entry_related }}" id="input-related" class="form-control"/>
+                  <div class="well well-sm" style="height: 150px; overflow: auto;" id="product-related">
+                    {% for product_related in product_relateds %}
+                      <div id="product-related{{ product_related.product_id }}">
+                        <i class="fa fa-minus-circle"></i> {{ product_related.name }}
+                        <input type="hidden" name="product_related[]" value="{{ product_related.product_id }}"/>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-model">{{ entry_model }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="model" value="{{ model }}" placeholder="{{ entry_model }}" id="input-model" class="form-control" required />
+                  {% if error_model %}
+                  <div class="text-danger">{{ error_model }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-sku">{{ entry_sku }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="sku" value="{{ sku }}" placeholder="{{ entry_sku }}" id="input-sku" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-upc">{{ entry_upc }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="upc" value="{{ upc }}" placeholder="{{ entry_upc }}" id="input-upc" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-ean">{{ entry_ean }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="ean" value="{{ ean }}" placeholder="{{ entry_ean }}" id="input-ean" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-jan">{{ entry_jan }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="jan" value="{{ jan }}" placeholder="{{ entry_jan }}" id="input-jan" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-isbn">{{ entry_isbn }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="isbn" value="{{ isbn }}" placeholder="{{ entry_isbn }}" id="input-isbn" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-mpn">{{ entry_mpn }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="mpn" value="{{ mpn }}" placeholder="{{ entry_mpn }}" id="input-mpn" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-location">{{ entry_location }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="location" value="{{ location }}" placeholder="{{ entry_location }}" id="input-location" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-minimum">{{ entry_minimum }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="minimum" value="{{ minimum }}" placeholder="{{ entry_minimum }}" id="input-minimum" class="form-control" min="1" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-subtract">{{ entry_subtract }}</label>
+                <div class="col-sm-10">
+                  <select name="subtract" id="input-subtract" class="form-control">
+                    <option value="1"{% if subtract %} selected="selected"{% endif %}>{{ text_yes }}</option>
+                    <option value="0"{% if not subtract %} selected="selected"{% endif %}>{{ text_no }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-stock-status">{{ entry_stock_status }}</label>
+                <div class="col-sm-10">
+                  <select name="stock_status_id" id="input-stock-status" class="form-control">
+                    {% for stock_status in stock_statuses %}
+                    <option value="{{ stock_status.stock_status_id }}"{% if stock_status.stock_status_id == stock_status_id %} selected="selected"{% endif %}>{{ stock_status.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-date-available">{{ entry_date_available }}</label>
+                <div class="col-sm-10">
+                  <div class="input-group date">
+                    <input type="text" name="date_available" value="{{ date_available }}" placeholder="{{ entry_date_available }}" data-date-format="YYYY-MM-DD" id="input-date-available" class="form-control" />
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+                <div class="col-sm-10">
+                  <select name="status" id="input-status" class="form-control">
+                    <option value="1"{% if status %} selected="selected"{% endif %}>{{ text_enabled }}</option>
+                    <option value="0"{% if not status %} selected="selected"{% endif %}>{{ text_disabled }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-tax-class">{{ entry_tax_class }}</label>
+                <div class="col-sm-10">
+                  <select name="tax_class_id" id="input-tax-class" class="form-control">
+                    <option value="0">{{ text_none }}</option>
+                    {% for tax_class in tax_classes %}
+                    <option value="{{ tax_class.tax_class_id }}"{% if tax_class.tax_class_id == tax_class_id %} selected="selected"{% endif %}>{{ tax_class.title }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-sort-order">{{ entry_sort_order }}</label>
+                <div class="col-sm-10">
+                  <input type="number" name="sort_order" value="{{ sort_order }}" placeholder="{{ entry_sort_order }}" id="input-sort-order" class="form-control" />
+                </div>
+              </div>
+
+              <!-- مجموعة الأبعاد -->
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">{{ text_dimensions_weight }}</h3>
+                </div>
+                <div class="panel-body">
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="input-length">{{ entry_dimensions }}</label>
+                    <div class="col-sm-10">
+                      <div class="row">
+                        <div class="col-sm-4">
+                          <div class="input-group">
+                            <span class="input-group-addon">{{ text_length }}</span>
+                            <input type="number" name="length" value="{{ length }}" placeholder="{{ entry_length }}" id="input-length" class="form-control" step="0.01" min="0" />
+                          </div>
+                        </div>
+                        <div class="col-sm-4">
+                          <div class="input-group">
+                            <span class="input-group-addon">{{ text_width }}</span>
+                            <input type="number" name="width" value="{{ width }}" placeholder="{{ entry_width }}" id="input-width" class="form-control" step="0.01" min="0" />
+                          </div>
+                        </div>
+                        <div class="col-sm-4">
+                          <div class="input-group">
+                            <span class="input-group-addon">{{ text_height }}</span>
+                            <input type="number" name="height" value="{{ height }}" placeholder="{{ entry_height }}" id="input-height" class="form-control" step="0.01" min="0" />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row" style="margin-top: 10px;">
+                        <div class="col-sm-4">
+                          <select name="length_class_id" class="form-control">
+                            {% for length_class in length_classes %}
+                            <option value="{{ length_class.length_class_id }}"{% if length_class_id == length_class.length_class_id %} selected="selected"{% endif %}>{{ length_class.title }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-2 control-label" for="input-weight">{{ entry_weight }}</label>
+                    <div class="col-sm-4">
+                      <div class="input-group">
+                        <input type="number" name="weight" value="{{ weight }}" placeholder="{{ entry_weight }}" id="input-weight" class="form-control" step="0.01" min="0" />
+                        <span class="input-group-btn" style="width: 40%;">
+                          <select name="weight_class_id" class="form-control">
+                            {% for weight_class in weight_classes %}
+                            <option value="{{ weight_class.weight_class_id }}"{% if weight_class_id == weight_class.weight_class_id %} selected="selected"{% endif %}>{{ weight_class.title }}</option>
+                            {% endfor %}
+                          </select>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب الصور -->
+            <div class="tab-pane" id="tab-image">
+              <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td class="text-center">{{ entry_image }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-center"><a href="" data-toggle="image" class="img-thumbnail" id="thumb-image"><img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a><input type="hidden" name="image" value="{{ image }}" id="input-image"/></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover" id="images">
+                  <thead>
+                    <tr>
+                      <td class="text-center">{{ entry_additional_image }}</td>
+                      <td class="text-center">{{ entry_sort_order }}</td>
+                      <td></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% set image_row = 0 %}
+                    {% for product_image in product_images %}
+                      <tr id="image-row{{ image_row }}">
+                        <td class="text-center"><a href="" data-toggle="image" class="img-thumbnail" id="thumb-image{{ image_row }}"><img src="{{ product_image.thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a>
+                          <input type="hidden" name="product_image[{{ image_row }}][image]" value="{{ product_image.image }}" id="input-image{{ image_row }}"/></td>
+                        <td class="text-center"><input type="text" name="product_image[{{ image_row }}][sort_order]" value="{{ product_image.sort_order }}" placeholder="{{ entry_sort_order }}" class="form-control"/></td>
+                        <td class="text-center"><button type="button" onclick="$('#image-row{{ image_row }}').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td>
+                      </tr>
+                      {% set image_row = image_row + 1 %}
+                    {% endfor %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="2"></td>
+                      <td class="text-center"><button type="button" onclick="addImage();" data-toggle="tooltip" title="{{ button_image_add }}" class="btn btn-primary"><i class="fa fa-plus-circle"></i></button></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <!-- قسم المساعدة -->
+              <div class="help-section panel panel-info" style="margin-top: 20px;">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_images_help }}</h3>
+                </div>
+                <div class="panel-body">
+                  <p>{{ text_images_help_intro }}</p>
+                  <ul>
+                    <li><strong>{{ text_main_image }}:</strong> {{ text_main_image_details }}</li>
+                    <li><strong>{{ text_additional_images }}:</strong> {{ text_additional_images_details }}</li>
+                    <li><strong>{{ text_sort_order }}:</strong> {{ text_sort_order_details }}</li>
+                  </ul>
+                  <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i> {{ text_images_help_tip }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب الوحدات -->
+            <div class="tab-pane" id="tab-units">
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_units_info }}
+              </div>
+
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-cubes"></i> {{ text_units_list }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="table-responsive">
+                        <table id="product-units" class="table table-striped table-bordered table-hover">
+                          <thead>
+                            <tr>
+                              <th class="text-center">{{ entry_unit }}</th>
+                              <th class="text-center">{{ entry_unit_type }}</th>
+                              <th class="text-center">{{ entry_conversion_factor }}</th>
+                              <th class="text-center" width="100">{{ entry_action }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- JavaScript سيملأ هذا -->
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colspan="3"></td>
+                              <td class="text-center">
+                                <button type="button" id="add-unit" class="btn btn-primary">
+                                  <i class="fa fa-plus-circle"></i> {{ button_unit_add }}
+                                </button>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_unit_conversion_info }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="unit-conversion-diagram">
+                        <div id="base-unit-visual" class="base-unit-box">
+                          <h4>{{ text_base_unit }}</h4>
+                          <div id="base-unit-name"></div>
+                        </div>
+
+                        <div id="additional-units-container">
+                          <!-- سيتم إضافة الوحدات الإضافية هنا -->
+                        </div>
+                      </div>
+
+                      <div class="unit-converter">
+                        <h4><i class="fa fa-exchange"></i> {{ text_unit_converter }}</h4>
+                        <div class="row">
+                          <div class="col-sm-5">
+                            <div class="form-group">
+                              <select id="from-unit" class="form-control">
+                                <option value="">{{ text_select_unit }}</option>
+                              </select>
+                              <input type="number" id="from-quantity" class="form-control" value="1" min="0.0001" step="0.0001">
+                            </div>
+                          </div>
+                          <div class="col-sm-2 text-center" style="padding-top: 30px;">
+                            <i class="fa fa-arrow-right fa-2x"></i>
+                          </div>
+                          <div class="col-sm-5">
+                            <div class="form-group">
+                              <select id="to-unit" class="form-control">
+                                <option value="">{{ text_select_unit }}</option>
+                              </select>
+                              <div id="conversion-result" class="well well-sm text-center">
+                                {{ text_conversion_result }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب المخزون -->
+            <div class="tab-pane" id="tab-inventory">
+              <!-- نافذة تعديل المخزون المحسنة -->
+              <div class="modal fade" id="adjustment-modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title" id="adjustment-title"><i class="fa fa-balance-scale"></i> {{ text_inventory_adjustment }}</h4>
+                    </div>
+                    <div class="modal-body">
+                      <input type="hidden" id="adjustment-branch-id">
+                      <input type="hidden" id="adjustment-unit-id">
+                      <input type="hidden" id="adjustment-type">
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_adjustment_details }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <!-- تحسين قسم معلومات الحركة -->
+                              <div class="form-group">
+                                <label for="adjustment-movement-type" class="control-label">{{ entry_movement_type }}</label>
+                                <select id="adjustment-movement-type" class="form-control" onchange="InventoryManager.updateAdjustmentView()">
+                                  <option value="increase">{{ text_add_stock }}</option>
+                                  <option value="decrease">{{ text_remove_stock }}</option>
+                                  <option value="count">{{ text_stock_count }}</option>
+                                </select>
+                              </div>
+
+                              <div class="form-group">
+                                <label for="adjustment-branch" class="control-label">{{ entry_branch }}</label>
+                                <select id="adjustment-branch" class="form-control" onchange="InventoryManager.updateBranchInventory()">
+                                  {% for branch in branches %}
+                                    <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+
+                              <div class="form-group">
+                                <label for="adjustment-unit" class="control-label">{{ entry_unit }}</label>
+                                <select id="adjustment-unit" class="form-control" onchange="InventoryManager.updateUnitInventory()">
+                                  <!-- سيتم تحميل الوحدات عبر JavaScript -->
+                                </select>
+                              </div>
+
+                              <div class="form-group required">
+                                <label for="adjustment-quantity" class="control-label">{{ entry_quantity }}</label>
+                                <div class="input-group">
+                                  <input type="number" id="adjustment-quantity" class="form-control" min="0.0001" step="0.0001" required>
+                                  <span class="input-group-addon" id="adjustment-unit-name">وحدة</span>
+                                </div>
+                              </div>
+
+                              <!-- إضافة حقل التكلفة المباشرة للإضافات -->
+                              <div class="form-group" id="direct-cost-container">
+                                <label for="adjustment-direct-cost" class="control-label">{{ entry_direct_cost }}</label>
+                                <div class="input-group">
+                                  <input type="number" id="adjustment-direct-cost" class="form-control" min="0" step="0.0001">
+                                  <span class="input-group-addon">{{ currency_symbol }}</span>
+                                </div>
+                                <span class="help-block">{{ help_direct_cost }}</span>
+                              </div>
+
+                              <div class="form-group required">
+                                <label for="adjustment-reason" class="control-label">{{ entry_reason }}</label>
+                                <select id="adjustment-reason" class="form-control" onchange="InventoryManager.toggleCustomReason()">
+                                  <option value="stock_count">{{ text_reason_stock_count }}</option>
+                                  <option value="damaged">{{ text_reason_damaged }}</option>
+                                  <option value="expired">{{ text_reason_expired }}</option>
+                                  <option value="correction">{{ text_reason_correction }}</option>
+                                  <option value="production">{{ text_reason_production }}</option>
+                                  <option value="initial">{{ text_reason_initial_stock }}</option>
+                                  <option value="other">{{ text_reason_other }}</option>
+                                </select>
+                              </div>
+
+                              <div class="form-group" id="custom-reason-container" style="display:none;">
+                                <label for="adjustment-custom-reason" class="control-label">{{ entry_custom_reason }}</label>
+                                <input type="text" id="adjustment-custom-reason" class="form-control">
+                              </div>
+
+                              <div class="form-group required">
+                                <label for="adjustment-notes" class="control-label">{{ entry_notes }}</label>
+                                <textarea id="adjustment-notes" class="form-control" rows="2"></textarea>
+                              </div>
+
+                              <div class="form-group">
+                                <label for="adjustment-reference" class="control-label">{{ entry_document_reference }}</label>
+                                <input type="text" id="adjustment-reference" class="form-control" placeholder="{{ text_optional }}">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="panel panel-info">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_financial_impact }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <div class="inventory-summary">
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_branch }}:</strong></div>
+                                  <div class="col-xs-6"><span id="current-branch">-</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_unit }}:</strong></div>
+                                  <div class="col-xs-6"><span id="current-unit">-</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_current_quantity }}:</strong></div>
+                                  <div class="col-xs-6"><span id="current-quantity">0</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_current_cost }}:</strong></div>
+                                  <div class="col-xs-6"><span id="current-cost">0.00</span></div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_new_quantity }}:</strong></div>
+                                  <div class="col-xs-6"><span id="new-quantity" class="text-primary">0</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_new_cost }}:</strong></div>
+                                  <div class="col-xs-6"><span id="new-cost" class="text-primary">0.00</span></div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_quantity_change }}:</strong></div>
+                                  <div class="col-xs-6"><span id="quantity-change">0.00</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_stock_value_change }}:</strong></div>
+                                  <div class="col-xs-6"><span id="value-change" class="text-danger">0.00</span></div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                  <div class="col-xs-12">
+                                    <div class="accounting-impact">
+                                      <h5>{{ text_gl_account_impact }}</h5>
+                                      <div id="gl-accounts-preview">
+                                        <div>{{ text_inventory_account }}: <span id="inventory-account-amount">0.00</span></div>
+                                        <div id="contra-account-row">{{ text_contra_account }}: <span id="contra-account-amount">0.00</span></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="alert alert-warning" id="adjustment-warnings" style="display:none;"></div>
+                            </div>
+                          </div>
+
+                          <!-- إضافة قسم المعاينة المحاسبية -->
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_preview_journal_entry }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <div class="table-responsive">
+                                <table class="table table-condensed table-striped" id="journal-preview">
+                                  <thead>
+                                    <tr>
+                                      <th>{{ text_account }}</th>
+                                      <th class="text-right">{{ text_debit }}</th>
+                                      <th class="text-right">{{ text_credit }}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <!-- سيتم تحميل القيود المحاسبية المتوقعة هنا -->
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <div class="row">
+                        <div class="col-xs-7 text-left">
+                          <div class="checkbox">
+                            <label>
+                              <input type="checkbox" id="adjustment-confirmation" required>
+                              {{ text_confirm_adjustment }}
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-xs-5">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+                          <button type="button" class="btn btn-primary" id="save-adjustment" disabled>{{ button_save }}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- نافذة تعديل التكلفة المُحسّنة -->
+              <div class="modal fade" id="cost-modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title"><i class="fa fa-money"></i> {{ text_edit_cost }}</h4>
+                    </div>
+                    <div class="modal-body">
+                      <input type="hidden" id="cost-branch-id">
+                      <input type="hidden" id="cost-unit-id">
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_cost_details }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <div class="form-group">
+                                <label for="current-cost-display" class="control-label">{{ text_current_cost }}</label>
+                                <div class="input-group">
+                                  <input type="text" id="current-cost-display" class="form-control" readonly>
+                                  <span class="input-group-addon" id="cost-currency">{{ currency_symbol }}</span>
+                                </div>
+                              </div>
+
+                              <div class="form-group required">
+                                <label for="new-cost" class="control-label">{{ text_new_cost }}</label>
+                                <div class="input-group">
+                                  <input type="number" id="new-cost" class="form-control" min="0" step="0.0001" required>
+                                  <span class="input-group-addon" id="cost-currency">{{ currency_symbol }}</span>
+                                </div>
+                              </div>
+
+                              <div class="form-group required">
+                                <label for="cost-reason-type" class="control-label">{{ text_cost_change_reason }}</label>
+                                <select id="cost-reason-type" class="form-control" onchange="InventoryManager.updateCostReasonField()">
+                                  <option value="market">{{ text_market_price_change }}</option>
+                                  <option value="supplier">{{ text_supplier_price_change }}</option>
+                                  <option value="correction">{{ text_data_correction }}</option>
+                                  <option value="other">{{ text_other_reason }}</option>
+                                </select>
+                              </div>
+
+                              <div class="form-group" id="cost-reason-container" style="display:none;">
+                                <label for="cost-reason-custom" class="control-label">{{ text_custom_reason }}</label>
+                                <input type="text" id="cost-reason-custom" class="form-control">
+                              </div>
+
+                              <div class="form-group required">
+                                <label for="cost-notes" class="control-label">{{ text_detailed_notes }}</label>
+                                <textarea id="cost-notes" class="form-control" rows="2"></textarea>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="panel panel-info">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_financial_impact }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <div class="cost-summary">
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_branch }}:</strong></div>
+                                  <div class="col-xs-6"><span id="cost-branch-name">-</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_unit }}:</strong></div>
+                                  <div class="col-xs-6"><span id="cost-unit-name">-</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_quantity_on_hand }}:</strong></div>
+                                  <div class="col-xs-6"><span id="cost-quantity">0</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_current_total_value }}:</strong></div>
+                                  <div class="col-xs-6"><span id="current-total-value">0.00</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_new_total_value }}:</strong></div>
+                                  <div class="col-xs-6"><span id="new-total-value" class="text-primary">0.00</span></div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_value_change }}:</strong></div>
+                                  <div class="col-xs-6"><span id="cost-value-change" class="text-danger">0.00</span></div>
+                                </div>
+                                <div class="row">
+                                  <div class="col-xs-6 text-right"><strong>{{ text_gl_account_impact }}:</strong></div>
+                                  <div class="col-xs-6">{{ text_inventory_valuation_account }}</div>
+                                </div>
+                              </div>
+
+                              <hr>
+
+                              <div class="pricing-panel">
+                                <h5>{{ text_update_sales_prices }}</h5>
+                                <div class="checkbox">
+                                  <label>
+                                    <input type="checkbox" id="update-prices" checked>
+                                    {{ text_update_based_on_new_cost }}
+                                  </label>
+                                </div>
+
+                                <div id="margin-container">
+                                  <div class="form-group">
+                                    <label for="profit-margin" class="control-label">{{ text_profit_margin_percentage }}</label>
+                                    <div class="input-group">
+                                      <input type="number" id="profit-margin" class="form-control" value="30" min="0" max="100">
+                                      <span class="input-group-addon">%</span>
+                                    </div>
+                                  </div>
+
+                                  <div class="current-pricing-preview">
+                                    <div class="row">
+                                      <div class="col-xs-6 text-right"><strong>{{ text_current_base_price }}:</strong></div>
+                                      <div class="col-xs-6"><span id="current-base-price">0.00</span></div>
+                                    </div>
+                                    <div class="row">
+                                      <div class="col-xs-6 text-right"><strong>{{ text_calculated_new_price }}:</strong></div>
+                                      <div class="col-xs-6"><span id="calculated-new-price" class="text-primary">0.00</span></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <div class="row">
+                        <div class="col-xs-7 text-left">
+                          <div class="checkbox">
+                            <label>
+                              <input type="checkbox" id="cost-confirmation" required>
+                              {{ text_confirm_cost_change }}
+                            </label>
+                          </div>
+                        </div>
+                        <div class="col-xs-5">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+                          <button type="button" class="btn btn-primary" id="save-cost" disabled>{{ button_save }}</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_inventory_info }}
+              </div>
+
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-cubes"></i> {{ text_inventory_levels }}</h3>
+                </div>
+                <div class="panel-body">
+                  <!-- جدول المخزون الأساسي - مبسط -->
+                  <div class="table-responsive">
+                    <table id="product-inventory" class="table table-striped table-bordered table-hover">
+                      <thead>
+                        <tr>
+                          <th class="text-center">{{ entry_branch }}</th>
+                          <th class="text-center">{{ entry_unit }}</th>
+                          <th class="text-center">{{ entry_quantity }}</th>
+                          <th class="text-center">{{ entry_quantity_available }}</th>
+                          <th class="text-center">{{ entry_average_cost }}</th>
+                          <th class="text-center">{{ entry_total_value }}</th>
+                          <th class="text-center">{{ entry_consignment }}</th>
+                          <th class="text-center" width="100">{{ entry_action }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- البيانات ستُحمل عبر JavaScript -->
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="4" class="text-right"><strong>{{ text_totals }}:</strong></td>
+                          <td class="text-center"><strong id="total-average-cost">0.00</strong></td>
+                          <td class="text-center"><strong id="total-inventory-value">0.00</strong></td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <!-- زر لإضافة حركة مخزون -->
+                  <div class="text-right">
+                    <button type="button" class="btn btn-primary" id="add-inventory-movement">
+                      <i class="fa fa-plus-circle"></i> {{ button_add_movement }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- لوحة حركات المخزون الأخيرة - محسّنة -->
+              <div class="panel panel-info">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-history"></i> {{ text_recent_movements }}</h3>
+                </div>
+                <div class="panel-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-condensed mb-0">
+                      <thead>
+                        <tr>
+                          <th>{{ column_date }}</th>
+                          <th>{{ column_type }}</th>
+                          <th>{{ column_quantity }}</th>
+                          <th>{{ column_unit }}</th>
+                          <th>{{ column_branch }}</th>
+                          <th>{{ column_cost_impact }}</th>
+                          <th>{{ column_user }}</th>
+                          <th>{{ column_reference }}</th>
+                        </tr>
+                      </thead>
+                      <tbody id="recent-movements">
+                        <!-- البيانات ستُحمل عبر JavaScript -->
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="text-center p-2">
+                    <a href="#tab-movement" class="btn btn-default" onclick="$('a[href=\'#tab-movement\']').tab('show');">{{ text_view_all_movements }}</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب التسعير -->
+            <div class="tab-pane" id="tab-pricing">
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_pricing_info }}
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-tag"></i> {{ text_pricing_list }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="table-responsive">
+                        <table id="product-pricing" class="table table-striped table-bordered table-hover">
+                          <thead>
+                            <tr>
+                              <th class="text-center">{{ entry_unit }}</th>
+                              <th class="text-center">{{ entry_cost }}</th>
+                              <th class="text-center">{{ entry_base_price }}</th>
+                              <th class="text-center">{{ entry_special_price }}</th>
+                              <th class="text-center">{{ entry_wholesale_price }}</th>
+                              <th class="text-center">{{ entry_profit_margin }}</th>
+                              <th class="text-center">{{ entry_action }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- سيتم تحميل البيانات عبر JavaScript -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- نافذة تعديل السعر -->
+              <div class="modal fade" id="price-edit-modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title">{{ text_edit_price }}</h4>
+                    </div>
+                    <div class="modal-body">
+                      <input type="hidden" id="price-edit-unit-id">
+
+                      <div class="form-group">
+                        <label for="price-edit-base">{{ entry_base_price }}</label>
+                        <input type="number" id="price-edit-base" class="form-control" min="0" step="0.01">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="price-edit-special">{{ entry_special_price }}</label>
+                        <input type="number" id="price-edit-special" class="form-control" min="0" step="0.01">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="price-edit-wholesale">{{ entry_wholesale_price }}</label>
+                        <input type="number" id="price-edit-wholesale" class="form-control" min="0" step="0.01">
+                      </div>
+                      <div class="form-group">
+                        <label for="price-edit-half-wholesale">{{ entry_half_wholesale_price }}</label>
+                        <input type="number" id="price-edit-half-wholesale" class="form-control" min="0" step="0.01">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="price-edit-custom">{{ entry_custom_price }}</label>
+                        <input type="number" id="price-edit-custom" class="form-control" min="0" step="0.01">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="price-edit-reason">{{ entry_price_change_reason }}</label>
+                        <input type="text" id="price-edit-reason" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+                      <button type="button" class="btn btn-primary" id="save-price">{{ button_save }}</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- قسم حاسبة السعر -->
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-calculator"></i> {{ text_price_calculator }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="form-group">
+                        <label for="calc-unit">{{ entry_unit }}</label>
+                        <select id="calc-unit" class="form-control">
+                          <option value="">{{ text_select_unit }}</option>
+                          <!-- سيتم تحميل الوحدات عبر JavaScript -->
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="calc-cost">{{ entry_cost }}</label>
+                        <input type="number" id="calc-cost" class="form-control" min="0" step="0.01">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="margin-type">{{ entry_margin_type }}</label>
+                        <select id="margin-type" class="form-control">
+                          <option value="markup">{{ text_markup }} ({{ text_as_percentage_of_cost }})</option>
+                          <option value="margin">{{ text_margin }} ({{ text_as_percentage_of_price }})</option>
+                        </select>
+                        <small id="margin-type-hint" class="form-text text-muted">{{ text_markup_hint }}</small>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="calc-margin">{{ entry_margin_percentage }}</label>
+                        <div class="input-group">
+                          <input type="number" id="calc-margin" class="form-control" min="0" max="100" step="0.01" value="30">
+                          <span class="input-group-addon">%</span>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="calc-price">{{ entry_price }}</label>
+                        <input type="number" id="calc-price" class="form-control" min="0" step="0.01">
+                      </div>
+
+                      <div class="row">
+                        <div class="col-xs-6">
+                          <button type="button" id="calc-from-cost" class="btn btn-info btn-block">
+                            {{ text_calculate_price_from_cost }}
+                          </button>
+                        </div>
+                        <div class="col-xs-6">
+                          <button type="button" id="calc-from-price" class="btn btn-info btn-block">
+                            {{ text_calculate_margin_from_price }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_price_breakdown }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div id="price-breakdown">
+                        <!-- سيتم تحميل تفصيل السعر هنا -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب الباركود -->
+            <div class="tab-pane" id="tab-barcode">
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_barcode_info }}
+              </div>
+
+              <div class="table-responsive">
+                <table id="product-barcodes" class="table table-striped table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th class="text-center">{{ entry_barcode }}</th>
+                      <th class="text-center">{{ entry_barcode_type }}</th>
+                      <th class="text-center">{{ entry_unit }}</th>
+                      <th class="text-center">{{ entry_option }}</th>
+                      <th class="text-center">{{ entry_option_value }}</th>
+                      <th class="text-center" width="90">{{ entry_action }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% set barcode_row = 0 %}
+                    {% for product_barcode in product_barcodes %}
+                    <tr id="barcode-row{{ barcode_row }}" class="barcode-row">
+                      <td class="text-center">
+                        <input type="text" name="product_barcode[{{ barcode_row }}][barcode]" value="{{ product_barcode.barcode }}" placeholder="{{ entry_barcode }}" class="form-control barcode-value" />
+                      </td>
+                      <td class="text-center">
+                        <select name="product_barcode[{{ barcode_row }}][type]" class="form-control barcode-type">
+                          <option value="EAN" {% if product_barcode.type == 'EAN' %}selected="selected"{% endif %}>EAN</option>
+                          <option value="UPC" {% if product_barcode.type == 'UPC' %}selected="selected"{% endif %}>UPC</option>
+                          <option value="ISBN" {% if product_barcode.type == 'ISBN' %}selected="selected"{% endif %}>ISBN</option>
+                          <option value="CODE128" {% if product_barcode.type == 'CODE128' %}selected="selected"{% endif %}>CODE128</option>
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <select name="product_barcode[{{ barcode_row }}][unit_id]" class="form-control barcode-unit">
+                          <option value="">{{ text_select }}</option>
+                          {% for unit in product_units %}
+                          <option value="{{ unit.unit_id }}" {% if product_barcode.unit_id == unit.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                          {% endfor %}
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <select name="product_barcode[{{ barcode_row }}][option_id]" class="form-control barcode-option" onchange="BarcodeManager.updateOptionValues(this, {{ barcode_row }})">
+                          <option value="">{{ text_no_option }}</option>
+                          {% for option in product_options %}
+                          <option value="{{ option.product_option_id }}" {% if product_barcode.option_id == option.product_option_id %}selected="selected"{% endif %}>{{ option.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <select name="product_barcode[{{ barcode_row }}][option_value_id]" class="form-control barcode-option-value" {% if not product_barcode.option_id %}disabled{% endif %}>
+                          <option value="">{{ text_select }}</option>
+                          {% if product_barcode.option_id %}
+                            {% for option_value in option_values[product_barcode.option_id] %}
+                            <option value="{{ option_value.option_value_id }}" {% if product_barcode.option_value_id == option_value.option_value_id %}selected="selected"{% endif %}>{{ option_value.name }}</option>
+                            {% endfor %}
+                          {% endif %}
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <button type="button" onclick="BarcodeManager.removeBarcode({{ barcode_row }});" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger">
+                          <i class="fa fa-minus-circle"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    {% set barcode_row = barcode_row + 1 %}
+                    {% endfor %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="5"></td>
+                      <td class="text-center">
+                        <button type="button" onclick="BarcodeManager.addBarcode();" data-toggle="tooltip" title="{{ button_barcode_add }}" class="btn btn-primary">
+                          <i class="fa fa-plus-circle"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <div class="panel panel-info" style="margin-top: 20px;">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-qrcode"></i> {{ text_barcode_preview }}</h3>
+                </div>
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="barcode-container text-center">
+                        <h4>{{ text_generated_barcode }}</h4>
+                        <div id="barcode-preview"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="panel panel-default">
+                        <div class="panel-heading">
+                          <h3 class="panel-title">{{ text_barcode_help }}</h3>
+                        </div>
+                        <div class="panel-body">
+                          <p>{{ text_barcode_help_intro }}</p>
+                          <ul>
+                            <li><strong>{{ text_barcode_types }}:</strong> {{ text_barcode_types_help }}</li>
+                            <li><strong>{{ text_barcode_unit }}:</strong> {{ text_barcode_unit_help }}</li>
+                            <li><strong>{{ text_barcode_option }}:</strong> {{ text_barcode_option_help }}</li>
+                          </ul>
+                          <div class="alert alert-info">
+                            <i class="fa fa-info-circle"></i> {{ text_barcode_help_tip }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب الخيارات -->
+            <div class="tab-pane" id="tab-option">
+              <div class="row">
+                <div class="col-sm-2">
+                  <ul class="nav nav-pills nav-stacked" id="option">
+                    {% set option_row = 0 %}
+                    {% for product_option in product_options %}
+                      <li><a href="#tab-option{{ option_row }}" data-toggle="tab"><i class="fa fa-minus-circle" onclick="$('a[href=\'#tab-option{{ option_row }}\']').parent().remove(); $('#tab-option{{ option_row }}').remove(); $('#option a:first').tab('show');"></i> {{ product_option.name }}</a></li>
+                      {% set option_row = option_row + 1 %}
+                    {% endfor %}
+                    <li>
+                      <input type="text" name="option" value="" placeholder="{{ entry_option }}" id="input-option" class="form-control"/>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="col-sm-10">
+                  <div class="tab-content">
+                    {% set option_row = 0 %}
+                    {% set option_value_row = 0 %}
+                    {% for product_option in product_options %}
+                      <div class="tab-pane" id="tab-option{{ option_row }}">
+                        <input type="hidden" name="product_option[{{ option_row }}][product_option_id]" value="{{ product_option.product_option_id }}"/>
+                        <input type="hidden" name="product_option[{{ option_row }}][name]" value="{{ product_option.name }}"/>
+                        <input type="hidden" name="product_option[{{ option_row }}][option_id]" value="{{ product_option.option_id }}"/>
+                        <input type="hidden" name="product_option[{{ option_row }}][type]" value="{{ product_option.type }}"/>
+
+                        <div class="row" style="padding-bottom:10px">
+                          <div class="form-group-inline">
+                            <label class="col-sm-1 control-label" for="input-required{{ option_row }}">{{ entry_required }}</label>
+                            <div class="col-sm-2">
+                              <select name="product_option[{{ option_row }}][required]" id="input-required{{ option_row }}" class="form-control">
+                                {% if product_option.required %}
+                                  <option value="1" selected="selected">{{ text_yes }}</option>
+                                  <option value="0">{{ text_no }}</option>
+                                {% else %}
+                                  <option value="1">{{ text_yes }}</option>
+                                  <option value="0" selected="selected">{{ text_no }}</option>
+                                {% endif %}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div class="form-group-inline">
+                            <label class="col-sm-2 control-label" for="input-unit{{ option_row }}">{{ entry_unit }}</label>
+                            <div class="col-sm-5">
+                              <select name="product_option[{{ option_row }}][unit_id]" id="input-unit{{ option_row }}" class="form-control select2">
+                                {% for unit in product_units %}
+                                  <option value="{{ unit.unit_id }}" {% if unit.unit_id == product_option.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- سيتم إضافة باقي محتوى الخيارات حسب النوع -->
+                      </div>
+                      {% set option_row = option_row + 1 %}
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- قسم المساعدة -->
+              <div class="help-section panel panel-info" style="margin-top: 20px;">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_options_help }}</h3>
+                </div>
+                <div class="panel-body">
+                  <p>{{ text_options_help_intro }}</p>
+                  <ul>
+                    <li><strong>{{ text_option_types }}:</strong> {{ text_option_types_help }}</li>
+                    <li><strong>{{ text_option_values }}:</strong> {{ text_option_values_help }}</li>
+                    <li><strong>{{ text_option_pricing }}:</strong> {{ text_option_pricing_help }}</li>
+                    <li><strong>{{ text_option_inventory }}:</strong> {{ text_option_inventory_help }}</li>
+                    <li><strong>{{ text_option_unit }}:</strong> {{ text_option_unit_help }}</li>
+                  </ul>
+                  <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i> {{ text_options_help_tip }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب الحزم -->
+            <div class="tab-pane" id="tab-bundle">
+              <ul class="nav nav-tabs" id="bundle-tabs">
+                <li class="active"><a href="#tab-bundles-content" data-toggle="tab">{{ text_bundles }}</a></li>
+                <li><a href="#tab-discounts-content" data-toggle="tab">{{ text_discounts }}</a></li>
+              </ul>
+
+              <div class="tab-content">
+                <!-- Bundles Section -->
+                <div class="tab-pane active" id="tab-bundles-content">
+                  <div id="bundle-container">
+                    {% set bundle_row = 0 %}
+                    {% for bundle in product_bundles %}
+                      <div class="panel panel-default" id="bundle-card{{ bundle_row }}">
+                        <div class="panel-heading">
+                          <div class="pull-right">
+                            <button type="button" onclick="BundleManager.removeBundle({{ bundle_row }});" class="btn btn-danger btn-xs">
+                              <i class="fa fa-trash"></i>
+                            </button>
+                          </div>
+                          <h3 class="panel-title">{{ entry_bundle_name }}</h3>
+                        </div>
+                        <div class="panel-body">
+                          <div class="row mb-3">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>{{ entry_bundle_name }}</label>
+                                <input type="text" name="product_bundle[{{ bundle_row }}][name]" value="{{ bundle.name }}" placeholder="{{ entry_bundle_name }}" class="form-control" />
+                                {% if bundle.bundle_id %}
+                                  <input type="hidden" name="product_bundle[{{ bundle_row }}][bundle_id]" value="{{ bundle.bundle_id }}" />
+                                {% endif %}
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="form-group">
+                                <label>{{ entry_discount_type }}</label>
+                                <select name="product_bundle[{{ bundle_row }}][discount_type]" class="form-control">
+                                  <option value="percentage" {% if bundle.discount_type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+                                  <option value="fixed" {% if bundle.discount_type == 'fixed' %}selected="selected"{% endif %}>{{ text_fixed }}</option>
+                                  <option value="product" {% if bundle.discount_type == 'product' %}selected="selected"{% endif %}>{{ text_free_product }}</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div class="col-md-3">
+                              <div class="form-group">
+                                <label>{{ entry_bundle_discount_value }}</label>
+                                <input type="text" name="product_bundle[{{ bundle_row }}][discount_value]" value="{{ bundle.discount_value }}" placeholder="{{ entry_bundle_discount_value }}" class="form-control" />
+                              </div>
+                            </div>
+                            <div class="col-md-2">
+                              <div class="form-group">
+                                <label>{{ entry_status }}</label>
+                                <select name="product_bundle[{{ bundle_row }}][status]" class="form-control">
+                                  <option value="1" {% if bundle.status %}selected="selected"{% endif %}>{{ text_enabled }}</option>
+                                  <option value="0" {% if not bundle.status %}selected="selected"{% endif %}>{{ text_disabled }}</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- جدول منتجات الحزمة -->
+                          <h4>{{ entry_bundle_products }}</h4>
+                          <div class="table-responsive mb-3">
+                            <table class="table table-bordered" id="bundle-products{{ bundle_row }}">
+                              <thead>
+                                <tr>
+                                  <th>{{ entry_product }}</th>
+                                  <th>{{ entry_quantity }}</th>
+                                  <th>{{ entry_unit }}</th>
+                                  <th>{{ text_free }}</th>
+                                  <th width="90">{{ text_action }}</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {% for item in bundle.items %}
+                                  <tr>
+                                    <td>{{ item.name }}
+                                      <input type="hidden" name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][product_id]" value="{{ item.product_id }}" />
+                                    </td>
+                                    <td>
+                                      <input type="number" name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][quantity]" value="{{ item.quantity }}" class="form-control" min="1" step="1" />
+                                    </td>
+                                    <td>
+                                      <select name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][unit_id]" class="form-control">
+                                        {% for unit in item.units %}
+                                          <option value="{{ unit.unit_id }}" {% if unit.unit_id == item.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                                        {% endfor %}
+                                      </select>
+                                    </td>
+                                    <td>
+                                      <div class="checkbox">
+                                        <label>
+                                          <input type="checkbox" name="product_bundle[{{ bundle_row }}][bundle_item][{{ item.product_id }}][is_free]" value="1" {% if item.is_free %}checked{% endif %} />
+                                        </label>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <button type="button" onclick="$(this).closest('tr').remove();" class="btn btn-danger btn-sm">
+                                        <i class="fa fa-trash"></i>
+                                      </button>
+                                    </td>
+                                  </tr>
+                                {% endfor %}
+                              </tbody>
+                              <tfoot>
+                                <tr>
+                                  <td colspan="5">
+                                    <div class="input-group">
+                                      <input type="text" name="product_bundle[{{ bundle_row }}][product]" value="" placeholder="{{ entry_product }}" id="input-bundle-product{{ bundle_row }}" class="form-control" />
+                                      <span class="input-group-btn">
+                                        <button type="button" class="btn btn-primary" onclick="BundleManager.searchBundleProduct({{ bundle_row }});">
+                                          <i class="fa fa-search"></i>
+                                        </button>
+                                      </span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                      {% set bundle_row = bundle_row + 1 %}
+                    {% endfor %}
+                  </div>
+                  <div class="text-center">
+                    <button type="button" onclick="BundleManager.addBundle();" class="btn btn-primary">
+                      <i class="fa fa-plus-circle"></i> {{ button_bundle_add }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Discounts Section -->
+                <div class="tab-pane" id="tab-discounts-content">
+                  <div id="discount-container">
+                    {% set discount_row = 0 %}
+                    {% for discount in product_discounts %}
+                      <div class="panel panel-default" id="discount-card{{ discount_row }}">
+                        <div class="panel-heading">
+                          <div class="pull-right">
+                            <button type="button" onclick="BundleManager.removeDiscount({{ discount_row }});" class="btn btn-danger btn-xs">
+                              <i class="fa fa-trash"></i>
+                            </button>
+                          </div>
+                          <h3 class="panel-title">{{ entry_discount_name }}</h3>
+                        </div>
+                        <div class="panel-body">
+                          <div class="row mb-3">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>{{ entry_discount_name }}</label>
+                                <input type="text" name="product_discount[{{ discount_row }}][name]" value="{{ discount.name }}" placeholder="{{ entry_discount_name }}" class="form-control" required />
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>{{ entry_discount_type }}</label>
+                                <select name="product_discount[{{ discount_row }}][type]" class="form-control discount-type-select" data-row="{{ discount_row }}">
+                                  <option value="buy_x_get_y" {% if discount.type == 'buy_x_get_y' %}selected="selected"{% endif %}>{{ text_buy_x_get_y }}</option>
+                                  <option value="buy_x_get_discount" {% if discount.type == 'buy_x_get_discount' %}selected="selected"{% endif %}>{{ text_buy_x_get_discount }}</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>{{ entry_status }}</label>
+                                <select name="product_discount[{{ discount_row }}][status]" class="form-control">
+                                  <option value="1" {% if discount.status %}selected="selected"{% endif %}>{{ text_enabled }}</option>
+                                  <option value="0" {% if not discount.status %}selected="selected"{% endif %}>{{ text_disabled }}</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="panel panel-default discount-details" data-row="{{ discount_row }}">
+                            <div class="panel-body">
+                              <div class="row">
+                                <div class="col-md-3">
+                                  <div class="form-group">
+                                    <label>{{ entry_buy_quantity }}</label>
+                                    <input type="number" name="product_discount[{{ discount_row }}][buy_quantity]" value="{{ discount.buy_quantity }}" placeholder="{{ entry_buy_quantity }}" class="form-control" min="1" required />
+                                  </div>
+                                </div>
+                                <div class="col-md-3 get-quantity-container" {% if discount.type == 'buy_x_get_discount' %}style="display:none;"{% endif %}>
+                                  <div class="form-group">
+                                    <label>{{ entry_get_quantity }}</label>
+                                    <input type="number" name="product_discount[{{ discount_row }}][get_quantity]" value="{{ discount.get_quantity }}" placeholder="{{ entry_get_quantity }}" class="form-control" min="0" />
+                                  </div>
+                                </div>
+                                <div class="col-md-3 discount-type-container" {% if discount.type == 'buy_x_get_y' %}style="display:none;"{% endif %}>
+                                  <div class="form-group">
+                                    <label>{{ entry_discount_type }}</label>
+                                    <select name="product_discount[{{ discount_row }}][discount_type]" class="form-control">
+                                      <option value="percentage" {% if discount.discount_type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+                                      <option value="fixed" {% if discount.discount_type == 'fixed' %}selected="selected"{% endif %}>{{ text_fixed }}</option>
+                                    </select>
+                                  </div>
+                                </div>
+                                <div class="col-md-3 discount-value-container" {% if discount.type == 'buy_x_get_y' %}style="display:none;"{% endif %}>
+                                  <div class="form-group">
+                                    <label>{{ entry_discount_value }}</label>
+                                    <input type="text" name="product_discount[{{ discount_row }}][discount_value]" value="{{ discount.discount_value }}" placeholder="{{ entry_discount_value }}" class="form-control discount-value-input" required />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="row">
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>{{ entry_unit }}</label>
+                                <select name="product_discount[{{ discount_row }}][unit_id]" class="form-control">
+                                  <option value="0">{{ text_all_units }}</option>
+                                  {% for unit in product_units %}
+                                    <option value="{{ unit.unit_id }}" {% if discount.unit_id == unit.unit_id %}selected="selected"{% endif %}>{{ unit.unit_name }}</option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>{{ entry_date_start }}</label>
+                                <div class="input-group date">
+                                  <input type="text" name="product_discount[{{ discount_row }}][date_start]" value="{{ discount.date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" class="form-control" />
+                                  <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <div class="form-group">
+                                <label>{{ entry_date_end }}</label>
+                                <div class="input-group date">
+                                  <input type="text" name="product_discount[{{ discount_row }}][date_end]" value="{{ discount.date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" class="form-control" />
+                                  <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="form-group">
+                            <label>{{ entry_notes }}</label>
+                            <textarea name="product_discount[{{ discount_row }}][notes]" class="form-control" rows="2">{{ discount.notes }}</textarea>
+                          </div>
+                        </div>
+                      </div>
+                      {% set discount_row = discount_row + 1 %}
+                    {% endfor %}
+                  </div>
+                  <div class="text-center">
+                    <button type="button" onclick="BundleManager.addDiscount();" class="btn btn-primary">
+                      <i class="fa fa-plus-circle"></i> {{ button_discount_add }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info" style="margin-top: 20px;">
+                <i class="fa fa-info-circle"></i> {{ help_bundle_and_discount }}
+              </div>
+
+              <!-- Help Section -->
+              <div class="help-section panel panel-info" style="margin-top: 20px;">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_bundles_discounts_help }}</h3>
+                </div>
+                <div class="panel-body">
+                  <p>{{ text_bundles_discounts_help_intro }}</p>
+
+                  <h4>{{ text_bundles }}</h4>
+                  <ul>
+                    <li><strong>{{ text_what_are_bundles }}:</strong> {{ text_bundles_explanation }}</li>
+                    <li><strong>{{ text_bundle_discount_types }}:</strong> {{ text_bundle_discount_types_explanation }}</li>
+                    <li><strong>{{ text_bundle_products }}:</strong> {{ text_bundle_products_explanation }}</li>
+                  </ul>
+
+                  <h4>{{ text_discounts }}</h4>
+                  <ul>
+                    <li><strong>{{ text_what_are_discounts }}:</strong> {{ text_discounts_explanation }}</li>
+                    <li><strong>{{ text_discount_types }}:</strong> {{ text_discount_types_explanation }}</li>
+                    <li><strong>{{ text_discount_period }}:</strong> {{ text_discount_period_explanation }}</li>
+                  </ul>
+
+                  <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i> {{ text_bundles_discounts_help_tip }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب التوصيات -->
+            <div class="tab-pane" id="tab-recommendation">
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_recommendation_info }}
+              </div>
+
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-thumbs-up"></i> {{ text_recommended_products }}</h3>
+                </div>
+                <div class="panel-body">
+                  <div class="table-responsive">
+                    <table id="product-recommendations" class="table table-striped table-bordered table-hover">
+                      <thead>
+                        <tr>
+                          <th class="text-center">{{ entry_product }}</th>
+                          <th class="text-center">{{ entry_type }}</th>
+                          <th class="text-center">{{ entry_priority }}</th>
+                          <th class="text-center" width="100">{{ entry_action }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% set recommendation_row = 0 %}
+                        {% for recommendation in product_recommendations %}
+                          <tr id="recommendation-row{{ recommendation_row }}">
+                            <td class="text-left">{{ recommendation.name }}
+                              <input type="hidden" name="product_recommendation[{{ recommendation_row }}][product_id]" value="{{ recommendation.product_id }}" />
+                            </td>
+                            <td class="text-center">
+                              <select name="product_recommendation[{{ recommendation_row }}][type]" class="form-control">
+                                <option value="complementary" {% if recommendation.type == 'complementary' %}selected="selected"{% endif %}>{{ text_complementary }}</option>
+                                <option value="alternative" {% if recommendation.type == 'alternative' %}selected="selected"{% endif %}>{{ text_alternative }}</option>
+                                <option value="accessory" {% if recommendation.type == 'accessory' %}selected="selected"{% endif %}>{{ text_accessory }}</option>
+                                <option value="similar" {% if recommendation.type == 'similar' %}selected="selected"{% endif %}>{{ text_similar }}</option>
+                              </select>
+                            </td>
+                            <td class="text-center">
+                              <input type="number" name="product_recommendation[{{ recommendation_row }}][priority]" value="{{ recommendation.priority }}" class="form-control" min="0" max="100" />
+                            </td>
+                            <td class="text-center">
+                              <button type="button" onclick="$('#recommendation-row{{ recommendation_row }}').remove();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger">
+                                <i class="fa fa-minus-circle"></i>
+                              </button>
+                            </td>
+                          </tr>
+                          {% set recommendation_row = recommendation_row + 1 %}
+                        {% endfor %}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="3">
+                            <div class="input-group">
+                              <input type="text" name="recommendation_product" value="" placeholder="{{ entry_product }}" id="input-recommendation-product" class="form-control" />
+                              <span class="input-group-btn">
+                                <button type="button" id="button-recommendation-add" data-toggle="tooltip" title="{{ button_recommendation_add }}" class="btn btn-primary">
+                                  <i class="fa fa-plus-circle"></i>
+                                </button>
+                              </span>
+                            </div>
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- قسم المساعدة -->
+              <div class="help-section panel panel-info" style="margin-top: 20px;">
+                <div class="panel-heading">
+                  <h3 class="panel-title"><i class="fa fa-question-circle"></i> {{ text_recommendations_help }}</h3>
+                </div>
+                <div class="panel-body">
+                  <p>{{ text_recommendations_help_intro }}</p>
+                  <ul>
+                    <li><strong>{{ text_complementary_products }}:</strong> {{ text_complementary_products_help }}</li>
+                    <li><strong>{{ text_alternative_products }}:</strong> {{ text_alternative_products_help }}</li>
+                    <li><strong>{{ text_accessory_products }}:</strong> {{ text_accessory_products_help }}</li>
+                    <li><strong>{{ text_similar_products }}:</strong> {{ text_similar_products_help }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب الحركات -->
+            <div class="tab-pane" id="tab-movement">
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_movement_info }}
+              </div>
+
+              <!-- إحصائيات المخزون -->
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-chart-bar"></i> {{ text_inventory_statistics }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="row">
+                        <div class="col-md-3">
+                          <div class="well well-sm text-center">
+                            <h4>{{ text_total_incoming }}</h4>
+                            <span id="total-incoming" class="stat-value">0</span>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="well well-sm text-center">
+                            <h4>{{ text_total_outgoing }}</h4>
+                            <span id="total-outgoing" class="stat-value">0</span>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="well well-sm text-center">
+                            <h4>{{ text_net_change }}</h4>
+                            <span id="net-change" class="stat-value">0</span>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="well well-sm text-center">
+                            <h4>{{ text_current_stock }}</h4>
+                            <span id="current-stock-total" class="stat-value">0</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h4 class="panel-title">{{ text_movement_by_type }}</h4>
+                            </div>
+                            <div class="panel-body">
+                              <canvas id="movement-type-chart" height="200"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h4 class="panel-title">{{ text_stock_trend }}</h4>
+                            </div>
+                            <div class="panel-body">
+                              <canvas id="stock-trend-chart" height="200"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-9">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-exchange"></i> {{ text_movement_history }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="table-responsive">
+                        <table id="stock-movements" class="table table-striped table-bordered table-hover">
+                          <thead>
+                            <tr>
+                              <th class="text-center">{{ column_date_added }}</th>
+                              <th class="text-center">{{ column_type }}</th>
+                              <th class="text-center">{{ column_quantity }}</th>
+                              <th class="text-center">{{ column_unit }}</th>
+                              <th class="text-center">{{ column_branch }}</th>
+                              <th class="text-center">{{ column_reference }}</th>
+                              <th class="text-center">{{ column_user }}</th>
+                              <th class="text-center">{{ column_cost }}</th>
+                              <th class="text-center">{{ column_new_cost }}</th>
+                              <th class="text-center">{{ column_action }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- سيتم تحميل البيانات عبر JavaScript -->
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div class="text-center" id="movement-pagination">
+                        <!-- سيتم تحميل الترقيم هنا -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- تاريخ تكلفة المنتج -->
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-money"></i> {{ text_cost_history }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="row">
+                        <div class="col-md-12">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h4 class="panel-title">{{ text_cost_trend }}</h4>
+                            </div>
+                            <div class="panel-body">
+                              <canvas id="cost-trend-chart" height="150"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <table id="cost-history" class="table table-striped table-bordered table-hover">
+                          <thead>
+                            <tr>
+                              <th class="text-center">{{ column_date_added }}</th>
+                              <th class="text-center">{{ column_unit }}</th>
+                              <th class="text-center">{{ column_old_cost }}</th>
+                              <th class="text-center">{{ column_new_cost }}</th>
+                              <th class="text-center">{{ text_change_reason }}</th>
+                              <th class="text-center">{{ column_user }}</th>
+                              <th class="text-center">{{ text_notes }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- سيتم تحميل البيانات عبر JavaScript -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="panel panel-primary">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_movement_filter }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="form-group">
+                        <label for="movement-type-filter">{{ text_filter_by_type }}</label>
+                        <select id="movement-type-filter" class="form-control">
+                          <option value="">{{ text_all_types }}</option>
+                          <option value="purchase">{{ text_purchase }}</option>
+                          <option value="sale">{{ text_sale }}</option>
+                          <option value="adjustment_increase">{{ text_adjustment_increase }}</option>
+                          <option value="adjustment_decrease">{{ text_adjustment_decrease }}</option>
+                          <option value="transfer_in">{{ text_transfer_in }}</option>
+                          <option value="transfer_out">{{ text_transfer_out }}</option>
+                          <option value="initial">{{ text_initial_stock }}</option>
+                          <option value="return_in">{{ text_return_in }}</option>
+                          <option value="return_out">{{ text_return_out }}</option>
+                          <option value="scrap">{{ text_scrap }}</option>
+                          <option value="production">{{ text_production }}</option>
+                          <option value="consumption">{{ text_consumption }}</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="movement-unit-filter">{{ text_filter_by_unit }}</label>
+                        <select id="movement-unit-filter" class="form-control">
+                          <option value="">{{ text_all_units }}</option>
+                          {% for unit in product_units %}
+                          <option value="{{ unit.unit_id }}">{{ unit.unit_name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="movement-branch-filter">{{ text_filter_by_branch }}</label>
+                        <select id="movement-branch-filter" class="form-control">
+                          <option value="">{{ text_all_branches }}</option>
+                          {% for branch in branches %}
+                          <option value="{{ branch.branch_id }}">{{ branch.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="movement-date-filter">{{ text_filter_by_date }}</label>
+                        <div class="row">
+                          <div class="col-sm-6">
+                            <div class="input-group date">
+                              <input type="text" id="movement-date-from" class="form-control" placeholder="{{ text_from_date }}" data-date-format="YYYY-MM-DD">
+                              <span class="input-group-btn">
+                                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="col-sm-6">
+                            <div class="input-group date">
+                              <input type="text" id="movement-date-to" class="form-control" placeholder="{{ text_to_date }}" data-date-format="YYYY-MM-DD">
+                              <span class="input-group-btn">
+                                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-center">
+                        <button type="button" id="apply-movement-filter" class="btn btn-primary">
+                          <i class="fa fa-filter"></i> {{ button_apply }}
+                        </button>
+                        <button type="button" id="reset-movement-filter" class="btn btn-default">
+                          <i class="fa fa-refresh"></i> {{ button_reset }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- إحصائيات إضافية -->
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-chart-pie"></i> {{ text_additional_statistics }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="well well-sm">
+                        <h5>{{ text_movement_frequency }}</h5>
+                        <canvas id="movement-frequency-chart" height="150"></canvas>
+                      </div>
+                      <div class="well well-sm">
+                        <h5>{{ text_stock_by_branch }}</h5>
+                        <canvas id="stock-by-branch-chart" height="150"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- نافذة تفاصيل الحركة -->
+              <div class="modal fade" id="movement-details-modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      <h4 class="modal-title"><i class="fa fa-exchange"></i> {{ text_movement_details }}</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_basic_information }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <table class="table table-bordered">
+                                <tr>
+                                  <th>{{ column_date_added }}</th>
+                                  <td id="detail-date"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_type }}</th>
+                                  <td id="detail-type"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_quantity }}</th>
+                                  <td id="detail-quantity"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_unit }}</th>
+                                  <td id="detail-unit"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_branch }}</th>
+                                  <td id="detail-branch"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_reference }}</th>
+                                  <td id="detail-reference"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_user }}</th>
+                                  <td id="detail-user"></td>
+                                </tr>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="panel panel-info">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_financial_impact }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <table class="table table-bordered">
+                                <tr>
+                                  <th>{{ column_cost }}</th>
+                                  <td id="detail-cost"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_old_cost }}</th>
+                                  <td id="detail-old-cost"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ column_new_cost }}</th>
+                                  <td id="detail-new-cost"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ text_cost_impact }}</th>
+                                  <td id="detail-cost-impact"></td>
+                                </tr>
+                                <tr>
+                                  <th>{{ text_value_change }}</th>
+                                  <td id="detail-value-change"></td>
+                                </tr>
+                              </table>
+                            </div>
+                          </div>
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_notes }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <p id="detail-notes"></p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row" id="detail-journal-section">
+                        <div class="col-md-12">
+                          <div class="panel panel-default">
+                            <div class="panel-heading">
+                              <h5 class="panel-title">{{ text_accounting_impact }}</h5>
+                            </div>
+                            <div class="panel-body">
+                              <div class="table-responsive">
+                                <table class="table table-bordered table-striped" id="detail-journal-entries">
+                                  <thead>
+                                    <tr>
+                                      <th>{{ text_account }}</th>
+                                      <th class="text-right">{{ text_debit }}</th>
+                                      <th class="text-right">{{ text_credit }}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <!-- سيتم تحميل القيود المحاسبية هنا -->
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- علامة تبويب الطلبات -->
+            <div class="tab-pane" id="tab-orders">
+              <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i> {{ text_orders_info }}
+              </div>
+
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-list-alt"></i> {{ text_orders_list }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="table-responsive">
+                        <table id="product-orders" class="table table-striped table-bordered table-hover">
+                          <thead>
+                            <tr>
+                              <th class="text-center">{{ column_order_id }}</th>
+                              <th class="text-center">{{ column_customer }}</th>
+                              <th class="text-center">{{ column_quantity }}</th>
+                              <th class="text-center">{{ column_unit }}</th>
+                              <th class="text-center">{{ column_price }}</th>
+                              <th class="text-center">{{ column_status }}</th>
+                              <th class="text-center">{{ column_date_added }}</th>
+                              <th class="text-center" width="90">{{ column_action }}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- AJAX will load orders here -->
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div class="text-center" id="orders-pagination">
+                        <!-- Pagination will be loaded here -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="panel panel-info">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-chart-bar"></i> {{ text_order_statistics }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="row">
+                        <div class="col-md-12">
+                          <div class="well well-sm text-center">
+                            <h4>{{ text_total_sold }}</h4>
+                            <span id="total-sold" class="stat-value">0</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="well well-sm text-center">
+                            <h4>{{ text_total_revenue }}</h4>
+                            <span id="total-revenue" class="stat-value">0</span>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="well well-sm text-center">
+                            <h4>{{ text_average_price }}</h4>
+                            <span id="average-price" class="stat-value">0</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="well well-sm">
+                        <h4>{{ text_sales_trend }}</h4>
+                        <div id="sales-trend-chart" style="height: 200px;">
+                          <!-- Chart will be loaded here -->
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="panel panel-default">
+                    <div class="panel-heading">
+                      <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_order_filter }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <div class="form-group">
+                        <label for="order-status-filter">{{ text_filter_by_status }}</label>
+                        <select id="order-status-filter" class="form-control">
+                          <option value="">{{ text_all_statuses }}</option>
+                          {% for order_status in order_statuses %}
+                          <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="order-date-filter">{{ text_filter_by_date }}</label>
+                        <div class="row">
+                          <div class="col-sm-6">
+                            <div class="input-group date">
+                              <input type="text" id="order-date-from" class="form-control" placeholder="{{ text_from_date }}" data-date-format="YYYY-MM-DD">
+                              <span class="input-group-btn">
+                                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="col-sm-6">
+                            <div class="input-group date">
+                              <input type="text" id="order-date-to" class="form-control" placeholder="{{ text_to_date }}" data-date-format="YYYY-MM-DD">
+                              <span class="input-group-btn">
+                                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-center">
+                        <button type="button" id="apply-order-filter" class="btn btn-primary">
+                          <i class="fa fa-filter"></i> {{ button_apply }}
+                        </button>
+                        <button type="button" id="reset-order-filter" class="btn btn-default">
+                          <i class="fa fa-refresh"></i> {{ button_reset }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة تعديل المخزون -->
+<div class="modal fade" id="inventoryModal" tabindex="-1" role="dialog" aria-labelledby="inventoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="inventoryModalLabel">{{ text_adjustment_details }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="movement-form">
+          <input type="hidden" id="modal-product-id" value="{{ product_id }}">
+          <input type="hidden" id="modal-branch-id" value="">
+          <input type="hidden" id="modal-unit-id" value="">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="modal-movement-type">{{ entry_movement_type }}</label>
+                <select id="modal-movement-type" class="form-control" required>
+                  <option value="increase">{{ text_add_stock }}</option>
+                  <option value="decrease">{{ text_remove_stock }}</option>
+                  <option value="count">{{ text_stock_count }}</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label id="quantity-label" for="modal-quantity">{{ text_quantity_to_add }}</label>
+                <input type="number" id="modal-quantity" class="form-control" min="0" step="0.01" required>
+                <div id="available-quantity-info" class="small text-muted mt-1"></div>
+              </div>
+
+              <div class="form-group" id="modal-cost-group">
+                <label for="modal-cost">{{ entry_direct_cost }}</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">{{ text_currency }}</span>
+                  </div>
+                  <input type="number" id="modal-cost" class="form-control" min="0" step="0.01">
+                </div>
+                <small class="form-text text-muted">{{ help_direct_cost }}</small>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="modal-reason">{{ entry_reason }}</label>
+                <select id="modal-reason" class="form-control" required>
+                  <option value="">{{ text_select }}</option>
+                  <option value="stock_count">{{ text_reason_stock_count }}</option>
+                  <option value="damaged">{{ text_reason_damaged }}</option>
+                  <option value="expired">{{ text_reason_expired }}</option>
+                  <option value="correction">{{ text_reason_correction }}</option>
+                  <option value="production">{{ text_reason_production }}</option>
+                  <option value="initial_stock">{{ text_reason_initial_stock }}</option>
+                  <option value="other">{{ text_reason_other }}</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="modal-custom-reason-group" style="display: none;">
+                <label for="modal-custom-reason">{{ entry_custom_reason }}</label>
+                <input type="text" id="modal-custom-reason" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="modal-notes">{{ entry_notes }}</label>
+                <textarea id="modal-notes" class="form-control" rows="2"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="modal-reference">{{ entry_document_reference }}</label>
+                <input type="text" id="modal-reference" class="form-control">
+                <small class="form-text text-muted">{{ text_optional }}</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- قسم التأثير المالي -->
+          <div class="mt-4">
+            <h5>{{ text_financial_impact }}</h5>
+            <hr>
+            <div class="row">
+              <div class="col-md-6">
+                <dl class="row">
+                  <dt class="col-sm-6">{{ text_branch }}</dt>
+                  <dd class="col-sm-6"><span id="summary-branch"></span></dd>
+
+                  <dt class="col-sm-6">{{ text_unit }}</dt>
+                  <dd class="col-sm-6"><span id="summary-unit"></span></dd>
+
+                  <dt class="col-sm-6">{{ text_current_quantity }}</dt>
+                  <dd class="col-sm-6"><span id="summary-current-quantity"></span></dd>
+
+                  <dt class="col-sm-6">{{ text_current_cost }}</dt>
+                  <dd class="col-sm-6"><span id="summary-current-cost"></span></dd>
+                </dl>
+              </div>
+              <div class="col-md-6">
+                <dl class="row">
+                  <dt class="col-sm-6">{{ text_new_quantity }}</dt>
+                  <dd class="col-sm-6"><span id="summary-new-quantity"></span></dd>
+
+                  <dt class="col-sm-6">{{ text_new_cost }}</dt>
+                  <dd class="col-sm-6"><span id="summary-new-cost"></span></dd>
+
+                  <dt class="col-sm-6">{{ text_quantity_change }}</dt>
+                  <dd class="col-sm-6"><span id="summary-quantity-change"></span></dd>
+
+                  <dt class="col-sm-6">{{ text_stock_value_change }}</dt>
+                  <dd class="col-sm-6"><span id="summary-value-change"></span></dd>
+                </dl>
+              </div>
+            </div>
+
+            <!-- معاينة القيد المحاسبي -->
+            <div class="mt-3">
+              <h6>{{ text_preview_journal_entry }}</h6>
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>{{ text_account }}</th>
+                      <th class="text-right">{{ text_debit }}</th>
+                      <th class="text-right">{{ text_credit }}</th>
+                    </tr>
+                  </thead>
+                  <tbody id="journal-entries">
+                    <tr>
+                      <td colspan="3" class="text-center text-muted">{{ text_loading }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="alert alert-danger mt-3" id="insufficient-stock-warning" style="display: none;">
+              {{ text_insufficient_stock_warning }}
+            </div>
+
+            <div class="form-group mt-3">
+              <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="modal-confirm">
+                <label class="custom-control-label" for="modal-confirm">{{ text_confirm_adjustment }}</label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="save-movement">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSS Styles -->
+<style type="text/css">
+/* أنماط عامة */
+.panel-title i {
+  margin-right: 10px;
+}
+
+.help-section {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.help-section .panel-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.help-section ul {
+  padding-left: 20px;
+}
+
+.help-section .key-point {
+  font-weight: bold;
+  color: #495057;
+}
+
+.action-explanation {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+/* أنماط Select2 */
+.select2-container--default .select2-selection--single {
+  height: 36px;
+  border: 1px solid #ced4da;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 34px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 34px;
+}
+
+/* علامة تبويب الوحدات */
+.base-unit {
+  background-color: #e8f4ff;
+  border-left: 3px solid #0d6efd;
+}
+
+.conversion-calculator {
+  margin-top: 20px;
+}
+
+#conversion-result {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* علامة تبويب المخزون */
+.inventory-row {
+  transition: background-color 0.3s;
+}
+
+.inventory-row:hover {
+  background-color: #f8f9fa;
+}
+
+.total-value {
+  font-weight: bold;
+}
+
+/* علامة تبويب التسعير */
+.price-input {
+  transition: border-color 0.3s;
+}
+
+.price-input:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.profit-margin {
+  font-weight: bold;
+}
+
+/* علامة تبويب الخيارات */
+.option-value-price {
+  display: flex;
+}
+
+/* علامة تبويب الحزم */
+.discount-details {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+/* علامة تبويب الحركة */
+.movement-receipt {
+  border-left: 3px solid #28a745;
+}
+
+.movement-sale {
+  border-left: 3px solid #dc3545;
+}
+
+.movement-adjustment {
+  border-left: 3px solid #fd7e14;
+}
+
+.movement-transfer {
+  border-left: 3px solid #6610f2;
+}
+
+/* الإحصائيات */
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* الصور */
+.main-image-container {
+  margin-bottom: 15px;
+}
+
+.img-thumbnail {
+  max-width: 150px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.img-thumbnail:hover {
+  transform: scale(1.05);
+}
+
+/* عناصر النموذج */
+.input-group-addon {
+  min-width: 100%;
+  margin-top: 3px;
+  text-align: center;
+}
+
+/* الإشعارات */
+#notification-area {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  z-index: 9999;
+  width: 350px;
+}
+
+.notification {
+  margin-bottom: 10px;
+  padding: 15px;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  animation: fadein 0.5s;
+}
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notification-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.notification-error {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.notification-warning {
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+  color: #856404;
+}
+
+.notification-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+}
+
+/* تعديلات استجابية */
+@media (max-width: 767px) {
+  .form-horizontal .control-label {
+    text-align: left;
+    margin-bottom: 5px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  #notification-area {
+    width: 300px;
+  }
+}
+/* أنماط مخطط تحويل الوحدات */
+.unit-conversion-diagram {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.base-unit-box {
+  padding: 15px;
+  background-color: #e8f4ff;
+  border: 2px solid #0d6efd;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.base-unit-box h4 {
+  margin-top: 0;
+  color: #0d6efd;
+}
+
+#base-unit-name {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.conversion-factor {
+  font-size: 14px;
+  color: #555;
+}
+
+.additional-unit-box {
+  padding: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 10px;
+  width: 100%;
+  position: relative;
+}
+
+.additional-unit-box:before {
+  content: "↓";
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  color: #6c757d;
+}
+
+.additional-unit-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.conversion-info {
+  font-size: 12px;
+  color: #666;
+}
+
+/* أنماط محول الوحدة */
+.unit-converter {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.unit-converter h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #0d6efd;
+}
+
+#conversion-result {
+  margin-top: 10px;
+  font-weight: bold;
+}
+</style>
+
+<!-- JavaScript Libraries -->
+<link href="view/javascript/codemirror/lib/codemirror.css" rel="stylesheet"/>
+<link href="view/javascript/codemirror/theme/monokai.css" rel="stylesheet"/>
+<link href="view/javascript/summernote/summernote.min.css" rel="stylesheet"/>
+
+<script type="text/javascript" src="view/javascript/codemirror/lib/codemirror.js"></script>
+<script type="text/javascript" src="view/javascript/codemirror/lib/xml.js"></script>
+<script type="text/javascript" src="view/javascript/codemirror/lib/formatting.js"></script>
+<script type="text/javascript" src="view/javascript/summernote/summernote.min.js"></script>
+<script type="text/javascript" src="view/javascript/summernote/summernote-image-attributes.js"></script>
+<script type="text/javascript" src="view/javascript/summernote/opencart.js"></script>
+
+<!-- Product Management JavaScript Files -->
+<script type="text/javascript" src="view/javascript/product/shared.js"></script>
+<script type="text/javascript" src="view/javascript/product/UnitManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/InventoryManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/PricingManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/BarcodeManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/OptionManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/BundleManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/RelationsManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/ImageManager.js"></script>
+<script type="text/javascript" src="view/javascript/product/product.js"></script>
+
+{{ footer }}

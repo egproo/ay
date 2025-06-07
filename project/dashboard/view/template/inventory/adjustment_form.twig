@@ -1,0 +1,522 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-adjustment" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fas fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-pencil-alt"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form id="form-adjustment" action="{{ action }}" method="post">
+          <div class="row mb-3">
+            <label for="input-reference" class="col-sm-2 col-form-label">{{ entry_reference }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="reference_number" value="{{ reference_number }}" placeholder="{{ entry_reference }}" id="input-reference" class="form-control"/>
+              {% if error_reference_number %}
+                <div class="invalid-feedback d-block">{{ error_reference_number }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-branch" class="col-sm-2 col-form-label">{{ entry_branch }}</label>
+            <div class="col-sm-10">
+              <select name="branch_id" id="input-branch" class="form-select">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == branch_id %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+              {% if error_branch %}
+                <div class="invalid-feedback d-block">{{ error_branch }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-adjustment-date" class="col-sm-2 col-form-label">{{ entry_adjustment_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="adjustment_date" value="{{ adjustment_date }}" id="input-adjustment-date" class="form-control"/>
+              {% if error_adjustment_date %}
+                <div class="invalid-feedback d-block">{{ error_adjustment_date }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-status" class="col-sm-2 col-form-label">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-select">
+                <option value="pending" {% if status == 'pending' %}selected{% endif %}>{{ text_pending }}</option>
+                <option value="approved" {% if status == 'approved' %}selected{% endif %}>{{ text_approved }}</option>
+                <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>{{ text_rejected }}</option>
+                <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>{{ text_cancelled }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-reason" class="col-sm-2 col-form-label">{{ entry_reason }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="reason" value="{{ reason }}" placeholder="{{ entry_reason }}" id="input-reason" class="form-control"/>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-notes" class="col-sm-2 col-form-label">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="5" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+            </div>
+          </div>
+          <fieldset>
+            <legend>{{ text_products }}</legend>
+            <div class="table-responsive">
+              <table id="products" class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td>{{ column_product }}</td>
+                    <td>{{ column_unit }}</td>
+                    <td>{{ column_adjustment_type }}</td>
+                    <td>{{ column_quantity }}</td>
+                    <td>{{ column_unit_cost }}</td>
+                    <td>{{ column_notes }}</td>
+                    <td></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% set product_row = 0 %}
+                  {% if products %}
+                    {% for product in products %}
+                      <tr id="product-row{{ product_row }}">
+                        <td>
+                          <select name="products[{{ product_row }}][product_id]" class="form-select product-select" data-row="{{ product_row }}">
+                            <option value="">{{ text_select }}</option>
+                            {% for product_item in products_list %}
+                              <option value="{{ product_item.product_id }}" {% if product_item.product_id == product.product_id %}selected{% endif %}>{{ product_item.name }}</option>
+                            {% endfor %}
+                          </select>
+                        </td>
+                        <td>
+                          <select name="products[{{ product_row }}][unit_id]" class="form-select unit-select" data-row="{{ product_row }}">
+                            <option value="">{{ text_select }}</option>
+                            {% if product.units %}
+                              {% for unit in product.units %}
+                                <option value="{{ unit.unit_id }}" {% if unit.unit_id == product.unit_id %}selected{% endif %}>{{ unit.name }}</option>
+                              {% endfor %}
+                            {% endif %}
+                          </select>
+                        </td>
+                        <td>
+                          <select name="products[{{ product_row }}][adjustment_type]" class="form-select adjustment-type-select" data-row="{{ product_row }}">
+                            <option value="quantity" {% if product.adjustment_type == 'quantity' %}selected{% endif %}>{{ text_quantity_adjustment }}</option>
+                            <option value="cost" {% if product.adjustment_type == 'cost' %}selected{% endif %}>{{ text_cost_adjustment }}</option>
+                          </select>
+                        </td>
+                        <td>
+                          <div class="input-group">
+                            <input type="number" name="products[{{ product_row }}][quantity]" value="{{ product.quantity }}" placeholder="{{ entry_quantity }}" class="form-control" step="0.0001"/>
+                            <span class="input-group-text available-quantity"></span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="number" name="products[{{ product_row }}][unit_cost]" value="{{ product.unit_cost }}" placeholder="{{ entry_unit_cost }}" class="form-control" min="0" step="0.0001"/>
+                        </td>
+                        <td>
+                          <input type="text" name="products[{{ product_row }}][notes]" value="{{ product.notes }}" placeholder="{{ entry_notes }}" class="form-control"/>
+                        </td>
+                        <td class="text-end">
+                          <button type="button" onclick="$('#product-row{{ product_row }}').remove();" class="btn btn-danger"><i class="fas fa-minus-circle"></i></button>
+                        </td>
+                      </tr>
+                      {% set product_row = product_row + 1 %}
+                    {% endfor %}
+                  {% endif %}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="6"></td>
+                    <td class="text-end">
+                      <button type="button" onclick="addProduct();" class="btn btn-primary"><i class="fas fa-plus-circle"></i></button>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+var product_row = {{ product_row }};
+
+function addProduct() {
+    html = '<tr id="product-row' + product_row + '">';
+    html += '  <td><select name="products[' + product_row + '][product_id]" class="form-select product-select" data-row="' + product_row + '"><option value="">{{ text_select }}</option>';
+    {% for product in products_list %}
+    html += '    <option value="{{ product.product_id }}">{{ product.name }}</option>';
+    {% endfor %}
+    html += '  </select></td>';
+    html += '  <td><select name="products[' + product_row + '][unit_id]" class="form-select unit-select" data-row="' + product_row + '"><option value="">{{ text_select }}</option></select></td>';
+    html += '  <td><select name="products[' + product_row + '][adjustment_type]" class="form-select adjustment-type-select" data-row="' + product_row + '"><option value="quantity">{{ text_quantity_adjustment }}</option><option value="cost">{{ text_cost_adjustment }}</option></select></td>';
+    html += '  <td><div class="input-group"><input type="number" name="products[' + product_row + '][quantity]" value="" placeholder="{{ entry_quantity }}" class="form-control" step="0.0001"/><span class="input-group-text available-quantity"></span></div></td>';
+    html += '  <td><input type="number" name="products[' + product_row + '][unit_cost]" value="" placeholder="{{ entry_unit_cost }}" class="form-control" min="0" step="0.0001"/></td>';
+    html += '  <td><input type="text" name="products[' + product_row + '][notes]" value="" placeholder="{{ entry_notes }}" class="form-control"/></td>';
+    html += '  <td class="text-end"><button type="button" onclick="$(\'#product-row' + product_row + '\').remove();" class="btn btn-danger"><i class="fas fa-minus-circle"></i></button></td>';
+    html += '</tr>';
+
+    $('#products tbody').append(html);
+
+    // تفعيل select2 للمنتجات
+    $('#product-row' + product_row + ' .product-select').select2({
+        width: '100%',
+        placeholder: '{{ text_select }}'
+    });
+
+    product_row++;
+}
+
+// تحميل الوحدات عند اختيار المنتج
+$('#products').on('change', '.product-select', function() {
+    var row = $(this).data('row');
+    var product_id = $(this).val();
+    var branch_id = $('#input-branch').val();
+
+    if (!product_id) {
+        return;
+    }
+
+    // تحميل وحدات المنتج
+    $.ajax({
+        url: 'index.php?route=inventory/adjustment/getProductUnits',
+        type: 'post',
+        data: {
+            product_id: product_id
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#product-row' + row + ' .unit-select').prop('disabled', true);
+            $('#product-row' + row + ' .unit-select').html('<option value="">{{ text_loading_units }}</option>');
+        },
+        complete: function() {
+            $('#product-row' + row + ' .unit-select').prop('disabled', false);
+        },
+        success: function(json) {
+            var html = '<option value="">{{ text_select }}</option>';
+
+            if (json['units']) {
+                for (var i = 0; i < json['units'].length; i++) {
+                    html += '<option value="' + json['units'][i]['unit_id'] + '">' + json['units'][i]['name'] + '</option>';
+                }
+            }
+
+            $('#product-row' + row + ' .unit-select').html(html);
+
+            // إعادة تعيين الكمية المتاحة
+            $('#product-row' + row + ' .available-quantity').html('');
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// تحديث الكمية المتاحة عند تغيير الوحدة
+$('#products').on('change', '.unit-select', function() {
+    var row = $(this).data('row');
+    var unit_id = $(this).val();
+    var product_id = $('#product-row' + row + ' .product-select').val();
+    var branch_id = $('#input-branch').val();
+    var adjustment_type = $('#product-row' + row + ' .adjustment-type-select').val();
+
+    if (!unit_id || !product_id || !branch_id || adjustment_type != 'quantity') {
+        $('#product-row' + row + ' .available-quantity').html('');
+        return;
+    }
+
+    // التحقق من الكمية المتاحة
+    $.ajax({
+        url: 'index.php?route=inventory/adjustment/checkAvailability',
+        type: 'post',
+        data: {
+            branch_id: branch_id,
+            product_id: product_id,
+            unit_id: unit_id
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#product-row' + row + ' .available-quantity').html('{{ text_loading_availability }}');
+        },
+        success: function(json) {
+            if (json['available'] !== undefined) {
+                var available = parseFloat(json['available']);
+
+                if (available > 0) {
+                    $('#product-row' + row + ' .available-quantity').html('{{ text_available }}: ' + available);
+                } else {
+                    $('#product-row' + row + ' .available-quantity').html('{{ text_no_stock }}');
+                }
+            } else {
+                $('#product-row' + row + ' .available-quantity').html('');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// تحديث الكمية المتاحة عند تغيير نوع التعديل
+$('#products').on('change', '.adjustment-type-select', function() {
+    var row = $(this).data('row');
+    var adjustment_type = $(this).val();
+
+    if (adjustment_type == 'quantity') {
+        $('#product-row' + row + ' .unit-select').trigger('change');
+    } else {
+        $('#product-row' + row + ' .available-quantity').html('');
+    }
+});
+
+// تحديث الكمية المتاحة عند تغيير الفرع
+$('#input-branch').on('change', function() {
+    $('.unit-select').trigger('change');
+});
+
+// التحقق من الكمية المدخلة
+$('#products').on('input', 'input[name^="products"][name$="[quantity]"]', function() {
+    var input = $(this);
+    var row = input.closest('tr').attr('id').replace('product-row', '');
+    var adjustment_type = $('#product-row' + row + ' .adjustment-type-select').val();
+
+    // التحقق فقط إذا كان نوع التعديل هو الكمية وكانت الكمية سالبة
+    if (adjustment_type == 'quantity' && parseFloat(input.val()) < 0) {
+        var unit_id = $('#product-row' + row + ' .unit-select').val();
+        var product_id = $('#product-row' + row + ' .product-select').val();
+        var branch_id = $('#input-branch').val();
+
+        if (!unit_id || !product_id || !branch_id) {
+            return;
+        }
+
+        // التحقق من الكمية المتاحة
+        $.ajax({
+            url: 'index.php?route=inventory/adjustment/checkAvailability',
+            type: 'post',
+            data: {
+                branch_id: branch_id,
+                product_id: product_id,
+                unit_id: unit_id
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json['available'] !== undefined) {
+                    var available = parseFloat(json['available']);
+                    var quantity = Math.abs(parseFloat(input.val()));
+
+                    if (quantity > available) {
+                        input.addClass('is-invalid');
+
+                        // إضافة رسالة خطأ إذا لم تكن موجودة
+                        if (input.next('.invalid-feedback').length === 0) {
+                            input.after('<div class="invalid-feedback">{{ text_available_quantity|format('"' + available + '"') }}</div>');
+                        }
+                    } else {
+                        input.removeClass('is-invalid');
+                        input.next('.invalid-feedback').remove();
+                    }
+                }
+            }
+        });
+    } else {
+        input.removeClass('is-invalid');
+        input.next('.invalid-feedback').remove();
+    }
+});
+
+// تفعيل select2 للمنتجات عند تحميل الصفحة
+$(document).ready(function() {
+    $('.product-select').select2({
+        width: '100%',
+        placeholder: '{{ text_select }}'
+    });
+
+    // تفعيل datepicker لحقل التاريخ
+    $('#input-adjustment-date').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    });
+});
+
+// تحميل الوحدات عند اختيار المنتج
+$('#products').on('change', '.product-select', function() {
+    var row = $(this).data('row');
+    var product_id = $(this).val();
+    var branch_id = $('#input-branch').val();
+
+    if (!product_id) {
+        return;
+    }
+
+    // تحميل وحدات المنتج
+    $.ajax({
+        url: 'index.php?route=inventory/adjustment/getProductUnits',
+        type: 'post',
+        data: {
+            product_id: product_id
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#product-row' + row + ' .unit-select').prop('disabled', true);
+            $('#product-row' + row + ' .unit-select').html('<option value="">{{ text_loading_units }}</option>');
+        },
+        complete: function() {
+            $('#product-row' + row + ' .unit-select').prop('disabled', false);
+        },
+        success: function(json) {
+            var html = '<option value="">{{ text_select }}</option>';
+
+            if (json['units']) {
+                for (var i = 0; i < json['units'].length; i++) {
+                    html += '<option value="' + json['units'][i]['unit_id'] + '">' + json['units'][i]['name'] + '</option>';
+                }
+            }
+
+            $('#product-row' + row + ' .unit-select').html(html);
+
+            // إعادة تعيين الكمية المتاحة
+            $('#product-row' + row + ' .available-quantity').html('');
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// تحديث الكمية المتاحة عند تغيير الوحدة
+$('#products').on('change', '.unit-select', function() {
+    var row = $(this).data('row');
+    var unit_id = $(this).val();
+    var product_id = $('#product-row' + row + ' .product-select').val();
+    var branch_id = $('#input-branch').val();
+    var adjustment_type = $('#product-row' + row + ' .adjustment-type-select').val();
+
+    if (!unit_id || !product_id || !branch_id || adjustment_type != 'quantity') {
+        $('#product-row' + row + ' .available-quantity').html('');
+        return;
+    }
+
+    // التحقق من الكمية المتاحة
+    $.ajax({
+        url: 'index.php?route=inventory/adjustment/checkAvailability',
+        type: 'post',
+        data: {
+            branch_id: branch_id,
+            product_id: product_id,
+            unit_id: unit_id
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#product-row' + row + ' .available-quantity').html('{{ text_loading_availability }}');
+        },
+        success: function(json) {
+            if (json['available'] !== undefined) {
+                var available = parseFloat(json['available']);
+
+                if (available > 0) {
+                    $('#product-row' + row + ' .available-quantity').html('{{ text_available }}: ' + available);
+                } else {
+                    $('#product-row' + row + ' .available-quantity').html('{{ text_no_stock }}');
+                }
+            } else {
+                $('#product-row' + row + ' .available-quantity').html('');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// تحديث الكمية المتاحة عند تغيير نوع التعديل
+$('#products').on('change', '.adjustment-type-select', function() {
+    var row = $(this).data('row');
+    var adjustment_type = $(this).val();
+
+    if (adjustment_type == 'quantity') {
+        $('#product-row' + row + ' .unit-select').trigger('change');
+    } else {
+        $('#product-row' + row + ' .available-quantity').html('');
+    }
+});
+
+// تحديث الكمية المتاحة عند تغيير الفرع
+$('#input-branch').on('change', function() {
+    $('.unit-select').trigger('change');
+});
+
+// التحقق من الكمية المدخلة
+$('#products').on('input', 'input[name^="products"][name$="[quantity]"]', function() {
+    var input = $(this);
+    var row = input.closest('tr').attr('id').replace('product-row', '');
+    var adjustment_type = $('#product-row' + row + ' .adjustment-type-select').val();
+
+    // التحقق فقط إذا كان نوع التعديل هو الكمية وكانت الكمية سالبة
+    if (adjustment_type == 'quantity' && parseFloat(input.val()) < 0) {
+        var unit_id = $('#product-row' + row + ' .unit-select').val();
+        var product_id = $('#product-row' + row + ' .product-select').val();
+        var branch_id = $('#input-branch').val();
+
+        if (!unit_id || !product_id || !branch_id) {
+            return;
+        }
+
+        // التحقق من الكمية المتاحة
+        $.ajax({
+            url: 'index.php?route=inventory/adjustment/checkAvailability',
+            type: 'post',
+            data: {
+                branch_id: branch_id,
+                product_id: product_id,
+                unit_id: unit_id
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json['available'] !== undefined) {
+                    var available = parseFloat(json['available']);
+                    var quantity = Math.abs(parseFloat(input.val()));
+
+                    if (quantity > available) {
+                        input.addClass('is-invalid');
+
+                        // إضافة رسالة خطأ إذا لم تكن موجودة
+                        if (input.next('.invalid-feedback').length === 0) {
+                            input.after('<div class="invalid-feedback">{{ text_available_quantity|format('"' + available + '"') }}</div>');
+                        }
+                    } else {
+                        input.removeClass('is-invalid');
+                        input.next('.invalid-feedback').remove();
+                    }
+                }
+            }
+        });
+    } else {
+        input.removeClass('is-invalid');
+        input.next('.invalid-feedback').remove();
+    }
+});
+</script>
+{{ footer }}

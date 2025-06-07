@@ -1,0 +1,680 @@
+/**
+ * CSS متقدم لدليل الحسابات
+ * يدعم التصميم المتجاوب والتفاعلي والطباعة
+ */
+
+/* ===== المتغيرات العامة ===== */
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2c3e50;
+    --success-color: #27ae60;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    
+    --asset-color: #3498db;
+    --liability-color: #e74c3c;
+    --equity-color: #9b59b6;
+    --revenue-color: #27ae60;
+    --expense-color: #f39c12;
+    
+    --border-radius: 6px;
+    --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+/* ===== التخطيط العام ===== */
+.accounts-container {
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+.accounts-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 20px;
+    position: relative;
+}
+
+.accounts-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.accounts-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.accounts-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin: 5px 0 0 0;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== شريط الأدوات ===== */
+.accounts-toolbar {
+    background: var(--light-color);
+    border-bottom: 1px solid #dee2e6;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.toolbar-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-container {
+    position: relative;
+    min-width: 300px;
+}
+
+.search-input {
+    border-radius: 25px;
+    padding-left: 45px;
+    border: 2px solid #e9ecef;
+    transition: var(--transition);
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.view-toggle {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.view-toggle .btn {
+    border: none;
+    border-radius: 0;
+    padding: 8px 15px;
+}
+
+.view-toggle .btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ===== الإحصائيات السريعة ===== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background: var(--light-color);
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-color);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.stat-card.asset::before { background: var(--asset-color); }
+.stat-card.liability::before { background: var(--liability-color); }
+.stat-card.equity::before { background: var(--equity-color); }
+.stat-card.revenue::before { background: var(--revenue-color); }
+.stat-card.expense::before { background: var(--expense-color); }
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.stat-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+    opacity: 0.3;
+}
+
+/* ===== جدول الحسابات ===== */
+.accounts-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.accounts-table thead th {
+    background: var(--secondary-color);
+    color: white;
+    font-weight: 600;
+    padding: 15px 12px;
+    text-align: center;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.accounts-table thead th:first-child {
+    border-top-left-radius: var(--border-radius);
+}
+
+.accounts-table thead th:last-child {
+    border-top-right-radius: var(--border-radius);
+}
+
+.accounts-table tbody tr {
+    transition: var(--transition);
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.accounts-table tbody tr:hover {
+    background: #f8f9fa;
+    transform: scale(1.01);
+}
+
+.accounts-table tbody tr.selected {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: var(--primary-color);
+}
+
+.accounts-table td {
+    padding: 12px;
+    vertical-align: middle;
+    border: none;
+}
+
+/* ===== أنماط الحسابات ===== */
+.account-item {
+    transition: var(--transition);
+}
+
+.account-level-0 {
+    font-weight: 700;
+    background: rgba(52, 152, 219, 0.05);
+    border-left: 4px solid var(--primary-color);
+}
+
+.account-level-1 {
+    padding-right: 30px;
+    font-weight: 600;
+    background: rgba(52, 152, 219, 0.03);
+}
+
+.account-level-2 {
+    padding-right: 50px;
+    background: rgba(52, 152, 219, 0.01);
+}
+
+.account-level-3 {
+    padding-right: 70px;
+}
+
+.account-level-4 {
+    padding-right: 90px;
+}
+
+.account-code {
+    font-family: 'Courier New', 'Monaco', monospace;
+    font-weight: 700;
+    color: var(--danger-color);
+    background: rgba(231, 76, 60, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.account-name {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.account-description {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-style: italic;
+    margin-top: 2px;
+}
+
+.account-balance {
+    font-family: 'Courier New', 'Monaco', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: left;
+}
+
+.account-balance.positive {
+    color: var(--success-color);
+}
+
+.account-balance.negative {
+    color: var(--danger-color);
+}
+
+.account-balance.zero {
+    color: #6c757d;
+}
+
+/* ===== شارات نوع الحساب ===== */
+.account-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+}
+
+.account-type-asset { background: var(--asset-color); }
+.account-type-liability { background: var(--liability-color); }
+.account-type-equity { background: var(--equity-color); }
+.account-type-revenue { background: var(--revenue-color); }
+.account-type-expense { background: var(--expense-color); }
+
+/* ===== شارات الحالة ===== */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-active {
+    background: var(--success-color);
+    color: white;
+}
+
+.status-inactive {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* ===== أزرار الإجراءات ===== */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.action-btn.edit {
+    background: var(--primary-color);
+    color: white;
+}
+
+.action-btn.statement {
+    background: var(--info-color);
+    color: white;
+}
+
+.action-btn.delete {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* ===== عرض البطاقات ===== */
+.accounts-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.account-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.account-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.account-card-header {
+    padding: 15px;
+    background: var(--light-color);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.account-card-body {
+    padding: 15px;
+}
+
+.account-card-footer {
+    padding: 10px 15px;
+    background: var(--light-color);
+    border-top: 1px solid #dee2e6;
+}
+
+/* ===== الإجراءات المجمعة ===== */
+.bulk-actions {
+    background: var(--warning-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    display: none;
+}
+
+.bulk-actions.show {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bulk-info {
+    font-weight: 600;
+}
+
+.bulk-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.bulk-btn {
+    padding: 5px 15px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.bulk-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* ===== التحميل والتحديث ===== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.refresh-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--success-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.refresh-indicator.show {
+    opacity: 1;
+}
+
+/* ===== التصميم المتجاوب ===== */
+@media (max-width: 768px) {
+    .accounts-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .toolbar-section {
+        justify-content: center;
+    }
+    
+    .search-container {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .accounts-table {
+        font-size: 0.9rem;
+    }
+    
+    .accounts-table td {
+        padding: 8px;
+    }
+    
+    .account-level-1 { padding-right: 20px; }
+    .account-level-2 { padding-right: 30px; }
+    .account-level-3 { padding-right: 40px; }
+    .account-level-4 { padding-right: 50px; }
+    
+    .accounts-cards {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .accounts-header {
+        padding: 15px;
+    }
+    
+    .accounts-title {
+        font-size: 1.4rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .accounts-table thead th {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .accounts-table td {
+        padding: 6px;
+    }
+    
+    .account-code {
+        font-size: 0.8rem;
+        padding: 2px 6px;
+    }
+}
+
+/* ===== الطباعة ===== */
+@media print {
+    .accounts-toolbar,
+    .bulk-actions,
+    .action-buttons,
+    .pagination,
+    .btn,
+    .checkbox {
+        display: none !important;
+    }
+    
+    .accounts-container {
+        box-shadow: none;
+        border: none;
+    }
+    
+    .accounts-table {
+        border: 1px solid #000;
+    }
+    
+    .accounts-table th,
+    .accounts-table td {
+        border: 1px solid #000;
+        padding: 8px;
+    }
+    
+    .accounts-table thead th {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+    }
+    
+    .account-item {
+        page-break-inside: avoid;
+    }
+    
+    .account-level-0 {
+        page-break-after: avoid;
+    }
+}
+
+/* ===== الرسوم المتحركة ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+
+.account-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.bulk-actions {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* ===== تخصيصات إضافية ===== */
+.sortable-ghost {
+    opacity: 0.5;
+    background: var(--primary-color);
+    color: white;
+}
+
+.highlight {
+    background: yellow !important;
+    animation: highlight 2s ease-out;
+}
+
+@keyframes highlight {
+    from { background: yellow; }
+    to { background: transparent; }
+}
+
+.account-hierarchy-line {
+    border-left: 2px solid #dee2e6;
+    margin-left: 10px;
+    padding-left: 15px;
+}
+
+.account-parent-indicator {
+    color: var(--warning-color);
+    margin-left: 5px;
+}
+
+.account-child-count {
+    background: var(--info-color);
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    margin-left: 5px;
+}

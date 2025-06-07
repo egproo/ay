@@ -1,0 +1,25 @@
+<div class="swiper sliderhomex{{module_id}}">
+    <div class="swiper-wrapper">
+        {% for banner in banners %}
+        <div class="swiper-slide">
+            {% if banner.link %}
+            <a href="{{ banner.link }}" style="display: block; width: 100%; padding-top: 20; position: relative;"> <!-- 16:9 aspect ratio -->
+                <img loading="lazy" style="max-width: 100%; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" class="swiper-slicer-image img-responsive" src="{{ banner.image }}" alt="{{ banner.title }}" />
+            </a>
+            {% else %}
+            <div style="display: block; width: 100%; padding-top: 20%; position: relative;"> <!-- 16:9 aspect ratio -->
+                <img loading="lazy" style="max-width: 100%; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" class="swiper-slicer-image img-responsive" src="{{ banner.image }}" alt="{{ banner.title }}" />
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+var swipersliderhomex{{module_id}} = new Swiper(".sliderhomex{{module_id}}", {
+    autoplay: {
+        delay: 5000,
+    },
+});
+</script>

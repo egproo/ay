@@ -1,0 +1,482 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ add_url }}" data-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary">
+          <i class="fa fa-plus"></i> {{ button_add }}
+        </a>
+        <button type="button" id="button-refresh" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-info">
+          <i class="fa fa-refresh"></i> {{ button_refresh }}
+        </button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <!-- Goals Summary Cards -->
+    <div class="row" id="goals-summary">
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-primary">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ goals_summary.total_goals|default(0) }}</h3>
+            <p class="summary-label">{{ text_total_goals }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-success">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ goals_summary.completed_goals|default(0) }}</h3>
+            <p class="summary-label">{{ text_completed_goals }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-info">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ goals_summary.active_goals|default(0) }}</h3>
+            <p class="summary-label">{{ text_active_goals }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-warning">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ goals_summary.overdue_goals|default(0) }}</h3>
+            <p class="summary-label">{{ text_overdue_goals }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-default">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ goals_summary.avg_progress|default(0) }}%</h3>
+            <p class="summary-label">{{ text_avg_progress }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+        <div class="panel panel-default">
+          <div class="panel-body text-center">
+            <h3 class="summary-value">{{ goals_summary.completion_rate|default(0) }}%</h3>
+            <p class="summary-label">{{ text_completion_rate }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ button_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>{{ text_filter_period }}</label>
+              <select name="filter_period" id="filter-period" class="form-control">
+                <option value="">{{ text_all_periods }}</option>
+                <option value="current_month" {% if filter_period == 'current_month' %}selected{% endif %}>{{ text_period_current_month }}</option>
+                <option value="current_quarter" {% if filter_period == 'current_quarter' %}selected{% endif %}>{{ text_period_current_quarter }}</option>
+                <option value="current_year" {% if filter_period == 'current_year' %}selected{% endif %}>{{ text_period_current_year }}</option>
+                <option value="overdue" {% if filter_period == 'overdue' %}selected{% endif %}>{{ text_period_overdue }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>{{ text_filter_department }}</label>
+              <select name="filter_department" id="filter-department" class="form-control">
+                <option value="">{{ text_all_departments }}</option>
+                {% for department in departments %}
+                <option value="{{ department.user_group_id }}" {% if filter_department == department.user_group_id %}selected{% endif %}>{{ department.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>{{ text_filter_status }}</label>
+              <select name="filter_status" id="filter-status" class="form-control">
+                <option value="">{{ text_all_statuses }}</option>
+                <option value="active" {% if filter_status == 'active' %}selected{% endif %}>{{ text_status_active }}</option>
+                <option value="completed" {% if filter_status == 'completed' %}selected{% endif %}>{{ text_status_completed }}</option>
+                <option value="paused" {% if filter_status == 'paused' %}selected{% endif %}>{{ text_status_paused }}</option>
+                <option value="cancelled" {% if filter_status == 'cancelled' %}selected{% endif %}>{{ text_status_cancelled }}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="col-md-3">
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <div>
+                <button type="button" id="button-filter" class="btn btn-primary">{{ button_filter }}</button>
+                <button type="button" id="button-clear-filter" class="btn btn-default">{{ button_clear_filter }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Goals List -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-list"></i> {{ text_list }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover" id="goals-table">
+            <thead>
+              <tr>
+                <th>{{ column_goal_title }}</th>
+                <th>{{ column_goal_type }}</th>
+                <th>{{ column_progress }}</th>
+                <th>{{ column_assigned_to }}</th>
+                <th>{{ column_department }}</th>
+                <th>{{ column_end_date }}</th>
+                <th>{{ column_status }}</th>
+                <th>{{ column_action }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for goal in goals %}
+              <tr data-goal-id="{{ goal.goal_id }}">
+                <td>
+                  <strong>{{ goal.goal_title }}</strong>
+                  {% if goal.goal_description %}
+                  <br><small class="text-muted">{{ goal.goal_description|slice(0, 100) }}{% if goal.goal_description|length > 100 %}...{% endif %}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="label label-default">
+                    {% if goal.goal_type == 'sales' %}{{ text_goal_type_sales }}
+                    {% elseif goal.goal_type == 'revenue' %}{{ text_goal_type_revenue }}
+                    {% elseif goal.goal_type == 'profit' %}{{ text_goal_type_profit }}
+                    {% elseif goal.goal_type == 'customers' %}{{ text_goal_type_customers }}
+                    {% elseif goal.goal_type == 'orders' %}{{ text_goal_type_orders }}
+                    {% else %}{{ goal.goal_type }}
+                    {% endif %}
+                  </span>
+                </td>
+                <td>
+                  <div class="progress" style="margin-bottom: 5px;">
+                    <div class="progress-bar 
+                      {% if goal.progress_percentage >= 100 %}progress-bar-success
+                      {% elseif goal.progress_percentage >= 75 %}progress-bar-info
+                      {% elseif goal.progress_percentage >= 50 %}progress-bar-warning
+                      {% else %}progress-bar-danger
+                      {% endif %}" 
+                      style="width: {{ goal.progress_percentage|min(100) }}%">
+                    </div>
+                  </div>
+                  <small>{{ goal.current_value|number_format(0) }} / {{ goal.target_value|number_format(0) }} ({{ goal.progress_percentage }}%)</small>
+                </td>
+                <td>{{ goal.assigned_firstname }} {{ goal.assigned_lastname }}</td>
+                <td>{{ goal.department_name|default('-') }}</td>
+                <td>
+                  {{ goal.end_date|date('Y-m-d') }}
+                  {% if goal.days_remaining > 0 %}
+                  <br><small class="text-info">{{ goal.days_remaining }} {{ text_days }}</small>
+                  {% elseif goal.days_remaining == 0 %}
+                  <br><small class="text-warning">{{ text_today }}</small>
+                  {% else %}
+                  <br><small class="text-danger">{{ text_overdue }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="label 
+                    {% if goal.calculated_status == 'completed' %}label-success
+                    {% elseif goal.calculated_status == 'on_track' %}label-info
+                    {% elseif goal.calculated_status == 'behind' %}label-warning
+                    {% elseif goal.calculated_status == 'at_risk' or goal.calculated_status == 'overdue' %}label-danger
+                    {% else %}label-default
+                    {% endif %}">
+                    {% if goal.calculated_status == 'completed' %}{{ text_status_completed }}
+                    {% elseif goal.calculated_status == 'on_track' %}{{ text_status_on_track }}
+                    {% elseif goal.calculated_status == 'behind' %}{{ text_status_behind }}
+                    {% elseif goal.calculated_status == 'at_risk' %}{{ text_status_at_risk }}
+                    {% elseif goal.calculated_status == 'overdue' %}{{ text_status_overdue }}
+                    {% elseif goal.calculated_status == 'not_started' %}{{ text_status_not_started }}
+                    {% else %}{{ goal.status }}
+                    {% endif %}
+                  </span>
+                </td>
+                <td>
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown">
+                      {{ text_action }} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                      <li><a href="{{ url('dashboard/goals/edit', 'user_token=' ~ user_token ~ '&goal_id=' ~ goal.goal_id) }}"><i class="fa fa-pencil"></i> {{ button_edit }}</a></li>
+                      <li><a href="#" onclick="updateProgress({{ goal.goal_id }}, '{{ goal.goal_title }}', {{ goal.current_value }})"><i class="fa fa-line-chart"></i> {{ button_update_progress }}</a></li>
+                      <li class="divider"></li>
+                      <li><a href="{{ url('dashboard/goals/delete', 'user_token=' ~ user_token ~ '&goal_id=' ~ goal.goal_id) }}" onclick="return confirm('{{ text_confirm_delete }}')"><i class="fa fa-trash"></i> {{ button_delete }}</a></li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="8" class="text-center">{{ text_no_results }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="display: none;">
+      <div class="loading-content">
+        <i class="fa fa-spinner fa-spin fa-3x"></i>
+        <p>{{ text_loading }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Update Progress Modal -->
+<div class="modal fade" id="modal-update-progress" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ text_update_progress_modal }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="form-update-progress">
+          <input type="hidden" id="progress-goal-id" name="goal_id" value="">
+          
+          <div class="form-group">
+            <label>{{ text_goal_title }}</label>
+            <p id="progress-goal-title" class="form-control-static"></p>
+          </div>
+          
+          <div class="form-group">
+            <label>{{ text_current_progress }}</label>
+            <p id="progress-current-value" class="form-control-static"></p>
+          </div>
+          
+          <div class="form-group">
+            <label for="progress-new-value">{{ text_new_progress_value }}</label>
+            <input type="number" step="0.01" class="form-control" id="progress-new-value" name="current_value" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="progress-notes">{{ text_progress_notes }}</label>
+            <textarea class="form-control" id="progress-notes" name="notes" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" onclick="saveProgress()">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.summary-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.summary-label {
+  font-size: 12px;
+  margin: 5px 0 0 0;
+  text-transform: uppercase;
+}
+
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-content p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #666;
+}
+
+.progress {
+  height: 15px;
+}
+
+.table td {
+  vertical-align: middle;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // Filter functionality
+    $('#button-filter').on('click', function() {
+        applyFilters();
+    });
+    
+    $('#button-clear-filter').on('click', function() {
+        $('#filter-period').val('');
+        $('#filter-department').val('');
+        $('#filter-status').val('');
+        applyFilters();
+    });
+    
+    // Auto-apply filters on change
+    $('#filter-period, #filter-department, #filter-status').on('change', function() {
+        applyFilters();
+    });
+    
+    // Refresh button
+    $('#button-refresh').on('click', function() {
+        refreshGoals();
+    });
+});
+
+function applyFilters() {
+    var url = 'index.php?route=dashboard/goals&user_token={{ user_token }}';
+    
+    var period = $('#filter-period').val();
+    var department = $('#filter-department').val();
+    var status = $('#filter-status').val();
+    
+    if (period) url += '&filter_period=' + encodeURIComponent(period);
+    if (department) url += '&filter_department=' + encodeURIComponent(department);
+    if (status) url += '&filter_status=' + encodeURIComponent(status);
+    
+    window.location = url;
+}
+
+function refreshGoals() {
+    $('#loading-overlay').show();
+    
+    $.ajax({
+        url: 'index.php?route=dashboard/goals/getGoalsData&user_token={{ user_token }}&ajax=1',
+        type: 'GET',
+        data: {
+            filter_period: $('#filter-period').val(),
+            filter_department: $('#filter-department').val(),
+            filter_status: $('#filter-status').val()
+        },
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                // Update summary cards
+                updateSummaryCards(json.summary);
+                
+                // Reload page to update table
+                location.reload();
+            }
+            
+            $('#loading-overlay').hide();
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.error('Goals refresh failed:', thrownError);
+            $('#loading-overlay').hide();
+            alert('{{ error_refresh_failed }}');
+        }
+    });
+}
+
+function updateSummaryCards(summary) {
+    $('#goals-summary .summary-value').each(function(index) {
+        var value = 0;
+        switch(index) {
+            case 0: value = summary.total_goals; break;
+            case 1: value = summary.completed_goals; break;
+            case 2: value = summary.active_goals; break;
+            case 3: value = summary.overdue_goals; break;
+            case 4: value = summary.avg_progress + '%'; break;
+            case 5: value = summary.completion_rate + '%'; break;
+        }
+        $(this).text(value);
+    });
+}
+
+function updateProgress(goalId, goalTitle, currentValue) {
+    $('#progress-goal-id').val(goalId);
+    $('#progress-goal-title').text(goalTitle);
+    $('#progress-current-value').text(currentValue);
+    $('#progress-new-value').val(currentValue);
+    $('#progress-notes').val('');
+    
+    $('#modal-update-progress').modal('show');
+}
+
+function saveProgress() {
+    var formData = $('#form-update-progress').serialize();
+    
+    $.ajax({
+        url: 'index.php?route=dashboard/goals/updateProgress&user_token={{ user_token }}',
+        type: 'POST',
+        data: formData,
+        dataType: 'json',
+        success: function(json) {
+            if (json.success) {
+                $('#modal-update-progress').modal('hide');
+                
+                // Show success message
+                $('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json.success + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>').prependTo('#content .container-fluid');
+                
+                // Refresh the page
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            } else if (json.error) {
+                alert(json.error);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.error('Update progress failed:', thrownError);
+            alert('{{ error_update_progress }}');
+        }
+    });
+}
+</script>
+
+{{ footer }}

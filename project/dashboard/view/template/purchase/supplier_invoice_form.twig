@@ -1,0 +1,198 @@
+{# Placeholder for Supplier Invoice Add/Edit Form #}
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <h4 class="modal-title">{{ text_form_title }}</h4> {# text_form_title needs to be passed from controller #}
+</div>
+<div class="modal-body">
+  <form id="supplier-invoice-form" class="form-horizontal">
+    <input type="hidden" name="invoice_id" value="{{ invoice_id|default(0) }}">
+    
+    {# TODO: Add form fields based on the supplier_invoice table schema #}
+    {# Example fields: #}
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="supplier_id">{{ entry_supplier }}</label>
+      <div class="col-sm-9">
+        <select name="supplier_id" id="supplier_id" class="form-control select2-supplier" required>
+           <option value="">{{ text_select_supplier }}</option>
+           {% for supplier in suppliers %}
+           <option value="{{ supplier.supplier_id }}" {% if supplier.supplier_id == supplier_id %}selected{% endif %}>{{ supplier.name }}</option>
+           {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="invoice_number">{{ entry_invoice_number }}</label>
+      <div class="col-sm-9">
+        <input type="text" name="invoice_number" id="invoice_number" value="{{ invoice_number|default('') }}" class="form-control" required>
+      </div>
+    </div>
+
+    <div class="form-group required">
+      <label class="col-sm-3 control-label" for="invoice_date">{{ entry_invoice_date }}</label>
+      <div class="col-sm-9">
+         <div class="input-group date">
+            <input type="text" name="invoice_date" id="invoice_date" value="{{ invoice_date|default('') }}" placeholder="{{ entry_invoice_date }}" data-date-format="YYYY-MM-DD" class="form-control" required>
+            <span class="input-group-btn">
+            <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+            </span>
+         </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="col-sm-3 control-label" for="po_id">{{ entry_purchase_order }}</label>
+      <div class="col-sm-9">
+        <select name="po_id" id="po_id" class="form-control select2-po">
+           <option value="">{{ text_select_po }}</option>
+           {# Options loaded via AJAX based on supplier #}
+           {% if po_id %}
+           <option value="{{ po_id }}" selected>{{ po_number }}</option> {# Pass po_number if editing #}
+           {% endif %}
+        </select>
+      </div>
+    </div>
+
+    {# Add fields for due_date, currency, exchange_rate, notes etc. #}
+    {# Add table for invoice items #}
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>{{ column_product }}</th>
+            <th>{{ column_quantity }}</th>
+            <th>{{ column_unit_price }}</th>
+            <th>{{ column_total }}</th>
+            <th>{{ column_action }}</th>
+          </tr>
+        </thead>
+        <tbody id="invoice-items">
+          {# Items will be loaded via AJAX based on PO or added manually #}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4"></td>
+            <td><button type="button" class="btn btn-primary" id="add-invoice-item">{{ button_add_item }}</button></td>
+          </tr>
+          {# Add rows for subtotal, tax, total #}
+        </tfoot>
+      </table>
+    </div>
+
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+  <button type="button" class="btn btn-primary" id="save-invoice-btn">{{ button_save }}</button>
+</div>
+
+<script>
+// Placeholder for form-specific JavaScript
+$(document).ready(function() {
+    // Initialize Select2, Datepickers
+    $('.select2-supplier').select2({ dropdownParent: $('#modal-invoice-form .modal-content') });
+    $('.select2-po').select2({ 
+        dropdownParent: $('#modal-invoice-form .modal-content'),
+        placeholder: '{{ text_select_po }}',
+        allowClear: true,
+        ajax: {
+            // AJAX call to fetch POs based on selected supplier
+            url: 'index.php?route=purchase/order/ajaxSearchPO&user_token={{ user_token }}', 
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    q: params.term, 
+                    supplier_id: $('#supplier_id').val() // Filter by supplier
+                };
+            },
+            processResults: function (data) {
+                return { results: data };
+            }
+        }
+    }).on('select2:select', function(e) {
+        var poId = $(this).val();
+        if (poId) {
+            // Load PO items into the invoice item table
+            loadPoItemsForInvoice(poId);
+        } else {
+            $('#invoice-items').empty(); // Clear items if PO deselected
+        }
+    });
+
+    $('.date input').datetimepicker({
+        pickTime: false,
+        format: 'YYYY-MM-DD'
+    });
+
+    // Add Item Button
+    $('#add-invoice-item').on('click', function() {
+        // TODO: Add logic to add a new row for manual item entry
+        alert('Add item functionality not implemented yet.');
+    });
+
+    // Remove Item Button
+    $('#invoice-items').on('click', '.remove-invoice-item', function() {
+        $(this).closest('tr').remove();
+        // TODO: Recalculate totals
+    });
+
+    // Save Button
+    $('#save-invoice-btn').on('click', function() {
+        // TODO: Add validation and AJAX save logic
+        alert('Save functionality not implemented yet.');
+        // $.ajax({ ... call controller's ajaxSave ... });
+    });
+
+    // Function to load PO items
+    function loadPoItemsForInvoice(poId) {
+        $.ajax({
+            url: 'index.php?route=purchase/supplier_invoice/ajaxGetPoItems&user_token={{ user_token }}', // Need this controller method
+            type: 'GET',
+            data: { po_id: poId },
+            dataType: 'json',
+            beforeSend: function() {
+                // showLoading();
+                $('#invoice-items').html('<tr><td colspan="5" class="text-center">{{ text_loading }}</td></tr>');
+            },
+            success: function(json) {
+                var html = '';
+                if (json.items && json.items.length > 0) {
+                    json.items.forEach(function(item) {
+                        // Only add items with remaining quantity to invoice
+                        if (parseFloat(item.remaining_quantity) > 0) {
+                             html += '<tr>';
+                             // Add input fields for invoice item based on PO item
+                             html += '<td><input type="hidden" name="item[po_item_id][]" value="' + item.po_item_id + '">' + item.product_name + '</td>';
+                             html += '<td><input type="number" name="item[quantity][]" value="' + item.remaining_quantity + '" max="' + item.remaining_quantity + '" min="0" step="0.01" class="form-control item-qty"></td>';
+                             html += '<td><input type="number" name="item[unit_price][]" value="' + item.unit_price + '" step="0.01" class="form-control item-price"></td>';
+                             html += '<td class="item-total text-right">0.00</td>'; // Calculate this
+                             html += '<td><button type="button" class="btn btn-danger btn-xs remove-invoice-item"><i class="fa fa-trash"></i></button></td>';
+                             html += '</tr>';
+                        }
+                    });
+                } else {
+                    html = '<tr><td colspan="5" class="text-center">{{ text_no_items }}</td></tr>';
+                }
+                $('#invoice-items').html(html);
+                // TODO: Add event listeners for qty/price changes to recalculate totals
+                // calculateInvoiceTotals();
+            },
+            error: function() {
+                 $('#invoice-items').html('<tr><td colspan="5" class="text-center">{{ error_ajax }}</td></tr>');
+            },
+            complete: function() {
+                // hideLoading();
+            }
+        });
+    }
+
+    // TODO: Implement calculateInvoiceTotals function
+
+    // Load PO items if PO is pre-selected (edit mode)
+    var initialPoId = $('#po_id').val();
+    if (initialPoId) {
+        loadPoItemsForInvoice(initialPoId);
+    }
+});
+</script>

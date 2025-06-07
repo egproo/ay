@@ -1,0 +1,996 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="button" id="button-preview" data-bs-toggle="tooltip" title="{{ button_preview }}" class="btn btn-info">
+          <i class="fa-solid fa-eye"></i>
+        </button>
+        <button type="button" id="button-print" data-bs-toggle="tooltip" title="{{ button_print }}" class="btn btn-primary">
+          <i class="fa-solid fa-print"></i>
+        </button>
+        <button type="button" id="button-download" data-bs-toggle="tooltip" title="{{ button_download }}" class="btn btn-success">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button type="button" id="button-save-template" data-bs-toggle="tooltip" title="{{ button_save_template }}" class="btn btn-warning">
+          <i class="fa-solid fa-save"></i>
+        </button>
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-cog"></i> {{ text_actions }}
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" id="btn-bulk-operations"><i class="fa-solid fa-layer-group"></i> {{ text_bulk_operations }}</a></li>
+            <li><a class="dropdown-item" href="#" id="btn-generate-barcodes"><i class="fa-solid fa-barcode"></i> {{ button_generate_all }}</a></li>
+            <li><a class="dropdown-item" href="#" id="btn-test-print"><i class="fa-solid fa-vial"></i> {{ text_test_print }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" id="btn-statistics"><i class="fa-solid fa-chart-bar"></i> {{ text_statistics }}</a></li>
+            <li><a class="dropdown-item" href="#" id="btn-print-log"><i class="fa-solid fa-history"></i> {{ text_print_log }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" id="btn-export-template"><i class="fa-solid fa-file-export"></i> {{ button_export_template }}</a></li>
+            <li><a class="dropdown-item" href="#" id="btn-import-template"><i class="fa-solid fa-file-import"></i> {{ button_import_template }}</a></li>
+          </ul>
+        </div>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-secondary">
+          <i class="fa-solid fa-reply"></i>
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success alert-dismissible"><i class="fa-solid fa-check-circle"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+
+    <div class="row">
+      <!-- إعدادات الطباعة -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <i class="fa-solid fa-cog"></i> {{ text_print_settings }}
+          </div>
+          <div class="card-body">
+            <form id="form-barcode-print">
+              <!-- اختيار القالب -->
+              <div class="mb-3">
+                <label for="input-template" class="form-label">{{ entry_template }}</label>
+                <select name="template_id" id="input-template" class="form-select">
+                  {% for template in templates %}
+                    <option value="{{ template.template_id }}"{% if template.is_default %} selected{% endif %}>{{ template.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- نوع الباركود -->
+              <div class="mb-3">
+                <label for="input-barcode-type" class="form-label">{{ entry_barcode_type }}</label>
+                <select name="barcode_type" id="input-barcode-type" class="form-select">
+                  {% for type_key, type_name in barcode_types %}
+                    <option value="{{ type_key }}"{% if type_key == 'CODE128' %} selected{% endif %}>{{ type_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- حجم الورق -->
+              <div class="mb-3">
+                <label for="input-paper-size" class="form-label">{{ entry_paper_size }}</label>
+                <select name="paper_size" id="input-paper-size" class="form-select">
+                  {% for size_key, size_name in paper_sizes %}
+                    <option value="{{ size_key }}"{% if size_key == 'A4' %} selected{% endif %}>{{ size_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <!-- اتجاه الصفحة -->
+              <div class="mb-3">
+                <label for="input-orientation" class="form-label">{{ entry_orientation }}</label>
+                <select name="orientation" id="input-orientation" class="form-select">
+                  <option value="portrait" selected>{{ text_portrait }}</option>
+                  <option value="landscape">{{ text_landscape }}</option>
+                </select>
+              </div>
+
+              <!-- إعدادات التخطيط -->
+              <div class="row">
+                <div class="col-6">
+                  <label for="input-labels-per-row" class="form-label">{{ entry_labels_per_row }}</label>
+                  <input type="number" name="labels_per_row" value="3" min="1" max="10" id="input-labels-per-row" class="form-control">
+                </div>
+                <div class="col-6">
+                  <label for="input-labels-per-column" class="form-label">{{ entry_labels_per_column }}</label>
+                  <input type="number" name="labels_per_column" value="8" min="1" max="20" id="input-labels-per-column" class="form-control">
+                </div>
+              </div>
+
+              <!-- إعدادات العرض -->
+              <div class="mt-3">
+                <h6>{{ text_display_options }}</h6>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="show_product_name" value="1" id="show-product-name" checked>
+                  <label class="form-check-label" for="show-product-name">{{ entry_show_product_name }}</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="show_sku" value="1" id="show-sku" checked>
+                  <label class="form-check-label" for="show-sku">{{ entry_show_sku }}</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="show_price" value="1" id="show-price" checked>
+                  <label class="form-check-label" for="show-price">{{ entry_show_price }}</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="show_barcode_text" value="1" id="show-barcode-text" checked>
+                  <label class="form-check-label" for="show-barcode-text">{{ entry_show_barcode_text }}</label>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- إحصائيات سريعة -->
+        <div class="card mt-3">
+          <div class="card-header">
+            <i class="fa-solid fa-chart-bar"></i> {{ text_statistics }}
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-6">
+                <div class="border-end">
+                  <h4 class="text-primary" id="selected-count">0</h4>
+                  <small>{{ text_selected_products }}</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <h4 class="text-success" id="total-labels">0</h4>
+                <small>{{ text_total_labels }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- اختيار المنتجات -->
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <i class="fa-solid fa-boxes"></i> {{ text_product_selection }}
+            <div class="float-end">
+              <button type="button" id="button-select-all" class="btn btn-sm btn-outline-primary">{{ button_select_all }}</button>
+              <button type="button" id="button-clear-all" class="btn btn-sm btn-outline-secondary">{{ button_clear_all }}</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- فلاتر البحث -->
+            <div class="row mb-3">
+              <div class="col-md-3">
+                <input type="text" id="filter-name" placeholder="{{ entry_filter_name }}" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <input type="text" id="filter-sku" placeholder="{{ entry_filter_sku }}" class="form-control">
+              </div>
+              <div class="col-md-3">
+                <select id="filter-category" class="form-select">
+                  <option value="">{{ text_all_categories }}</option>
+                  {% for category in categories %}
+                    <option value="{{ category.category_id }}">{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3">
+                <button type="button" id="button-filter" class="btn btn-primary w-100">{{ button_filter }}</button>
+              </div>
+            </div>
+
+            <!-- جدول المنتجات -->
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover" id="products-table">
+                <thead>
+                  <tr>
+                    <th width="1">
+                      <input type="checkbox" id="select-all-products">
+                    </th>
+                    <th>{{ column_image }}</th>
+                    <th>{{ column_name }}</th>
+                    <th>{{ column_model }}</th>
+                    <th>{{ column_sku }}</th>
+                    <th>{{ column_price }}</th>
+                    <th>{{ column_stock }}</th>
+                    <th>{{ column_quantity }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for product in products %}
+                    <tr>
+                      <td>
+                        <input type="checkbox" name="selected_products[]" value="{{ product.product_id }}" class="product-checkbox">
+                      </td>
+                      <td>
+                        {% if product.image %}
+                          <img src="{{ product.image }}" alt="{{ product.name }}" class="img-thumbnail" style="width: 40px; height: 40px;">
+                        {% else %}
+                          <div class="bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="fa-solid fa-image text-muted"></i>
+                          </div>
+                        {% endif %}
+                      </td>
+                      <td>{{ product.name }}</td>
+                      <td>{{ product.model }}</td>
+                      <td>{{ product.sku }}</td>
+                      <td>{{ product.price }}</td>
+                      <td>
+                        <span class="badge bg-{{ product.quantity > 0 ? 'success' : 'danger' }}">
+                          {{ product.quantity }}
+                        </span>
+                      </td>
+                      <td>
+                        <input type="number" name="quantities[{{ product.product_id }}]" value="1" min="1" max="100" class="form-control form-control-sm quantity-input" style="width: 80px;" disabled>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- ترقيم الصفحات -->
+            <div class="row">
+              <div class="col-sm-6 text-start">{{ pagination }}</div>
+              <div class="col-sm-6 text-end">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal للمعاينة -->
+<div class="modal fade" id="modal-preview" tabindex="-1" style="z-index: 1060;">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_barcode_preview }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="preview-content" class="text-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">{{ text_loading }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+        <button type="button" class="btn btn-primary" id="button-print-from-preview">{{ button_print }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal لحفظ القالب -->
+<div class="modal fade" id="modal-save-template" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_save_template }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-save-template">
+          <div class="mb-3">
+            <label for="template-name" class="form-label">{{ entry_template_name }}</label>
+            <input type="text" id="template-name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="template-description" class="form-label">{{ entry_template_description }}</label>
+            <textarea id="template-description" rows="3" class="form-control"></textarea>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="template-default">
+            <label class="form-check-label" for="template-default">{{ entry_set_as_default }}</label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-primary" id="button-save-template-confirm">{{ button_save }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"><!--
+$(document).ready(function() {
+    // تحديث العدادات
+    updateCounters();
+
+    // تفعيل/إلغاء تفعيل حقول الكمية
+    $('.product-checkbox').on('change', function() {
+        var quantityInput = $(this).closest('tr').find('.quantity-input');
+        if ($(this).is(':checked')) {
+            quantityInput.prop('disabled', false);
+        } else {
+            quantityInput.prop('disabled', true);
+        }
+        updateCounters();
+    });
+
+    // تحديث العدادات عند تغيير الكمية
+    $('.quantity-input').on('input', function() {
+        updateCounters();
+    });
+
+    // اختيار/إلغاء اختيار الكل
+    $('#select-all-products').on('change', function() {
+        $('.product-checkbox').prop('checked', $(this).is(':checked')).trigger('change');
+    });
+
+    $('#button-select-all').on('click', function() {
+        $('#select-all-products').prop('checked', true).trigger('change');
+    });
+
+    $('#button-clear-all').on('click', function() {
+        $('#select-all-products').prop('checked', false).trigger('change');
+    });
+
+    // فلترة المنتجات
+    $('#button-filter').on('click', function() {
+        var url = 'index.php?route=inventory/barcode_print&user_token={{ user_token }}';
+        var filter_name = $('#filter-name').val();
+        var filter_sku = $('#filter-sku').val();
+        var filter_category = $('#filter-category').val();
+
+        if (filter_name) {
+            url += '&filter_name=' + encodeURIComponent(filter_name);
+        }
+
+        if (filter_sku) {
+            url += '&filter_sku=' + encodeURIComponent(filter_sku);
+        }
+
+        if (filter_category) {
+            url += '&filter_category_id=' + filter_category;
+        }
+
+        location = url;
+    });
+
+    // معاينة الباركود
+    $('#button-preview').on('click', function() {
+        var selectedProducts = getSelectedProducts();
+
+        if (selectedProducts.length === 0) {
+            alert('{{ text_no_products_selected }}');
+            return;
+        }
+
+        var formData = $('#form-barcode-print').serialize();
+        formData += '&' + $.param({selected_products: selectedProducts});
+
+        $('#modal-preview').modal('show');
+        $('#preview-content').html('<div class="spinner-border" role="status"><span class="visually-hidden">{{ text_loading }}</span></div>');
+
+        $.ajax({
+            url: 'index.php?route=inventory/barcode_print/preview&user_token={{ user_token }}',
+            type: 'post',
+            data: formData,
+            success: function(html) {
+                $('#preview-content').html(html);
+            },
+            error: function() {
+                $('#preview-content').html('<div class="alert alert-danger">{{ text_preview_error }}</div>');
+            }
+        });
+    });
+
+    // طباعة الباركود
+    $('#button-print, #button-print-from-preview').on('click', function() {
+        var selectedProducts = getSelectedProducts();
+
+        if (selectedProducts.length === 0) {
+            alert('{{ text_no_products_selected }}');
+            return;
+        }
+
+        var formData = $('#form-barcode-print').serialize();
+        formData += '&' + $.param({selected_products: selectedProducts});
+
+        var printWindow = window.open('index.php?route=inventory/barcode_print/print&user_token={{ user_token }}', '_blank');
+
+        $.ajax({
+            url: 'index.php?route=inventory/barcode_print/print&user_token={{ user_token }}',
+            type: 'post',
+            data: formData,
+            success: function(html) {
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.print();
+            }
+        });
+    });
+
+    // تحميل PDF
+    $('#button-download').on('click', function() {
+        var selectedProducts = getSelectedProducts();
+
+        if (selectedProducts.length === 0) {
+            alert('{{ text_no_products_selected }}');
+            return;
+        }
+
+        var formData = $('#form-barcode-print').serialize();
+        formData += '&' + $.param({selected_products: selectedProducts});
+
+        // إنشاء نموذج مخفي للتحميل
+        var form = $('<form>', {
+            'method': 'POST',
+            'action': 'index.php?route=inventory/barcode_print/download&user_token={{ user_token }}',
+            'target': '_blank'
+        });
+
+        // إضافة البيانات للنموذج
+        $.each(formData.split('&'), function(i, field) {
+            var fieldData = field.split('=');
+            form.append($('<input>', {
+                'type': 'hidden',
+                'name': decodeURIComponent(fieldData[0]),
+                'value': decodeURIComponent(fieldData[1] || '')
+            }));
+        });
+
+        $('body').append(form);
+        form.submit();
+        form.remove();
+    });
+
+    // حفظ القالب
+    $('#button-save-template').on('click', function() {
+        $('#modal-save-template').modal('show');
+    });
+
+    $('#button-save-template-confirm').on('click', function() {
+        var templateData = $('#form-barcode-print').serialize();
+        var templateName = $('#template-name').val();
+        var templateDescription = $('#template-description').val();
+        var isDefault = $('#template-default').is(':checked') ? 1 : 0;
+
+        if (!templateName) {
+            alert('{{ text_template_name_required }}');
+            return;
+        }
+
+        $.ajax({
+            url: 'index.php?route=inventory/barcode_print/saveTemplate&user_token={{ user_token }}',
+            type: 'post',
+            data: {
+                name: templateName,
+                description: templateDescription,
+                is_default: isDefault,
+                template_data: templateData
+            },
+            dataType: 'json',
+            success: function(json) {
+                if (json.success) {
+                    $('#modal-save-template').modal('hide');
+                    alert(json.success);
+                    location.reload();
+                } else if (json.error) {
+                    alert(json.error);
+                }
+            }
+        });
+    });
+
+    // تحميل إعدادات القالب
+    $('#input-template').on('change', function() {
+        var templateId = $(this).val();
+
+        if (templateId) {
+            $.ajax({
+                url: 'index.php?route=inventory/barcode_print/getTemplate&user_token={{ user_token }}',
+                type: 'post',
+                data: {template_id: templateId},
+                dataType: 'json',
+                success: function(json) {
+                    if (json.template) {
+                        // تحديث الحقول بناءً على القالب
+                        $('#input-barcode-type').val(json.template.barcode_type);
+                        $('#input-paper-size').val(json.template.paper_size);
+                        $('#input-orientation').val(json.template.orientation);
+                        $('#input-labels-per-row').val(json.template.labels_per_row);
+                        $('#input-labels-per-column').val(json.template.labels_per_column);
+                        $('#show-product-name').prop('checked', json.template.show_product_name == 1);
+                        $('#show-sku').prop('checked', json.template.show_sku == 1);
+                        $('#show-price').prop('checked', json.template.show_price == 1);
+                        $('#show-barcode-text').prop('checked', json.template.show_barcode_text == 1);
+                    }
+                }
+            });
+        }
+    });
+});
+
+// الحصول على المنتجات المحددة
+function getSelectedProducts() {
+    var products = [];
+    $('.product-checkbox:checked').each(function() {
+        var productId = $(this).val();
+        var quantity = $(this).closest('tr').find('.quantity-input').val();
+
+        for (var i = 0; i < quantity; i++) {
+            products.push(productId);
+        }
+    });
+    return products;
+}
+
+// تحديث العدادات
+function updateCounters() {
+    var selectedCount = $('.product-checkbox:checked').length;
+    var totalLabels = 0;
+
+    $('.product-checkbox:checked').each(function() {
+        var quantity = parseInt($(this).closest('tr').find('.quantity-input').val()) || 1;
+        totalLabels += quantity;
+    });
+
+    $('#selected-count').text(selectedCount);
+    $('#total-labels').text(totalLabels);
+}
+
+// العمليات المجمعة
+$('#btn-bulk-operations').on('click', function(e) {
+    e.preventDefault();
+    showBulkOperationsModal();
+});
+
+// إنشاء باركود للكل
+$('#btn-generate-barcodes').on('click', function(e) {
+    e.preventDefault();
+    showGenerateBarcodesModal();
+});
+
+// طباعة اختبار
+$('#btn-test-print').on('click', function(e) {
+    e.preventDefault();
+
+    var settings = $('#form-barcode-print').serialize();
+
+    $.ajax({
+        url: 'index.php?route=inventory/barcode_print/testPrint&user_token={{ user_token }}',
+        type: 'post',
+        data: {settings: settings},
+        success: function(response) {
+            // فتح PDF في نافذة جديدة
+            var blob = new Blob([response], {type: 'application/pdf'});
+            var url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        },
+        error: function() {
+            alert('{{ text_ajax_error }}');
+        }
+    });
+});
+
+// الإحصائيات
+$('#btn-statistics').on('click', function(e) {
+    e.preventDefault();
+    showStatisticsModal();
+});
+
+// سجل الطباعة
+$('#btn-print-log').on('click', function(e) {
+    e.preventDefault();
+    showPrintLogModal();
+});
+
+// تصدير القالب
+$('#btn-export-template').on('click', function(e) {
+    e.preventDefault();
+
+    var templateId = $('#input-template').val();
+    if (!templateId) {
+        alert('{{ text_select_template_first }}');
+        return;
+    }
+
+    window.open('index.php?route=inventory/barcode_print/exportTemplate&user_token={{ user_token }}&template_id=' + templateId, '_blank');
+});
+
+// استيراد القالب
+$('#btn-import-template').on('click', function(e) {
+    e.preventDefault();
+    showImportTemplateModal();
+});
+
+// عرض مودال العمليات المجمعة
+function showBulkOperationsModal() {
+    var modalHtml = `
+        <div class="modal fade" id="bulkModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ text_bulk_operations }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="bulk-form">
+                            <div class="mb-3">
+                                <label class="form-label">{{ text_select_operation }}</label>
+                                <select name="operation" class="form-select" required>
+                                    <option value="">{{ text_select }}</option>
+                                    <option value="category">{{ button_print_category }}</option>
+                                    <option value="manufacturer">{{ button_print_manufacturer }}</option>
+                                    <option value="all">{{ text_print_all_products }}</option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="category-select" style="display: none;">
+                                <label class="form-label">{{ text_select_category }}</label>
+                                <select name="category_id" class="form-select">
+                                    <option value="">{{ text_select }}</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.category_id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3" id="manufacturer-select" style="display: none;">
+                                <label class="form-label">{{ text_select_manufacturer }}</label>
+                                <select name="manufacturer_id" class="form-select">
+                                    <option value="">{{ text_select }}</option>
+                                    {% for manufacturer in manufacturers %}
+                                    <option value="{{ manufacturer.manufacturer_id }}">{{ manufacturer.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+                        <button type="button" class="btn btn-primary" id="btn-bulk-execute">{{ button_execute }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#bulkModal').modal('show');
+
+    // إظهار/إخفاء الحقول حسب العملية
+    $('#bulkModal select[name="operation"]').on('change', function() {
+        var operation = $(this).val();
+        $('#category-select, #manufacturer-select').hide();
+
+        if (operation === 'category') {
+            $('#category-select').show();
+        } else if (operation === 'manufacturer') {
+            $('#manufacturer-select').show();
+        }
+    });
+
+    // تنفيذ العملية المجمعة
+    $('#btn-bulk-execute').on('click', function() {
+        var formData = $('#bulk-form').serialize();
+        var settings = $('#form-barcode-print').serialize();
+
+        $.ajax({
+            url: 'index.php?route=inventory/barcode_print/bulkPrint&user_token={{ user_token }}',
+            type: 'post',
+            data: formData + '&' + settings,
+            success: function(response) {
+                $('#bulkModal').modal('hide');
+                // فتح PDF في نافذة جديدة
+                var blob = new Blob([response], {type: 'application/pdf'});
+                var url = window.URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            },
+            error: function() {
+                alert('{{ text_ajax_error }}');
+            }
+        });
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#bulkModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض مودال إنشاء الباركود
+function showGenerateBarcodesModal() {
+    var modalHtml = `
+        <div class="modal fade" id="generateModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ button_generate_all }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ text_generate_barcodes_description }}</p>
+                        <form id="generate-form">
+                            <div class="mb-3">
+                                <label class="form-label">{{ text_select_category }}</label>
+                                <select name="category_id" class="form-select">
+                                    <option value="">{{ text_all_categories }}</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.category_id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">{{ text_select_manufacturer }}</label>
+                                <select name="manufacturer_id" class="form-select">
+                                    <option value="">{{ text_all_manufacturers }}</option>
+                                    {% for manufacturer in manufacturers %}
+                                    <option value="{{ manufacturer.manufacturer_id }}">{{ manufacturer.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+                        <button type="button" class="btn btn-primary" id="btn-generate-execute">{{ button_generate }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#generateModal').modal('show');
+
+    // تنفيذ إنشاء الباركود
+    $('#btn-generate-execute').on('click', function() {
+        var formData = $('#generate-form').serialize();
+
+        $.ajax({
+            url: 'index.php?route=inventory/barcode_print/generateBarcodes&user_token={{ user_token }}',
+            type: 'post',
+            data: formData,
+            dataType: 'json',
+            success: function(json) {
+                $('#generateModal').modal('hide');
+                if (json['success']) {
+                    alert(json['success']);
+                    location.reload();
+                } else if (json['error']) {
+                    alert(json['error']);
+                }
+            },
+            error: function() {
+                alert('{{ text_ajax_error }}');
+            }
+        });
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#generateModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض مودال الإحصائيات
+function showStatisticsModal() {
+    var modalHtml = `
+        <div class="modal fade" id="statisticsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ text_statistics }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="statistics-content">
+                            <div class="text-center">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">{{ text_loading }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_close }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#statisticsModal').modal('show');
+
+    // تحميل الإحصائيات
+    $.ajax({
+        url: 'index.php?route=inventory/barcode_print/getStatistics&user_token={{ user_token }}',
+        type: 'get',
+        dataType: 'json',
+        success: function(json) {
+            if (json['success'] && json['statistics']) {
+                displayStatistics(json['statistics']);
+            } else if (json['error']) {
+                $('#statistics-content').html('<div class="alert alert-danger">' + json['error'] + '</div>');
+            }
+        },
+        error: function() {
+            $('#statistics-content').html('<div class="alert alert-danger">{{ text_ajax_error }}</div>');
+        }
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#statisticsModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض مودال استيراد القالب
+function showImportTemplateModal() {
+    var modalHtml = `
+        <div class="modal fade" id="importModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ button_import_template }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="import-form" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label">{{ text_select_template_file }}</label>
+                                <input type="file" name="template_file" class="form-control" accept=".json" required>
+                            </div>
+                            <div class="alert alert-info">
+                                <small>{{ text_import_template_help }}</small>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ button_cancel }}</button>
+                        <button type="button" class="btn btn-primary" id="btn-import-execute">{{ button_import }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+    $('#importModal').modal('show');
+
+    // تنفيذ الاستيراد
+    $('#btn-import-execute').on('click', function() {
+        var formData = new FormData($('#import-form')[0]);
+
+        $.ajax({
+            url: 'index.php?route=inventory/barcode_print/importTemplate&user_token={{ user_token }}',
+            type: 'post',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            success: function(json) {
+                $('#importModal').modal('hide');
+                if (json['success']) {
+                    alert(json['success']);
+                    location.reload();
+                } else if (json['error']) {
+                    alert(json['error']);
+                }
+            },
+            error: function() {
+                alert('{{ text_ajax_error }}');
+            }
+        });
+    });
+
+    // إزالة المودال عند الإغلاق
+    $('#importModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+    });
+}
+
+// عرض الإحصائيات
+function displayStatistics(stats) {
+    var statisticsHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>{{ text_products_overview }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-primary">${stats.total_products || 0}</h4>
+                                <small>{{ text_total_products }}</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success">${stats.products_with_barcode || 0}</h4>
+                                <small>{{ text_products_with_barcode }}</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-warning">${stats.products_without_barcode || 0}</h4>
+                                <small>{{ text_products_without_barcode }}</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-info">${stats.barcode_coverage || 0}%</h4>
+                                <small>{{ text_barcode_coverage }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6>{{ text_templates_overview }}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-primary">${stats.total_templates || 0}</h4>
+                                <small>{{ text_total_templates }}</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success">${stats.prints_last_30_days || 0}</h4>
+                                <small>{{ text_prints_last_30_days }}</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <p><strong>{{ text_default_template }}:</strong> ${stats.default_template || '{{ text_none }}'}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('#statistics-content').html(statisticsHtml);
+}
+
+// اختصارات لوحة المفاتيح
+$(document).on('keydown', function(e) {
+    if (e.ctrlKey) {
+        switch(e.which) {
+            case 80: // Ctrl+P
+                e.preventDefault();
+                if (e.shiftKey) {
+                    $('#button-print').click(); // Ctrl+Shift+P للطباعة
+                } else {
+                    $('#button-preview').click(); // Ctrl+P للمعاينة
+                }
+                break;
+            case 65: // Ctrl+A
+                e.preventDefault();
+                $('#button-select-all').click();
+                break;
+            case 68: // Ctrl+D
+                e.preventDefault();
+                $('#button-clear-all').click();
+                break;
+        }
+    }
+});
+
+// تفعيل التلميحات
+$(document).ready(function() {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+//--></script>
+
+{{ footer }}

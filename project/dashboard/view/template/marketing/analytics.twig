@@ -1,0 +1,599 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="button" id="button-refresh" data-toggle="tooltip" title="{{ button_refresh }}" class="btn btn-info">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <button type="button" id="button-export" data-toggle="tooltip" title="{{ button_export }}" class="btn btn-success">
+          <i class="fa fa-download"></i> {{ button_export }}
+        </button>
+        <a href="{{ dashboard }}" data-toggle="tooltip" title="{{ text_dashboard }}" class="btn btn-default">
+          <i class="fa fa-dashboard"></i> {{ text_dashboard }}
+        </a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible">
+      <i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    {% if success %}
+    <div class="alert alert-success alert-dismissible">
+      <i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- إحصائيات سريعة -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-bullhorn fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.total_campaigns|default(0) }}</div>
+                <div>{{ text_total_campaigns }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-users fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.total_leads|default(0) }}</div>
+                <div>{{ text_total_leads }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-percent fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.conversion_rate|default(0) }}%</div>
+                <div>{{ text_conversion_rate }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-3 col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <div class="row">
+              <div class="col-xs-3">
+                <i class="fa fa-money fa-3x"></i>
+              </div>
+              <div class="col-xs-9 text-right">
+                <div class="huge">{{ statistics.roi|default(0) }}%</div>
+                <div>{{ text_roi }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_filter }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-date-from">{{ entry_date_from }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-date-to">{{ entry_date_to }}</label>
+              <div class="input-group date">
+                <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-campaign">{{ entry_campaign }}</label>
+              <select name="filter_campaign" id="input-campaign" class="form-control">
+                <option value="">{{ text_all_campaigns }}</option>
+                {% for campaign in campaigns %}
+                <option value="{{ campaign.campaign_id }}"{% if campaign.campaign_id == filter_campaign %} selected{% endif %}>{{ campaign.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-3">
+            <div class="form-group">
+              <label class="control-label" for="input-source">{{ entry_source }}</label>
+              <select name="filter_source" id="input-source" class="form-control">
+                <option value="">{{ text_all_sources }}</option>
+                {% for source in lead_sources %}
+                <option value="{{ source }}"{% if source == filter_source %} selected{% endif %}>{{ source }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="form-group">
+              <button type="button" id="button-filter" class="btn btn-primary pull-right">
+                <i class="fa fa-search"></i> {{ button_filter }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-bar-chart"></i> {{ text_campaign_performance }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="campaignChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-pie-chart"></i> {{ text_lead_sources }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="sourceChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-filter"></i> {{ text_conversion_funnel }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="funnelChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-line-chart"></i> {{ text_revenue_trend }}</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="revenueChart" width="400" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول أداء الحملات -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-table"></i> {{ text_campaign_details }}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover" id="campaignTable">
+            <thead>
+              <tr>
+                <th>{{ column_campaign_name }}</th>
+                <th>{{ column_leads }}</th>
+                <th>{{ column_conversions }}</th>
+                <th>{{ column_conversion_rate }}</th>
+                <th>{{ column_budget }}</th>
+                <th>{{ column_revenue }}</th>
+                <th>{{ column_roi }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- سيتم ملؤها بـ JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal للتصدير -->
+<div class="modal fade" id="modal-export" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ text_export_report }}</h4>
+      </div>
+      <div class="modal-body">
+        <form id="export-form">
+          <div class="form-group">
+            <label for="report-type">{{ entry_report_type }}</label>
+            <select name="report_type" id="report-type" class="form-control" required>
+              <option value="campaign_performance">{{ text_campaign_performance }}</option>
+              <option value="lead_sources">{{ text_lead_sources }}</option>
+              <option value="conversion_funnel">{{ text_conversion_funnel }}</option>
+              <option value="revenue_trend">{{ text_revenue_trend }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="export-date-from">{{ entry_date_from }}</label>
+            <input type="date" name="date_from" id="export-date-from" class="form-control" value="{{ filter_date_from }}">
+          </div>
+          <div class="form-group">
+            <label for="export-date-to">{{ entry_date_to }}</label>
+            <input type="date" name="date_to" id="export-date-to" class="form-control" value="{{ filter_date_to }}">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+        <button type="button" class="btn btn-success" id="button-confirm-export">{{ button_export }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+var charts = {};
+
+// تحديث الصفحة
+$('#button-refresh').on('click', function() {
+    loadAnalyticsData();
+});
+
+// فلترة النتائج
+$('#button-filter').on('click', function() {
+    var url = 'index.php?route=marketing/analytics&user_token={{ user_token }}';
+    
+    var filter_date_from = $('input[name=\'filter_date_from\']').val();
+    if (filter_date_from) {
+        url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+    }
+    
+    var filter_date_to = $('input[name=\'filter_date_to\']').val();
+    if (filter_date_to) {
+        url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+    }
+    
+    var filter_campaign = $('select[name=\'filter_campaign\']').val();
+    if (filter_campaign) {
+        url += '&filter_campaign=' + encodeURIComponent(filter_campaign);
+    }
+    
+    var filter_source = $('select[name=\'filter_source\']').val();
+    if (filter_source) {
+        url += '&filter_source=' + encodeURIComponent(filter_source);
+    }
+    
+    location = url;
+});
+
+// تصدير التقارير
+$('#button-export').on('click', function() {
+    $('#modal-export').modal('show');
+});
+
+$('#button-confirm-export').on('click', function() {
+    var formData = $('#export-form').serialize();
+    
+    $.ajax({
+        url: '{{ export_url }}',
+        type: 'post',
+        data: formData,
+        dataType: 'json',
+        beforeSend: function() {
+            $('#button-confirm-export').button('loading');
+        },
+        complete: function() {
+            $('#button-confirm-export').button('reset');
+        },
+        success: function(json) {
+            $('#modal-export').modal('hide');
+            
+            if (json['error']) {
+                alert(json['error']);
+            }
+            
+            if (json['success']) {
+                alert(json['success']);
+                if (json['download_url']) {
+                    window.open(json['download_url'], '_blank');
+                }
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// تحميل بيانات التحليلات
+function loadAnalyticsData() {
+    $.ajax({
+        url: '{{ stats_url }}',
+        type: 'get',
+        dataType: 'json',
+        success: function(json) {
+            if (json['error']) {
+                console.error(json['error']);
+                return;
+            }
+            
+            if (json['stats']) {
+                updateStatistics(json['stats']);
+            }
+            
+            if (json['charts']) {
+                updateCharts(json['charts']);
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.error('Error loading analytics data:', thrownError);
+        }
+    });
+}
+
+// تحديث الإحصائيات
+function updateStatistics(stats) {
+    $('.huge').each(function(index) {
+        var keys = ['total_campaigns', 'total_leads', 'conversion_rate', 'roi'];
+        if (keys[index] && stats[keys[index]] !== undefined) {
+            var value = stats[keys[index]];
+            if (keys[index] === 'conversion_rate' || keys[index] === 'roi') {
+                value += '%';
+            }
+            $(this).text(value);
+        }
+    });
+}
+
+// تحديث الرسوم البيانية
+function updateCharts(chartData) {
+    // رسم أداء الحملات
+    if (chartData.campaign_performance) {
+        createCampaignChart(chartData.campaign_performance);
+    }
+    
+    // رسم مصادر العملاء المحتملين
+    if (chartData.lead_sources) {
+        createSourceChart(chartData.lead_sources);
+    }
+    
+    // رسم قمع التحويل
+    if (chartData.conversion_funnel) {
+        createFunnelChart(chartData.conversion_funnel);
+    }
+    
+    // رسم اتجاه الإيرادات
+    if (chartData.revenue_trend) {
+        createRevenueChart(chartData.revenue_trend);
+    }
+}
+
+// إنشاء رسم أداء الحملات
+function createCampaignChart(data) {
+    var ctx = document.getElementById('campaignChart').getContext('2d');
+    
+    if (charts.campaign) {
+        charts.campaign.destroy();
+    }
+    
+    charts.campaign = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.name),
+            datasets: [{
+                label: '{{ text_leads }}',
+                data: data.map(item => item.leads),
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }, {
+                label: '{{ text_conversions }}',
+                data: data.map(item => item.conversions),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // تحديث الجدول
+    updateCampaignTable(data);
+}
+
+// تحديث جدول الحملات
+function updateCampaignTable(data) {
+    var tbody = $('#campaignTable tbody');
+    tbody.empty();
+    
+    data.forEach(function(campaign) {
+        var row = '<tr>' +
+            '<td>' + campaign.name + '</td>' +
+            '<td>' + campaign.leads + '</td>' +
+            '<td>' + campaign.conversions + '</td>' +
+            '<td>' + campaign.conversion_rate + '%</td>' +
+            '<td>' + campaign.budget.toFixed(2) + '</td>' +
+            '<td>' + campaign.revenue.toFixed(2) + '</td>' +
+            '<td>' + campaign.roi + '%</td>' +
+            '</tr>';
+        tbody.append(row);
+    });
+}
+
+// إنشاء رسم مصادر العملاء المحتملين
+function createSourceChart(data) {
+    var ctx = document.getElementById('sourceChart').getContext('2d');
+    
+    if (charts.source) {
+        charts.source.destroy();
+    }
+    
+    charts.source = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: data.map(item => item.source),
+            datasets: [{
+                data: data.map(item => item.leads),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 205, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+}
+
+// إنشاء رسم قمع التحويل
+function createFunnelChart(data) {
+    var ctx = document.getElementById('funnelChart').getContext('2d');
+    
+    if (charts.funnel) {
+        charts.funnel.destroy();
+    }
+    
+    charts.funnel = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.label),
+            datasets: [{
+                label: '{{ text_count }}',
+                data: data.map(item => item.count),
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// إنشاء رسم اتجاه الإيرادات
+function createRevenueChart(data) {
+    var ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    if (charts.revenue) {
+        charts.revenue.destroy();
+    }
+    
+    charts.revenue = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(item => item.date),
+            datasets: [{
+                label: '{{ text_revenue }}',
+                data: data.map(item => item.revenue),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// تفعيل date picker
+$('.date').datetimepicker({
+    language: '{{ datepicker }}',
+    pickTime: false
+});
+
+// تحميل البيانات عند تحميل الصفحة
+$(document).ready(function() {
+    loadAnalyticsData();
+    
+    // تحديث تلقائي كل 5 دقائق
+    setInterval(loadAnalyticsData, 300000);
+});
+</script>
+
+{{ footer }}

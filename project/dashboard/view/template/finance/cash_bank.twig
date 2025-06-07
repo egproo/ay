@@ -1,0 +1,376 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                {% if can_modify %}
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_add_cash }}" class="btn btn-primary" onclick="location = '{{ add_cash_url }}'">
+                    <i class="fas fa-plus"></i> {{ button_add_cash }}
+                </button>
+                <button type="button" data-bs-toggle="tooltip" title="{{ button_add_bank }}" class="btn btn-primary" onclick="location = '{{ add_bank_url }}'">
+                    <i class="fas fa-plus"></i> {{ button_add_bank }}
+                </button>
+                {% endif %}
+            </div>
+            <h1>{{ heading_title }}</h1>
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    <div class="container-fluid">
+        {% if error_warning %}
+        <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        {% if success %}
+        <div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        <!-- الخزن/الصناديق -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-cash-register"></i> {{ text_cash_accounts }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ column_name }}</th>
+                                <th>{{ column_code }}</th>
+                                <th>{{ column_responsible }}</th>
+                                <th>{{ column_balance }}</th>
+                                <th>{{ column_status }}</th>
+                                <th class="text-end">{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if cash_accounts %}
+                            {% for cash in cash_accounts %}
+                            <tr>
+                                <td>{{ cash.name }}</td>
+                                <td>{{ cash.code }}</td>
+                                <td>{{ cash.responsible_user }}</td>
+                                <td class="text-end">{{ cash.balance }}</td>
+                                <td class="text-center">
+                                    {% if cash.status %}
+                                    <span class="badge bg-success">{{ text_enabled }}</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ text_disabled }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="{{ cash.action.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fas fa-eye"></i></a>
+                                        {% if can_modify %}
+                                        <a href="{{ cash.action.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fas fa-pencil-alt"></i></a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="6">{{ text_no_results }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- الحسابات البنكية -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h4><i class="fas fa-university"></i> {{ text_bank_accounts }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ column_account_name }}</th>
+                                <th>{{ column_bank_name }}</th>
+                                <th>{{ column_account_number }}</th>
+                                <th>{{ column_currency }}</th>
+                                <th>{{ column_balance }}</th>
+                                <th>{{ column_type }}</th>
+                                <th class="text-end">{{ column_action }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if bank_accounts %}
+                            {% for bank in bank_accounts %}
+                            <tr>
+                                <td>{{ bank.account_name }}</td>
+                                <td>{{ bank.bank_name }}</td>
+                                <td>{{ bank.account_number }}</td>
+                                <td>{{ bank.currency }}</td>
+                                <td class="text-end">{{ bank.current_balance }}</td>
+                                <td>{{ bank.account_type }}</td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a href="{{ bank.action.view }}" data-bs-toggle="tooltip" title="{{ button_view }}" class="btn btn-info"><i class="fas fa-eye"></i></a>
+                                        {% if can_modify %}
+                                        <a href="{{ bank.action.edit }}" data-bs-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary"><i class="fas fa-pencil-alt"></i></a>
+                                        <a href="{{ bank.action.reconcile }}" data-bs-toggle="tooltip" title="{{ button_reconcile }}" class="btn btn-warning"><i class="fas fa-balance-scale"></i></a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- حركات النقدية -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h4><i class="fas fa-exchange-alt"></i> {{ text_cash_transactions }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="cash-transactions" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ column_date }}</th>
+                                <th>{{ column_cash }}</th>
+                                <th>{{ column_type }}</th>
+                                <th>{{ column_amount }}</th>
+                                <th>{{ column_reference }}</th>
+                                <th>{{ column_note }}</th>
+                                <th>{{ column_created_by }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if cash_transactions %}
+                            {% for transaction in cash_transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at }}</td>
+                                <td>{{ transaction.cash_name }}</td>
+                                <td>{{ transaction.type }}</td>
+                                <td class="text-end">{{ transaction.amount }}</td>
+                                <td>{{ transaction.reference }}</td>
+                                <td>{{ transaction.note }}</td>
+                                <td>{{ transaction.created_by }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- حركات البنوك -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h4><i class="fas fa-exchange-alt"></i> {{ text_bank_transactions }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="bank-transactions" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>{{ column_date }}</th>
+                                <th>{{ column_bank }}</th>
+                                <th>{{ column_type }}</th>
+                                <th>{{ column_amount }}</th>
+                                <th>{{ column_reference }}</th>
+                                <th>{{ column_description }}</th>
+                                <th>{{ column_created_by }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if bank_transactions %}
+                            {% for transaction in bank_transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at }}</td>
+                                <td>{{ transaction.bank_name }}</td>
+                                <td>{{ transaction.type }}</td>
+                                <td class="text-end">{{ transaction.amount }}</td>
+                                <td>{{ transaction.reference }}</td>
+                                <td>{{ transaction.description }}</td>
+                                <td>{{ transaction.created_by }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td class="text-center" colspan="7">{{ text_no_results }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- فلاتر الحركات النقدية -->
+<div class="card mt-3">
+    <div class="card-header">
+        <h4><i class="fas fa-filter"></i> {{ text_cash_filters }}</h4>
+    </div>
+    <div class="card-body">
+        <form id="cash-filter-form" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_cash }}</label>
+                <select name="filter_cash" class="form-select">
+                    <option value="">{{ text_all }}</option>
+                    {% for cash in cash_accounts %}
+                    <option value="{{ cash.cash_id }}">{{ cash.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_type }}</label>
+                <select name="filter_type" class="form-select">
+                    <option value="">{{ text_all }}</option>
+                    <option value="cash_in">{{ text_cash_in }}</option>
+                    <option value="cash_out">{{ text_cash_out }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_date_from }}</label>
+                <input type="date" name="filter_date_from" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_date_to }}</label>
+                <input type="date" name="filter_date_to" class="form-control">
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- فلاتر الحركات البنكية -->
+<div class="card mt-3">
+    <div class="card-header">
+        <h4><i class="fas fa-filter"></i> {{ text_bank_filters }}</h4>
+    </div>
+    <div class="card-body">
+        <form id="bank-filter-form" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_bank }}</label>
+                <select name="filter_bank" class="form-select">
+                    <option value="">{{ text_all }}</option>
+                    {% for bank in bank_accounts %}
+                    <option value="{{ bank.bank_account_id }}">{{ bank.account_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_type }}</label>
+                <select name="filter_type" class="form-select">
+                    <option value="">{{ text_all }}</option>
+                    <option value="deposit">{{ text_deposit }}</option>
+                    <option value="withdraw">{{ text_withdraw }}</option>
+                    <option value="transfer_in">{{ text_transfer_in }}</option>
+                    <option value="transfer_out">{{ text_transfer_out }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_date_from }}</label>
+                <input type="date" name="filter_date_from" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">{{ entry_date_to }}</label>
+                <input type="date" name="filter_date_to" class="form-control">
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    // تهيئة DataTables للحركات النقدية
+    var cashTable = $('#cash-transactions').DataTable({
+        'order': [[ 0, 'desc' ]],
+        'pageLength': 10,
+        'language': {
+            'url': 'catalog/language/ar/datatable.json'
+        },
+        'columns': [
+            { 'data': 'date' },
+            { 'data': 'cash' },
+            { 'data': 'type' },
+            { 'data': 'amount', 'className': 'text-end' },
+            { 'data': 'reference' },
+            { 'data': 'note' },
+            { 'data': 'created_by' }
+        ],
+        'dom': '<"d-flex justify-content-between"lf>rt<"d-flex justify-content-between"ip>',
+        'buttons': ['copy', 'excel', 'pdf', 'print']
+    });
+
+    // تهيئة DataTables للحركات البنكية
+    var bankTable = $('#bank-transactions').DataTable({
+        'order': [[ 0, 'desc' ]],
+        'pageLength': 10,
+        'language': {
+            'url': 'catalog/language/ar/datatable.json'
+        },
+        'columns': [
+            { 'data': 'date' },
+            { 'data': 'bank' },
+            { 'data': 'type' },
+            { 'data': 'amount', 'className': 'text-end' },
+            { 'data': 'reference' },
+            { 'data': 'description' },
+            { 'data': 'created_by' }
+        ],
+        'dom': '<"d-flex justify-content-between"lf>rt<"d-flex justify-content-between"ip>',
+        'buttons': ['copy', 'excel', 'pdf', 'print']
+    });
+
+    // معالجة تغيير الفلاتر للحركات النقدية
+    $('#cash-filter-form select, #cash-filter-form input').on('change', function() {
+        var filterData = $('#cash-filter-form').serializeArray();
+        // إرسال طلب AJAX لتحديث البيانات
+        $.ajax({
+            url: 'index.php?route=finance/cash_bank/getCashTransactions&user_token={{ user_token }}',
+            type: 'POST',
+            data: filterData,
+            dataType: 'json',
+            success: function(json) {
+                cashTable.clear().rows.add(json.data).draw();
+            }
+        });
+    });
+
+    // معالجة تغيير الفلاتر للحركات البنكية
+    $('#bank-filter-form select, #bank-filter-form input').on('change', function() {
+        var filterData = $('#bank-filter-form').serializeArray();
+        // إرسال طلب AJAX لتحديث البيانات
+        $.ajax({
+            url: 'index.php?route=finance/cash_bank/getBankTransactions&user_token={{ user_token }}',
+            type: 'POST',
+            data: filterData,
+            dataType: 'json',
+            success: function(json) {
+                bankTable.clear().rows.add(json.data).draw();
+            }
+        });
+    });
+});
+</script>
+{{ footer }}

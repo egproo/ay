@@ -1,0 +1,587 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-right">
+        <button type="button" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary" form="form-return"><i class="fas fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-pencil-alt"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-return">
+          <ul class="nav nav-tabs" id="return-tab">
+            <li class="nav-item"><a href="#tab-general" data-toggle="tab" class="nav-link active">{{ tab_general }}</a></li>
+            <li class="nav-item"><a href="#tab-items" data-toggle="tab" class="nav-link">{{ tab_items }}</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab-general">
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="input-order-id">{{ entry_order_number }} <span class="text-danger">*</span></label>
+                <div class="col-sm-10">
+                  <div class="input-group">
+                    <input type="text" name="order_number" value="{{ order_number }}" placeholder="{{ entry_order_number }}" id="input-order-id" class="form-control" readonly/>
+                    <input type="hidden" name="order_id" value="{{ order_id }}"/>
+                    <div class="input-group-append">
+                      <button type="button" id="button-order" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                    </div>
+                  </div>
+                  {% if error_order_number %}
+                    <div class="invalid-tooltip">{{ error_order_number }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="input-receipt-id">{{ entry_receipt_number }} <span class="text-danger">*</span></label>
+                <div class="col-sm-10">
+                  <div class="input-group">
+                    <input type="text" name="receipt_number" value="{{ receipt_number }}" placeholder="{{ entry_receipt_number }}" id="input-receipt-id" class="form-control" readonly/>
+                    <input type="hidden" name="receipt_id" value="{{ receipt_id }}"/>
+                    <div class="input-group-append">
+                      <button type="button" id="button-receipt" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                    </div>
+                  </div>
+                  {% if error_receipt_number %}
+                    <div class="invalid-tooltip">{{ error_receipt_number }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="input-supplier">{{ entry_supplier }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="supplier" value="{{ supplier }}" placeholder="{{ entry_supplier }}" id="input-supplier" class="form-control" readonly/>
+                  <input type="hidden" name="supplier_id" value="{{ supplier_id }}"/>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="input-date-added">{{ entry_date_added }}</label>
+                <div class="col-sm-10">
+                  <div class="input-group date">
+                    <input type="text" name="date_added" value="{{ date_added }}" placeholder="{{ entry_date_added }}" id="input-date-added" class="form-control"/>
+                    <div class="input-group-append">
+                      <div class="input-group-text"><i class="fas fa-calendar"></i></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="input-reason">{{ entry_reason }} <span class="text-danger">*</span></label>
+                <div class="col-sm-10">
+                  <select name="reason_id" id="input-reason" class="form-control">
+                    <option value="">{{ text_select }}</option>
+                    {% for reason in return_reasons %}
+                      {% if reason.reason_id == reason_id %}
+                        <option value="{{ reason.reason_id }}" selected="selected">{{ reason.name }}</option>
+                      {% else %}
+                        <option value="{{ reason.reason_id }}">{{ reason.name }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                  {% if error_reason %}
+                    <div class="invalid-tooltip">{{ error_reason }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="input-status">{{ entry_status }}</label>
+                <div class="col-sm-10">
+                  <select name="status" id="input-status" class="form-control">
+                    <option value="pending" {% if status == 'pending' %}selected="selected"{% endif %}>{{ text_pending }}</option>
+                    {% if return_id %}
+                      <option value="approved" {% if status == 'approved' %}selected="selected"{% endif %}>{{ text_approved }}</option>
+                      <option value="rejected" {% if status == 'rejected' %}selected="selected"{% endif %}>{{ text_rejected }}</option>
+                      <option value="completed" {% if status == 'completed' %}selected="selected"{% endif %}>{{ text_completed }}</option>
+                      <option value="canceled" {% if status == 'canceled' %}selected="selected"{% endif %}>{{ text_canceled }}</option>
+                    {% endif %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="input-note">{{ entry_note }}</label>
+                <div class="col-sm-10">
+                  <textarea name="note" rows="5" placeholder="{{ entry_note }}" id="input-note" class="form-control">{{ note }}</textarea>
+                </div>
+              </div>
+            </div>
+            <div class="tab-pane" id="tab-items">
+              <div class="table-responsive">
+                <table id="return-items" class="table table-striped table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td class="text-left">{{ column_product }}</td>
+                      <td class="text-right">{{ column_quantity }}</td>
+                      <td class="text-center">{{ column_unit }}</td>
+                      <td class="text-right">{{ column_unit_price }}</td>
+                      <td class="text-right">{{ column_total }}</td>
+                      <td></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if return_items %}
+                      {% for item_row, item in return_items %}
+                        <tr id="item-row{{ item_row }}">
+                          <td class="text-left">{{ item.product_name }}
+                            <input type="hidden" name="return_item[{{ item_row }}][product_id]" value="{{ item.product_id }}"/>
+                            <input type="hidden" name="return_item[{{ item_row }}][name]" value="{{ item.product_name }}"/>
+                            <input type="hidden" name="return_item[{{ item_row }}][receipt_item_id]" value="{{ item.receipt_item_id }}"/>
+                          </td>
+                          <td class="text-right">
+                            <div class="input-group">
+                              <input type="number" name="return_item[{{ item_row }}][quantity]" value="{{ item.quantity }}" placeholder="{{ entry_quantity }}" min="1" max="{{ item.max_quantity }}" class="form-control item-quantity"/>
+                              <div class="input-group-append">
+                                <span class="input-group-text">/ {{ item.max_quantity }}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td class="text-center">{{ item.unit }}</td>
+                          <td class="text-right">
+                            <input type="text" name="return_item[{{ item_row }}][unit_price]" value="{{ item.unit_price }}" placeholder="{{ entry_unit_price }}" class="form-control text-right item-price" readonly/>
+                          </td>
+                          <td class="text-right">
+                            <input type="text" name="return_item[{{ item_row }}][total]" value="{{ item.total }}" placeholder="{{ entry_total }}" class="form-control text-right item-total" readonly/>
+                          </td>
+                          <td class="text-center"><button type="button" onclick="$('#item-row{{ item_row }}').remove();calculateTotal();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fas fa-minus-circle"></i></button></td>
+                        </tr>
+                      {% endfor %}
+                    {% endif %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="4" class="text-right">{{ text_total_amount }}:</td>
+                      <td class="text-right"><strong id="total-amount">{{ total_amount }}</strong></td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <div class="text-right">
+                <button type="button" id="button-receipt-items" class="btn btn-primary"><i class="fas fa-plus"></i> {{ button_add_item }}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Order Search Modal -->
+<div id="modal-order" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_select_order }}</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label" for="input-order-search">{{ entry_order_number }}</label>
+          <div class="col-sm-10">
+            <div class="input-group">
+              <input type="text" name="order_search" value="" placeholder="{{ entry_order_number }}" id="input-order-search" class="form-control"/>
+              <div class="input-group-append">
+                <button type="button" id="button-order-search" class="btn btn-primary"><i class="fas fa-search"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="order-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Search Modal -->
+<div id="modal-receipt" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_select_receipt }}</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label" for="input-receipt-search">{{ entry_receipt_number }}</label>
+          <div class="col-sm-10">
+            <div class="input-group">
+              <input type="text" name="receipt_search" value="" placeholder="{{ entry_receipt_number }}" id="input-receipt-search" class="form-control"/>
+              <div class="input-group-append">
+                <button type="button" id="button-receipt-search" class="btn btn-primary"><i class="fas fa-search"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="receipt-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Items Modal -->
+<div id="modal-receipt-items" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ text_receipt_items }}</h5>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table id="receipt-items" class="table table-striped table-bordered table-hover">
+            <thead>
+              <tr>
+                <td class="text-center" style="width: 1px;"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                <td class="text-left">{{ column_product }}</td>
+                <td class="text-right">{{ column_quantity }}</td>
+                <td class="text-center">{{ column_unit }}</td>
+                <td class="text-right">{{ column_unit_price }}</td>
+                <td class="text-right">{{ column_total }}</td>
+              </tr>
+            </thead>
+            <tbody id="receipt-items-list"></tbody>
+          </table>
+        </div>
+        <div class="text-right">
+          <button type="button" id="button-add-items" class="btn btn-primary">{{ button_add }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  // Date picker
+  $('.date').datetimepicker({
+    'format': 'YYYY-MM-DD',
+    'locale': 'ar',
+    'allowInputToggle': true
+  });
+
+  var item_row = {{ item_row }};
+
+  // Search for purchase orders
+  $('#button-order').on('click', function() {
+    $('#modal-order').modal('show');
+  });
+
+  $('#button-order-search').on('click', function() {
+    $.ajax({
+      url: 'index.php?route=purchase/purchase_return/searchOrders&user_token={{ user_token }}',
+      dataType: 'json',
+      data: {
+        'filter_order_number': $('#input-order-search').val()
+      },
+      beforeSend: function() {
+        $('#button-order-search').button('loading');
+      },
+      complete: function() {
+        $('#button-order-search').button('reset');
+      },
+      success: function(json) {
+        html = '<div class="table-responsive">';
+        html += '  <table class="table table-bordered table-hover">';
+        html += '    <thead>';
+        html += '      <tr>';
+        html += '        <td class="text-left">{{ column_order_number }}</td>';
+        html += '        <td class="text-left">{{ column_supplier }}</td>';
+        html += '        <td class="text-right">{{ column_total_amount }}</td>';
+        html += '        <td class="text-center">{{ column_date_added }}</td>';
+        html += '        <td class="text-right">{{ column_action }}</td>';
+        html += '      </tr>';
+        html += '    </thead>';
+        html += '    <tbody>';
+
+        if (json.orders && json.orders.length) {
+          for (i = 0; i < json.orders.length; i++) {
+            html += '<tr>';
+            html += '  <td class="text-left">' + json.orders[i].order_number + '</td>';
+            html += '  <td class="text-left">' + json.orders[i].supplier + '</td>';
+            html += '  <td class="text-right">' + json.orders[i].total_amount + '</td>';
+            html += '  <td class="text-center">' + json.orders[i].date_added + '</td>';
+            html += '  <td class="text-right"><button type="button" data-order-id="' + json.orders[i].order_id + '" data-order-number="' + json.orders[i].order_number + '" class="btn btn-primary btn-sm select-order"><i class="fas fa-check"></i></button></td>';
+            html += '</tr>';
+          }
+        } else {
+          html += '<tr>';
+          html += '  <td class="text-center" colspan="5">{{ text_no_results }}</td>';
+          html += '</tr>';
+        }
+
+        html += '    </tbody>';
+        html += '  </table>';
+        html += '</div>';
+
+        $('#order-list').html(html);
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  });
+
+  $('#order-list').on('click', '.select-order', function() {
+    $('input[name=\'order_id\']').val($(this).data('order-id'));
+    $('input[name=\'order_number\']').val($(this).data('order-number'));
+    
+    // Clear current data
+    $('#return-items tbody').html('');
+    $('input[name=\'supplier\']').val('');
+    $('input[name=\'supplier_id\']').val('');
+    $('input[name=\'receipt_id\']').val('');
+    $('input[name=\'receipt_number\']').val('');
+    
+    // Load supplier information
+    $.ajax({
+      url: 'index.php?route=purchase/purchase_return/getOrderInfo&user_token={{ user_token }}&order_id=' + $(this).data('order-id'),
+      dataType: 'json',
+      beforeSend: function() {
+        $('.select-order').button('loading');
+      },
+      complete: function() {
+        $('.select-order').button('reset');
+      },
+      success: function(json) {
+        if (json.supplier) {
+          $('input[name=\'supplier\']').val(json.supplier.name);
+          $('input[name=\'supplier_id\']').val(json.supplier.supplier_id);
+        }
+        
+        $('#modal-order').modal('hide');
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  });
+
+  // Search for goods receipts
+  $('#button-receipt').on('click', function() {
+    if (!$('input[name=\'order_id\']').val()) {
+      alert('{{ error_order_required }}');
+      return;
+    }
+    
+    $('#modal-receipt').modal('show');
+    
+    // Load receipts based on selected order
+    $.ajax({
+      url: 'index.php?route=purchase/purchase_return/getOrderReceipts&user_token={{ user_token }}',
+      dataType: 'json',
+      data: {
+        'order_id': $('input[name=\'order_id\']').val()
+      },
+      beforeSend: function() {
+        $('#button-receipt').button('loading');
+      },
+      complete: function() {
+        $('#button-receipt').button('reset');
+      },
+      success: function(json) {
+        html = '<div class="table-responsive">';
+        html += '  <table class="table table-bordered table-hover">';
+        html += '    <thead>';
+        html += '      <tr>';
+        html += '        <td class="text-left">{{ column_receipt_number }}</td>';
+        html += '        <td class="text-center">{{ column_date_added }}</td>';
+        html += '        <td class="text-right">{{ column_action }}</td>';
+        html += '      </tr>';
+        html += '    </thead>';
+        html += '    <tbody>';
+
+        if (json.receipts && json.receipts.length) {
+          for (i = 0; i < json.receipts.length; i++) {
+            html += '<tr>';
+            html += '  <td class="text-left">' + json.receipts[i].receipt_number + '</td>';
+            html += '  <td class="text-center">' + json.receipts[i].date_added + '</td>';
+            html += '  <td class="text-right"><button type="button" data-receipt-id="' + json.receipts[i].receipt_id + '" data-receipt-number="' + json.receipts[i].receipt_number + '" class="btn btn-primary btn-sm select-receipt"><i class="fas fa-check"></i></button></td>';
+            html += '</tr>';
+          }
+        } else {
+          html += '<tr>';
+          html += '  <td class="text-center" colspan="3">{{ text_no_results }}</td>';
+          html += '</tr>';
+        }
+
+        html += '    </tbody>';
+        html += '  </table>';
+        html += '</div>';
+
+        $('#receipt-list').html(html);
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  });
+
+  $('#receipt-list').on('click', '.select-receipt', function() {
+    $('input[name=\'receipt_id\']').val($(this).data('receipt-id'));
+    $('input[name=\'receipt_number\']').val($(this).data('receipt-number'));
+    
+    // Clear current items
+    $('#return-items tbody').html('');
+    
+    $('#modal-receipt').modal('hide');
+  });
+
+  // Load receipt items
+  $('#button-receipt-items').on('click', function() {
+    if (!$('input[name=\'receipt_id\']').val()) {
+      alert('{{ error_receipt_required }}');
+      return;
+    }
+    
+    $.ajax({
+      url: 'index.php?route=purchase/purchase_return/getReceiptItems&user_token={{ user_token }}',
+      dataType: 'json',
+      data: {
+        'receipt_id': $('input[name=\'receipt_id\']').val()
+      },
+      beforeSend: function() {
+        $('#button-receipt-items').button('loading');
+      },
+      complete: function() {
+        $('#button-receipt-items').button('reset');
+      },
+      success: function(json) {
+        html = '';
+        
+        if (json.items && json.items.length) {
+          for (i = 0; i < json.items.length; i++) {
+            html += '<tr>';
+            html += '  <td class="text-center"><input type="checkbox" name="selected[]" value="' + i + '" /></td>';
+            html += '  <td class="text-left">' + json.items[i].name + '</td>';
+            html += '  <td class="text-right">' + json.items[i].quantity + '</td>';
+            html += '  <td class="text-center">' + json.items[i].unit + '</td>';
+            html += '  <td class="text-right">' + json.items[i].unit_price + '</td>';
+            html += '  <td class="text-right">' + json.items[i].total + '</td>';
+            html += '  <input type="hidden" name="item[' + i + '][product_id]" value="' + json.items[i].product_id + '" />';
+            html += '  <input type="hidden" name="item[' + i + '][name]" value="' + json.items[i].name + '" />';
+            html += '  <input type="hidden" name="item[' + i + '][quantity]" value="' + json.items[i].quantity + '" />';
+            html += '  <input type="hidden" name="item[' + i + '][unit]" value="' + json.items[i].unit + '" />';
+            html += '  <input type="hidden" name="item[' + i + '][unit_price]" value="' + json.items[i].unit_price_raw + '" />';
+            html += '  <input type="hidden" name="item[' + i + '][receipt_item_id]" value="' + json.items[i].receipt_item_id + '" />';
+            html += '</tr>';
+          }
+        } else {
+          html += '<tr>';
+          html += '  <td class="text-center" colspan="6">{{ text_no_results }}</td>';
+          html += '</tr>';
+        }
+        
+        $('#receipt-items-list').html(html);
+        $('#modal-receipt-items').modal('show');
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  });
+  
+  // Add selected items to return
+  $('#button-add-items').on('click', function() {
+    $('#receipt-items input[name^=\'selected\']:checked').each(function() {
+      var index = $(this).val();
+      var item = $('input[name=\'item[' + index + '][product_id]\']').val();
+      
+      // Check if item already exists
+      var exists = false;
+      $('#return-items tbody tr').each(function() {
+        if ($(this).find('input[name$=\'[product_id]\']').val() == item) {
+          exists = true;
+          return false;
+        }
+      });
+      
+      if (!exists) {
+        var product_id = $('input[name=\'item[' + index + '][product_id]\']').val();
+        var name = $('input[name=\'item[' + index + '][name]\']').val();
+        var quantity = $('input[name=\'item[' + index + '][quantity]\']').val();
+        var unit = $('input[name=\'item[' + index + '][unit]\']').val();
+        var unit_price = $('input[name=\'item[' + index + '][unit_price]\']').val();
+        var receipt_item_id = $('input[name=\'item[' + index + '][receipt_item_id]\']').val();
+        
+        html = '<tr id="item-row' + item_row + '">';
+        html += '  <td class="text-left">' + name;
+        html += '    <input type="hidden" name="return_item[' + item_row + '][product_id]" value="' + product_id + '" />';
+        html += '    <input type="hidden" name="return_item[' + item_row + '][name]" value="' + name + '" />';
+        html += '    <input type="hidden" name="return_item[' + item_row + '][receipt_item_id]" value="' + receipt_item_id + '" />';
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '    <div class="input-group">';
+        html += '      <input type="number" name="return_item[' + item_row + '][quantity]" value="1" placeholder="{{ entry_quantity }}" min="1" max="' + quantity + '" class="form-control item-quantity" />';
+        html += '      <div class="input-group-append">';
+        html += '        <span class="input-group-text">/ ' + quantity + '</span>';
+        html += '      </div>';
+        html += '    </div>';
+        html += '  </td>';
+        html += '  <td class="text-center">' + unit + '</td>';
+        html += '  <td class="text-right">';
+        html += '    <input type="text" name="return_item[' + item_row + '][unit_price]" value="' + unit_price + '" placeholder="{{ entry_unit_price }}" class="form-control text-right item-price" readonly />';
+        html += '  </td>';
+        html += '  <td class="text-right">';
+        html += '    <input type="text" name="return_item[' + item_row + '][total]" value="' + unit_price + '" placeholder="{{ entry_total }}" class="form-control text-right item-total" readonly />';
+        html += '  </td>';
+        html += '  <td class="text-center"><button type="button" onclick="$(\'#item-row' + item_row + '\').remove();calculateTotal();" data-toggle="tooltip" title="{{ button_remove }}" class="btn btn-danger"><i class="fas fa-minus-circle"></i></button></td>';
+        html += '</tr>';
+
+        $('#return-items tbody').append(html);
+        
+        item_row++;
+      }
+    });
+    
+    calculateTotal();
+    $('#modal-receipt-items').modal('hide');
+  });
+  
+  // Calculate item totals when quantity changes
+  $('#return-items').on('change', '.item-quantity', function() {
+    var row = $(this).closest('tr');
+    var quantity = parseFloat($(this).val());
+    var price = parseFloat(row.find('.item-price').val());
+    var total = quantity * price;
+    
+    row.find('.item-total').val(total.toFixed(2));
+    
+    calculateTotal();
+  });
+  
+  // Calculate overall total
+  function calculateTotal() {
+    var total = 0;
+    
+    $('.item-total').each(function() {
+      total += parseFloat($(this).val() || 0);
+    });
+    
+    $('#total-amount').html(total.toFixed(2));
+  }
+  
+  // Tabs
+  $('#return-tab a').on('click', function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+  });
+  
+  // Save form
+  $('#button-save').on('click', function() {
+    $('#form-return').submit();
+  });
+</script>
+
+{{ footer }} 

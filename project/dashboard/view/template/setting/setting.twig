@@ -1,0 +1,2366 @@
+{{ header }}
+<style>
+/* تحسينات CSS للإعدادات المحاسبية */
+#tab-accounting .page-header {
+    color: #337ab7;
+    border-bottom: 2px solid #337ab7;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+#tab-accounting h4 {
+    color: #5cb85c;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.form-group.has-error .control-label {
+    color: #a94442;
+}
+
+.form-group.has-error .form-control {
+    border-color: #a94442;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+}
+
+.accounting-error {
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+.select2-container--default .select2-selection--single {
+    height: 34px;
+    border: 1px solid #ccc;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 32px;
+    padding-left: 12px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 32px;
+}
+
+/* تحسين مظهر التبويبات */
+.nav-tabs > li.active > a {
+    background-color: #f5f5f5;
+    border-bottom-color: #f5f5f5;
+}
+
+/* تحسين مظهر الأزرار */
+#button-save2 {
+    background: linear-gradient(to bottom, #5cb85c 0%, #449d44 100%);
+    border-color: #449d44;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#button-save2:hover {
+    background: linear-gradient(to bottom, #449d44 0%, #398439 100%);
+    border-color: #398439;
+}
+
+/* تحسين مظهر الحقول المطلوبة */
+.required .control-label:after {
+    content: " *";
+    color: #a94442;
+}
+
+/* تحسين مظهر الرسائل التوضيحية */
+.alert-info {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+    color: #31708f;
+}
+
+/* تحسين مظهر fieldset */
+fieldset {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+fieldset legend {
+    width: auto;
+    padding: 0 10px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: #337ab7;
+}
+</style>{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+                   <button style="width:100%;height:50px" type="submit" id="button-save" form="form-setting" data-toggle="tooltip" title="{{ button_save }}"  class="btn btn-primary"><i class="fa fa-save"></i> {{ button_save }}</button>
+    </div>
+  </div>
+  <div class="container-fluid">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<style>
+.select2-container--default .select2-selection--single {
+  height: 36px;
+}
+
+.attachment-item, .preview-item {
+    display: inline-block;
+    margin-right: 10px;
+    border: 1px dashed #ddd;
+    padding: 5px;
+}
+</style>
+       {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-setting" class="form-horizontal">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+            <li><a href="#tab-eta" data-toggle="tab">ETA - الربط مع الضرائب</a></li>
+            <li><a href="#tab-accounting" data-toggle="tab">{{text_tab_accounting}}</a></li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="tab-general">
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-meta-title">{{ entry_meta_title }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="config_meta_title" value="{{ config_meta_title }}" placeholder="{{ entry_meta_title }}" id="input-meta-title" class="form-control" />
+                  {% if error_meta_title %}
+                  <div class="text-danger">{{ error_meta_title }}</div>
+                  {% endif %} </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-meta-description">{{ entry_meta_description }}</label>
+                <div class="col-sm-10">
+                  <textarea name="config_meta_description" rows="1" placeholder="{{ entry_meta_description }}" id="input-meta-description" class="form-control">{{ config_meta_description }}</textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-meta-keyword">{{ entry_meta_keyword }}</label>
+                <div class="col-sm-10">
+                  <textarea name="config_meta_keyword" rows="1" placeholder="{{ entry_meta_keyword }}" id="input-meta-keyword" class="form-control">{{ config_meta_keyword }}</textarea>
+                </div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label" for="input-theme">{{ entry_theme }}</label>
+                <div class="col-sm-10">
+                  <select name="config_theme" id="input-theme" class="form-control">
+                    {% for theme in themes %}
+                    {% if theme.value == config_theme %}
+                    <option value="{{ theme.value }}" selected="selected">{{ theme.text }}</option>
+                    {% else %}
+                    <option value="{{ theme.value }}">{{ theme.text }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                  <br/>
+                  <img src="" alt="" id="theme" class="img-thumbnail" /></div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label" for="input-layout">{{ entry_layout }}</label>
+                <div class="col-sm-10">
+                  <select name="config_layout_id" id="input-layout" class="form-control">
+                    {% for layout in layouts %}
+                    {% if layout.layout_id == config_layout_id %}
+                    <option value="{{ layout.layout_id }}" selected="selected">{{ layout.name }}</option>
+                    {% else %}
+                    <option value="{{ layout.layout_id }}">{{ layout.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label" for="input-country">{{ entry_country }}</label>
+                <div class="col-sm-10">
+                  <select name="config_country_id" id="input-country" class="form-control">
+                    {% for country in countries %}
+                    {% if country.country_id == config_country_id %}
+                    <option value="{{ country.country_id }}" selected="selected">{{ country.name }}</option>
+                    {% else %}
+                    <option value="{{ country.country_id }}">{{ country.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div  style="display:none"  class="form-group">
+                <label class="col-sm-2 control-label" for="input-zone">{{ entry_zone }}</label>
+                <div class="col-sm-10">
+                  <select name="config_zone_id" id="input-zone" class="form-control">
+                  </select>
+                </div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label" for="input-timezone">{{ entry_timezone }}</label>
+                <div class="col-sm-10">
+                  <select name="config_timezone" id="input-timezone" class="form-control">
+                    {% for timezone in timezones %}
+                      {% if timezone.value == config_timezone %}
+                        <option value="{{ timezone.value }}" selected="selected">{{ timezone.text }}</option>
+                      {% else %}
+                        <option value="{{ timezone.value }}">{{ timezone.text }}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-language">{{ entry_language }}</label>
+                <div class="col-sm-10">
+                  <select name="config_language" id="input-language" class="form-control">
+                    {% for language in languages %}
+                    {% if language.code == config_language %}
+                    <option value="{{ language.code }}" selected="selected">{{ language.name }}</option>
+                    {% else %}
+                    <option value="{{ language.code }}">{{ language.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-admin-language">{{ entry_admin_language }}</label>
+                <div class="col-sm-10">
+                  <select name="config_admin_language" id="input-admin-language" class="form-control">
+                    {% for language in languages %}
+                    {% if language.code == config_admin_language %}
+                    <option value="{{ language.code }}" selected="selected">{{ language.name }}</option>
+                    {% else %}
+                    <option value="{{ language.code }}">{{ language.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-currency"><span data-toggle="tooltip" title="{{ help_currency }}">{{ entry_currency }}</span></label>
+                <div class="col-sm-10">
+                  <select name="config_currency" id="input-currency" class="form-control">
+                    {% for currency in currencies %}
+                    {% if currency.code == config_currency %}
+                    <option value="{{ currency.code }}" selected="selected">{{ currency.title }}</option>
+                    {% else %}
+                    <option value="{{ currency.code }}">{{ currency.title }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label" for="input-currency-engine">{{ entry_currency_engine }}</label>
+                <div class="col-sm-10">
+                  <select name="config_currency_engine" id="input-currency-engine" class="form-control">
+                    {% if not config_currency_engine %}
+                    <option value="" selected>{{ text_none }}</option>
+                    {% else %}
+                    <option value="">{{ text_none }}</option>
+                    {% endif %}
+                    {% for currency_engine in currency_engines %}
+                    {% if currency_engine.value == config_currency_engine %}
+                    <option value="{{ currency_engine.value }}" selected>{{ currency_engine.text }}</option>
+                    {% else %}
+                    <option value="{{ currency_engine.value }}">{{ currency_engine.text }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_currency_auto }}">{{ entry_currency_auto }}</span></label>
+                <div class="col-sm-10">
+                  <label class="radio-inline"> {% if config_currency_auto %}
+                    <input type="radio" name="config_currency_auto" value="1" checked="checked" />
+                    {{ text_yes }}
+                    {% else %}
+                    <input type="radio" name="config_currency_auto" value="1" />
+                    {{ text_yes }}
+                    {% endif %} </label>
+                  <label class="radio-inline"> {% if not config_currency_auto %}
+                    <input type="radio" name="config_currency_auto" value="0" checked="checked" />
+                    {{ text_no }}
+                    {% else %}
+                    <input type="radio" name="config_currency_auto" value="0" />
+                    {{ text_no }}
+                    {% endif %} </label>
+                </div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label" for="input-length-class">{{ entry_length_class }}</label>
+                <div class="col-sm-10">
+                  <select name="config_length_class_id" id="input-length-class" class="form-control">
+                    {% for length_class in length_classes %}
+                    {% if length_class.length_class_id == config_length_class_id %}
+                    <option value="{{ length_class.length_class_id }}" selected="selected">{{ length_class.title }}</option>
+                    {% else %}
+                    <option value="{{ length_class.length_class_id }}">{{ length_class.title }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div style="display:none" class="form-group">
+                <label class="col-sm-2 control-label" for="input-weight-class">{{ entry_weight_class }}</label>
+                <div class="col-sm-10">
+                  <select name="config_weight_class_id" id="input-weight-class" class="form-control">
+                    {% for weight_class in weight_classes %}
+                    {% if weight_class.weight_class_id == config_weight_class_id %}
+                    <option value="{{ weight_class.weight_class_id }}" selected="selected">{{ weight_class.title }}</option>
+                    {% else %}
+                    <option value="{{ weight_class.weight_class_id }}">{{ weight_class.title }}</option>
+                    {% endif %}
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+
+              <div style="display:none" class="form-group required">
+                <label class="col-sm-2 control-label" for="input-owner">{{ entry_owner }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="config_owner" value="{{ config_owner }}" placeholder="{{ entry_owner }}" class="form-control" id="input-owner"/>
+                  {% if error_owner %}
+                    <div class="text-danger">{{ error_owner }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+
+              <div  style="display:none"  class="form-group">
+                <label class="col-sm-2 control-label" for="input-geocode"><span data-toggle="tooltip" data-container="#tab-general" title="{{ help_geocode|escape('html') }}">{{ entry_geocode }}</span></label>
+                <div class="col-sm-10">
+                  <input type="text" name="config_geocode" value="{{ config_geocode }}" placeholder="{{ entry_geocode }}" class="form-control" id="input-geocode"/>
+                </div>
+              </div>
+
+              <div style="display:none"  class="form-group">
+                <label class="col-sm-2 control-label" for="input-fax">{{ entry_fax }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="config_fax" value="{{ config_fax }}" placeholder="{{ entry_fax }}" class="form-control" id="input-fax"/>
+                </div>
+              </div>
+              <div style="display:none"  class="form-group">
+                <label class="col-sm-2 control-label" for="input-image">{{ entry_image }}</label>
+                <div class="col-sm-10">
+                  <a href="" data-toggle="image" class="img-thumbnail" id="thumb-image"><img src="{{ thumb }}" alt="" title="" data-placeholder="{{ placeholder }}"/></a>
+                  <input type="hidden" name="config_image" value="{{ config_image }}" id="input-image"/>
+                </div>
+              </div>
+              <div style="display:none"  class="form-group">
+                <label class="col-sm-2 control-label" for="input-open"><span data-toggle="tooltip" data-container="#tab-general" title="{{ help_open|escape('html') }}">{{ entry_open }}</span></label>
+                <div class="col-sm-10">
+                  <textarea name="config_open" rows="5" placeholder="{{ entry_open }}" class="form-control" id="input-open"/>{{ config_open }}</textarea>
+                </div>
+              </div>
+              <div style="display:none"  class="form-group">
+                <label class="col-sm-2 control-label" for="input-comment"><span data-toggle="tooltip" data-container="#tab-general" title="{{ help_comment|escape('html') }}">{{ entry_comment }}</span></label>
+                <div class="col-sm-10">
+                  <textarea name="config_comment" rows="5" placeholder="{{ entry_comment }}" class="form-control" id="input-comment"/>{{ config_comment }}</textarea>
+                </div>
+              </div>
+              {% if locations %}
+                <div style="display:none"  class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" data-container="#tab-general" title="{{ help_location|escape('html') }}">{{ entry_location }}</span></label>
+                  <div class="col-sm-10">
+                    {% for location in locations %}
+                      <div class="checkbox">
+                        <label>{% if location.location_id in config_location %}
+                          <input type="checkbox" name="config_location[]" value="{{ location.location_id }}" checked="checked"/>
+                          {{ location.name }}
+                        {% else %}
+                          <input type="checkbox" name="config_location[]" value="{{ location.location_id }}"/>
+                          {{ location.name }}
+                        {% endif %}</label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+              <fieldset  style="display:none">
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_product_count }}">{{ entry_product_count }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_product_count %}
+                      <input type="radio" name="config_product_count" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_product_count" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_product_count %}
+                      <input type="radio" name="config_product_count" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_product_count" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group required">
+                  <label class="col-sm-2 control-label" for="input-admin-limit"><span data-toggle="tooltip" title="{{ help_limit_admin }}">{{ entry_limit_admin }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_limit_admin" value="{{ config_limit_admin }}" placeholder="{{ entry_limit_admin }}" id="input-admin-limit" class="form-control" />
+                    {% if error_limit_admin %}
+                    <div class="text-danger">{{ error_limit_admin }}</div>
+                    {% endif %} </div>
+                </div>
+              </fieldset>
+              <fieldset style="display:none" >
+                <legend>{{ text_review }}</legend>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_review }}">{{ entry_review }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_review_status %}
+                      <input type="radio" name="config_review_status" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_review_status" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_review_status %}
+                      <input type="radio" name="config_review_status" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_review_status" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_review_guest }}">{{ entry_review_guest }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_review_guest %}
+                      <input type="radio" name="config_review_guest" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_review_guest" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_review_guest %}
+                      <input type="radio" name="config_review_guest" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_review_guest" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset style="display:none" >
+                <legend>{{ text_voucher }}</legend>
+                <div class="form-group required">
+                  <label class="col-sm-2 control-label" for="input-voucher-min"><span data-toggle="tooltip" title="{{ help_voucher_min }}">{{ entry_voucher_min }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_voucher_min" value="{{ config_voucher_min }}" placeholder="{{ entry_voucher_min }}" id="input-voucher-min" class="form-control" />
+                    {% if error_voucher_min %}
+                    <div class="text-danger">{{ error_voucher_min }}</div>
+                    {% endif %} </div>
+                </div>
+                <div class="form-group required">
+                  <label class="col-sm-2 control-label" for="input-voucher-max"><span data-toggle="tooltip" title="{{ help_voucher_max }}">{{ entry_voucher_max }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_voucher_max" value="{{ config_voucher_min }}" placeholder="{{ entry_voucher_max }}" id="input-voucher-max" class="form-control" />
+                    {% if error_voucher_max %}
+                    <div class="text-danger">{{ error_voucher_max }}</div>
+                    {% endif %} </div>
+                </div>
+              </fieldset>
+              <fieldset  style="display:none">
+                <legend>{{ text_tax }}</legend>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_tax }}</label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_tax %}
+                      <input type="radio" name="config_tax" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_tax" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_tax %}
+                      <input type="radio" name="config_tax" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_tax" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-tax-default"><span data-toggle="tooltip" title="{{ help_tax_default }}">{{ entry_tax_default }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_tax_default" id="input-tax-default" class="form-control">
+                      <option value="">{{ text_none }}</option>
+                      {% if config_tax_default == 'shipping' %}
+                      <option value="shipping" selected="selected">{{ text_shipping }}</option>
+                      {% else %}
+                      <option value="shipping">{{ text_shipping }}</option>
+                      {% endif %}
+                      {% if config_tax_default == 'payment' %}
+                      <option value="payment" selected="selected">{{ text_payment }}</option>
+                      {% else %}
+                      <option value="payment">{{ text_payment }}</option>
+                      {% endif %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-tax-customer"><span data-toggle="tooltip" title="{{ help_tax_customer }}">{{ entry_tax_customer }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_tax_customer" id="input-tax-customer" class="form-control">
+                      <option value="">{{ text_none }}</option>
+                      {% if config_tax_customer == 'shipping' %}
+                      <option value="shipping" selected="selected">{{ text_shipping }}</option>
+                      {% else %}
+                      <option value="shipping">{{ text_shipping }}</option>
+                      {% endif %}
+                      {% if config_tax_customer == 'payment' %}
+                      <option value="payment" selected="selected">{{ text_payment }}</option>
+                      {% else %}
+                      <option value="payment">{{ text_payment }}</option>
+                      {% endif %}
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_customer_online }}">{{ entry_customer_online }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_customer_online %}
+                      <input type="radio" name="config_customer_online" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_customer_online" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_customer_online %}
+                      <input type="radio" name="config_customer_online" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_customer_online" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_customer_activity }}">{{ entry_customer_activity }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_customer_activity %}
+                      <input type="radio" name="config_customer_activity" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_customer_activity" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_customer_activity %}
+                      <input type="radio" name="config_customer_activity" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_customer_activity" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_customer_search }}</label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_customer_search %}
+                      <input type="radio" name="config_customer_search" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_customer_search" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_customer_search %}
+                      <input type="radio" name="config_customer_search" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_customer_search" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-customer-group"><span data-toggle="tooltip" title="{{ help_customer_group }}">{{ entry_customer_group }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_customer_group_id" id="input-customer-group" class="form-control">
+                      {% for customer_group in customer_groups %}
+                      {% if customer_group.customer_group_id == config_customer_group_id %}
+                      <option value="{{ customer_group.customer_group_id }}" selected="selected">{{ customer_group.name }}</option>
+                      {% else %}
+                      <option value="{{ customer_group.customer_group_id }}">{{ customer_group.name }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_customer_group_display }}">{{ entry_customer_group_display }}</span></label>
+                  <div class="col-sm-10"> {% for customer_group in customer_groups %}
+                    <div class="checkbox">
+                      <label> {% if customer_group.customer_group_id in config_customer_group_display %}
+                        <input type="checkbox" name="config_customer_group_display[]" value="{{ customer_group.customer_group_id }}" checked="checked" />
+                        {{ customer_group.name }}
+                        {% else %}
+                        <input type="checkbox" name="config_customer_group_display[]" value="{{ customer_group.customer_group_id }}" />
+                        {{ customer_group.name }}
+                        {% endif %} </label>
+                    </div>
+                    {% endfor %}
+                    {% if error_customer_group_display %}
+                    <div class="text-danger">{{ error_customer_group_display }}</div>
+                    {% endif %} </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_customer_price }}">{{ entry_customer_price }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_customer_price %}
+                      <input type="radio" name="config_customer_price" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_customer_price" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_customer_price %}
+                      <input type="radio" name="config_customer_price" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_customer_price" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-login-attempts"><span data-toggle="tooltip" title="{{ help_login_attempts }}">{{ entry_login_attempts }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_login_attempts" value="{{ config_login_attempts }}" placeholder="{{ entry_login_attempts }}" id="input-login-attempts" class="form-control" />
+                    {% if error_login_attempts %}
+                    <div class="text-danger">{{ error_login_attempts }}</div>
+                    {% endif %} </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-account"><span data-toggle="tooltip" title="{{ help_account }}">{{ entry_account }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_account_id" id="input-account" class="form-control">
+                      <option value="0">{{ text_none }}</option>
+                      {% for information in informations %}
+                      {% if information.information_id == config_account_id %}
+                      <option value="{{ information.information_id }}" selected="selected">{{ information.title }}</option>
+                      {% else %}
+                      <option value="{{ information.information_id }}">{{ information.title }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-invoice-prefix"><span data-toggle="tooltip" title="{{ help_invoice_prefix }}">{{ entry_invoice_prefix }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_invoice_prefix" value="{{ config_invoice_prefix }}" placeholder="{{ entry_invoice_prefix }}" id="input-invoice-prefix" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_cart_weight }}">{{ entry_cart_weight }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_cart_weight %}
+                      <input type="radio" name="config_cart_weight" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_cart_weight" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_cart_weight %}
+                      <input type="radio" name="config_cart_weight" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_cart_weight" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_checkout_guest }}">{{ entry_checkout_guest }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_checkout_guest %}
+                      <input type="radio" name="config_checkout_guest" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_checkout_guest" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_checkout_guest %}
+                      <input type="radio" name="config_checkout_guest" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_checkout_guest" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-checkout"><span data-toggle="tooltip" title="{{ help_checkout }}">{{ entry_checkout }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_checkout_id" id="input-checkout" class="form-control">
+                      <option value="0">{{ text_none }}</option>
+                      {% for information in informations %}
+                      {% if information.information_id == config_checkout_id %}
+                      <option value="{{ information.information_id }}" selected="selected">{{ information.title }}</option>
+                      {% else %}
+                      <option value="{{ information.information_id }}">{{ information.title }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-order-status"><span data-toggle="tooltip" title="{{ help_order_status }}">{{ entry_order_status }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_order_status_id" id="input-order-status" class="form-control">
+                      {% for order_status in order_statuses %}
+                      {% if order_status.order_status_id == config_order_status_id %}
+                      <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                      {% else %}
+                      <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-process-status"><span data-toggle="tooltip" title="{{ help_processing_status }}">{{ entry_processing_status }}</span></label>
+                  <div class="col-sm-10">
+                    <div class="well well-sm" style="height: 150px; overflow: auto;"> {% for order_status in order_statuses %}
+                      <div class="checkbox">
+                        <label> {% if order_status.order_status_id in config_processing_status %}
+                          <input type="checkbox" name="config_processing_status[]" value="{{ order_status.order_status_id }}" checked="checked" />
+                          {{ order_status.name }}
+                          {% else %}
+                          <input type="checkbox" name="config_processing_status[]" value="{{ order_status.order_status_id }}" />
+                          {{ order_status.name }}
+                          {% endif %} </label>
+                      </div>
+                      {% endfor %} </div>
+                    {% if error_processing_status %}
+                    <div class="text-danger">{{ error_processing_status }}</div>
+                    {% endif %} </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-complete-status"><span data-toggle="tooltip" title="{{ help_complete_status }}">{{ entry_complete_status }}</span></label>
+                  <div class="col-sm-10">
+                    <div class="well well-sm" style="height: 150px; overflow: auto;"> {% for order_status in order_statuses %}
+                      <div class="checkbox">
+                        <label> {% if order_status.order_status_id in config_complete_status %}
+                          <input type="checkbox" name="config_complete_status[]" value="{{ order_status.order_status_id }}" checked="checked" />
+                          {{ order_status.name }}
+                          {% else %}
+                          <input type="checkbox" name="config_complete_status[]" value="{{ order_status.order_status_id }}" />
+                          {{ order_status.name }}
+                          {% endif %} </label>
+                      </div>
+                      {% endfor %} </div>
+                    {% if error_complete_status %}
+                    <div class="text-danger">{{ error_complete_status }}</div>
+                    {% endif %} </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-fraud-status"><span data-toggle="tooltip" title="{{ help_fraud_status }}">{{ entry_fraud_status }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_fraud_status_id" id="input-fraud-status" class="form-control">
+                      {% for order_status in order_statuses %}
+                      {% if order_status.order_status_id == config_fraud_status_id %}
+                      <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                      {% else %}
+                      <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-api"><span data-toggle="tooltip" title="{{ help_api }}">{{ entry_api }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_api_id" id="input-api" class="form-control">
+                      <option value="0">{{ text_none }}</option>
+                      {% for api in apis %}
+                      {% if api.api_id == config_api_id %}
+                      <option value="{{ api.api_id }}" selected="selected">{{ api.username }}</option>
+                      {% else %}
+                      <option value="{{ api.api_id }}">{{ api.username }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_stock_display }}">{{ entry_stock_display }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_stock_display %}
+                      <input type="radio" name="config_stock_display" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_stock_display" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_stock_display %}
+                      <input type="radio" name="config_stock_display" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_stock_display" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_stock_warning }}">{{ entry_stock_warning }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_stock_warning %}
+                      <input type="radio" name="config_stock_warning" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_stock_warning" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_stock_warning %}
+                      <input type="radio" name="config_stock_warning" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_stock_warning" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_stock_checkout }}">{{ entry_stock_checkout }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_stock_checkout %}
+                      <input type="radio" name="config_stock_checkout" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_stock_checkout" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_stock_checkout %}
+                      <input type="radio" name="config_stock_checkout" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_stock_checkout" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-affiliate-group">{{ entry_affiliate_group }}</label>
+                  <div class="col-sm-10">
+                    <select name="config_affiliate_group_id" id="input-affiliate-group" class="form-control">
+                      {% for customer_group in customer_groups %}
+                      {% if customer_group.customer_group_id == config_affiliate_group_id %}
+                      <option value="{{ customer_group.customer_group_id }}" selected="selected">{{ customer_group.name }}</option>
+                      {% else %}
+                      <option value="{{ customer_group.customer_group_id }}">{{ customer_group.name }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_affiliate_approval }}">{{ entry_affiliate_approval }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_affiliate_approval %}
+                      <input type="radio" name="config_affiliate_approval" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_affiliate_approval" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_affiliate_approval %}
+                      <input type="radio" name="config_affiliate_approval" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_affiliate_approval" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_affiliate_auto }}">{{ entry_affiliate_auto }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_affiliate_auto %}
+                      <input type="radio" name="config_affiliate_auto" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_affiliate_auto" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_affiliate_auto %}
+                      <input type="radio" name="config_affiliate_auto" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_affiliate_auto" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-affiliate-commission"><span data-toggle="tooltip" title="{{ help_affiliate_commission }}">{{ entry_affiliate_commission }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_affiliate_commission" value="{{ config_affiliate_commission }}" placeholder="{{ entry_affiliate_commission }}" id="input-affiliate-commission" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-affiliate"><span data-toggle="tooltip" title="{{ help_affiliate }}">{{ entry_affiliate }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_affiliate_id" id="input-affiliate" class="form-control">
+                      <option value="0">{{ text_none }}</option>
+                      {% for information in informations %}
+                      {% if information.information_id == config_affiliate_id %}
+                      <option value="{{ information.information_id }}" selected="selected">{{ information.title }}</option>
+                      {% else %}
+                      <option value="{{ information.information_id }}">{{ information.title }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-return"><span data-toggle="tooltip" title="{{ help_return }}">{{ entry_return }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_return_id" id="input-return" class="form-control">
+                      <option value="0">{{ text_none }}</option>
+                      {% for information in informations %}
+                      {% if information.information_id == config_return_id %}
+                      <option value="{{ information.information_id }}" selected="selected">{{ information.title }}</option>
+                      {% else %}
+                      <option value="{{ information.information_id }}">{{ information.title }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-return-status"><span data-toggle="tooltip" title="{{ help_return_status }}">{{ entry_return_status }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_return_status_id" id="input-return-status" class="form-control">
+                      {% for return_status in return_statuses %}
+                      {% if return_status.return_status_id == config_return_status_id %}
+                      <option value="{{ return_status.return_status_id }}" selected="selected">{{ return_status.name }}</option>
+                      {% else %}
+                      <option value="{{ return_status.return_status_id }}">{{ return_status.name }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_captcha }}">{{ entry_captcha }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_captcha" id="input-captcha" class="form-control">
+                      <option value="">{{ text_none }}</option>
+                      {% for captcha in captchas %}
+                      {% if captcha.value == config_captcha %}
+                      <option value="{{ captcha.value }}" selected="selected">{{ captcha.text }}</option>
+                      {% else %}
+                      <option value="{{ captcha.value }}">{{ captcha.text }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_captcha_page }}</label>
+                  <div class="col-sm-10">
+                    <div class="well well-sm" style="height: 150px; overflow: auto;"> {% for captcha_page in captcha_pages %}
+                      <div class="checkbox">
+                        <label> {% if captcha_page.value in config_captcha_page %}
+                          <input type="checkbox" name="config_captcha_page[]" value="{{ captcha_page.value }}" checked="checked" />
+                          {{ captcha_page.text }}
+                          {% else %}
+                          <input type="checkbox" name="config_captcha_page[]" value="{{ captcha_page.value }}" />
+                          {{ captcha_page.text }}
+                          {% endif %} </label>
+                      </div>
+                      {% endfor %} </div>
+                  </div>
+                </div>
+              </fieldset>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-logo">{{ entry_logo }}</label>
+                <div class="col-sm-10"><a href="" id="thumb-logo" data-toggle="image" class="img-thumbnail"><img src="{{ logo }}" alt="" title="" data-placeholder="{{ placeholder }}" /></a>
+                  <input type="hidden" name="config_logo" value="{{ config_logo }}" id="input-logo" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label" for="input-icon"><span data-toggle="tooltip" title="{{ help_icon }}">{{ entry_icon }}</span></label>
+                <div class="col-sm-10"><a href="" id="thumb-icon" data-toggle="image" class="img-thumbnail"><img src="{{ icon }}" alt="" title="" data-placeholder="{{ placeholder }}" /></a>
+                  <input type="hidden" name="config_icon" value="{{ config_icon }}" id="input-icon" />
+                </div>
+              </div>
+              <fieldset>
+                <div class="form-group" style="display:none">
+                  <label class="col-sm-2 control-label" for="input-mail-engine"><span data-toggle="tooltip" title="{{ help_mail_engine }}">{{ entry_mail_engine }}</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_mail_engine" id="input-mail-engine" class="form-control">
+                      <option value="smtp" selected="selected">{{ text_smtp }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group" style="display:none">
+                  <label class="col-sm-2 control-label" for="input-mail-parameter"><span data-toggle="tooltip" title="{{ help_mail_parameter }}">{{ entry_mail_parameter }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_mail_parameter" value="{{ config_mail_parameter }}" placeholder="{{ entry_mail_parameter }}" id="input-mail-parameter" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-mail-smtp-hostname"><span data-toggle="tooltip" title="{{ help_mail_smtp_hostname }}">{{ entry_mail_smtp_hostname }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_mail_smtp_hostname" value="{{ config_mail_smtp_hostname }}" placeholder="{{ entry_mail_smtp_hostname }}" id="input-mail-smtp-hostname" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-mail-smtp-username">{{ entry_mail_smtp_username }}</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_mail_smtp_username" value="{{ config_mail_smtp_username }}" placeholder="{{ entry_mail_smtp_username }}" id="input-mail-smtp-username" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-mail-smtp-password"><span data-toggle="tooltip" title="{{ help_mail_smtp_password }}">{{ entry_mail_smtp_password }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_mail_smtp_password" value="{{ config_mail_smtp_password }}" placeholder="{{ entry_mail_smtp_password }}" id="input-mail-smtp-password" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group" >
+                  <label class="col-sm-2 control-label" for="input-mail-smtp-port">{{ entry_mail_smtp_port }}</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_mail_smtp_port" value="465" placeholder="{{ entry_mail_smtp_port }}" id="input-mail-smtp-port" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-mail-smtp-timeout">{{ entry_mail_smtp_timeout }}</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_mail_smtp_timeout" value="{{ config_mail_smtp_timeout }}" placeholder="{{ entry_mail_smtp_timeout }}" id="input-mail-smtp-timeout" class="form-control" />
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset style="display:none">
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_mail_alert }}">{{ entry_mail_alert }}</span></label>
+                  <div class="col-sm-10">
+                    <div class="well well-sm" style="height: 150px; overflow: auto;"> {% for mail_alert in mail_alerts %}
+                      <div class="checkbox">
+                        <label> {% if mail_alert.value in config_mail_alert %}
+                          <input type="checkbox" name="config_mail_alert[]" value="{{ mail_alert.value }}" checked="checked" />
+                          {{ mail_alert.text }}
+                          {% else %}
+                          <input type="checkbox" name="config_mail_alert[]" value="{{ mail_alert.value }}" />
+                          {{ mail_alert.text }}
+                          {% endif %} </label>
+                      </div>
+                      {% endfor %} </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-mail-alert-email"><span data-toggle="tooltip" title="{{ help_mail_alert_email }}">{{ entry_mail_alert_email }}</span></label>
+                  <div class="col-sm-10">
+                    <textarea name="config_mail_alert_email" rows="5" placeholder="{{ entry_mail_alert_email }}" id="input-alert-email" class="form-control">{{ config_mail_alert_email }}</textarea>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_maintenance }}">{{ entry_maintenance }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_maintenance %}
+                      <input type="radio" name="config_maintenance" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_maintenance" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_maintenance %}
+                      <input type="radio" name="config_maintenance" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_maintenance" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group" style="display:none">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_seo_url }}">{{ entry_seo_url }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_seo_url %}
+                      <input type="radio" name="config_seo_url" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_seo_url" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_seo_url %}
+                      <input type="radio" name="config_seo_url" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_seo_url" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group" style="display:none">
+                  <label class="col-sm-2 control-label" for="input-robots"><span data-toggle="tooltip" title="{{ help_robots }}">{{ entry_robots }}</span></label>
+                  <div class="col-sm-10">
+                    <textarea name="config_robots" rows="5" placeholder="{{ entry_robots }}" id="input-robots" class="form-control">{{ config_robots }}</textarea>
+                  </div>
+                </div>
+                <div class="form-group" style="display:none">
+                  <label class="col-sm-2 control-label" for="input-compression"><span data-toggle="tooltip" title="{{ help_compression }}">{{ entry_compression }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_compression" value="{{ config_compression }}" placeholder="{{ entry_compression }}" id="input-compression" class="form-control" />
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset style="display:none">
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_secure }}">{{ entry_secure }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_secure %}
+                      <input type="radio" name="config_secure" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_secure" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_secure %}
+                      <input type="radio" name="config_secure" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_secure" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_password }}">{{ entry_password }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_password %}
+                      <input type="radio" name="config_password" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_password" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_password %}
+                      <input type="radio" name="config_password" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_password" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_shared }}">{{ entry_shared }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_shared %}
+                      <input type="radio" name="config_shared" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_shared" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_shared %}
+                      <input type="radio" name="config_shared" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_shared" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-encryption"><span data-toggle="tooltip" title="{{ help_encryption }}">{{ entry_encryption }}</span></label>
+                  <div class="col-sm-10">
+                    <textarea name="config_encryption" rows="5" placeholder="{{ entry_encryption }}" id="input-encryption" class="form-control">{{ config_encryption }}</textarea>
+                    {% if error_encryption %}
+                    <div class="text-danger">{{ error_encryption }}</div>
+                    {% endif %} </div>
+                </div>
+              </fieldset>
+              <fieldset style="display:none">
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-file-max-size"><span data-toggle="tooltip" title="{{ help_file_max_size }}">{{ entry_file_max_size }}</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_file_max_size" value="{{ config_file_max_size }}" placeholder="{{ entry_file_max_size }}" id="input-file-max-size" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-file-ext-allowed"><span data-toggle="tooltip" title="{{ help_file_ext_allowed }}">{{ entry_file_ext_allowed }}</span></label>
+                  <div class="col-sm-10">
+                    <textarea name="config_file_ext_allowed" rows="5" placeholder="{{ entry_file_ext_allowed }}" id="input-file-ext-allowed" class="form-control">{{ config_file_ext_allowed }}</textarea>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-file-mime-allowed"><span data-toggle="tooltip" title="{{ help_file_mime_allowed }}">{{ entry_file_mime_allowed }}</span></label>
+                  <div class="col-sm-10">
+                    <textarea name="config_file_mime_allowed" rows="5" placeholder="{{ entry_file_mime_allowed }}" id="input-file-mime-allowed" class="form-control">{{ config_file_mime_allowed }}</textarea>
+                  </div>
+                </div>
+              </fieldset>
+              <fieldset style="display:none">
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_error_display }}</label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_error_display %}
+                      <input type="radio" name="config_error_display" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_error_display" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_error_display %}
+                      <input type="radio" name="config_error_display" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_error_display" value="0" />
+                      {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label">{{ entry_error_log }}</label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_error_log %}
+                      <input type="radio" name="config_error_log" value="1" checked="checked" />
+                      {{ text_yes }}
+                      {% else %}
+                      <input type="radio" name="config_error_log" value="1" />
+                      {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_error_log %}
+                      <input type="radio" name="config_error_log" value="0" checked="checked" />
+                      {{ text_no }}
+                      {% else %}
+                      <input type="radio" name="config_error_log" value="0" />
+                      {{ text_no }}
+                      {% endif %}</label>
+                  </div>
+                </div>
+                <div class="form-group required">
+                  <label class="col-sm-2 control-label" for="input-error-filename">{{ entry_error_filename }}</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_error_filename" value="{{ config_error_filename }}" placeholder="{{ entry_error_filename }}" id="input-error-filename" class="form-control" />
+                    {% if error_log %}
+                    <div class="text-danger">{{ error_log }}</div>
+                    {% endif %} </div>
+                </div>
+              </fieldset>
+            </div>
+  <div class="tab-pane" id="tab-accounting">
+    <h3 class="page-header">{{ text_tab_accounting }}</h3>
+
+    <!-- تحذير مهم -->
+    <div class="alert alert-warning">
+      <i class="fa fa-exclamation-triangle"></i>
+      <strong>تنبيه مهم:</strong> إعدادات المحاسبة تؤثر على جميع العمليات المالية في النظام. يرجى التأكد من صحة الحسابات المختارة قبل الحفظ.
+    </div>
+
+    <!-- Inventory Valuation -->
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-inventory-valuation">{{ entry_inventory_valuation }}</label>
+      <div class="col-sm-10">
+        {# نفترض دائمًا المتوسط المرجح #}
+        <input type="hidden" name="config_accounting_inventory_valuation_method" value="weighted_average">
+        <p class="form-control-static text-success">
+          <i class="fa fa-check-circle"></i> {{ text_inventory_valuation_wac }}
+        </p>
+        <small class="help-block">
+          المتوسط المرجح للتكلفة يضمن تقييم دقيق للمخزون ويتوافق مع المعايير المحاسبية المصرية.
+        </small>
+      </div>
+    </div>
+
+    <!-- ASSETS ACCOUNTS -->
+    <h3 class="page-header">{{ text_assets_accounts }}</h3>
+
+    <!-- Cash & Bank Accounts -->
+    <h4>{{ text_current_assets }}</h4>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-cash-account">{{ entry_cash_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_cash_account" id="input-cash-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_cash_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-petty-cash-account">{{ entry_petty_cash_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_petty_cash_account" id="input-petty-cash-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_petty_cash_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-bank-account">{{ entry_bank_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_bank_account" id="input-bank-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_bank_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Inventory Accounts -->
+    <h4>{{ text_inventory_accounts }}</h4>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-inventory-account">{{ entry_inventory_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_inventory_account" id="input-inventory-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_inventory_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-inventory-transit-account">{{ entry_inventory_transit_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_inventory_transit_account" id="input-inventory-transit-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_inventory_transit_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-inventory-adjustment-account">{{ entry_inventory_adjustment_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_inventory_adjustment_account" id="input-inventory-adjustment-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_inventory_adjustment_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Receivables -->
+    <h4>{{ text_receivables }}</h4>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-ar-account">{{ entry_ar_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_ar_account" id="input-ar-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_ar_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Liabilities Accounts -->
+    <h3 class="page-header">{{ text_liabilities_accounts }}</h3>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-ap-account">{{ entry_ap_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_ap_account" id="input-ap-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_ap_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-loans-account">{{ entry_loans_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_loans_account" id="input-loans-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_loans_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Purchases Accounts -->
+    <h3 class="page-header">{{ text_purchase_accounts }}</h3>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-purchase-account">{{ entry_purchase_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_purchase_account" id="input-purchase-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_purchase_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-purchase-returns-account">{{ entry_purchase_returns_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_purchase_returns_account" id="input-purchase-returns-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_purchase_returns_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-purchase-discount-account">{{ entry_purchase_discount_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_purchase_discount_account" id="input-purchase-discount-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_purchase_discount_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-import-duties-account">{{ entry_import_duties_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_import_duties_account" id="input-import-duties-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_import_duties_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-freight-charges-account">{{ entry_freight_charges_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_freight_charges_account" id="input-freight-charges-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_freight_charges_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Sales Accounts -->
+    <h3 class="page-header">{{ text_sales_accounts }}</h3>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-sales-account">{{ entry_sales_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_sales_account" id="input-sales-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_sales_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-sales-returns-account">{{ entry_sales_returns_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_sales_returns_account" id="input-sales-returns-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_sales_returns_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-sales-discount-account">{{ entry_sales_discount_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_sales_discount_account" id="input-sales-discount-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_sales_discount_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-sales-shipping-account">{{ entry_sales_shipping_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_sales_shipping_account" id="input-sales-shipping-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_sales_shipping_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Tax Accounts -->
+    <h3 class="page-header">{{ text_tax_accounts }}</h3>
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-sales-tax-account">{{ entry_sales_tax_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_sales_tax_account" id="input-sales-tax-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_sales_tax_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-purchase-tax-account">{{ entry_purchase_tax_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_purchase_tax_account" id="input-purchase-tax-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_purchase_tax_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- General Expenses -->
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-general-expenses-account">{{ entry_general_expenses_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_general_expenses_account" id="input-general-expenses-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_general_expenses_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Marketing Expenses -->
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-marketing-expenses-account">{{ entry_marketing_expenses_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_marketing_expenses_account" id="input-marketing-expenses-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_marketing_expenses_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Salaries & Wages -->
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-salaries-expenses-account">{{ entry_salaries_expenses_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_salaries_expenses_account" id="input-salaries-expenses-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_salaries_expenses_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Other Income -->
+    <div class="form-group">
+      <label class="col-sm-2 control-label" for="input-other-income-account">{{ entry_other_income_account }}</label>
+      <div class="col-sm-10">
+        <select name="config_accounting_other_income_account" id="input-other-income-account" class="form-control select2">
+          <option value="0">-- Select --</option>
+          {% for acc in accounts_list %}
+            <option value="{{ acc.account_code }}"
+              {% if config_accounting_other_income_account == acc.account_code %} selected{% endif %}>
+              {{ acc.name }} ({{ acc.account_code }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+  </div><!-- /.tab-pane -->
+
+
+
+
+             <div class="tab-pane" id="tab-eta">
+              <!-- ETA Status Overview -->
+              <div class="alert alert-info">
+                <h4><i class="fa fa-info-circle"></i> نظام الفوترة الإلكترونية المصري (ETA)</h4>
+                <p>تكامل شامل مع مصلحة الضرائب المصرية لإرسال الفواتير والإيصالات الإلكترونية تلقائياً</p>
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="panel panel-success">
+                      <div class="panel-body text-center">
+                        <h4 id="eta-invoices-sent">0</h4>
+                        <small>فواتير مرسلة</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="panel panel-info">
+                      <div class="panel-body text-center">
+                        <h4 id="eta-receipts-sent">0</h4>
+                        <small>إيصالات مرسلة</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="panel panel-warning">
+                      <div class="panel-body text-center">
+                        <h4 id="eta-queue-count">0</h4>
+                        <small>في الطابور</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="panel panel-primary">
+                      <div class="panel-body text-center">
+                        <h4 id="eta-success-rate">0%</h4>
+                        <small>معدل النجاح</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <fieldset>
+                <legend><i class="fa fa-building"></i> بيانات الممول الأساسية</legend>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="رقم التسجيل الضريبي">رقم التسجيل الضريبي</span></label>
+                    <div class="col-sm-10">
+                    <input type="text" name="config_eta_taxpayer_id" value="{{ config_eta_taxpayer_id }}" placeholder="رقم التسجيل الضريبي" id="input-eta-taxpayer-id" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="Activity Code - كود النشاط">Activity Code - كود النشاط</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_eta_activity_code" value="{{ config_eta_activity_code }}" placeholder="Activity Code - كود النشاط" id="input_activity-code" class="form-control" />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+
+              <legend>الشركة وعنوان المقر الرئيسي</legend>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="config_name" value="{{ config_name }}" placeholder="{{ entry_name }}" class="form-control" id="input-name"/>
+                  {% if error_name %}
+                    <div class="text-danger">{{ error_name }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-governate">المحافظة - governate</label>
+                <div class="col-sm-10">
+<select name="config_governate" id="input-zone" class="form-control"><option value="1001">Ad Daqahliyah</option><option value="1002">Al Bahr al Ahmar</option><option value="1003">Al Buhayrah</option><option value="1004">Al Fayyum</option><option value="1005">Al Gharbiyah</option><option value="1006">Al Iskandariyah</option><option value="1007">Al Isma'iliyah</option><option value="1008">Al Jizah</option><option value="1009">Al Minufiyah</option><option value="1010">Al Minya</option><option value="1011">Al Qahirah</option><option value="1012">Al Qalyubiyah</option><option value="1013">Al Wadi al Jadid</option><option value="1015">As Suways</option><option value="1014">Ash Sharqiyah</option><option value="1016">Aswan</option><option value="1017">Asyut</option><option value="1018">Bani Suwayf</option><option value="1019">Bur Sa'id</option><option value="1020">Dumyat</option><option value="1021">Janub Sina'</option><option value="1022">Kafr ash Shaykh</option><option value="1023">Matruh</option><option value="1024">Qina</option><option value="1025">Shamal Sina'</option><option value="1026">Suhaj</option></select>
+                </div>
+              </div>
+               <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-region_city">المدينة - المركز - City</label>
+                <div class="col-sm-10">
+                  <textarea name="config_region_city" placeholder="المدينة - المركز - city" rows="1" class="form-control" id="input-region_city"/>{{ config_region_city }}</textarea>
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-config_street"> الشارع - Street</label>
+                <div class="col-sm-10">
+                  <textarea name="config_street" placeholder="الشارع - Street" rows="1" class="form-control" id="input-config_street"/>{{ config_street }}</textarea>
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-building_number">رقم المبنى - Building No.</label>
+                <div class="col-sm-10">
+                  <textarea name="config_building_number" placeholder="رقم المبنى - Building No." rows="1" class="form-control" id="input-address"/>{{ config_building_number }}</textarea>
+                </div>
+              </div>
+
+                {% if error_address %}
+                   <div class="text-danger">{{ error_address }}</div>
+                {% endif %}
+
+               </fieldset>
+              <fieldset>
+              <legend>بيانات التواصل الرئيسية</legend>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-email">{{ entry_email }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="config_email" value="{{ config_email }}" placeholder="{{ entry_email }}" class="form-control" id="input-email"/>
+                  {% if error_email %}
+                    <div class="text-danger">{{ error_email }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="form-group required">
+                <label class="col-sm-2 control-label" for="input-telephone">{{ entry_telephone }}</label>
+                <div class="col-sm-10">
+                  <input type="text" name="config_telephone" value="{{ config_telephone }}" placeholder="{{ entry_telephone }}" class="form-control" id="input-telephone"/>
+                  {% if error_telephone %}
+                    <div class="text-danger">{{ error_telephone }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+               </fieldset>
+              <fieldset>
+
+                 <legend>إعدادات التوقيع الالكتروني - غير مطلوب بالايصالات الالكترونية للمستهلك النهائي</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="ETA USB Pin">ETA USB Pin</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_eta_usb_pin" value="{{ config_eta_usb_pin }}" placeholder="ETA USB Pin" id="input-eta-usb-pin" class="form-control" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label" for="input-access-token"><span data-toggle="tooltip" title="Access Token">Access Token</span></label>
+                  <div class="col-sm-10">
+                    <textarea name="config_eta_access_token" rows="5" placeholder="Access Token" id="input-config_eta_access_token" class="form-control">{{config_eta_access_token}}</textarea>
+                  </div>
+
+                  <button class="btn btn-link" name="action_set_certificate_from_usb" type="object" tabindex="-1"><span>Get certificate - الحصول على الشهادة </span></button>
+                 <input type="hidden" id="certificate-data" name="config_eta_certificate_data">
+
+                  <div class="alert alert-info">** يجب ان يكون ال usb في الجهاز - windows 10 or win11 ثم اضغط على الرابط أعلاه</div>
+                </div>
+
+              </fieldset>
+              <fieldset>
+                <legend><i class="fa fa-cogs"></i> إعدادات البيئة والاتصال</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="حدد بيئة العمل - اختبار أم إنتاج">بيئة العمل</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_environment" value="production" {% if config_eta_environment == 'production' %}checked="checked"{% endif %} />
+                      <i class="fa fa-globe text-success"></i> الإنتاج (Production)
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_environment" value="preprod" {% if config_eta_environment == 'preprod' or not config_eta_environment %}checked="checked"{% endif %} />
+                      <i class="fa fa-flask text-warning"></i> الاختبار (Pre-Production)
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="Client ID من مصلحة الضرائب">Client ID</span></label>
+                  <div class="col-sm-10">
+                    <input type="text" name="config_eta_client_id" value="{{ config_eta_client_id }}" placeholder="Client ID" class="form-control" />
+                    <small class="text-muted">معرف العميل المقدم من مصلحة الضرائب المصرية</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="Client Secret من مصلحة الضرائب">Client Secret</span></label>
+                  <div class="col-sm-10">
+                    <input type="password" name="config_eta_client_secret" value="{{ config_eta_client_secret }}" placeholder="Client Secret" class="form-control" />
+                    <small class="text-muted">كلمة السر السرية المقدمة من مصلحة الضرائب المصرية</small>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend><i class="fa fa-file-text"></i> إعدادات إرسال الفواتير الإلكترونية</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="تفعيل/إلغاء إرسال الفواتير تلقائياً">إرسال الفواتير</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_invoice_enabled" value="1" {% if config_eta_invoice_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_invoice_enabled" value="0" {% if not config_eta_invoice_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="إرسال الفواتير تلقائياً عند إنشاء الطلب">الإرسال التلقائي</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_invoice_auto_send" value="1" {% if config_eta_invoice_auto_send %}checked="checked"{% endif %} />
+                      <i class="fa fa-magic text-primary"></i> تلقائي
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_invoice_auto_send" value="0" {% if not config_eta_invoice_auto_send %}checked="checked"{% endif %} />
+                      <i class="fa fa-hand-paper-o text-warning"></i> يدوي
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="إرسال الإشعارات الدائنة تلقائياً">الإشعارات الدائنة</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_credit_note_enabled" value="1" {% if config_eta_credit_note_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_credit_note_enabled" value="0" {% if not config_eta_credit_note_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="إرسال الإشعارات المدينة تلقائياً">الإشعارات المدينة</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_debit_note_enabled" value="1" {% if config_eta_debit_note_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_debit_note_enabled" value="0" {% if not config_eta_debit_note_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="إرسال فواتير تعديل الطلبات">فواتير التعديل</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_order_modification_enabled" value="1" {% if config_eta_order_modification_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_order_modification_enabled" value="0" {% if not config_eta_order_modification_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend><i class="fa fa-receipt"></i> إعدادات إرسال الإيصالات الإلكترونية</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="تفعيل/إلغاء إرسال الإيصالات تلقائياً">إرسال الإيصالات</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_receipt_enabled" value="1" {% if config_eta_receipt_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_receipt_enabled" value="0" {% if not config_eta_receipt_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="نوع الإيصال الافتراضي">نوع الإيصال</span></label>
+                  <div class="col-sm-10">
+                    <select name="config_eta_receipt_type" class="form-control">
+                      <option value="retail" {% if config_eta_receipt_type == 'retail' %}selected{% endif %}>إيصال تجزئة (Retail)</option>
+                      <option value="coffee_restaurant" {% if config_eta_receipt_type == 'coffee_restaurant' %}selected{% endif %}>مقهى ومطعم (Coffee & Restaurant)</option>
+                      <option value="general_services" {% if config_eta_receipt_type == 'general_services' %}selected{% endif %}>خدمات عامة (General Services)</option>
+                      <option value="transportation" {% if config_eta_receipt_type == 'transportation' %}selected{% endif %}>نقل (Transportation)</option>
+                      <option value="banking" {% if config_eta_receipt_type == 'banking' %}selected{% endif %}>بنكي (Banking)</option>
+                      <option value="education" {% if config_eta_receipt_type == 'education' %}selected{% endif %}>تعليمي (Education)</option>
+                      <option value="professional" {% if config_eta_receipt_type == 'professional' %}selected{% endif %}>مهني (Professional)</option>
+                      <option value="shipping" {% if config_eta_receipt_type == 'shipping' %}selected{% endif %}>شحن (Shipping)</option>
+                      <option value="entertainment" {% if config_eta_receipt_type == 'entertainment' %}selected{% endif %}>ترفيه (Entertainment)</option>
+                      <option value="utility" {% if config_eta_receipt_type == 'utility' %}selected{% endif %}>مرافق (Utility)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="إرسال الإيصالات تلقائياً من نقاط البيع">POS التلقائي</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_pos_auto_receipt" value="1" {% if config_eta_pos_auto_receipt %}checked="checked"{% endif %} />
+                      <i class="fa fa-magic text-primary"></i> تلقائي
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_pos_auto_receipt" value="0" {% if not config_eta_pos_auto_receipt %}checked="checked"{% endif %} />
+                      <i class="fa fa-hand-paper-o text-warning"></i> يدوي
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend><i class="fa fa-clock-o"></i> إعدادات نظام الطابور والمعالجة</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="تفعيل نظام الطابور للإرسال المؤجل">نظام الطابور</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_queue_enabled" value="1" {% if config_eta_queue_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_queue_enabled" value="0" {% if not config_eta_queue_enabled %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="عدد المحاولات قبل الفشل النهائي">عدد المحاولات</span></label>
+                  <div class="col-sm-10">
+                    <input type="number" name="config_eta_max_attempts" value="{{ config_eta_max_attempts|default(5) }}" min="1" max="10" class="form-control" />
+                    <small class="text-muted">عدد المحاولات لإرسال الفاتورة قبل اعتبارها فاشلة</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="فترة الانتظار بين المحاولات بالدقائق">فترة الانتظار</span></label>
+                  <div class="col-sm-10">
+                    <input type="number" name="config_eta_retry_interval" value="{{ config_eta_retry_interval|default(5) }}" min="1" max="60" class="form-control" />
+                    <small class="text-muted">فترة الانتظار بالدقائق بين محاولات الإرسال</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="معالجة الطابور تلقائياً">المعالجة التلقائية</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_auto_process_queue" value="1" {% if config_eta_auto_process_queue %}checked="checked"{% endif %} />
+                      <i class="fa fa-magic text-primary"></i> تلقائي
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_auto_process_queue" value="0" {% if not config_eta_auto_process_queue %}checked="checked"{% endif %} />
+                      <i class="fa fa-hand-paper-o text-warning"></i> يدوي
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend><i class="fa fa-bell"></i> إعدادات التنبيهات والإشعارات</legend>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="إرسال تنبيهات عند فشل الإرسال">تنبيهات الفشل</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_failure_notifications" value="1" {% if config_eta_failure_notifications %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_failure_notifications" value="0" {% if not config_eta_failure_notifications %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="البريد الإلكتروني لاستقبال التنبيهات">بريد التنبيهات</span></label>
+                  <div class="col-sm-10">
+                    <input type="email" name="config_eta_notification_email" value="{{ config_eta_notification_email }}" placeholder="admin@company.com" class="form-control" />
+                    <small class="text-muted">البريد الإلكتروني لاستقبال تنبيهات ETA</small>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="حفظ سجل مفصل للعمليات">سجل العمليات</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_detailed_logging" value="1" {% if config_eta_detailed_logging %}checked="checked"{% endif %} />
+                      <i class="fa fa-check-circle text-success"></i> مفعل
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_eta_detailed_logging" value="0" {% if not config_eta_detailed_logging %}checked="checked"{% endif %} />
+                      <i class="fa fa-times-circle text-danger"></i> معطل
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend><i class="fa fa-tools"></i> أدوات الإدارة والصيانة</legend>
+
+                <div class="row">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-info btn-block" onclick="testETAConnection()">
+                      <i class="fa fa-plug"></i> اختبار الاتصال
+                    </button>
+                  </div>
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-warning btn-block" onclick="processETAQueue()">
+                      <i class="fa fa-play"></i> معالجة الطابور
+                    </button>
+                  </div>
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-success btn-block" onclick="refreshETAStats()">
+                      <i class="fa fa-refresh"></i> تحديث الإحصائيات
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row" style="margin-top: 15px;">
+                  <div class="col-md-6">
+                    <button type="button" class="btn btn-primary btn-block" onclick="viewETALogs()">
+                      <i class="fa fa-file-text"></i> عرض السجلات
+                    </button>
+                  </div>
+                  <div class="col-md-6">
+                    <button type="button" class="btn btn-danger btn-block" onclick="clearETAQueue()">
+                      <i class="fa fa-trash"></i> مسح الطابور
+                    </button>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+             <button style="width:100%;height:50px;margin-top:30px;" type="submit" id="button-save2" form="form-setting" data-toggle="tooltip" title="{{ button_save }}"  class="btn btn-primary"><i class="fa fa-save"></i> {{ button_save }}</button>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript"><!--
+      // Initialize Select2 for accounting tab
+    $(document).ready(function() {
+        $('#tab-accounting').find('.select2').select2({
+            width: '100%',
+            placeholder: "اختر حساب",
+            allowClear: true,
+            language: {
+                noResults: function() {
+                    return "لا توجد نتائج";
+                },
+                searching: function() {
+                    return "جاري البحث...";
+                }
+            }
+        });
+
+        // Validate accounting settings before submit
+        $('#form-setting').on('submit', function(e) {
+            var hasErrors = false;
+            var requiredAccounts = [
+                'config_accounting_cash_account',
+                'config_accounting_bank_account',
+                'config_accounting_inventory_account',
+                'config_accounting_ar_account',
+                'config_accounting_ap_account',
+                'config_accounting_sales_account',
+                'config_accounting_purchase_account'
+            ];
+
+            // Clear previous error styling
+            $('.form-group').removeClass('has-error');
+            $('.accounting-error').remove();
+
+            // Check required accounting fields
+            $.each(requiredAccounts, function(index, field) {
+                var value = $('select[name="' + field + '"]').val();
+                if (!value || value == '0') {
+                    var fieldGroup = $('select[name="' + field + '"]').closest('.form-group');
+                    fieldGroup.addClass('has-error');
+                    fieldGroup.append('<div class="text-danger accounting-error">هذا الحساب مطلوب للعمليات المحاسبية</div>');
+                    hasErrors = true;
+                }
+            });
+
+            // Check ETA settings if production mode is selected
+            if ($('input[name="config_eta_mode"]:checked').val() == '1') {
+                var etaFields = [
+                    'config_eta_taxpayer_id',
+                    'config_eta_activity_code',
+                    'config_eta_client_id'
+                ];
+
+                $.each(etaFields, function(index, field) {
+                    var value = $('input[name="' + field + '"]').val();
+                    if (!value || value.trim() == '') {
+                        var fieldGroup = $('input[name="' + field + '"]').closest('.form-group');
+                        fieldGroup.addClass('has-error');
+                        fieldGroup.append('<div class="text-danger accounting-error">هذا الحقل مطلوب في وضع الإنتاج</div>');
+                        hasErrors = true;
+                    }
+                });
+            }
+
+            if (hasErrors) {
+                e.preventDefault();
+                // Switch to accounting tab if errors found
+                $('a[href="#tab-accounting"]').tab('show');
+                alert('يرجى تصحيح الأخطاء قبل الحفظ');
+                return false;
+            }
+        });
+
+        // Load ETA statistics on page load
+        loadETAStatistics();
+    });
+
+    // ETA Management Functions
+    function testETAConnection() {
+        $.ajax({
+            url: 'index.php?route=extension/eta/invoice/testConnection&user_token={{ user_token }}',
+            type: 'POST',
+            dataType: 'json',
+            beforeSend: function() {
+                $('button').prop('disabled', true);
+            },
+            complete: function() {
+                $('button').prop('disabled', false);
+            },
+            success: function(json) {
+                if (json.success) {
+                    alert('✅ تم الاتصال بنجاح مع ETA');
+                } else {
+                    alert('❌ فشل الاتصال: ' + (json.error || 'خطأ غير معروف'));
+                }
+            },
+            error: function() {
+                alert('❌ خطأ في الاتصال');
+            }
+        });
+    }
+
+    function processETAQueue() {
+        $.ajax({
+            url: 'index.php?route=extension/eta/invoice/processQueue&user_token={{ user_token }}',
+            type: 'POST',
+            dataType: 'json',
+            beforeSend: function() {
+                $('button').prop('disabled', true);
+            },
+            complete: function() {
+                $('button').prop('disabled', false);
+            },
+            success: function(json) {
+                if (json.success) {
+                    alert('✅ تم معالجة الطابور بنجاح\nنجح: ' + json.processed.success + '\nفشل: ' + json.processed.failed);
+                    refreshETAStats();
+                } else {
+                    alert('❌ فشل في معالجة الطابور: ' + (json.error || 'خطأ غير معروف'));
+                }
+            },
+            error: function() {
+                alert('❌ خطأ في معالجة الطابور');
+            }
+        });
+    }
+
+    function refreshETAStats() {
+        loadETAStatistics();
+    }
+
+    function loadETAStatistics() {
+        $.ajax({
+            url: 'index.php?route=extension/eta/invoice/getStatistics&user_token={{ user_token }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(json) {
+                if (json.statistics) {
+                    $('#eta-invoices-sent').text(json.statistics.sent_invoices || 0);
+                    $('#eta-receipts-sent').text(json.statistics.sent_receipts || 0);
+                    $('#eta-queue-count').text(json.statistics.queue_count || 0);
+                    $('#eta-success-rate').text((json.statistics.success_rate || 0) + '%');
+                }
+            },
+            error: function() {
+                console.log('Failed to load ETA statistics');
+            }
+        });
+    }
+
+    function viewETALogs() {
+        window.open('index.php?route=extension/eta/invoice/logs&user_token={{ user_token }}', '_blank');
+    }
+
+    function clearETAQueue() {
+        if (confirm('هل أنت متأكد من مسح جميع عناصر الطابور؟\nهذا الإجراء لا يمكن التراجع عنه.')) {
+            $.ajax({
+                url: 'index.php?route=extension/eta/invoice/clearQueue&user_token={{ user_token }}',
+                type: 'POST',
+                dataType: 'json',
+                beforeSend: function() {
+                    $('button').prop('disabled', true);
+                },
+                complete: function() {
+                    $('button').prop('disabled', false);
+                },
+                success: function(json) {
+                    if (json.success) {
+                        alert('✅ تم مسح الطابور بنجاح');
+                        refreshETAStats();
+                    } else {
+                        alert('❌ فشل في مسح الطابور: ' + (json.error || 'خطأ غير معروف'));
+                    }
+                },
+                error: function() {
+                    alert('❌ خطأ في مسح الطابور');
+                }
+            });
+        }
+    }
+
+$('select[name=\'config_theme\']').on('change', function() {
+	$.ajax({
+		url: 'index.php?route=setting/setting/theme&user_token={{ user_token }}&theme=' + this.value,
+		dataType: 'html',
+		beforeSend: function() {
+			$('select[name=\'config_theme\']').prop('disabled', true);
+		},
+		complete: function() {
+			$('select[name=\'config_theme\']').prop('disabled', false);
+		},
+		success: function(html) {
+			$('#theme').attr('src', html);
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+
+$('select[name=\'config_theme\']').trigger('change');
+//--></script>
+  <script type="text/javascript"><!--
+$('select[name=\'config_country_id\']').on('change', function() {
+	$.ajax({
+		url: 'index.php?route=localisation/country/country&user_token={{ user_token }}&country_id=' + this.value,
+		dataType: 'json',
+		beforeSend: function() {
+			$('select[name=\'config_country_id\']').prop('disabled', true);
+		},
+		complete: function() {
+			$('select[name=\'config_country_id\']').prop('disabled', false);
+		},
+		success: function(json) {
+			html = '<option value="">{{ text_select }}</option>';
+
+			if (json['zone'] && json['zone'] != '') {
+				for (i = 0; i < json['zone'].length; i++) {
+          			html += '<option value="' + json['zone'][i]['zone_id'] + '"';
+
+					if (json['zone'][i]['zone_id'] == '{{ config_zone_id }}') {
+            			html += ' selected="selected"';
+					}
+
+					html += '>' + json['zone'][i]['name'] + '</option>';
+				}
+			} else {
+				html += '<option value="0" selected="selected">{{ text_none }}</option>';
+			}
+
+			$('select[name=\'config_zone_id\']').html(html);
+
+			$('#button-save').prop('disabled', false);
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+});
+
+$('select[name=\'config_country_id\']').trigger('change');
+//--></script></div>
+{{ footer }}

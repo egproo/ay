@@ -1,0 +1,358 @@
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-label="{{ button_close }}">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <h4 class="modal-title">{{ mode == 'edit' ? text_edit_quotation : text_add_quotation }}</h4>
+</div>
+
+<form id="quotation-form" class="form-horizontal">
+  {% if mode == 'edit' %}
+  <input type="hidden" name="quotation_id" value="{{ form_data.quotation_id }}">
+  {% endif %}
+  
+  <div class="modal-body">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#tab-general" data-toggle="tab">{{ tab_general }}</a></li>
+      <li><a href="#tab-items" data-toggle="tab">{{ tab_items }}</a></li>
+      <li><a href="#tab-totals" data-toggle="tab">{{ tab_totals }}</a></li>
+      {% if mode == 'edit' %}
+      <li><a href="#tab-documents" data-toggle="tab">{{ tab_documents }}</a></li>
+      {% endif %}
+    </ul>
+    
+    <div class="tab-content">
+      <!-- General Tab -->
+      <div class="tab-pane active" id="tab-general">
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="requisition-id">{{ entry_requisition }}</label>
+          <div class="col-sm-9">
+            <select name="requisition_id" id="requisition-id" class="form-control select2-requisition" {% if mode == 'edit' %}disabled{% endif %} required>
+              {% if form_data.requisition_id and requisition_info %}
+                <option value="{{ form_data.requisition_id }}" selected>{{ requisition_info.req_number }} - {{ requisition_info.branch_name }}</option>
+              {% endif %}
+            </select>
+            {% if mode == 'edit' and form_data.requisition_id %}
+              <input type="hidden" name="requisition_id" value="{{ form_data.requisition_id }}">
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="supplier-id">{{ entry_supplier }}</label>
+          <div class="col-sm-9">
+            <select name="supplier_id" id="supplier-id" class="form-control select2-supplier" required>
+              <option value="">{{ text_select_supplier }}</option>
+              {% for supplier in suppliers %}
+                <option value="{{ supplier.supplier_id }}" {% if supplier.supplier_id == form_data.supplier_id %}selected{% endif %}>{{ supplier.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="currency-id">{{ entry_currency }}</label>
+          <div class="col-sm-9">
+            <select name="currency_id" id="currency-id" class="form-control select2-currency" required>
+              {% for currency in currencies %}
+                <option value="{{ currency.currency_id }}" {% if currency.currency_id == form_data.currency_id %}selected{% endif %}>{{ currency.title }} ({{ currency.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="exchange-rate">{{ entry_exchange_rate }}</label>
+          <div class="col-sm-9">
+            <input type="number" name="exchange_rate" id="exchange-rate" class="form-control" value="{{ form_data.exchange_rate }}" min="0.000001" step="0.000001" required>
+          </div>
+        </div>
+        
+        <div class="form-group required">
+          <label class="col-sm-3 control-label" for="validity-date">{{ entry_validity_date }}</label>
+          <div class="col-sm-9">
+            <div class="input-group date form-date">
+              <input type="text" name="validity_date" id="validity-date" class="form-control" value="{{ form_data.validity_date }}" data-date-format="YYYY-MM-DD" required>
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="payment-terms">{{ entry_payment_terms }}</label>
+          <div class="col-sm-9">
+            <textarea name="payment_terms" id="payment-terms" class="form-control" rows="3">{{ form_data.payment_terms }}</textarea>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="delivery-terms">{{ entry_delivery_terms }}</label>
+          <div class="col-sm-9">
+            <textarea name="delivery_terms" id="delivery-terms" class="form-control" rows="3">{{ form_data.delivery_terms }}</textarea>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="notes">{{ entry_notes }}</label>
+          <div class="col-sm-9">
+            <textarea name="notes" id="notes" class="form-control" rows="3">{{ form_data.notes }}</textarea>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="tax-included">{{ entry_tax_included }}</label>
+          <div class="col-sm-9">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="tax_included" id="tax-included" value="1" class="calc-trigger" {% if form_data.tax_included %}checked{% endif %}>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="tax-rate">{{ entry_tax_rate }}</label>
+          <div class="col-sm-9">
+            <input type="number" name="tax_rate" id="tax-rate" class="form-control calc-trigger" value="{{ form_data.tax_rate }}" min="0" max="100" step="0.01">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Items Tab -->
+      <div class="tab-pane" id="tab-items">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>{{ column_product }}</th>
+                <th>{{ column_quantity }}</th>
+                <th>{{ column_unit_price }}</th>
+                <th>{{ column_discount }}</th>
+                <th>{{ column_tax }}</th>
+                <th>{{ column_total }}</th>
+                <th>{{ column_description }}</th>
+                <th style="width: 1px;"></th>
+              </tr>
+            </thead>
+            <tbody id="item-container">
+              {% if items %}
+                {% for item in items %}
+                    <tr>
+                      <input type="hidden" name="item[quotation_item_id][]" value="{{ item.quotation_item_id|default(0) }}">
+                      <input type="hidden" name="item[requisition_item_id][]" value="{{ item.requisition_item_id|default(0) }}">
+                      <td>
+                        <!-- تعديل عنصر select ليحمل المنتج الحالي -->
+                        <select name="item[product_id][]" class="form-control select2-product" required>
+                          {% if item.product_id %}
+                            <option value="{{ item.product_id }}" selected>{{ item.product_name }}</option>
+                          {% endif %}
+                        </select>
+                        <div class="product-details mt-2"></div>
+                      </td>
+                    <td>
+                      <input type="number" name="item[quantity][]" min="0.01" step="0.01" class="form-control calc-trigger" value="{{ item.quantity }}">
+                      <input type="hidden" name="item[unit_id][]" value="{{ item.unit_id }}">
+                      <div class="unit-name mt-2">{{ item.unit_name }}</div>
+                    </td>
+                    <td>
+                      <input type="number" name="item[unit_price][]" min="0" step="0.01" class="form-control calc-trigger" value="{{ item.unit_price }}">
+                    </td>
+                    <td>
+                      <select name="item[discount_type][]" class="form-control calc-trigger">
+                        <option value="fixed" {% if item.discount_type == 'fixed' %}selected{% endif %}>{{ text_fixed }}</option>
+                        <option value="percentage" {% if item.discount_type == 'percentage' %}selected{% endif %}>{{ text_percentage }}</option>
+                      </select>
+                      <input type="number" name="item[discount_value][]" min="0" step="0.01" class="form-control calc-trigger mt-1" value="{{ item.discount_rate|default(0) }}">
+                      <input type="hidden" name="item[discount_amount][]" value="{{ item.discount_amount|default(0) }}">
+                    </td>
+                    <td>
+                      <input type="number" name="item[tax_rate][]" min="0" max="100" step="0.01" class="form-control calc-trigger" value="{{ item.tax_rate }}">
+                      <input type="hidden" name="item[tax_amount][]" value="{{ item.tax_amount|default(0) }}">
+                    </td>
+                    <td>
+                      <input type="hidden" name="item[line_total][]" value="{{ item.line_total }}">
+                      <div class="item-total">{{ item.line_total }}</div>
+                    </td>
+                    <td>
+                      <textarea name="item[description][]" class="form-control" rows="1">{{ item.description }}</textarea>
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-danger remove-item-btn"><i class="fa fa-trash"></i></button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="8">
+                  <button type="button" id="add-item-btn" class="btn btn-success">
+                    <i class="fa fa-plus"></i> {{ text_add_item }}
+                  </button>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Totals Tab -->
+      <div class="tab-pane" id="tab-totals">
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="has-discount">{{ entry_has_discount }}</label>
+          <div class="col-sm-9">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="has_discount" id="has-discount" value="1" {% if form_data.has_discount %}checked{% endif %}>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group discount-controls {% if not form_data.has_discount %}hidden{% endif %}">
+          <label class="col-sm-3 control-label" for="discount-type">{{ entry_discount_type }}</label>
+          <div class="col-sm-9">
+            <select name="discount_type" id="discount-type" class="form-control calc-trigger">
+              {% for discount_type in discount_types %}
+                <option value="{{ discount_type.value }}" {% if discount_type.value == form_data.discount_type %}selected{% endif %}>{{ discount_type.text }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group discount-controls {% if not form_data.has_discount %}hidden{% endif %}">
+          <label class="col-sm-3 control-label" for="discount-value">{{ entry_discount_value }}</label>
+          <div class="col-sm-9">
+            <input type="number" name="discount_value" id="discount-value" class="form-control calc-trigger" value="{{ form_data.discount_value }}" min="0" step="0.01">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="subtotal">{{ entry_subtotal }}</label>
+          <div class="col-sm-9">
+            <div class="input-group">
+              <input type="text" name="subtotal" id="subtotal" class="form-control" value="{{ form_data.subtotal }}" readonly>
+              <span class="input-group-addon subtotal-display">{{ form_data.subtotal }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="discount-amount">{{ text_discount }}</label>
+          <div class="col-sm-9">
+            <div class="input-group">
+              <input type="text" name="discount_amount" id="discount-amount" class="form-control" value="{{ form_data.discount_amount }}" readonly>
+              <span class="input-group-addon discount-display">{{ form_data.discount_amount }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="tax-amount">{{ text_tax }}</label>
+          <div class="col-sm-9">
+            <div class="input-group">
+              <input type="text" name="tax_amount" id="tax-amount" class="form-control" value="{{ form_data.tax_amount }}" readonly>
+              <span class="input-group-addon tax-display">{{ form_data.tax_amount }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="col-sm-3 control-label" for="total-amount">{{ text_total }}</label>
+          <div class="col-sm-9">
+            <div class="input-group">
+              <input type="text" name="total_amount" id="total-amount" class="form-control" value="{{ form_data.total_amount }}" readonly>
+              <span class="input-group-addon total-display">{{ form_data.total_amount }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <div class="col-sm-offset-3 col-sm-9">
+            <button type="button" class="btn btn-info" onclick="QuotationManager.calculateTotals();">
+              <i class="fa fa-calculator"></i> {{ text_calculate_totals }}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+<!-- نظام المرفقات المحسّن في quotation_addedit_form.twig -->
+<div class="tab-pane" id="tab-documents">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">{{ text_upload_documents }}</h3>
+    </div>
+    <div class="panel-body">
+      <!-- منطقة السحب والإفلات للمرفقات -->
+      <div class="file-drop-zone" id="file-drop-zone">
+        <div class="file-drop-message">
+          <i class="fa fa-cloud-upload fa-4x"></i>
+          <h4>{{ text_drag_drop_files }}</h4>
+          <p>{{ text_or }}</p>
+          <button type="button" class="btn btn-primary" id="browse-files">
+            <i class="fa fa-folder-open"></i> {{ text_browse_files }}
+          </button>
+          <input type="file" id="document-upload" style="display: none;" multiple>
+          <p class="text-muted"><small>{{ text_max_file_size }}</small></p>
+        </div>
+      </div>
+      
+      <!-- قائمة الملفات للتحميل -->
+      <div id="upload-file-list" class="upload-file-list" style="display: none;">
+        <h4>{{ text_files_to_upload }}</h4>
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped">
+            <thead>
+              <tr>
+                <th width="40%">{{ text_filename }}</th>
+                <th width="20%">{{ text_size }}</th>
+                <th width="30%">{{ text_document_type }}</th>
+                <th width="10%">{{ text_action }}</th>
+              </tr>
+            </thead>
+            <tbody id="file-queue">
+              <!-- هنا ستظهر الملفات المنتظرة للتحميل -->
+            </tbody>
+          </table>
+          <button type="button" id="upload-all-documents" class="btn btn-success">
+            <i class="fa fa-upload"></i> {{ text_upload_all }}
+          </button>
+        </div>
+      </div>
+      
+      <!-- عرض المستندات المرفقة بالفعل -->
+      <h4>{{ text_attached_documents }}</h4>
+      <div class="documents-preview">
+        <div class="row" id="documents-list">
+          <!-- ستظهر هنا المستندات المرفقة بعد التحميل -->
+          <div class="col-md-12 text-center" id="no-documents-message">
+            {{ text_no_documents }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+    </div>
+  </div>
+<!-- أضف هذا للنموذج -->
+<input type="hidden" id="submit-type" name="submit_type" value="draft">
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_cancel }}</button>
+    <button type="submit" name="submit_type" value="draft" class="btn btn-info" id="save-draft-btn">{{ text_save_as_draft }}</button>
+    <button type="submit" name="submit_type" value="submit" class="btn btn-primary" id="save-submit-btn">{{ text_submit }}</button>
+  </div>
+</form>
+<script>
+// في دالة initializeFormComponents
+$('#save-draft-btn').on('click', function() {
+  $('#submit-type').val('draft');
+});
+
+$('#save-submit-btn').on('click', function() {
+  $('#submit-type').val('submit');
+});    
+</script>

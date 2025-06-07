@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html dir="{{ direction }}" lang="{{ lang }}">
+<head>
+<meta charset="UTF-8" />
+<title>{{ title }}</title>
+<style>
+body {
+    margin:10px;
+    font-family: sans-serif;
+    font-size:14px;
+}
+table {
+    border-collapse: collapse;
+    margin-bottom:20px;
+    width:100%;
+}
+th, td {
+    border:1px solid #000;
+    padding:5px;
+    text-align:left;
+    font-size:14px;
+}
+th {
+    background:#eee;
+}
+.summary {
+    margin-top:20px;
+    text-align:right;
+}
+</style>
+</head>
+<body>
+<h2>{{ text_purchase_analysis }}</h2>
+<p>{{ text_period }}: {{ text_from }} {{ start_date }} {{ text_to }} {{ end_date }}</p>
+
+<table>
+<thead>
+<tr>
+    <th>{{ text_vendor_name }}</th>
+    <th>{{ text_po_count }}</th>
+    <th>{{ text_total_purchases_col }}</th>
+    <th>{{ text_avg_po }}</th>
+</tr>
+</thead>
+<tbody>
+{% for vendor in vendors %}
+<tr>
+    <td>{{ vendor.vendor_name }}</td>
+    <td>{{ vendor.po_count }}</td>
+    <td>{{ vendor.total_purchases }}</td>
+    <td>{{ vendor.avg_po }}</td>
+</tr>
+{% endfor %}
+{% if vendors is empty %}
+<tr><td colspan="4" style="text-align:center">{{ error_no_data }}</td></tr>
+{% endif %}
+</tbody>
+</table>
+
+<div class="summary">
+    <strong>{{ text_total_purchases }}: {{ total_purchases }}</strong>
+</div>
+
+<p>{{ whoprint }} - {{ printdate }}</p>
+</body>
+</html>

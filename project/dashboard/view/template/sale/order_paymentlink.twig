@@ -1,0 +1,74 @@
+{{ header }}{{ column_left }}
+<div id="content">
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="panel panel-default">
+        <div class="panel-body">
+  <div style="page-break-after: always;">
+      <br>
+    <h1>رابط الدفع</h1>
+    <textarea style="width:100%;height:60px;line-height:60px" readonly>{{ payment_link }}</textarea>
+  <br><br>
+    <!-- زر مشاركة عبر WhatsApp -->
+    <a class="btn" href="https://api.whatsapp.com/send?text={{ payment_link }}" target="_blank">مشاركة على واتساب</a>
+ | 
+    <!-- زر إرسال الرابط عبر البريد الإلكتروني -->
+    <!-- زر مشاركة عبر WhatsApp -->
+    <a class="btn" href="https://api.whatsapp.com/send?phone=2{{ customerTelephone }}&text={{ payment_link }}" target="_blank">إرسال لواتساب العميل</a>
+ | 
+    <a class="btn" href="mailto:{{ customerEmail }}?subject=Payment Link&body={{ payment_link }}">ارسال لايميل العميل</a>
+ | 
+    <!-- زر النسخ للرابط -->
+    <button class="btn copy-btn" onclick="copyToClipboard('{{ payment_link }}')">نسخ الرابط</button>
+
+    <script>
+        // دالة لنسخ الرابط إلى الحافظة
+        function copyToClipboard(text) {
+            var textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            //alert("Link copied to clipboard!");
+        }
+    </script>
+ 
+       <br>
+    <h1>رابط الدفع للمختصر</h1>
+    <textarea style="width:100%;height:60px;line-height:60px" readonly>{{ payment_dlink }}</textarea>
+  <br><br>
+    <!-- زر مشاركة عبر WhatsApp -->
+    <a class="btn" href="https://api.whatsapp.com/send?text={{ payment_dlink }}" target="_blank">مشاركة على واتساب</a>
+ | 
+    <!-- زر إرسال الرابط عبر البريد الإلكتروني -->
+    <!-- زر مشاركة عبر WhatsApp -->
+    <a class="btn" href="https://api.whatsapp.com/send?phone=2{{ customerTelephone }}&text={{ payment_dlink }}" target="_blank">إرسال لواتساب العميل</a>
+ | 
+    <a class="btn" href="mailto:{{ customerEmail }}?subject=Payment Link&body={{ payment_dlink }}">ارسال لايميل العميل</a>
+ | 
+    <!-- زر النسخ للرابط -->
+    <button class="btn copy-btn" onclick="copyToClipboard('{{ payment_dlink }}')">نسخ الرابط</button>
+
+    <script>
+        // دالة لنسخ الرابط إلى الحافظة
+        function copyToClipboard(text) {
+            var textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            //alert("Link copied to clipboard!");
+        }
+    </script>   
+    
+    
+  </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }}

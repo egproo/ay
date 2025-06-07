@@ -1,0 +1,356 @@
+{{ header }}
+{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="float-end">
+        <button type="submit" form="form-transfer" data-bs-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fas fa-save"></i></button>
+        <a href="{{ cancel }}" data-bs-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fas fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ol class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-header"><i class="fas fa-pencil-alt"></i> {{ text_form }}</div>
+      <div class="card-body">
+        <form id="form-transfer" action="{{ action }}" method="post">
+          <div class="row mb-3">
+            <label for="input-reference" class="col-sm-2 col-form-label">{{ entry_reference }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="reference_number" value="{{ reference_number }}" placeholder="{{ entry_reference }}" id="input-reference" class="form-control"/>
+              {% if error_reference_number %}
+                <div class="invalid-feedback d-block">{{ error_reference_number }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-from-branch" class="col-sm-2 col-form-label">{{ entry_from_branch }}</label>
+            <div class="col-sm-10">
+              <select name="from_branch_id" id="input-from-branch" class="form-select">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == from_branch_id %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+              {% if error_from_branch %}
+                <div class="invalid-feedback d-block">{{ error_from_branch }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-to-branch" class="col-sm-2 col-form-label">{{ entry_to_branch }}</label>
+            <div class="col-sm-10">
+              <select name="to_branch_id" id="input-to-branch" class="form-select">
+                <option value="">{{ text_select }}</option>
+                {% for branch in branches %}
+                  <option value="{{ branch.branch_id }}" {% if branch.branch_id == to_branch_id %}selected{% endif %}>{{ branch.name }}</option>
+                {% endfor %}
+              </select>
+              {% if error_to_branch %}
+                <div class="invalid-feedback d-block">{{ error_to_branch }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-transfer-date" class="col-sm-2 col-form-label">{{ entry_transfer_date }}</label>
+            <div class="col-sm-10">
+              <input type="date" name="transfer_date" value="{{ transfer_date }}" id="input-transfer-date" class="form-control"/>
+              {% if error_transfer_date %}
+                <div class="invalid-feedback d-block">{{ error_transfer_date }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-status" class="col-sm-2 col-form-label">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-select">
+                <option value="pending" {% if status == 'pending' %}selected{% endif %}>{{ text_pending }}</option>
+                <option value="confirmed" {% if status == 'confirmed' %}selected{% endif %}>{{ text_confirmed }}</option>
+                <option value="in_transit" {% if status == 'in_transit' %}selected{% endif %}>{{ text_in_transit }}</option>
+                <option value="completed" {% if status == 'completed' %}selected{% endif %}>{{ text_completed }}</option>
+                <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>{{ text_cancelled }}</option>
+                <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>{{ text_rejected }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label for="input-notes" class="col-sm-2 col-form-label">{{ entry_notes }}</label>
+            <div class="col-sm-10">
+              <textarea name="notes" rows="5" placeholder="{{ entry_notes }}" id="input-notes" class="form-control">{{ notes }}</textarea>
+            </div>
+          </div>
+          <fieldset>
+            <legend>{{ text_products }}</legend>
+            <div class="table-responsive">
+              <table id="products" class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <td>{{ column_product }}</td>
+                    <td>{{ column_unit }}</td>
+                    <td>{{ column_quantity }}</td>
+                    <td>{{ column_notes }}</td>
+                    <td></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% set product_row = 0 %}
+                  {% if products %}
+                    {% for product in products %}
+                      <tr id="product-row{{ product_row }}">
+                        <td>
+                          <select name="products[{{ product_row }}][product_id]" class="form-select product-select" data-row="{{ product_row }}">
+                            <option value="">{{ text_select }}</option>
+                            {% for product_item in products_list %}
+                              <option value="{{ product_item.product_id }}" {% if product_item.product_id == product.product_id %}selected{% endif %}>{{ product_item.name }}</option>
+                            {% endfor %}
+                          </select>
+                        </td>
+                        <td>
+                          <select name="products[{{ product_row }}][unit_id]" class="form-select unit-select" data-row="{{ product_row }}">
+                            <option value="">{{ text_select }}</option>
+                            {% if product.units %}
+                              {% for unit in product.units %}
+                                <option value="{{ unit.unit_id }}" {% if unit.unit_id == product.unit_id %}selected{% endif %}>{{ unit.name }}</option>
+                              {% endfor %}
+                            {% endif %}
+                          </select>
+                        </td>
+                        <td>
+                          <div class="input-group">
+                            <input type="number" name="products[{{ product_row }}][quantity]" value="{{ product.quantity }}" placeholder="{{ entry_quantity }}" class="form-control" min="0" step="0.0001"/>
+                            <span class="input-group-text available-quantity"></span>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="text" name="products[{{ product_row }}][notes]" value="{{ product.notes }}" placeholder="{{ entry_notes }}" class="form-control"/>
+                        </td>
+                        <td class="text-end">
+                          <button type="button" onclick="$('#product-row{{ product_row }}').remove();" class="btn btn-danger"><i class="fas fa-minus-circle"></i></button>
+                        </td>
+                      </tr>
+                      {% set product_row = product_row + 1 %}
+                    {% endfor %}
+                  {% endif %}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="4"></td>
+                    <td class="text-end">
+                      <button type="button" onclick="addProduct();" class="btn btn-primary"><i class="fas fa-plus-circle"></i></button>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+var product_row = {{ product_row }};
+
+function addProduct() {
+    html = '<tr id="product-row' + product_row + '">';
+    html += '  <td><select name="products[' + product_row + '][product_id]" class="form-select product-select" data-row="' + product_row + '"><option value="">{{ text_select }}</option>';
+    {% for product in products_list %}
+    html += '    <option value="{{ product.product_id }}">{{ product.name }}</option>';
+    {% endfor %}
+    html += '  </select></td>';
+    html += '  <td><select name="products[' + product_row + '][unit_id]" class="form-select unit-select" data-row="' + product_row + '"><option value="">{{ text_select }}</option></select></td>';
+    html += '  <td><div class="input-group"><input type="number" name="products[' + product_row + '][quantity]" value="" placeholder="{{ entry_quantity }}" class="form-control" min="0" step="0.0001"/><span class="input-group-text available-quantity"></span></div></td>';
+    html += '  <td><input type="text" name="products[' + product_row + '][notes]" value="" placeholder="{{ entry_notes }}" class="form-control"/></td>';
+    html += '  <td class="text-end"><button type="button" onclick="$(\'#product-row' + product_row + '\').remove();" class="btn btn-danger"><i class="fas fa-minus-circle"></i></button></td>';
+    html += '</tr>';
+
+    $('#products tbody').append(html);
+
+    // تفعيل select2 للمنتجات
+    $('#product-row' + product_row + ' .product-select').select2({
+        width: '100%',
+        placeholder: '{{ text_select }}'
+    });
+
+    product_row++;
+}
+
+// تحميل الوحدات والكمية المتاحة عند اختيار المنتج
+$('#products').on('change', '.product-select', function() {
+    var row = $(this).data('row');
+    var product_id = $(this).val();
+    var from_branch_id = $('#input-from-branch').val();
+
+    if (!product_id || !from_branch_id) {
+        return;
+    }
+
+    // تحميل الوحدات للمنتج
+    $.ajax({
+        url: 'index.php?route=inventory/transfer/getProductUnits',
+        type: 'post',
+        data: {
+            product_id: product_id
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#product-row' + row + ' .unit-select').prop('disabled', true);
+            $('#product-row' + row + ' .unit-select').html('<option value="">{{ text_loading_units }}</option>');
+        },
+        complete: function() {
+            $('#product-row' + row + ' .unit-select').prop('disabled', false);
+        },
+        success: function(json) {
+            var html = '<option value="">{{ text_select }}</option>';
+
+            if (json['units']) {
+                for (var i = 0; i < json['units'].length; i++) {
+                    html += '<option value="' + json['units'][i]['unit_id'] + '">' + json['units'][i]['name'] + '</option>';
+                }
+            }
+
+            $('#product-row' + row + ' .unit-select').html(html);
+
+            // إعادة تعيين الكمية المتاحة
+            $('#product-row' + row + ' .available-quantity').html('');
+            $('#product-row' + row + ' input[name="products[' + row + '][quantity]"]').val('');
+            $('#product-row' + row + ' input[name="products[' + row + '][quantity]"]').removeAttr('max');
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// تحديث الكمية المتاحة عند تغيير الوحدة
+$('#products').on('change', '.unit-select', function() {
+    var row = $(this).data('row');
+    var unit_id = $(this).val();
+    var product_id = $('#product-row' + row + ' .product-select').val();
+    var from_branch_id = $('#input-from-branch').val();
+
+    if (!unit_id || !product_id || !from_branch_id) {
+        $('#product-row' + row + ' .available-quantity').html('');
+        return;
+    }
+
+    // التحقق من الكمية المتاحة
+    $.ajax({
+        url: 'index.php?route=inventory/transfer/checkAvailability',
+        type: 'post',
+        data: {
+            branch_id: from_branch_id,
+            product_id: product_id,
+            unit_id: unit_id,
+            quantity: 1 // نستخدم 1 للحصول على الكمية المتاحة فقط
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#product-row' + row + ' .available-quantity').html('{{ text_loading_availability }}');
+            $('#product-row' + row + ' input[name="products[' + row + '][quantity]"]').prop('disabled', true);
+        },
+        complete: function() {
+            $('#product-row' + row + ' input[name="products[' + row + '][quantity]"]').prop('disabled', false);
+        },
+        success: function(json) {
+            if (json['available'] !== undefined) {
+                var available = parseFloat(json['available']);
+
+                if (available > 0) {
+                    $('#product-row' + row + ' .available-quantity').html('{{ text_available }}: ' + available);
+                    $('#product-row' + row + ' input[name="products[' + row + '][quantity]"]').attr('max', available);
+                } else {
+                    $('#product-row' + row + ' .available-quantity').html('{{ text_no_stock }}');
+                    $('#product-row' + row + ' input[name="products[' + row + '][quantity]"]').attr('max', 0);
+                }
+            } else {
+                $('#product-row' + row + ' .available-quantity').html('');
+                $('#product-row' + row + ' input[name="products[' + row + '][quantity]"]').removeAttr('max');
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+// تحديث الكمية المتاحة عند تغيير الفرع المصدر
+$('#input-from-branch').on('change', function() {
+    $('.product-select').trigger('change');
+});
+
+// التحقق من الكمية المدخلة
+$('#products').on('input', 'input[name^="products"][name$="[quantity]"]', function() {
+    var input = $(this);
+    var row = input.closest('tr').attr('id').replace('product-row', '');
+    var quantity = parseFloat(input.val());
+    var max = parseFloat(input.attr('max'));
+
+    if (!isNaN(max) && !isNaN(quantity) && quantity > max) {
+        input.addClass('is-invalid');
+
+        // إضافة رسالة خطأ إذا لم تكن موجودة
+        if (input.next('.invalid-feedback').length === 0) {
+            input.after('<div class="invalid-feedback">{{ text_available_quantity|format('"' + max + '"') }}</div>');
+        }
+    } else {
+        input.removeClass('is-invalid');
+        input.next('.invalid-feedback').remove();
+    }
+});
+
+// التحقق من صحة النموذج قبل الإرسال
+$('#form-transfer').on('submit', function(e) {
+    var hasErrors = false;
+
+    // التحقق من الكميات
+    $('input[name^="products"][name$="[quantity]"]').each(function() {
+        var input = $(this);
+        var quantity = parseFloat(input.val());
+        var max = parseFloat(input.attr('max'));
+
+        if (!isNaN(max) && !isNaN(quantity) && quantity > max) {
+            input.addClass('is-invalid');
+
+            // إضافة رسالة خطأ إذا لم تكن موجودة
+            if (input.next('.invalid-feedback').length === 0) {
+                input.after('<div class="invalid-feedback">{{ text_available_quantity|format('"' + max + '"') }}</div>');
+            }
+
+            hasErrors = true;
+        }
+    });
+
+    if (hasErrors) {
+        e.preventDefault();
+        alert('{{ error_insufficient_stock }}');
+        return false;
+    }
+});
+
+// تفعيل select2 للمنتجات عند تحميل الصفحة
+$(document).ready(function() {
+    $('.product-select').select2({
+        width: '100%',
+        placeholder: '{{ text_select }}'
+    });
+
+    // تفعيل datepicker لحقل التاريخ
+    $('#input-transfer-date').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true
+    });
+});
+</script>
+{{ footer }}

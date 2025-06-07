@@ -1,0 +1,307 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <a href="{{ compose }}" data-toggle="tooltip" title="{{ button_compose }}" class="btn btn-primary"><i class="fa fa-plus"></i></a>
+        <button type="button" data-toggle="tooltip" title="{{ button_delete }}" class="btn btn-danger" onclick="confirm('{{ text_confirm }}') ? $('#form-message').submit() : false;"><i class="fa fa-trash-o"></i></button>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+      <div class="col-md-3">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-folder-o"></i> {{ text_folders }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="list-group">
+              <a href="{{ inbox }}" class="list-group-item{% if folder == 'inbox' %} active{% endif %}">
+                <i class="fa fa-inbox"></i> {{ text_inbox }}
+                {% if inbox_count > 0 %}<span class="badge">{{ inbox_count }}</span>{% endif %}
+              </a>
+              <a href="{{ sent }}" class="list-group-item{% if folder == 'sent' %} active{% endif %}">
+                <i class="fa fa-paper-plane-o"></i> {{ text_sent }}
+              </a>
+              <a href="{{ draft }}" class="list-group-item{% if folder == 'draft' %} active{% endif %}">
+                <i class="fa fa-file-text-o"></i> {{ text_draft }}
+                {% if draft_count > 0 %}<span class="badge">{{ draft_count }}</span>{% endif %}
+              </a>
+              <a href="{{ announcement }}" class="list-group-item{% if folder == 'announcement' %} active{% endif %}">
+                <i class="fa fa-bullhorn"></i> {{ text_announcement }}
+                {% if announcement_count > 0 %}<span class="badge">{{ announcement_count }}</span>{% endif %}
+              </a>
+              <a href="{{ trash }}" class="list-group-item{% if folder == 'trash' %} active{% endif %}">
+                <i class="fa fa-trash-o"></i> {{ text_trash }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-9">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title"><i class="fa fa-envelope"></i> {{ text_list }}</h3>
+          </div>
+          <div class="panel-body">
+            <div class="well">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="control-label" for="input-search">{{ entry_search }}</label>
+                    <input type="text" name="filter_search" value="{{ filter_search }}" placeholder="{{ entry_search }}" id="input-search" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-sm-3">
+                  <div class="form-group">
+                    <label class="control-label" for="input-date-from">{{ entry_date_from }}</label>
+                    <div class="input-group date">
+                      <input type="text" name="filter_date_from" value="{{ filter_date_from }}" placeholder="{{ entry_date_from }}" data-date-format="YYYY-MM-DD" id="input-date-from" class="form-control" />
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-3">
+                  <div class="form-group">
+                    <label class="control-label" for="input-date-to">{{ entry_date_to }}</label>
+                    <div class="input-group date">
+                      <input type="text" name="filter_date_to" value="{{ filter_date_to }}" placeholder="{{ entry_date_to }}" data-date-format="YYYY-MM-DD" id="input-date-to" class="form-control" />
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default"><i class="fa fa-calendar"></i></button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="control-label" for="input-status">{{ entry_status }}</label>
+                    <select name="filter_status" id="input-status" class="form-control">
+                      <option value="*">{{ text_all }}</option>
+                      <option value="read"{% if filter_status == 'read' %} selected="selected"{% endif %}>{{ text_read }}</option>
+                      <option value="unread"{% if filter_status == 'unread' %} selected="selected"{% endif %}>{{ text_unread }}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label class="control-label" for="input-priority">{{ entry_priority }}</label>
+                    <select name="filter_priority" id="input-priority" class="form-control">
+                      <option value="*">{{ text_all }}</option>
+                      <option value="normal"{% if filter_priority == 'normal' %} selected="selected"{% endif %}>{{ text_normal }}</option>
+                      <option value="high"{% if filter_priority == 'high' %} selected="selected"{% endif %}>{{ text_high }}</option>
+                      <option value="urgent"{% if filter_priority == 'urgent' %} selected="selected"{% endif %}>{{ text_urgent }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-12">
+                  <button type="button" id="button-filter" class="btn btn-primary pull-right"><i class="fa fa-search"></i> {{ button_filter }}</button>
+                </div>
+              </div>
+            </div>
+            
+            <form action="{{ delete }}" method="post" enctype="multipart/form-data" id="form-message">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <td style="width: 1px;" class="text-center"><input type="checkbox" onclick="$('input[name*=\'selected\']').prop('checked', this.checked);" /></td>
+                      <td class="text-center"><a href="{{ sort_priority }}"{% if sort == 'priority' %} class="{{ order|lower }}"{% endif %}>{{ column_priority }}</a></td>
+                      <td class="text-center"><a href="{{ sort_status }}"{% if sort == 'status' %} class="{{ order|lower }}"{% endif %}>{{ column_status }}</a></td>
+                      {% if folder == 'sent' %}
+                      <td class="text-left"><a href="{{ sort_recipient }}"{% if sort == 'recipient' %} class="{{ order|lower }}"{% endif %}>{{ column_recipient }}</a></td>
+                      {% else %}
+                      <td class="text-left"><a href="{{ sort_sender }}"{% if sort == 'sender' %} class="{{ order|lower }}"{% endif %}>{{ column_sender }}</a></td>
+                      {% endif %}
+                      <td class="text-left"><a href="{{ sort_subject }}"{% if sort == 'subject' %} class="{{ order|lower }}"{% endif %}>{{ column_subject }}</a></td>
+                      <td class="text-center"><a href="{{ sort_attachment }}"{% if sort == 'attachment' %} class="{{ order|lower }}"{% endif %}>{{ column_attachment }}</a></td>
+                      <td class="text-left"><a href="{{ sort_date_added }}"{% if sort == 'date_added' %} class="{{ order|lower }}"{% endif %}>{{ column_date_added }}</a></td>
+                      <td class="text-right">{{ column_action }}</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if messages %}
+                    {% for message in messages %}
+                    <tr class="{% if message.status == 'unread' %}unread{% endif %}">
+                      <td class="text-center">
+                        {% if message.communication_id in selected %}
+                        <input type="checkbox" name="selected[]" value="{{ message.communication_id }}" checked="checked" />
+                        {% else %}
+                        <input type="checkbox" name="selected[]" value="{{ message.communication_id }}" />
+                        {% endif %}
+                      </td>
+                      <td class="text-center">
+                        {% if message.priority == 'normal' %}
+                        <span class="label label-default">{{ text_normal }}</span>
+                        {% elseif message.priority == 'high' %}
+                        <span class="label label-primary">{{ text_high }}</span>
+                        {% elseif message.priority == 'urgent' %}
+                        <span class="label label-danger">{{ text_urgent }}</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-center">
+                        {% if message.status == 'read' %}
+                        <i class="fa fa-envelope-open-o text-muted" data-toggle="tooltip" title="{{ text_read }}"></i>
+                        {% else %}
+                        <i class="fa fa-envelope-o text-primary" data-toggle="tooltip" title="{{ text_unread }}"></i>
+                        {% endif %}
+                      </td>
+                      {% if folder == 'sent' %}
+                      <td class="text-left">{{ message.recipient }}</td>
+                      {% else %}
+                      <td class="text-left">{{ message.sender }}</td>
+                      {% endif %}
+                      <td class="text-left">
+                        <a href="{{ message.view }}">{{ message.subject }}</a>
+                        {% if message.replies > 0 %}
+                        <span class="badge">{{ message.replies }}</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-center">
+                        {% if message.attachment %}
+                        <i class="fa fa-paperclip" data-toggle="tooltip" title="{{ text_has_attachment }}"></i>
+                        {% endif %}
+                      </td>
+                      <td class="text-left">{{ message.date_added }}</td>
+                      <td class="text-right">
+                        <div class="btn-group">
+                          {% if folder == 'draft' %}
+                          <a href="{{ message.edit }}" data-toggle="tooltip" title="{{ button_edit }}" class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i></a>
+                          {% endif %}
+                          
+                          {% if folder != 'trash' %}
+                          <button type="button" data-toggle="tooltip" title="{{ button_trash }}" class="btn btn-warning btn-xs" onclick="moveToTrash({{ message.communication_id }});"><i class="fa fa-trash"></i></button>
+                          {% else %}
+                          <button type="button" data-toggle="tooltip" title="{{ button_restore }}" class="btn btn-info btn-xs" onclick="restoreMessage({{ message.communication_id }});"><i class="fa fa-undo"></i></button>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td class="text-center" colspan="8">{{ text_no_results }}</td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </form>
+            <div class="row">
+              <div class="col-sm-6 text-left">{{ pagination }}</div>
+              <div class="col-sm-6 text-right">{{ results }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$('#button-filter').on('click', function() {
+  var url = '{{ list }}';
+
+  var filter_search = $('input[name=\'filter_search\']').val();
+  if (filter_search) {
+    url += '&filter_search=' + encodeURIComponent(filter_search);
+  }
+
+  var filter_date_from = $('input[name=\'filter_date_from\']').val();
+  if (filter_date_from) {
+    url += '&filter_date_from=' + encodeURIComponent(filter_date_from);
+  }
+
+  var filter_date_to = $('input[name=\'filter_date_to\']').val();
+  if (filter_date_to) {
+    url += '&filter_date_to=' + encodeURIComponent(filter_date_to);
+  }
+  
+  var filter_status = $('select[name=\'filter_status\']').val();
+  if (filter_status != '*') {
+    url += '&filter_status=' + encodeURIComponent(filter_status);
+  }
+  
+  var filter_priority = $('select[name=\'filter_priority\']').val();
+  if (filter_priority != '*') {
+    url += '&filter_priority=' + encodeURIComponent(filter_priority);
+  }
+
+  location = url;
+});
+
+function moveToTrash(communication_id) {
+  if (confirm('{{ text_confirm_trash }}')) {
+    $.ajax({
+      url: 'index.php?route=extension/message/trash&token={{ token }}',
+      type: 'post',
+      data: {communication_id: communication_id},
+      dataType: 'json',
+      success: function(json) {
+        if (json['success']) {
+          location.reload();
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+}
+
+function restoreMessage(communication_id) {
+  if (confirm('{{ text_confirm_restore }}')) {
+    $.ajax({
+      url: 'index.php?route=extension/message/restore&token={{ token }}',
+      type: 'post',
+      data: {communication_id: communication_id},
+      dataType: 'json',
+      success: function(json) {
+        if (json['success']) {
+          location.reload();
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      }
+    });
+  }
+}
+
+$('.date').datetimepicker({
+  pickTime: false
+});
+</script>
+
+<style type="text/css">
+.unread {
+  font-weight: bold;
+  background-color: #f8f8f8;
+}
+</style>
+
+{{ footer }} 
+{{ footer }} 

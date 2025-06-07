@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <title>قائمة الدخل</title>
+    <link href="view/stylesheet/bootstrap.css" type="text/css" rel="stylesheet" />
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .section-header {
+            background-color: #e6e6e6;
+            font-weight: bold;
+        }
+        .sub-section-header {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center">قائمة الدخل</h1>
+    <p class="text-center">من {{ start_date }} إلى {{ end_date }}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>بيان</th>
+                <th>المبلغ</th>
+                <th>رقم الإيضاح</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="section-header">
+                <td colspan="3">إيرادات العمليات المستمرة</td>
+            </tr>
+            {% for item in revenues %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي الإيرادات</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_revenues_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">التكاليف</td>
+            </tr>
+            {% for item in costs %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">مجمل الربح (الخسارة)</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ gross_profit_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">التكاليف التشغيلية</td>
+            </tr>
+            {% for item in operating_expenses %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي التكاليف التشغيلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_operating_expenses_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">ناتج أنشطة التشغيل</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ operating_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">مصروفات أخرى</td>
+            </tr>
+            {% for item in other_expenses %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي المصروفات الأخرى</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_other_expenses_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">إيرادات أخرى</td>
+            </tr>
+            {% for item in other_income %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي الإيرادات الأخرى</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_other_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">صافي الإيرادات الأخرى</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ net_other_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">إيرادات تمويلية</td>
+            </tr>
+            {% for item in finance_income %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي الإيرادات التمويلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_finance_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">مصروفات تمويلية</td>
+            </tr>
+            {% for item in finance_expenses %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي المصروفات التمويلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_finance_expenses_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">صافي الإيرادات التمويلية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ net_finance_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">إيرادات استثمارات يتم المحاسبة عنها بطريقة حقوق الملكية</td>
+            </tr>
+            {% for item in equity_income %}
+            {% if item.closing_balance > 0 %}
+            <tr>
+                <td>({{ item.account_code }}) - {{ item.name }}</td>
+                <td>{{ item.closing_balance_formatted }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+            <tr class="section-header">
+                <td colspan="3">إجمالي إيرادات استثمارات حقوق الملكية</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ total_equity_income_formatted }}</td>
+                <td></td>
+            </tr>
+            <tr class="section-header">
+                <td colspan="3">أرباح (خسائر) قبل الضرائب</td>
+            </tr>
+            <tr>
+                <td>الإجمالي</td>
+                <td>{{ net_income_before_tax_formatted }}</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

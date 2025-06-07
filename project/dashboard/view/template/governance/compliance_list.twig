@@ -1,0 +1,286 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger">{{ error_warning }}</div>
+    {% endif %}
+    {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="panel-title">
+          <i class="fa fa-check-square"></i> {{ text_list }}
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <!-- filters -->
+        <form id="form-filter" class="form-inline" style="margin-bottom: 15px;">
+          <label for="filter_status">{{ entry_status }}</label>
+          <select id="filter_status" class="form-control" style="margin-right:10px;">
+            <option value="">{{ text_all_statuses }}</option>
+            <option value="pending"   {{ filter_status=='pending'   ? 'selected':'' }}>{{ text_pending }}</option>
+            <option value="submitted" {{ filter_status=='submitted' ? 'selected':'' }}>{{ text_submitted }}</option>
+            <option value="approved"  {{ filter_status=='approved'  ? 'selected':'' }}>{{ text_approved }}</option>
+            <option value="rejected"  {{ filter_status=='rejected'  ? 'selected':'' }}>{{ text_rejected }}</option>
+            <option value="closed"    {{ filter_status=='closed'    ? 'selected':'' }}>{{ text_closed }}</option>
+          </select>
+
+          <button type="button" id="btn-filter" class="btn btn-primary">
+            <i class="fa fa-filter"></i> {{ button_filter }}
+          </button>
+
+          {% if can_add %}
+          <button type="button" id="btn-add" class="btn btn-success" style="margin-left:20px;">
+            <i class="fa fa-plus"></i> {{ button_add }}
+          </button>
+          {% endif %}
+        </form>
+
+        <!-- table -->
+        <table id="table-compliance" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>{{ column_compliance_id }}</th>
+              <th>{{ column_compliance_type }}</th>
+              <th>{{ column_reference_code }}</th>
+              <th>{{ column_due_date }}</th>
+              <th>{{ column_status }}</th>
+              <th>{{ column_responsible }}</th>
+              <th>{{ column_action }}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit -->
+<div class="modal fade" id="modalCompliance" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formCompliance">
+        <div class="modal-header">
+          <h4 class="modal-title">{{ text_modal_add }}</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+
+          <input type="hidden" name="compliance_id" id="compliance_id" value="" />
+
+          <div class="form-group">
+            <label>{{ entry_compliance_type }} <span style="color:red;">*</span></label>
+            <input type="text" class="form-control" name="compliance_type" id="compliance_type" required />
+          </div>
+
+          <div class="form-group">
+            <label>{{ entry_reference_code }}</label>
+            <input type="text" class="form-control" name="reference_code" id="reference_code" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ entry_description }}</label>
+            <textarea class="form-control" name="description" id="description" rows="2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>{{ entry_due_date }}</label>
+            <input type="date" class="form-control" name="due_date" id="due_date" />
+          </div>
+
+          <div class="form-group">
+            <label>{{ entry_status }}</label>
+            <select class="form-control" name="status" id="status">
+              <option value="pending">{{ text_pending }}</option>
+              <option value="submitted">{{ text_submitted }}</option>
+              <option value="approved">{{ text_approved }}</option>
+              <option value="rejected">{{ text_rejected }}</option>
+              <option value="closed">{{ text_closed }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>{{ entry_responsible_user_id }}</label>
+            <input type="number" class="form-control" name="responsible_user_id" id="responsible_user_id" />
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ button_close }}</button>
+          <button type="submit" class="btn btn-primary">{{ button_save }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function($){
+  'use strict';
+  let tableComp;
+
+  $(document).ready(function(){
+    // DataTable
+    tableComp = $('#table-compliance').DataTable({
+      ajax:{
+        url:"index.php?route=governance/compliance/ajaxList&user_token={{ user_token }}",
+        type:'POST',
+        data:function(d){
+          d.filter_status = $('#filter_status').val();
+        },
+        dataSrc:function(json){
+          if(json.error){
+            toastr.error(json.error);
+            return [];
+          }
+          return json.data;
+        }
+      },
+      columns:[
+        {data:'compliance_id'},
+        {data:'compliance_type'},
+        {data:'reference_code'},
+        {data:'due_date'},
+        {data:'status'},
+        {data:'responsible_user'},
+        {
+          data:null,
+          orderable:false,
+          render:function(data,type,row){
+            let btns = '';
+            {% if can_edit %}
+            btns += `<button class="btn btn-info btn-sm btn-edit" data-id="${row.compliance_id}">
+                      <i class="fa fa-pencil"></i> {{ button_edit }}
+                     </button> `;
+            {% endif %}
+            {% if can_delete %}
+            btns += `<button class="btn btn-danger btn-sm btn-delete" data-id="${row.compliance_id}">
+                      <i class="fa fa-trash"></i> {{ button_delete }}
+                     </button>`;
+            {% endif %}
+            return btns;
+          }
+        }
+      ]
+    });
+
+    // Filter
+    $('#btn-filter').on('click', function(){
+      tableComp.ajax.reload();
+    });
+
+    // Add
+    $('#btn-add').on('click', function(){
+      clearForm();
+      $('#compliance_id').val('');
+      $('#modalCompliance .modal-title').text('{{ text_modal_add }}');
+      $('#modalCompliance').modal('show');
+    });
+
+    // Edit
+    $('#table-compliance').on('click','.btn-edit',function(){
+      let cid = $(this).data('id');
+      editRecord(cid);
+    });
+
+    // Delete
+    $('#table-compliance').on('click','.btn-delete',function(){
+      let cid = $(this).data('id');
+      if(confirm('{{ text_confirm_delete }}')){
+        $.ajax({
+          url:"index.php?route=governance/compliance/ajaxDelete&user_token={{ user_token }}",
+          type:'POST',
+          data:{compliance_id:cid},
+          dataType:'json',
+          success:function(json){
+            if(json.error){ toastr.error(json.error); }
+            else {
+              toastr.success(json.success);
+              tableComp.ajax.reload(null,false);
+            }
+          }
+        });
+      }
+    });
+
+    // Save (Add/Edit)
+    $('#formCompliance').on('submit', function(e){
+      e.preventDefault();
+      let formData = $(this).serializeArray();
+      let cid = $('#compliance_id').val();
+      let urlReq = '';
+      if(cid==''){
+        urlReq = "index.php?route=governance/compliance/ajaxAdd&user_token={{ user_token }}";
+      } else {
+        urlReq = "index.php?route=governance/compliance/ajaxEdit&user_token={{ user_token }}";
+      }
+
+      $.ajax({
+        url:urlReq,
+        type:'POST',
+        data:formData,
+        dataType:'json',
+        success:function(json){
+          if(json.error){
+            toastr.error(json.error);
+          } else {
+            toastr.success(json.success);
+            $('#modalCompliance').modal('hide');
+            tableComp.ajax.reload(null,false);
+          }
+        }
+      });
+    });
+  });
+
+  function editRecord(compliance_id){
+    $.ajax({
+      url:"index.php?route=governance/compliance/getOne&user_token={{ user_token }}",
+      type:"POST",
+      data:{compliance_id},
+      dataType:"json",
+      success:function(json){
+        if(json.error){ toastr.error(json.error); }
+        else if(json.success){
+          let r = json.record;
+          clearForm();
+          $('#compliance_id').val(r.compliance_id);
+          $('#compliance_type').val(r.compliance_type);
+          $('#reference_code').val(r.reference_code);
+          $('#description').val(r.description);
+          if(r.due_date) $('#due_date').val(r.due_date);
+          $('#status').val(r.status);
+          $('#responsible_user_id').val(r.responsible_user_id);
+
+          $('#modalCompliance .modal-title').text('{{ text_modal_edit }} #'+r.compliance_id);
+          $('#modalCompliance').modal('show');
+        }
+      }
+    });
+  }
+
+  function clearForm(){
+    $('#formCompliance')[0].reset();
+  }
+
+})(jQuery);
+</script>
+
+{{ footer }}

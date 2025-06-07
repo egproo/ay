@@ -1,0 +1,129 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-dynamic-pricing" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-dynamic-pricing" class="form-horizontal">
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-name">{{ entry_name }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="name" value="{{ name }}" placeholder="{{ entry_name }}" id="input-name" class="form-control" />
+              {% if error_name %}
+              <div class="text-danger">{{ error_name }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-type">{{ entry_type }}</label>
+            <div class="col-sm-10">
+              <select name="type" id="input-type" class="form-control">
+                <option value="percentage" {% if type == 'percentage' %}selected="selected"{% endif %}>{{ text_percentage }}</option>
+                <option value="fixed" {% if type == 'fixed' %}selected="selected"{% endif %}>{{ text_fixed }}</option>
+                <option value="formula" {% if type == 'formula' %}selected="selected"{% endif %}>{{ text_formula }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-value">{{ entry_value }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="value" value="{{ value }}" placeholder="{{ entry_value }}" id="input-value" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-formula">{{ entry_formula }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="formula" value="{{ formula }}" placeholder="{{ entry_formula }}" id="input-formula" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-condition-type">{{ entry_condition_type }}</label>
+            <div class="col-sm-10">
+              <select name="condition_type" id="input-condition-type" class="form-control">
+                <option value="customer_group" {% if condition_type == 'customer_group' %}selected="selected"{% endif %}>{{ text_customer_group }}</option>
+                <option value="total_spent" {% if condition_type == 'total_spent' %}selected="selected"{% endif %}>{{ text_total_spent }}</option>
+                <option value="purchase_history" {% if condition_type == 'purchase_history' %}selected="selected"{% endif %}>{{ text_purchase_history }}</option>
+                <option value="time_period" {% if condition_type == 'time_period' %}selected="selected"{% endif %}>{{ text_time_period }}</option>
+                <option value="stock_level" {% if condition_type == 'stock_level' %}selected="selected"{% endif %}>{{ text_stock_level }}</option>
+                <option value="competitor_price" {% if condition_type == 'competitor_price' %}selected="selected"{% endif %}>{{ text_competitor_price }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-condition-value">{{ entry_condition_value }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="condition_value" value="{{ condition_value }}" placeholder="{{ entry_condition_value }}" id="input-condition-value" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-priority">{{ entry_priority }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="priority" value="{{ priority }}" placeholder="{{ entry_priority }}" id="input-priority" class="form-control" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-date-start">{{ entry_date_start }}</label>
+            <div class="col-sm-3">
+              <div class="input-group date">
+                <input type="text" name="date_start" value="{{ date_start }}" placeholder="{{ entry_date_start }}" data-date-format="YYYY-MM-DD" id="input-date-start" class="form-control" />
+                <span class="input-group-btn">
+                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-date-end">{{ entry_date_end }}</label>
+            <div class="col-sm-3">
+              <div class="input-group date">
+                <input type="text" name="date_end" value="{{ date_end }}" placeholder="{{ entry_date_end }}" data-date-format="YYYY-MM-DD" id="input-date-end" class="form-control" />
+                <span class="input-group-btn">
+                <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button>
+                </span></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="status" id="input-status" class="form-control">
+                {% if status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+$('.date').datetimepicker({
+	language: '{{ datepicker }}',
+	pickTime: false
+});
+//--></script>
+{{ footer }}
