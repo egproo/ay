@@ -54,19 +54,90 @@ class ControllerCommonColumnLeft extends Controller {
         );
 
         // =======================================================================
-        // (B) لوحة المعلومات الرئيسية (Main Dashboard)
-        // المستخدمين: جميع المستخدمين المصرح لهم.
-        // الهدف: عرض ملخص شامل لأداء النظام والعمليات الحديثة للتجارة الإلكترونية.
-        // workflow: متابعة الإحصائيات، مراقبة الأداء، الاطلاع على التنبيهات الهامة.
+        // (B) لوحات المعلومات (Dashboards)
+        // المستخدمين: الإدارة العليا، مدراء الأقسام، والمستخدمين حسب الحاجة.
+        // الهدف: عرض ملخصات مرئية وتحليلات سريعة لأداء العمليات الرئيسية.
+        // workflow: متابعة مؤشرات الأداء (KPIs)، مراقبة الأهداف، الاطلاع على التنبيهات الهامة.
         // -----------------------------------------------------------------------
         if ($this->user->hasPermission('access', 'common/dashboard')) {
-            $data['menus'][] = array(
-                'id'       => 'menu-dashboard-main',
-                'icon'     => 'fa-dashboard',
-                'name'     => $this->language->get('text_main_dashboard'),
-                'href'     => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
-                'children' => array()
+            $dashboards = array();
+
+            // لوحة المعلومات الرئيسية (الافتراضية)
+            $dashboards[] = array(
+                'name' => $this->language->get('text_main_dashboard'),
+                'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
+                'permission' => 'access',
+                'route' => 'common/dashboard'
             );
+
+            // لوحة مؤشرات الأداء الرئيسية (KPI Dashboard)
+            if ($this->user->hasPermission('access', 'dashboard/kpi')) {
+                $dashboards[] = array(
+                    'name' => $this->language->get('text_kpi_dashboard'),
+                    'href' => $this->url->link('dashboard/kpi', 'user_token=' . $this->session->data['user_token'], true),
+                    'permission' => 'access',
+                    'route' => 'dashboard/kpi'
+                );
+            }
+
+            // لوحة متابعة الأهداف (Goals Dashboard)
+            if ($this->user->hasPermission('access', 'dashboard/goals')) {
+                $dashboards[] = array(
+                    'name' => $this->language->get('text_goals_dashboard'),
+                    'href' => $this->url->link('dashboard/goals', 'user_token=' . $this->session->data['user_token'], true),
+                    'permission' => 'access',
+                    'route' => 'dashboard/goals'
+                );
+            }
+
+            // لوحة التنبيهات والإنذارات (Alerts Dashboard)
+            if ($this->user->hasPermission('access', 'dashboard/alerts')) {
+                $dashboards[] = array(
+                    'name' => $this->language->get('text_alerts_dashboard'),
+                    'href' => $this->url->link('dashboard/alerts', 'user_token=' . $this->session->data['user_token'], true),
+                    'permission' => 'access',
+                    'route' => 'dashboard/alerts'
+                );
+            }
+
+            // لوحة تحليل المخزون الذكي (Inventory Analytics Dashboard)
+            if ($this->user->hasPermission('access', 'dashboard/inventory_analytics')) {
+                $dashboards[] = array(
+                    'name' => $this->language->get('text_inventory_analytics_dashboard'),
+                    'href' => $this->url->link('dashboard/inventory_analytics', 'user_token=' . $this->session->data['user_token'], true),
+                    'permission' => 'access',
+                    'route' => 'dashboard/inventory_analytics'
+                );
+            }
+
+            // لوحة تحليل الربحية والتكاليف (Profitability Dashboard)
+            if ($this->user->hasPermission('access', 'dashboard/profitability')) {
+                $dashboards[] = array(
+                    'name' => $this->language->get('text_profitability_dashboard'),
+                    'href' => $this->url->link('dashboard/profitability', 'user_token=' . $this->session->data['user_token'], true),
+                    'permission' => 'access',
+                    'route' => 'dashboard/profitability'
+                );
+            }
+
+            // إضافة قسم لوحات المعلومات إذا كان هناك أي لوحة متاحة
+            if (count($dashboards) > 1) { // إذا كان هناك أكثر من لوحة واحدة (بالإضافة للرئيسية)
+                $data['menus'][] = array(
+                    'id'       => 'menu-dashboards',
+                    'icon'     => 'fa-dashboard', // أو fa-tachometer
+                    'name'     => $this->language->get('text_dashboards'),
+                    'href'     => '',
+                    'children' => $dashboards
+                );
+            } elseif (count($dashboards) == 1) { // إذا كانت اللوحة الرئيسية فقط متاحة
+                $data['menus'][] = array(
+                    'id'       => 'menu-dashboard-main',
+                    'icon'     => 'fa-dashboard',
+                    'name'     => $this->language->get('text_main_dashboard'),
+                    'href'     => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true),
+                    'children' => array()
+                );
+            }
         }
 
         // =======================================================================
